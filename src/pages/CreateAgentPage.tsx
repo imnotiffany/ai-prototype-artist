@@ -445,37 +445,8 @@ const CreateAgentPage = () => {
           </div>
 
           {rightTab === "config" ? (
-            /* ── Config tab ── */
-            <div className="flex-1 overflow-auto p-4 space-y-4">
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">智能体名称</label>
-                <Input value={envName} onChange={(e) => setEnvName(e.target.value)} className="mt-1" placeholder="输入名称" />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">System Prompt</label>
-                <textarea
-                  className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm min-h-[120px] resize-y focus:outline-none focus:ring-2 focus:ring-ring"
-                  placeholder="定义智能体的行为和角色…"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">运行模型</label>
-                <Select defaultValue="claude-sonnet">
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="claude-sonnet">claude-sonnet-4</SelectItem>
-                    <SelectItem value="claude-opus">claude-opus-4</SelectItem>
-                    <SelectItem value="claude-haiku">claude-haiku</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">最大 Token 数</label>
-                <Input type="number" defaultValue={4096} className="mt-1" />
-              </div>
-            </div>
+            /* ── Config tab: YAML/JSON editor ── */
+            <ConfigEditor envName={envName} />
           ) : (
             /* ── Preview tab ── */
             <>
