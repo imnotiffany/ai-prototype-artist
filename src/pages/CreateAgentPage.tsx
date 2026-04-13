@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Send, Square, ChevronRight, CheckCircle2, Search, Copy, Loader2 } from "lucide-react";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -197,13 +198,6 @@ const CreateAgentPage = () => {
       role: "system",
       content: "欢迎使用智能体构建器！我将引导你完成智能体的创建和配置。",
       type: "text",
-    },
-    {
-      id: uid(),
-      role: "assistant",
-      content: "你想给这个智能体取什么名字？",
-      type: "question",
-      options: [],
     },
   ]);
 
@@ -418,9 +412,9 @@ const CreateAgentPage = () => {
   return (
     <div className="flex flex-col h-full animate-fade-in">
       {/* ── Main split pane ── */}
-      <div className="flex flex-1 min-h-0">
+      <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0">
         {/* ── Left: Config chat ── */}
-        <div className="w-[380px] flex flex-col border-r border-border min-w-0 shrink-0">
+        <ResizablePanel defaultSize={35} minSize={20} maxSize={60} className="flex flex-col min-w-0">
           <div ref={leftScrollRef} className="flex-1 overflow-auto p-6 space-y-4">
             {messages.map((msg) => (
               <div key={msg.id}>
