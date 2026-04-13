@@ -420,7 +420,7 @@ const CreateAgentPage = () => {
       {/* ── Main split pane ── */}
       <div className="flex flex-1 min-h-0">
         {/* ── Left: Config chat ── */}
-        <div className="flex-1 flex flex-col border-r border-border min-w-0">
+        <div className="w-[380px] flex flex-col border-r border-border min-w-0 shrink-0">
           <div ref={leftScrollRef} className="flex-1 overflow-auto p-6 space-y-4">
             {messages.map((msg) => (
               <div key={msg.id}>
@@ -521,7 +521,7 @@ const CreateAgentPage = () => {
         </div>
 
         {/* ── Right: Preview panel ── */}
-        <div className="w-[480px] flex flex-col min-w-0 shrink-0">
+        <div className="flex-1 flex flex-col min-w-0">
           {/* Config / Preview tabs */}
           <div className="border-b border-border px-4">
             <div className="flex gap-1">
