@@ -3,8 +3,15 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import Index from "./pages/Index.tsx";
-import NotFound from "./pages/NotFound.tsx";
+import { AppLayout } from "@/components/AppLayout";
+import AgentMarketplace from "./pages/AgentMarketplace";
+import AgentDetail from "./pages/AgentDetail";
+import ChatPage from "./pages/ChatPage";
+import SessionList from "./pages/SessionList";
+import VaultPage from "./pages/VaultPage";
+import WorkspacePage from "./pages/WorkspacePage";
+import ProjectAgents from "./pages/ProjectAgents";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -15,8 +22,13 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/" element={<AppLayout><AgentMarketplace /></AppLayout>} />
+          <Route path="/agent/:id" element={<AppLayout><AgentDetail /></AppLayout>} />
+          <Route path="/chat/:id" element={<AppLayout><ChatPage /></AppLayout>} />
+          <Route path="/sessions" element={<AppLayout><SessionList /></AppLayout>} />
+          <Route path="/vault" element={<AppLayout><VaultPage /></AppLayout>} />
+          <Route path="/workspace" element={<AppLayout><WorkspacePage /></AppLayout>} />
+          <Route path="/project-agents" element={<AppLayout><ProjectAgents /></AppLayout>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
