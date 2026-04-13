@@ -69,7 +69,111 @@ const getResponse = (userMsg: string): string[] => {
   return agentResponses.default;
 };
 
-/* ── Component ── */
+/* ── Config Editor Component ── */
+const generateYaml = (name: string) =>
+  `name: ${name || "我的智能体"}
+description: An agent that helps users with tasks.
+model:
+  id: claude-sonnet-4-6
+  speed: standard
+system: |-
+  You are a helpful assistant. Follow user instructions carefully
+  and provide clear, actionable responses.
+tools:
+  - type: agent_toolset_20260401
+    configs: []
+    default_config:
+      enabled: true
+      permission_policy:
+        type: always_allow
+mcp_servers: []
+skills: []
+metadata: {}`;
+
+const generateJson = (name: string) =>
+  JSON.stringify(
+    {
+      name: name || "我的智能体",
+      description: "An agent that helps users with tasks.",
+      model: { id: "claude-sonnet-4-6", speed: "standard" },
+      system: "You are a helpful assistant. Follow user instructions carefully and provide clear, actionable responses.",
+      tools: [{ type: "agent_toolset_20260401", configs: [], default_config: { enabled: true, permission_policy: { type: "always_allow" } } }],
+      mcp_servers: [],
+      skills: [],
+      metadata: {},
+    },
+    null,
+    2
+  );
+
+const ConfigEditor = ({ envName }: { envName: string }) => {
+  const [format, setFormat] = useState<"yaml" | "json">("yaml");
+  const [content, setContent] = useState(() => generateYaml(envName));
+
+  const switchFormat = (fmt: "yaml" | "json") => {
+    setFormat(fmt);
+    setContent(fmt === "yaml" ? generateYaml(envName) : generateJson(envName));
+  };
+
+  const handleCopyConfig = () => {
+    navigator.clipboard.writeText(content);
+  };
+
+  // Line numbers
+  const lines = content.split("\n");
+
+  return (
+    <div className="flex-1 flex flex-col overflow-hidden">
+      {/* Format toggle */}
+      <div className="flex items-center justify-between px-4 py-2 border-b border-border">
+        <div className="flex gap-1">
+          <button
+            onClick={() => switchFormat("yaml")}
+            className={`px-3 py-1 rounded text-sm transition-colors ${
+              format === "yaml" ? "bg-secondary text-foreground font-medium" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            YAML
+          </button>
+          <button
+            onClick={() => switchFormat("json")}
+            className={`px-3 py-1 rounded text-sm transition-colors ${
+              format === "json" ? "bg-secondary text-foreground font-medium" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            JSON
+          </button>
+        </div>
+        <button onClick={handleCopyConfig} className="text-muted-foreground hover:text-foreground transition-colors">
+          <Copy className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Code editor area */}
+      <div className="flex-1 overflow-auto bg-muted/10">
+        <div className="flex min-h-full">
+          {/* Line numbers */}
+          <div className="select-none text-right pr-3 pl-4 py-3 text-xs font-mono text-muted-foreground/50 leading-relaxed shrink-0">
+            {lines.map((_, i) => (
+              <div key={i}>{i + 1}</div>
+            ))}
+          </div>
+          {/* Editable content */}
+          <div className="flex-1 relative">
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              className="absolute inset-0 w-full h-full py-3 pr-4 text-xs font-mono leading-relaxed bg-transparent text-foreground resize-none focus:outline-none"
+              spellCheck={false}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ── Main Component ── */
 const CreateAgentPage = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
@@ -445,37 +549,8 @@ const CreateAgentPage = () => {
           </div>
 
           {rightTab === "config" ? (
-            /* ── Config tab ── */
-            <div className="flex-1 overflow-auto p-4 space-y-4">
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">智能体名称</label>
-                <Input value={envName} onChange={(e) => setEnvName(e.target.value)} className="mt-1" placeholder="输入名称" />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">System Prompt</label>
-                <textarea
-                  className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm min-h-[120px] resize-y focus:outline-none focus:ring-2 focus:ring-ring"
-                  placeholder="定义智能体的行为和角色…"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">运行模型</label>
-                <Select defaultValue="claude-sonnet">
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="claude-sonnet">claude-sonnet-4</SelectItem>
-                    <SelectItem value="claude-opus">claude-opus-4</SelectItem>
-                    <SelectItem value="claude-haiku">claude-haiku</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">最大 Token 数</label>
-                <Input type="number" defaultValue={4096} className="mt-1" />
-              </div>
-            </div>
+            /* ── Config tab: YAML/JSON editor ── */
+            <ConfigEditor envName={envName} />
           ) : (
             /* ── Preview tab ── */
             <>
