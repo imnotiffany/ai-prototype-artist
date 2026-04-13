@@ -679,8 +679,8 @@ const CreateAgentPage = () => {
               </div>
             </>
           )}
-        </div>
-      </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 };
