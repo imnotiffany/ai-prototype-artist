@@ -10,9 +10,8 @@ const menuSections = [
     ],
   },
   {
-    label: "",
+    label: "工作台",
     items: [
-      { name: "工作台", path: "/workspace", icon: LayoutGrid },
       { name: "项目智能体", path: "/project-agents", icon: FolderOpen },
       { name: "会话记录", path: "/sessions", icon: MessageSquare },
       { name: "凭据金库", path: "/vault", icon: KeyRound },
