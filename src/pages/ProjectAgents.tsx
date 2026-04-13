@@ -1,21 +1,30 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Download, Plus } from "lucide-react";
+import { Download, Plus, Upload } from "lucide-react";
 import { mockAgents } from "@/data/mockData";
+import { UploadAgentDialog } from "@/components/UploadAgentDialog";
 
 const ProjectAgents = () => {
   const navigate = useNavigate();
+  const [uploadOpen, setUploadOpen] = useState(false);
   const projectAgents = mockAgents.filter((_, i) => i < 4);
 
   return (
     <div className="p-6 max-w-[1200px] mx-auto animate-fade-in">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-lg font-semibold">项目智能体</h1>
-        <Button className="gap-1.5">
-          <Plus className="w-4 h-4" />
-          创建智能体
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" className="gap-1.5" onClick={() => setUploadOpen(true)}>
+            <Upload className="w-4 h-4" />
+            上传智能体
+          </Button>
+          <Button className="gap-1.5" onClick={() => navigate("/create-agent")}>
+            <Plus className="w-4 h-4" />
+            创建智能体
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -46,6 +55,8 @@ const ProjectAgents = () => {
           </div>
         ))}
       </div>
+
+      <UploadAgentDialog open={uploadOpen} onOpenChange={setUploadOpen} />
     </div>
   );
 };

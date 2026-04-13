@@ -5,14 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { mockAgents, categories } from "@/data/mockData";
-import { CreateAgentDialog } from "@/components/CreateAgentDialog";
+
 
 const AgentMarketplace = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<"latest" | "downloads">("latest");
-  const [createOpen, setCreateOpen] = useState(false);
+  
 
   const filtered = mockAgents
     .filter((a) => {
@@ -36,7 +36,7 @@ const AgentMarketplace = () => {
               className="pl-9"
             />
           </div>
-          <Button onClick={() => setCreateOpen(true)} className="gap-1.5">
+          <Button onClick={() => navigate("/create-agent")} className="gap-1.5">
             <Plus className="w-4 h-4" />
             创建智能体
           </Button>
@@ -130,7 +130,7 @@ const AgentMarketplace = () => {
         ))}
       </div>
 
-      <CreateAgentDialog open={createOpen} onOpenChange={setCreateOpen} />
+      
     </div>
   );
 };
