@@ -313,50 +313,6 @@ const CreateAgentPage = () => {
 
   return (
     <div className="flex flex-col h-full animate-fade-in">
-      {/* ── Top stepper ── */}
-      <div className="flex items-center justify-between border-b border-border px-6 py-3 bg-background">
-        <div className="flex items-center gap-2">
-          {steps.map((step, i) => (
-            <div key={step.key} className="flex items-center">
-              {i > 0 && <div className="w-12 h-px bg-border mx-2" />}
-              <button
-                onClick={() => i <= currentStep && setCurrentStep(i)}
-                className="flex items-center gap-1.5 group"
-                disabled={i > currentStep}
-              >
-                {i < currentStep ? (
-                  <CheckCircle2 className="w-5 h-5 text-primary" />
-                ) : i === currentStep ? (
-                  <div className="w-5 h-5 rounded-full border-2 border-primary bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium">
-                    {i + 1}
-                  </div>
-                ) : (
-                  <div className="w-5 h-5 rounded-full border border-muted-foreground/30 flex items-center justify-center text-xs text-muted-foreground">
-                    {i + 1}
-                  </div>
-                )}
-                <span className={`text-sm whitespace-nowrap ${
-                  i < currentStep ? "text-primary" : i === currentStep ? "text-foreground font-medium" : "text-muted-foreground"
-                }`}>
-                  {step.label}
-                </span>
-              </button>
-            </div>
-          ))}
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            setSessionActive(false);
-            navigate(-1);
-          }}
-        >
-          <Square className="w-3 h-3 mr-1.5" />
-          停止会话
-        </Button>
-      </div>
-
       {/* ── Main split pane ── */}
       <div className="flex flex-1 min-h-0">
         {/* ── Left: Config chat ── */}
