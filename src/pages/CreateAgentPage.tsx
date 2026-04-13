@@ -453,8 +453,8 @@ const CreateAgentPage = () => {
                     </pre>
                   </div>
                 ) : msg.type === "question" && msg.options && msg.options.length > 0 ? (
-                  <div className="border border-border rounded-lg p-4 max-w-md">
-                    <div className="font-medium text-sm mb-3">{msg.content}</div>
+                  <div className="max-w-md">
+                    <div className="text-sm mb-3">{msg.content}</div>
                     <div className="space-y-2">
                       {msg.options.map((opt) => (
                         <button
@@ -475,9 +475,7 @@ const CreateAgentPage = () => {
                     </div>
                   </div>
                 ) : msg.type === "question" ? (
-                  <div className="border border-border rounded-lg p-4 max-w-md">
-                    <div className="font-medium text-sm">{msg.content}</div>
-                  </div>
+                  <div className="text-sm">{msg.content}</div>
                 ) : msg.role === "system" ? (
                   <p className="text-sm text-muted-foreground">{msg.content}</p>
                 ) : msg.role === "user" ? (
