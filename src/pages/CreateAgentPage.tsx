@@ -510,10 +510,12 @@ const CreateAgentPage = () => {
               </Button>
             </div>
           </div>
-        </div>
+        </ResizablePanel>
+
+        <ResizableHandle withHandle />
 
         {/* ── Right: Preview panel ── */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <ResizablePanel defaultSize={65} minSize={30} className="flex flex-col min-w-0">
           {/* Config / Preview tabs */}
           <div className="border-b border-border px-4">
             <div className="flex gap-1">
