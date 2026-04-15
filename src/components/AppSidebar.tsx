@@ -24,11 +24,11 @@ export const AppSidebar = () => {
   const navigate = useNavigate();
 
   return (
-    <aside className="w-[140px] border-r border-border bg-sidebar flex flex-col py-4 shrink-0">
+    <aside className="w-[130px] border-r border-border bg-sidebar flex flex-col py-3 shrink-0">
       {menuSections.map((section, si) => (
-        <div key={si} className="mb-2">
+        <div key={si} className="mb-1">
           {section.label && (
-            <div className="px-4 py-1 text-xs font-medium text-muted-foreground">
+            <div className="px-3 py-1 text-[10px] uppercase tracking-wider font-medium text-muted-foreground">
               {section.label}
             </div>
           )}
@@ -39,13 +39,13 @@ export const AppSidebar = () => {
                 key={item.path}
                 onClick={() => navigate(item.path)}
                 className={cn(
-                  "w-full flex items-center gap-2 px-4 py-2 text-sm transition-colors",
+                  "w-full flex items-center gap-1.5 px-3 py-1.5 text-xs transition-colors",
                   isActive
                     ? "text-primary font-medium bg-accent"
                     : "text-sidebar-foreground hover:bg-secondary"
                 )}
               >
-                <item.icon className="w-4 h-4" />
+                <item.icon className="w-3.5 h-3.5" />
                 {item.name}
               </button>
             );
