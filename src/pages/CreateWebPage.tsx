@@ -13,7 +13,6 @@ let msgId = 0;
 const uid = () => `web-msg-${++msgId}`;
 
 const CreateWebPage = () => {
-  const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([
     { id: uid(), role: "assistant", content: "你好，我可以帮你快速生成可运行的网页应用。你想做一个什么应用？" },
   ]);
