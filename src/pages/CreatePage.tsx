@@ -30,8 +30,9 @@ const CreatePage = () => {
       navigate("/create-agent");
     } else if (activeTab === "web") {
       navigate("/create-web");
+    } else if (activeTab === "skill") {
+      navigate("/create-skill");
     }
-    // skill can navigate to its own page in the future
   };
 
   return (
