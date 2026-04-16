@@ -90,18 +90,47 @@ const availableMCPs = [
 
 const versions = ["v1", "v2", "v3"];
 
+/* ── NLP Detection: extract skill/MCP names from natural language ── */
+const allSkillNames = availableSkills.map((s) => s.name.toLowerCase());
+const allMCPNames = availableMCPs.map((s) => s.name.toLowerCase());
+
+const detectFromText = (text: string): { detectedSkills: string[]; detectedMCPs: string[] } => {
+  const lower = text.toLowerCase();
+  const detectedSkills = availableSkills.filter((s) => lower.includes(s.name.toLowerCase())).map((s) => s.name);
+  const detectedMCPs = availableMCPs.filter((s) => lower.includes(s.name.toLowerCase())).map((s) => s.name);
+
+  // Also detect by keyword hints
+  if ((lower.includes("搜索") || lower.includes("search")) && !detectedSkills.includes("Web Search")) detectedSkills.push("Web Search");
+  if ((lower.includes("代码") || lower.includes("code")) && !detectedSkills.includes("Code Analysis")) detectedSkills.push("Code Analysis");
+  if ((lower.includes("邮件") || lower.includes("email")) && !detectedSkills.includes("Email Parser")) detectedSkills.push("Email Parser");
+  if ((lower.includes("翻译") || lower.includes("translat")) && !detectedSkills.includes("Translation Engine")) detectedSkills.push("Translation Engine");
+  if ((lower.includes("sql") || lower.includes("数据库")) && !detectedSkills.includes("SQL Generator")) detectedSkills.push("SQL Generator");
+  if ((lower.includes("github") || lower.includes("pr") || lower.includes("仓库")) && !detectedMCPs.includes("GitHub MCP")) detectedMCPs.push("GitHub MCP");
+  if ((lower.includes("gmail") || lower.includes("邮箱")) && !detectedMCPs.includes("Gmail MCP")) detectedMCPs.push("Gmail MCP");
+  if ((lower.includes("slack") || lower.includes("频道")) && !detectedMCPs.includes("Slack MCP")) detectedMCPs.push("Slack MCP");
+  if ((lower.includes("notion") || lower.includes("笔记")) && !detectedMCPs.includes("Notion MCP")) detectedMCPs.push("Notion MCP");
+  if ((lower.includes("jira") || lower.includes("任务管理")) && !detectedMCPs.includes("Jira MCP")) detectedMCPs.push("Jira MCP");
+
+  return { detectedSkills, detectedMCPs };
+};
+
 /* ── Simulated Assembly Logic ── */
 const assembleAgent = (
   description: string,
   skills: string[],
   mcps: string[]
 ): AgentConfig => {
+  // Merge manually selected + NLP-detected
+  const { detectedSkills, detectedMCPs } = detectFromText(description);
+  const allSkills = [...new Set([...skills, ...detectedSkills])];
+  const allMCPs = [...new Set([...mcps, ...detectedMCPs])];
+
   const lower = description.toLowerCase();
   let model = "claude-sonnet-4-6";
   if (lower.includes("快速") || lower.includes("简单")) model = "gemini-2.5-flash";
   if (lower.includes("分析") || lower.includes("推理")) model = "gpt-4o";
 
-  const systemPrompt = `你是一个专业的AI助手。\n\n## 核心能力\n${description}\n\n## 工具使用\n${skills.length > 0 ? `你可以使用以下技能：${skills.join("、")}` : "暂无外部技能"}\n${mcps.length > 0 ? `你可以连接以下服务：${mcps.join("、")}` : ""}\n\n## 行为准则\n- 始终准确、有帮助地回答问题\n- 在需要时主动使用可用工具\n- 输出结构化、易读的结果`;
+  const systemPrompt = `你是一个专业的AI助手。\n\n## 核心能力\n${description}\n\n## 工具使用\n${allSkills.length > 0 ? `你可以使用以下技能：${allSkills.join("、")}` : "暂无外部技能"}\n${allMCPs.length > 0 ? `你可以连接以下服务：${allMCPs.join("、")}` : ""}\n\n## 行为准则\n- 始终准确、有帮助地回答问题\n- 在需要时主动使用可用工具\n- 输出结构化、易读的结果`;
 
   return {
     name: description.slice(0, 20).replace(/[，。！？]/g, ""),
@@ -111,8 +140,8 @@ const assembleAgent = (
     tools: [
       { name: "Built-in tools", id: "agent_toolset_20260401", permissions: 8, permissionPolicy: "Always allow" },
     ],
-    skills: [...skills],
-    mcpServers: [...mcps],
+    skills: allSkills,
+    mcpServers: allMCPs,
   };
 };
 
