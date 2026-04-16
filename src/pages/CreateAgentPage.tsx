@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Send, Square, ChevronRight, CheckCircle2, Search, Copy, Loader2 } from "lucide-react";
+import { Send, Square, ChevronRight, CheckCircle2, Copy, Loader2, ChevronDown, Code2, Settings2 } from "lucide-react";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 /* ── Types ── */
 interface Message {
@@ -36,16 +37,28 @@ interface DebugEvent {
 let msgId = 0;
 const uid = () => `msg-${++msgId}`;
 
-/* ── Steps ── */
-const steps = [
-  { key: "quickstart", label: "快速开始" },
-  { key: "create", label: "创建智能体" },
-  { key: "configure", label: "配置环境" },
-  { key: "session", label: "启动会话" },
-  { key: "integrate", label: "集成" },
-];
+/* ── Simulated agent config ── */
+interface AgentConfig {
+  version: string;
+  model: string;
+  systemPrompt: string;
+  tools: { name: string; id: string; permissions: number; permissionPolicy: string }[];
+  skills: string[];
+}
 
-/* ── Simulated agent config responses ── */
+const defaultConfig: AgentConfig = {
+  version: "v1",
+  model: "claude-sonnet-4-6",
+  systemPrompt: "You are a helpful assistant. Follow user instructions carefully and provide clear, actionable responses.",
+  tools: [
+    { name: "Built-in tools", id: "agent_toolset_20260401", permissions: 8, permissionPolicy: "Always allow" },
+  ],
+  skills: [],
+};
+
+const versions = ["v1", "v2", "v3"];
+
+/* ── Simulated responses ── */
 const agentResponses: Record<string, string[]> = {
   default: [
     "好的，我来帮你处理这个需求。请稍等…",
@@ -70,104 +83,175 @@ const getResponse = (userMsg: string): string[] => {
   return agentResponses.default;
 };
 
-/* ── Config Editor Component ── */
-const generateYaml = (name: string) =>
-  `name: ${name || "我的智能体"}
+/* ── Structured Config View ── */
+const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig; onConfigChange: (c: AgentConfig) => void }) => {
+  const [toolsOpen, setToolsOpen] = useState(false);
+
+  return (
+    <div className="flex-1 overflow-auto">
+      <div className="divide-y divide-border">
+        {/* Version */}
+        <div className="px-5 py-4">
+          <label className="text-xs font-medium text-muted-foreground mb-2 block">Version</label>
+          <Select value={config.version} onValueChange={(v) => onConfigChange({ ...config, version: v })}>
+            <SelectTrigger className="h-8 text-xs w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {versions.map((v) => (
+                <SelectItem key={v} value={v} className="text-xs">{`Version: ${v}`}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Model */}
+        <div className="px-5 py-4">
+          <label className="text-xs font-medium text-muted-foreground mb-1 block">Model</label>
+          <p className="text-sm text-foreground">{config.model}</p>
+        </div>
+
+        {/* System Prompt */}
+        <div className="px-5 py-4">
+          <label className="text-xs font-medium text-muted-foreground mb-2 block">System prompt</label>
+          <div className="bg-muted/30 rounded-lg p-3 border border-border">
+            <textarea
+              value={config.systemPrompt}
+              onChange={(e) => onConfigChange({ ...config, systemPrompt: e.target.value })}
+              className="w-full bg-transparent text-xs text-foreground font-mono leading-relaxed resize-none focus:outline-none min-h-[120px]"
+              spellCheck={false}
+            />
+          </div>
+        </div>
+
+        {/* MCPs and tools */}
+        <div className="px-5 py-4">
+          <label className="text-xs font-medium text-muted-foreground mb-3 block">MCPs and tools</label>
+          {config.tools.map((tool, i) => (
+            <div key={i} className="border border-border rounded-lg p-3 mb-2">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded bg-muted flex items-center justify-center">
+                  <Settings2 className="w-4 h-4 text-muted-foreground" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-foreground">{tool.name}</p>
+                  <p className="text-[10px] text-muted-foreground font-mono">{tool.id}</p>
+                </div>
+              </div>
+              <Collapsible open={toolsOpen} onOpenChange={setToolsOpen}>
+                <CollapsibleTrigger className="flex items-center justify-between w-full mt-3 pt-2 border-t border-border">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <ChevronDown className={`w-3 h-3 transition-transform ${toolsOpen ? "rotate-180" : ""}`} />
+                    <span>Tool permissions</span>
+                    <Badge variant="secondary" className="text-[10px] h-4 px-1.5">{tool.permissions}</Badge>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" />
+                    {tool.permissionPolicy}
+                  </span>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pt-2">
+                  <div className="text-[10px] text-muted-foreground space-y-1 pl-4">
+                    <p>• web_search — allowed</p>
+                    <p>• file_read — allowed</p>
+                    <p>• file_write — allowed</p>
+                    <p>• bash — allowed</p>
+                    <p>• code_exec — allowed</p>
+                    <p>• browser — allowed</p>
+                    <p>• mcp_call — allowed</p>
+                    <p>• api_request — allowed</p>
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            </div>
+          ))}
+        </div>
+
+        {/* Skills */}
+        <div className="px-5 py-4">
+          <label className="text-xs font-medium text-muted-foreground mb-2 block">Skills</label>
+          {config.skills.length === 0 ? (
+            <p className="text-xs text-muted-foreground">暂无技能</p>
+          ) : (
+            <div className="flex flex-wrap gap-1.5">
+              {config.skills.map((s, i) => (
+                <Badge key={i} variant="secondary" className="text-[10px] font-mono">{s}</Badge>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ── Raw Code View ── */
+const generateYaml = (config: AgentConfig) =>
+  `name: 我的智能体
 description: An agent that helps users with tasks.
 model:
-  id: claude-sonnet-4-6
+  id: ${config.model}
   speed: standard
 system: |-
-  You are a helpful assistant. Follow user instructions carefully
-  and provide clear, actionable responses.
+  ${config.systemPrompt.split("\n").join("\n  ")}
 tools:
-  - type: agent_toolset_20260401
+  - type: ${config.tools[0]?.id || "agent_toolset_20260401"}
     configs: []
     default_config:
       enabled: true
       permission_policy:
         type: always_allow
 mcp_servers: []
-skills: []
+skills: [${config.skills.map(s => `"${s}"`).join(", ")}]
 metadata: {}`;
 
-const generateJson = (name: string) =>
+const generateJson = (config: AgentConfig) =>
   JSON.stringify(
     {
-      name: name || "我的智能体",
+      name: "我的智能体",
       description: "An agent that helps users with tasks.",
-      model: { id: "claude-sonnet-4-6", speed: "standard" },
-      system: "You are a helpful assistant. Follow user instructions carefully and provide clear, actionable responses.",
-      tools: [{ type: "agent_toolset_20260401", configs: [], default_config: { enabled: true, permission_policy: { type: "always_allow" } } }],
+      model: { id: config.model, speed: "standard" },
+      system: config.systemPrompt,
+      tools: [{ type: config.tools[0]?.id || "agent_toolset_20260401", configs: [], default_config: { enabled: true, permission_policy: { type: "always_allow" } } }],
       mcp_servers: [],
-      skills: [],
+      skills: config.skills,
       metadata: {},
     },
     null,
     2
   );
 
-const ConfigEditor = ({ envName }: { envName: string }) => {
+const RawConfigView = ({ config }: { config: AgentConfig }) => {
   const [format, setFormat] = useState<"yaml" | "json">("yaml");
-  const [content, setContent] = useState(() => generateYaml(envName));
-
-  const switchFormat = (fmt: "yaml" | "json") => {
-    setFormat(fmt);
-    setContent(fmt === "yaml" ? generateYaml(envName) : generateJson(envName));
-  };
-
-  const handleCopyConfig = () => {
-    navigator.clipboard.writeText(content);
-  };
-
-  // Line numbers
+  const content = format === "yaml" ? generateYaml(config) : generateJson(config);
   const lines = content.split("\n");
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      {/* Format toggle */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-border">
         <div className="flex gap-1">
-          <button
-            onClick={() => switchFormat("yaml")}
-            className={`px-3 py-1 rounded text-sm transition-colors ${
-              format === "yaml" ? "bg-secondary text-foreground font-medium" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            YAML
-          </button>
-          <button
-            onClick={() => switchFormat("json")}
-            className={`px-3 py-1 rounded text-sm transition-colors ${
-              format === "json" ? "bg-secondary text-foreground font-medium" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            JSON
-          </button>
+          {(["yaml", "json"] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFormat(f)}
+              className={`px-2.5 py-1 rounded text-xs transition-colors ${
+                format === f ? "bg-secondary text-foreground font-medium" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {f.toUpperCase()}
+            </button>
+          ))}
         </div>
-        <button onClick={handleCopyConfig} className="text-muted-foreground hover:text-foreground transition-colors">
-          <Copy className="w-4 h-4" />
+        <button onClick={() => navigator.clipboard.writeText(content)} className="text-muted-foreground hover:text-foreground">
+          <Copy className="w-3.5 h-3.5" />
         </button>
       </div>
-
-      {/* Code editor area */}
       <div className="flex-1 overflow-auto bg-muted/10">
         <div className="flex min-h-full">
-          {/* Line numbers */}
-          <div className="select-none text-right pr-3 pl-4 py-3 text-xs font-mono text-muted-foreground/50 leading-relaxed shrink-0">
-            {lines.map((_, i) => (
-              <div key={i}>{i + 1}</div>
-            ))}
+          <div className="select-none text-right pr-3 pl-4 py-3 text-[10px] font-mono text-muted-foreground/50 leading-relaxed shrink-0">
+            {lines.map((_, i) => <div key={i}>{i + 1}</div>)}
           </div>
-          {/* Editable content */}
-          <div className="flex-1 relative">
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="absolute inset-0 w-full h-full py-3 pr-4 text-xs font-mono leading-relaxed bg-transparent text-foreground resize-none focus:outline-none"
-              spellCheck={false}
-            />
-          </div>
+          <pre className="flex-1 py-3 pr-4 text-[10px] font-mono leading-relaxed text-foreground whitespace-pre-wrap">{content}</pre>
         </div>
       </div>
     </div>
@@ -177,35 +261,31 @@ const ConfigEditor = ({ envName }: { envName: string }) => {
 /* ── Main Component ── */
 const CreateAgentPage = () => {
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(0);
-  const [rightTab, setRightTab] = useState<"config" | "preview">("preview");
+  const [configViewMode, setConfigViewMode] = useState<"structured" | "raw">("structured");
+  const [rightTab, setRightTab] = useState<"config" | "preview">("config");
   const [previewTab, setPreviewTab] = useState<"transcript" | "debug">("transcript");
-  const [eventFilter, setEventFilter] = useState("all");
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
   const [previewInput, setPreviewInput] = useState("");
   const [isAgentRunning, setIsAgentRunning] = useState(false);
-  const [sessionActive, setSessionActive] = useState(false);
-  const [envName, setEnvName] = useState("");
+  const [sessionActive, setSessionActive] = useState(true);
+  const [agentConfig, setAgentConfig] = useState<AgentConfig>(defaultConfig);
 
   const leftScrollRef = useRef<HTMLDivElement>(null);
   const rightScrollRef = useRef<HTMLDivElement>(null);
 
-  /* ── Left messages (config chat) ── */
   const [messages, setMessages] = useState<Message[]>([
     {
       id: uid(),
       role: "system",
-      content: "欢迎使用智能体构建器！我将引导你完成智能体的创建和配置。",
+      content: "欢迎使用智能体构建器！描述你的需求，我将帮你创建和配置智能体。",
       type: "text",
     },
   ]);
 
-  /* ── Right messages (preview) ── */
   const [previewMessages, setPreviewMessages] = useState<PreviewMessage[]>([]);
   const [debugEvents, setDebugEvents] = useState<DebugEvent[]>([]);
 
-  /* ── Auto-scroll ── */
   const scrollToBottom = useCallback((ref: React.RefObject<HTMLDivElement>) => {
     setTimeout(() => ref.current?.scrollTo({ top: ref.current.scrollHeight, behavior: "smooth" }), 50);
   }, []);
@@ -213,7 +293,7 @@ const CreateAgentPage = () => {
   useEffect(() => { scrollToBottom(leftScrollRef); }, [messages, scrollToBottom]);
   useEffect(() => { scrollToBottom(rightScrollRef); }, [previewMessages, debugEvents, scrollToBottom]);
 
-  /* ── Left: Config chat send ── */
+  /* ── Left: send ── */
   const handleSend = () => {
     if (!input.trim() || isThinking) return;
     const userMsg = input.trim();
@@ -221,49 +301,19 @@ const CreateAgentPage = () => {
     setMessages((prev) => [...prev, { id: uid(), role: "user", content: userMsg }]);
     setIsThinking(true);
 
-    // Step progression logic
-    if (currentStep === 0 && !envName) {
-      // User giving name
-      setTimeout(() => {
-        setEnvName(userMsg);
-        setCurrentStep(1);
-        setMessages((prev) => [
-          ...prev,
-          { id: uid(), role: "system", content: `✓ 智能体 "${userMsg}" 已创建`, type: "confirm" },
-          {
-            id: uid(),
-            role: "assistant",
-            content: "你想使用哪个执行环境？",
-            type: "question",
-            options: [
-              { label: "创建新环境", value: "new" },
-              { label: "使用默认环境", value: "default" },
-            ],
-          },
-        ]);
-        setIsThinking(false);
-      }, 800);
-      return;
-    }
-
-    // Normal flow — simulate thinking + response
     const streamDelay = 600 + Math.random() * 800;
     setTimeout(() => {
       const responses = getResponse(userMsg);
-      const confirmId = uid();
       const newMsgs: Message[] = [];
 
-      // Sometimes add a system confirm
       if (Math.random() > 0.5) {
-        newMsgs.push({ id: confirmId, role: "system", content: "✓ 配置已更新", type: "confirm" });
+        newMsgs.push({ id: uid(), role: "system", content: "✓ 配置已更新", type: "confirm" });
       }
 
-      // Add the main response with streaming effect
       const responseId = uid();
       newMsgs.push({ id: responseId, role: "assistant", content: "", isStreaming: true });
       setMessages((prev) => [...prev, ...newMsgs]);
 
-      // Simulate streaming
       const fullText = responses[Math.floor(Math.random() * responses.length)];
       let charIndex = 0;
       const streamInterval = setInterval(() => {
@@ -283,86 +333,26 @@ const CreateAgentPage = () => {
     }, streamDelay);
   };
 
-  /* ── Left: Handle question option click ── */
-  const handleOptionClick = (msgId: string, option: { label: string; value: string }) => {
-    setMessages((prev) =>
-      prev.map((m) => m.id === msgId ? { ...m, selectedOption: option.value } : m)
-    );
-
-    // Process based on option
-    if (option.value === "new" || option.value === "default") {
-      setIsThinking(true);
-      setTimeout(() => {
-        setCurrentStep(2);
-        setMessages((prev) => [
-          ...prev,
-          { id: uid(), role: "system", content: "✓ 环境已加载", type: "confirm" },
-          {
-            id: uid(),
-            role: "assistant",
-            content: "这个智能体需要什么网络权限？",
-            type: "question",
-            options: [
-              { label: "不受限", value: "unrestricted" },
-              { label: "仅内网", value: "internal" },
-              { label: "无网络", value: "none" },
-            ],
-          },
-        ]);
-        setIsThinking(false);
-      }, 600);
-    } else if (["unrestricted", "internal", "none"].includes(option.value)) {
-      setIsThinking(true);
-      setTimeout(() => {
-        setCurrentStep(3);
-        setSessionActive(true);
-        const networkLabel = option.value === "unrestricted" ? "不受限" : option.value === "internal" ? "仅内网" : "无网络";
-        setMessages((prev) => [
-          ...prev,
-          { id: uid(), role: "system", content: `✓ 网络权限设置为「${networkLabel}」`, type: "confirm" },
-          { id: uid(), role: "system", content: "✓ 环境已创建", type: "confirm" },
-          {
-            id: uid(),
-            role: "system",
-            content: `POST  /v1/environments\n\ncurl -X POST \\\n  https://api.example.com/v1/environments \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "name": "${envName || "default"}-env",\n    "network": "${option.value}"\n  }'`,
-            type: "api-call",
-          },
-          {
-            id: uid(),
-            role: "assistant",
-            content: `环境配置完成！你现在可以：\n\n1. 在右侧「预览」窗口中和智能体对话，测试效果\n2. 在这里继续调整配置（如修改 System Prompt、添加工具等）\n\n试试在右侧发送一条消息吧！`,
-          },
-        ]);
-        setIsThinking(false);
-      }, 1000);
-    }
-  };
-
   /* ── Right: Preview send ── */
   const handlePreviewSend = () => {
     if (!previewInput.trim() || isAgentRunning) return;
     const msg = previewInput.trim();
     setPreviewInput("");
-    const userMsgId = uid();
-    setPreviewMessages((prev) => [...prev, { id: userMsgId, role: "user", content: msg, timestamp: new Date() }]);
+    setPreviewMessages((prev) => [...prev, { id: uid(), role: "user", content: msg, timestamp: new Date() }]);
     setDebugEvents((prev) => [...prev, { id: uid(), type: "input", detail: `用户输入: "${msg}"`, timestamp: new Date() }]);
     setIsAgentRunning(true);
 
-    // Simulate tool call
     setTimeout(() => {
-      const toolId = uid();
       setPreviewMessages((prev) => [
         ...prev,
-        { id: toolId, role: "tool", content: "正在调用 Web Search…", toolName: "Web Search", timestamp: new Date() },
+        { id: uid(), role: "tool", content: "正在调用 Web Search…", toolName: "Web Search", timestamp: new Date() },
       ]);
       setDebugEvents((prev) => [
         ...prev,
         { id: uid(), type: "tool_call", detail: "调用工具: Web Search", timestamp: new Date() },
-        { id: uid(), type: "tool_input", detail: `搜索关键词: "${msg}"`, timestamp: new Date() },
       ]);
     }, 600);
 
-    // Simulate tool result
     setTimeout(() => {
       setDebugEvents((prev) => [
         ...prev,
@@ -370,10 +360,9 @@ const CreateAgentPage = () => {
       ]);
     }, 1200);
 
-    // Simulate agent response with streaming
     setTimeout(() => {
       const responseId = uid();
-      const fullText = `根据搜索结果，这是我的分析：\n\n1. **关键发现**：已找到与「${msg}」相关的信息\n2. **建议操作**：可以进一步深入分析\n3. **参考来源**：已附上相关链接\n\n还有什么需要我帮助的吗？`;
+      const fullText = `根据搜索结果，这是我的分析：\n\n1. **关键发现**：已找到与「${msg}」相关的信息\n2. **建议操作**：可以进一步深入分析\n3. **参考来源**：已附上相关链接`;
 
       setPreviewMessages((prev) => [
         ...prev,
@@ -402,7 +391,6 @@ const CreateAgentPage = () => {
     }, 1800);
   };
 
-  /* ── Copy code block ── */
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
   };
@@ -411,102 +399,73 @@ const CreateAgentPage = () => {
 
   return (
     <div className="flex flex-col h-full animate-fade-in">
-      {/* ── Main split pane ── */}
       <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0">
-        {/* ── Left: Config chat ── */}
+        {/* ── Left: Chat ── */}
         <ResizablePanel defaultSize={35} minSize={20} maxSize={60} className="flex flex-col min-w-0">
-          <div ref={leftScrollRef} className="flex-1 overflow-auto p-6 space-y-4">
+          <div ref={leftScrollRef} className="flex-1 overflow-auto p-5 space-y-3">
             {messages.map((msg) => (
               <div key={msg.id}>
                 {msg.type === "confirm" ? (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground py-1">
-                    <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground py-1">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0" />
                     {msg.content}
                   </div>
                 ) : msg.type === "api-call" ? (
                   <div className="border border-border rounded-lg overflow-hidden max-w-lg">
-                    <div className="flex items-center gap-2 px-3 py-2 border-b border-border bg-muted/30">
-                      <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 text-xs font-mono">
+                    <div className="flex items-center gap-2 px-3 py-1.5 border-b border-border bg-muted/30">
+                      <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 text-[10px] font-mono">
                         POST
                       </Badge>
-                      <span className="text-sm text-foreground font-mono">
+                      <span className="text-xs text-foreground font-mono">
                         {msg.content.split("\n")[0].replace("POST  ", "")}
                       </span>
-                      <div className="ml-auto flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">cURL</span>
-                        <button
-                          onClick={() => handleCopy(msg.content.split("\n\n").slice(1).join("\n\n"))}
-                          className="text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          <Copy className="w-3.5 h-3.5" />
+                      <div className="ml-auto">
+                        <button onClick={() => handleCopy(msg.content.split("\n\n").slice(1).join("\n\n"))} className="text-muted-foreground hover:text-foreground">
+                          <Copy className="w-3 h-3" />
                         </button>
                       </div>
                     </div>
-                    <pre className="p-3 text-xs text-muted-foreground font-mono whitespace-pre-wrap bg-muted/10 overflow-x-auto">
+                    <pre className="p-2.5 text-[10px] text-muted-foreground font-mono whitespace-pre-wrap bg-muted/10 overflow-x-auto">
                       {msg.content.split("\n\n").slice(1).join("\n\n")}
                     </pre>
                   </div>
-                ) : msg.type === "question" && msg.options && msg.options.length > 0 ? (
-                  <div className="max-w-md">
-                    <div className="text-sm mb-3">{msg.content}</div>
-                    <div className="space-y-2">
-                      {msg.options.map((opt) => (
-                        <button
-                          key={opt.value}
-                          onClick={() => !msg.selectedOption && handleOptionClick(msg.id, opt)}
-                          disabled={!!msg.selectedOption}
-                          className={`block w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
-                            msg.selectedOption === opt.value
-                              ? "bg-primary/10 text-primary border border-primary/30"
-                              : msg.selectedOption
-                              ? "text-muted-foreground bg-muted/30 cursor-default"
-                              : "text-foreground bg-secondary hover:bg-accent cursor-pointer"
-                          }`}
-                        >
-                          {opt.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ) : msg.type === "question" ? (
-                  <div className="text-sm">{msg.content}</div>
                 ) : msg.role === "system" ? (
-                  <p className="text-sm text-muted-foreground">{msg.content}</p>
+                  <p className="text-xs text-muted-foreground">{msg.content}</p>
                 ) : msg.role === "user" ? (
                   <div className="flex justify-end">
-                    <div className="max-w-[70%] rounded-lg px-4 py-2.5 text-sm bg-primary text-primary-foreground whitespace-pre-wrap">
+                    <div className="max-w-[80%] rounded-lg px-3 py-2 text-xs bg-primary text-primary-foreground whitespace-pre-wrap">
                       {msg.content}
                     </div>
                   </div>
                 ) : (
-                  <div className="max-w-[70%] text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+                  <div className="max-w-[80%] text-xs text-foreground whitespace-pre-wrap leading-relaxed">
                     {msg.content}
-                    {msg.isStreaming && <span className="inline-block w-1.5 h-4 bg-primary ml-0.5 animate-pulse" />}
+                    {msg.isStreaming && <span className="inline-block w-1 h-3.5 bg-primary ml-0.5 animate-pulse" />}
                   </div>
                 )}
               </div>
             ))}
             {isThinking && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="w-4 h-4 animate-spin" />
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
                 正在思考…
               </div>
             )}
           </div>
 
           {/* Input */}
-          <div className="border-t border-border p-4">
+          <div className="border-t border-border p-3">
             <div className="flex items-center gap-2">
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-                placeholder="输入消息…"
+                placeholder="描述你的需求…"
                 disabled={isThinking}
-                className="flex-1"
+                className="flex-1 h-8 text-xs"
               />
-              <Button size="icon" onClick={handleSend} disabled={isThinking || !input.trim()}>
-                <Send className="w-4 h-4" />
+              <Button size="icon" className="h-8 w-8" onClick={handleSend} disabled={isThinking || !input.trim()}>
+                <Send className="w-3.5 h-3.5" />
               </Button>
             </div>
           </div>
@@ -514,123 +473,110 @@ const CreateAgentPage = () => {
 
         <ResizableHandle withHandle />
 
-        {/* ── Right: Preview panel ── */}
+        {/* ── Right: Workspace ── */}
         <ResizablePanel defaultSize={65} minSize={30} className="flex flex-col min-w-0">
-          {/* Config / Preview tabs */}
-          <div className="border-b border-border px-4">
+          {/* Tabs: Config / Preview */}
+          <div className="border-b border-border px-4 flex items-center justify-between">
             <div className="flex gap-1">
-              <button
-                onClick={() => setRightTab("config")}
-                className={`text-sm py-3 px-2 transition-colors ${
-                  rightTab === "config"
-                    ? "font-medium text-foreground border-b-2 border-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                配置
-              </button>
-              <button
-                onClick={() => setRightTab("preview")}
-                className={`text-sm py-3 px-2 transition-colors ${
-                  rightTab === "preview"
-                    ? "font-medium text-foreground border-b-2 border-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                预览
-              </button>
+              {(["config", "preview"] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setRightTab(tab)}
+                  className={`text-xs py-2.5 px-2 transition-colors ${
+                    rightTab === tab
+                      ? "font-medium text-foreground border-b-2 border-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {tab === "config" ? "配置" : "预览"}
+                </button>
+              ))}
             </div>
+            {/* Toggle structured / raw when on config tab */}
+            {rightTab === "config" && (
+              <div className="flex items-center gap-1 bg-muted/50 rounded p-0.5">
+                <button
+                  onClick={() => setConfigViewMode("structured")}
+                  className={`p-1 rounded transition-colors ${
+                    configViewMode === "structured" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                  title="结构化视图"
+                >
+                  <Settings2 className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => setConfigViewMode("raw")}
+                  className={`p-1 rounded transition-colors ${
+                    configViewMode === "raw" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                  title="代码视图"
+                >
+                  <Code2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
           </div>
 
           {rightTab === "config" ? (
-            /* ── Config tab: YAML/JSON editor ── */
-            <ConfigEditor envName={envName} />
+            configViewMode === "structured" ? (
+              <StructuredConfigView config={agentConfig} onConfigChange={setAgentConfig} />
+            ) : (
+              <RawConfigView config={agentConfig} />
+            )
           ) : (
-            /* ── Preview tab ── */
             <>
-              {/* Environment selector */}
-              <div className="flex items-center justify-between px-4 py-2 border-b border-border">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span>📁</span>
-                  <span>{envName || "default"}-env</span>
-                </div>
-                <button className="text-sm text-primary hover:underline">查看会话 ↗</button>
-              </div>
-
-              {/* Transcript / Debug */}
-              <div className="flex items-center gap-4 px-4 py-2 border-b border-border">
-                <button
-                  onClick={() => setPreviewTab("transcript")}
-                  className={`text-sm pb-1 transition-colors ${
-                    previewTab === "transcript"
-                      ? "font-medium text-foreground border-b-2 border-primary"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  对话记录
-                </button>
-                <button
-                  onClick={() => setPreviewTab("debug")}
-                  className={`text-sm pb-1 transition-colors ${
-                    previewTab === "debug"
-                      ? "font-medium text-foreground border-b-2 border-primary"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  调试日志
-                </button>
-                <div className="ml-auto flex items-center gap-2">
-                  <Select value={eventFilter} onValueChange={setEventFilter}>
-                    <SelectTrigger className="h-7 text-xs border-0 shadow-none w-auto">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">全部事件</SelectItem>
-                      <SelectItem value="tool_call">工具调用</SelectItem>
-                      <SelectItem value="response">智能体回复</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <button className="text-muted-foreground hover:text-foreground">
-                    <Search className="w-3.5 h-3.5" />
+              {/* Transcript / Debug tabs */}
+              <div className="flex items-center gap-3 px-4 py-2 border-b border-border">
+                {(["transcript", "debug"] as const).map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setPreviewTab(t)}
+                    className={`text-xs pb-0.5 transition-colors ${
+                      previewTab === t
+                        ? "font-medium text-foreground border-b-2 border-primary"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {t === "transcript" ? "对话记录" : "调试日志"}
                   </button>
-                </div>
+                ))}
               </div>
 
               {/* Content */}
               <div ref={rightScrollRef} className="flex-1 overflow-auto p-4">
                 {previewTab === "transcript" ? (
                   previewMessages.length === 0 ? (
-                    <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
-                      暂无事件，发送消息后将显示在此处。
+                    <div className="flex items-center justify-center h-full text-xs text-muted-foreground">
+                      发送消息后将显示在此处
                     </div>
                   ) : (
                     <div className="space-y-3">
                       {previewMessages.map((msg) => (
                         <div key={msg.id}>
                           {msg.role === "tool" ? (
-                            <div className="flex items-center gap-2 py-2 px-3 rounded bg-accent text-accent-foreground text-sm mx-auto w-fit">
-                              <ChevronRight className="w-3.5 h-3.5" />
+                            <div className="flex items-center gap-2 py-1.5 px-3 rounded bg-accent text-accent-foreground text-xs mx-auto w-fit">
+                              <ChevronRight className="w-3 h-3" />
                               {msg.content}
                             </div>
                           ) : (
                             <div className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                               <div
-                                className={`max-w-[80%] rounded-lg px-4 py-2.5 text-sm whitespace-pre-wrap ${
+                                className={`max-w-[80%] rounded-lg px-3 py-2 text-xs whitespace-pre-wrap ${
                                   msg.role === "user"
                                     ? "bg-primary text-primary-foreground"
                                     : "bg-secondary text-secondary-foreground"
                                 }`}
                               >
                                 {msg.content}
-                                {msg.content === "" && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+                                {msg.content === "" && <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />}
                               </div>
                             </div>
                           )}
                         </div>
                       ))}
                       {isAgentRunning && previewMessages[previewMessages.length - 1]?.role !== "agent" && (
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                          <Loader2 className="w-3 h-3 animate-spin" />
                           智能体处理中…
                         </div>
                       )}
@@ -639,41 +585,38 @@ const CreateAgentPage = () => {
                 ) : (
                   <div className="space-y-1.5">
                     {debugEvents.length === 0 ? (
-                      <div className="text-sm text-muted-foreground text-center mt-8">暂无调试日志。</div>
+                      <div className="text-xs text-muted-foreground text-center mt-8">暂无调试日志</div>
                     ) : (
-                      debugEvents
-                        .filter((e) => eventFilter === "all" || e.type === eventFilter)
-                        .map((evt) => (
-                          <div key={evt.id} className="flex items-start gap-2 p-2 rounded bg-muted/50 text-xs font-mono">
-                            <span className="text-muted-foreground shrink-0">{formatTime(evt.timestamp)}</span>
-                            <Badge variant="outline" className="text-[10px] shrink-0">
-                              {evt.type}
-                            </Badge>
-                            <span className="text-foreground">{evt.detail}</span>
-                          </div>
-                        ))
+                      debugEvents.map((evt) => (
+                        <div key={evt.id} className="flex items-start gap-2 p-2 rounded bg-muted/50 text-[10px] font-mono">
+                          <span className="text-muted-foreground shrink-0">{formatTime(evt.timestamp)}</span>
+                          <Badge variant="outline" className="text-[9px] shrink-0">{evt.type}</Badge>
+                          <span className="text-foreground">{evt.detail}</span>
+                        </div>
+                      ))
                     )}
                   </div>
                 )}
               </div>
 
               {/* Preview input */}
-              <div className="border-t border-border p-4">
+              <div className="border-t border-border p-3">
                 <div className="flex items-center gap-2">
                   <Input
                     value={previewInput}
                     onChange={(e) => setPreviewInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handlePreviewSend()}
-                    placeholder={sessionActive ? "向智能体发送消息" : "请先在左侧完成配置"}
+                    placeholder="向智能体发送消息"
                     disabled={!sessionActive || isAgentRunning}
-                    className="flex-1"
+                    className="flex-1 h-8 text-xs"
                   />
                   <Button
                     size="icon"
+                    className="h-8 w-8"
                     onClick={handlePreviewSend}
                     disabled={!sessionActive || isAgentRunning || !previewInput.trim()}
                   >
-                    <Send className="w-4 h-4" />
+                    <Send className="w-3.5 h-3.5" />
                   </Button>
                 </div>
               </div>
