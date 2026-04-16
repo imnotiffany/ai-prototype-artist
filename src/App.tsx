@@ -13,6 +13,7 @@ import WorkspacePage from "./pages/WorkspacePage";
 import ProjectAgents from "./pages/ProjectAgents";
 import CreateAgentPage from "./pages/CreateAgentPage";
 import CreatePage from "./pages/CreatePage";
+import CreateWebPage from "./pages/CreateWebPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/workspace" element={<AppLayout><WorkspacePage /></AppLayout>} />
           <Route path="/project-agents" element={<AppLayout><ProjectAgents /></AppLayout>} />
           <Route path="/create" element={<AppLayout><CreatePage /></AppLayout>} />
+          <Route path="/create-web" element={<AppLayout><CreateWebPage /></AppLayout>} />
           <Route path="/create-agent" element={<AppLayout><CreateAgentPage /></AppLayout>} />
           <Route path="*" element={<NotFound />} />
         </Routes>

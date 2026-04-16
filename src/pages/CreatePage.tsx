@@ -28,8 +28,10 @@ const CreatePage = () => {
   const handleCreate = () => {
     if (activeTab === "agent") {
       navigate("/create-agent");
+    } else if (activeTab === "web") {
+      navigate("/create-web");
     }
-    // web and skill can navigate to their own pages in the future
+    // skill can navigate to its own page in the future
   };
 
   return (
