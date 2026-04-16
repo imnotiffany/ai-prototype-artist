@@ -73,8 +73,6 @@ const availableMCPs = getActiveMCPs();
 const versions = ["v1", "v2", "v3"];
 
 /* ── NLP Detection: extract skill/MCP names from natural language ── */
-const allSkillNames = availableSkills.map((s) => s.name.toLowerCase());
-const allMCPNames = availableMCPs.map((s) => s.name.toLowerCase());
 
 const detectFromText = (text: string): { detectedSkills: string[]; detectedMCPs: string[] } => {
   const lower = text.toLowerCase();
