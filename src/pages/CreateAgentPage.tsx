@@ -108,7 +108,22 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
         {/* Model */}
         <div className="px-5 py-4">
           <label className="text-xs font-medium text-muted-foreground mb-1 block">Model</label>
-          <p className="text-sm text-foreground">{config.model}</p>
+          <Select value={config.model} onValueChange={(v) => onConfigChange({ ...config, model: v })}>
+            <SelectTrigger className="h-8 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="claude-sonnet-4-6">Claude Sonnet 4 (6)</SelectItem>
+              <SelectItem value="claude-sonnet-4-5">Claude Sonnet 4 (5)</SelectItem>
+              <SelectItem value="claude-haiku-3-5">Claude Haiku 3.5</SelectItem>
+              <SelectItem value="gpt-4o">GPT-4o</SelectItem>
+              <SelectItem value="gpt-4o-mini">GPT-4o Mini</SelectItem>
+              <SelectItem value="gemini-2.5-pro">Gemini 2.5 Pro</SelectItem>
+              <SelectItem value="gemini-2.5-flash">Gemini 2.5 Flash</SelectItem>
+              <SelectItem value="deepseek-v3">DeepSeek V3</SelectItem>
+              <SelectItem value="qwen-max">Qwen Max</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* System Prompt */}
