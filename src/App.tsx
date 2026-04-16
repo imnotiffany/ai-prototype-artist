@@ -12,6 +12,7 @@ import VaultPage from "./pages/VaultPage";
 import WorkspacePage from "./pages/WorkspacePage";
 import ProjectAgents from "./pages/ProjectAgents";
 import CreateAgentPage from "./pages/CreateAgentPage";
+import CreatePage from "./pages/CreatePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
