@@ -1,21 +1,26 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Send, Square, ChevronRight, CheckCircle2, Copy, Loader2, ChevronDown, Code2, Settings2 } from "lucide-react";
+import {
+  Send, ChevronRight, CheckCircle2, Copy, Loader2, ChevronDown, Code2, Settings2,
+  Zap, Server, Plus, X, Rocket, Package, Bot, ScrollText, MessageSquare, Bug,
+} from "lucide-react";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { toast } from "@/hooks/use-toast";
 
 /* ── Types ── */
 interface Message {
   id: string;
   role: "user" | "assistant" | "system";
   content: string;
-  type?: "question" | "confirm" | "api-call" | "text";
-  options?: { label: string; value: string }[];
-  selectedOption?: string;
+  type?: "question" | "confirm" | "api-call" | "text" | "assembly";
+  attachments?: { type: "skill" | "mcp"; name: string }[];
   isStreaming?: boolean;
 }
 
@@ -37,51 +42,133 @@ interface DebugEvent {
 let msgId = 0;
 const uid = () => `msg-${++msgId}`;
 
-/* ── Simulated agent config ── */
+/* ── Agent Config ── */
 interface AgentConfig {
+  name: string;
   version: string;
   model: string;
   systemPrompt: string;
   tools: { name: string; id: string; permissions: number; permissionPolicy: string }[];
   skills: string[];
+  mcpServers: string[];
 }
 
 const defaultConfig: AgentConfig = {
+  name: "",
   version: "v1",
   model: "claude-sonnet-4-6",
-  systemPrompt: "You are a helpful assistant. Follow user instructions carefully and provide clear, actionable responses.",
+  systemPrompt: "",
   tools: [
     { name: "Built-in tools", id: "agent_toolset_20260401", permissions: 8, permissionPolicy: "Always allow" },
   ],
   skills: [],
+  mcpServers: [],
 };
+
+/* ── Available Skills & MCPs ── */
+const availableSkills = [
+  { name: "Web Search", description: "联网搜索能力" },
+  { name: "Code Analysis", description: "代码分析与审查" },
+  { name: "Email Parser", description: "邮件内容解析" },
+  { name: "Translation Engine", description: "多语言翻译引擎" },
+  { name: "Content Generation", description: "内容生成与创作" },
+  { name: "SQL Generator", description: "SQL 查询生成" },
+  { name: "File Processor", description: "文件读写与处理" },
+  { name: "Data Visualizer", description: "数据可视化" },
+];
+
+const availableMCPs = [
+  { name: "GitHub MCP", description: "GitHub 仓库与 Issue 管理" },
+  { name: "Gmail MCP", description: "Gmail 邮件收发" },
+  { name: "Slack MCP", description: "Slack 消息与频道" },
+  { name: "Notion MCP", description: "Notion 页面与数据库" },
+  { name: "Jira MCP", description: "Jira 任务与项目管理" },
+  { name: "Google Drive MCP", description: "Google Drive 文件管理" },
+  { name: "Confluence MCP", description: "Confluence 文档" },
+  { name: "Linear MCP", description: "Linear 项目管理" },
+];
 
 const versions = ["v1", "v2", "v3"];
 
-/* ── Simulated responses ── */
-const agentResponses: Record<string, string[]> = {
-  default: [
-    "好的，我来帮你处理这个需求。请稍等…",
-    "已更新智能体配置。你可以在右侧预览窗口中测试效果。",
-  ],
-  system_prompt: [
-    "System Prompt 已更新。新的 Prompt 将在下一次会话中生效。",
-  ],
-  tool: [
-    "工具已成功挂载到智能体。你可以在右侧发送消息来测试工具调用是否正常。",
-  ],
+/* ── Simulated Assembly Logic ── */
+const assembleAgent = (
+  description: string,
+  skills: string[],
+  mcps: string[]
+): AgentConfig => {
+  const lower = description.toLowerCase();
+  let model = "claude-sonnet-4-6";
+  if (lower.includes("快速") || lower.includes("简单")) model = "gemini-2.5-flash";
+  if (lower.includes("分析") || lower.includes("推理")) model = "gpt-4o";
+
+  const systemPrompt = `你是一个专业的AI助手。\n\n## 核心能力\n${description}\n\n## 工具使用\n${skills.length > 0 ? `你可以使用以下技能：${skills.join("、")}` : "暂无外部技能"}\n${mcps.length > 0 ? `你可以连接以下服务：${mcps.join("、")}` : ""}\n\n## 行为准则\n- 始终准确、有帮助地回答问题\n- 在需要时主动使用可用工具\n- 输出结构化、易读的结果`;
+
+  return {
+    name: description.slice(0, 20).replace(/[，。！？]/g, ""),
+    version: "v1",
+    model,
+    systemPrompt,
+    tools: [
+      { name: "Built-in tools", id: "agent_toolset_20260401", permissions: 8, permissionPolicy: "Always allow" },
+    ],
+    skills: [...skills],
+    mcpServers: [...mcps],
+  };
 };
 
-const getResponse = (userMsg: string): string[] => {
-  const lower = userMsg.toLowerCase();
-  if (lower.includes("prompt") || lower.includes("提示词") || lower.includes("系统")) {
-    return agentResponses.system_prompt;
-  }
-  if (lower.includes("工具") || lower.includes("tool") || lower.includes("mcp") || lower.includes("skill")) {
-    return agentResponses.tool;
-  }
-  return agentResponses.default;
-};
+/* ── Attachment Picker ── */
+const AttachmentPicker = ({
+  type,
+  items,
+  selected,
+  onToggle,
+}: {
+  type: "skill" | "mcp";
+  items: { name: string; description: string }[];
+  selected: string[];
+  onToggle: (name: string) => void;
+}) => (
+  <Popover>
+    <PopoverTrigger asChild>
+      <Button variant="outline" size="sm" className="h-7 text-[11px] gap-1 px-2">
+        {type === "skill" ? <Zap className="w-3 h-3" /> : <Server className="w-3 h-3" />}
+        {type === "skill" ? "Skill" : "MCP"}
+        {selected.length > 0 && (
+          <Badge variant="secondary" className="h-4 px-1 text-[9px] ml-0.5">{selected.length}</Badge>
+        )}
+      </Button>
+    </PopoverTrigger>
+    <PopoverContent className="w-64 p-2" align="start">
+      <p className="text-[11px] font-medium text-muted-foreground px-2 py-1">
+        {type === "skill" ? "选择技能" : "选择 MCP 服务"}
+      </p>
+      <div className="max-h-48 overflow-auto space-y-0.5 mt-1">
+        {items.map((item) => {
+          const isSelected = selected.includes(item.name);
+          return (
+            <button
+              key={item.name}
+              onClick={() => onToggle(item.name)}
+              className={`w-full text-left px-2 py-1.5 rounded text-xs flex items-center gap-2 transition-colors ${
+                isSelected ? "bg-primary/10 text-primary" : "hover:bg-muted text-foreground"
+              }`}
+            >
+              <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 ${
+                isSelected ? "bg-primary border-primary" : "border-border"
+              }`}>
+                {isSelected && <CheckCircle2 className="w-2.5 h-2.5 text-primary-foreground" />}
+              </div>
+              <div className="min-w-0">
+                <p className="font-medium truncate">{item.name}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{item.description}</p>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </PopoverContent>
+  </Popover>
+);
 
 /* ── Structured Config View ── */
 const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig; onConfigChange: (c: AgentConfig) => void }) => {
@@ -90,6 +177,17 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
   return (
     <div className="flex-1 overflow-auto">
       <div className="divide-y divide-border">
+        {/* Name */}
+        <div className="px-5 py-4">
+          <label className="text-xs font-medium text-muted-foreground mb-2 block">名称</label>
+          <Input
+            value={config.name}
+            onChange={(e) => onConfigChange({ ...config, name: e.target.value })}
+            className="h-8 text-sm"
+            placeholder="智能体名称"
+          />
+        </div>
+
         {/* Version */}
         <div className="px-5 py-4">
           <label className="text-xs font-medium text-muted-foreground mb-2 block">Version</label>
@@ -180,6 +278,23 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
               </Collapsible>
             </div>
           ))}
+          {/* MCP Servers */}
+          {config.mcpServers.length > 0 && (
+            <div className="space-y-1.5 mt-2">
+              {config.mcpServers.map((mcp, i) => (
+                <div key={i} className="flex items-center gap-2 border border-border rounded-lg px-3 py-2">
+                  <Server className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span className="text-xs text-foreground flex-1">{mcp}</span>
+                  <button
+                    onClick={() => onConfigChange({ ...config, mcpServers: config.mcpServers.filter((_, j) => j !== i) })}
+                    className="text-muted-foreground hover:text-destructive"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Skills */}
@@ -190,7 +305,15 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
           ) : (
             <div className="flex flex-wrap gap-1.5">
               {config.skills.map((s, i) => (
-                <Badge key={i} variant="secondary" className="text-[10px] font-mono">{s}</Badge>
+                <Badge key={i} variant="secondary" className="text-[10px] font-mono gap-1">
+                  {s}
+                  <button
+                    onClick={() => onConfigChange({ ...config, skills: config.skills.filter((_, j) => j !== i) })}
+                    className="hover:text-destructive"
+                  >
+                    <X className="w-2.5 h-2.5" />
+                  </button>
+                </Badge>
               ))}
             </div>
           )}
@@ -202,7 +325,7 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
 
 /* ── Raw Code View ── */
 const generateYaml = (config: AgentConfig) =>
-  `name: 我的智能体
+  `name: ${config.name || "我的智能体"}
 description: An agent that helps users with tasks.
 model:
   id: ${config.model}
@@ -216,19 +339,19 @@ tools:
       enabled: true
       permission_policy:
         type: always_allow
-mcp_servers: []
+mcp_servers: [${config.mcpServers.map(s => `"${s}"`).join(", ")}]
 skills: [${config.skills.map(s => `"${s}"`).join(", ")}]
 metadata: {}`;
 
 const generateJson = (config: AgentConfig) =>
   JSON.stringify(
     {
-      name: "我的智能体",
+      name: config.name || "我的智能体",
       description: "An agent that helps users with tasks.",
       model: { id: config.model, speed: "standard" },
       system: config.systemPrompt,
       tools: [{ type: config.tools[0]?.id || "agent_toolset_20260401", configs: [], default_config: { enabled: true, permission_policy: { type: "always_allow" } } }],
-      mcp_servers: [],
+      mcp_servers: config.mcpServers,
       skills: config.skills,
       metadata: {},
     },
@@ -277,14 +400,18 @@ const RawConfigView = ({ config }: { config: AgentConfig }) => {
 const CreateAgentPage = () => {
   const navigate = useNavigate();
   const [configViewMode, setConfigViewMode] = useState<"structured" | "raw">("structured");
-  const [rightTab, setRightTab] = useState<"config" | "preview">("config");
-  const [previewTab, setPreviewTab] = useState<"transcript" | "debug">("transcript");
+  const [rightTab, setRightTab] = useState<"config" | "preview" | "logs">("config");
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
   const [previewInput, setPreviewInput] = useState("");
   const [isAgentRunning, setIsAgentRunning] = useState(false);
-  const [sessionActive, setSessionActive] = useState(true);
   const [agentConfig, setAgentConfig] = useState<AgentConfig>(defaultConfig);
+  const [agentCreated, setAgentCreated] = useState(false);
+  const [publishOpen, setPublishOpen] = useState(false);
+
+  // Attachments for chat input
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [selectedMCPs, setSelectedMCPs] = useState<string[]>([]);
 
   const leftScrollRef = useRef<HTMLDivElement>(null);
   const rightScrollRef = useRef<HTMLDivElement>(null);
@@ -293,7 +420,7 @@ const CreateAgentPage = () => {
     {
       id: uid(),
       role: "system",
-      content: "欢迎使用智能体构建器！描述你的需求，我将帮你创建和配置智能体。",
+      content: "👋 描述你想要创建的智能体，可以附带选择需要的 Skill 和 MCP 服务。系统会自动组装并生成配置。",
       type: "text",
     },
   ]);
@@ -308,47 +435,115 @@ const CreateAgentPage = () => {
   useEffect(() => { scrollToBottom(leftScrollRef); }, [messages, scrollToBottom]);
   useEffect(() => { scrollToBottom(rightScrollRef); }, [previewMessages, debugEvents, scrollToBottom]);
 
-  /* ── Left: send ── */
+  const toggleSkill = (name: string) => {
+    setSelectedSkills((prev) => prev.includes(name) ? prev.filter((s) => s !== name) : [...prev, name]);
+  };
+  const toggleMCP = (name: string) => {
+    setSelectedMCPs((prev) => prev.includes(name) ? prev.filter((s) => s !== name) : [...prev, name]);
+  };
+
+  /* ── Send: create or refine agent ── */
   const handleSend = () => {
     if (!input.trim() || isThinking) return;
     const userMsg = input.trim();
+    const attachments = [
+      ...selectedSkills.map((s) => ({ type: "skill" as const, name: s })),
+      ...selectedMCPs.map((s) => ({ type: "mcp" as const, name: s })),
+    ];
     setInput("");
-    setMessages((prev) => [...prev, { id: uid(), role: "user", content: userMsg }]);
+
+    setMessages((prev) => [...prev, { id: uid(), role: "user", content: userMsg, attachments: attachments.length > 0 ? attachments : undefined }]);
     setIsThinking(true);
 
-    const streamDelay = 600 + Math.random() * 800;
+    const streamDelay = 800 + Math.random() * 600;
     setTimeout(() => {
-      const responses = getResponse(userMsg);
-      const newMsgs: Message[] = [];
+      if (!agentCreated) {
+        // First message: assemble the agent
+        const newConfig = assembleAgent(userMsg, selectedSkills, selectedMCPs);
+        setAgentConfig(newConfig);
+        setAgentCreated(true);
+        setSelectedSkills([]);
+        setSelectedMCPs([]);
 
-      if (Math.random() > 0.5) {
-        newMsgs.push({ id: uid(), role: "system", content: "✓ 配置已更新", type: "confirm" });
-      }
+        // Assembly notification
+        setMessages((prev) => [...prev, { id: uid(), role: "system", content: "⚙️ 正在组装智能体…", type: "assembly" }]);
 
-      const responseId = uid();
-      newMsgs.push({ id: responseId, role: "assistant", content: "", isStreaming: true });
-      setMessages((prev) => [...prev, ...newMsgs]);
+        setTimeout(() => {
+          setMessages((prev) => [...prev, { id: uid(), role: "system", content: "✅ 智能体已创建完成！配置已自动生成。", type: "confirm" }]);
 
-      const fullText = responses[Math.floor(Math.random() * responses.length)];
-      let charIndex = 0;
-      const streamInterval = setInterval(() => {
-        charIndex += 2;
-        if (charIndex >= fullText.length) {
-          clearInterval(streamInterval);
-          setMessages((prev) =>
-            prev.map((m) => m.id === responseId ? { ...m, content: fullText, isStreaming: false } : m)
-          );
-          setIsThinking(false);
-        } else {
-          setMessages((prev) =>
-            prev.map((m) => m.id === responseId ? { ...m, content: fullText.slice(0, charIndex) } : m)
-          );
+          // Stream assistant response
+          const responseId = uid();
+          const fullText = `智能体已创建成功！\n\n**配置摘要：**\n- 模型：${newConfig.model}\n- 技能：${newConfig.skills.length > 0 ? newConfig.skills.join("、") : "无"}\n- MCP：${newConfig.mcpServers.length > 0 ? newConfig.mcpServers.join("、") : "无"}\n\n你可以在右侧「配置」面板查看和编辑详细配置，或切换到「调试」面板发送消息测试智能体。\n\n如果需要修改，直接告诉我即可。`;
+
+          setMessages((prev) => [...prev, { id: responseId, role: "assistant", content: "", isStreaming: true }]);
+          let charIndex = 0;
+          const interval = setInterval(() => {
+            charIndex += 3;
+            if (charIndex >= fullText.length) {
+              clearInterval(interval);
+              setMessages((prev) =>
+                prev.map((m) => m.id === responseId ? { ...m, content: fullText, isStreaming: false } : m)
+              );
+              setIsThinking(false);
+            } else {
+              setMessages((prev) =>
+                prev.map((m) => m.id === responseId ? { ...m, content: fullText.slice(0, charIndex) } : m)
+              );
+            }
+          }, 20);
+
+          // Add debug events
+          setDebugEvents((prev) => [
+            ...prev,
+            { id: uid(), type: "init", detail: "智能体初始化完成", timestamp: new Date() },
+            { id: uid(), type: "config", detail: `模型: ${newConfig.model}`, timestamp: new Date() },
+            { id: uid(), type: "config", detail: `技能: [${newConfig.skills.join(", ")}]`, timestamp: new Date() },
+            { id: uid(), type: "config", detail: `MCP: [${newConfig.mcpServers.join(", ")}]`, timestamp: new Date() },
+          ]);
+        }, 1200);
+      } else {
+        // Subsequent messages: refine the agent
+        const lower = userMsg.toLowerCase();
+        const responseId = uid();
+        let fullText = "好的，已根据你的需求更新了配置。";
+
+        if (lower.includes("prompt") || lower.includes("提示词") || lower.includes("系统")) {
+          fullText = "System Prompt 已更新。你可以在配置面板中查看修改后的内容。";
+          setDebugEvents((prev) => [...prev, { id: uid(), type: "update", detail: "System Prompt 已更新", timestamp: new Date() }]);
+        } else if (lower.includes("模型") || lower.includes("model")) {
+          fullText = "模型已更新。建议在调试面板中重新测试智能体表现。";
+          setDebugEvents((prev) => [...prev, { id: uid(), type: "update", detail: "模型配置已更新", timestamp: new Date() }]);
+        } else if (lower.includes("skill") || lower.includes("技能")) {
+          fullText = "技能列表已更新。新添加的技能将在智能体下次运行时生效。";
+          setDebugEvents((prev) => [...prev, { id: uid(), type: "update", detail: "技能配置已更新", timestamp: new Date() }]);
+        } else if (lower.includes("mcp")) {
+          fullText = "MCP 服务已更新。新服务连接将在下次调用时生效。";
+          setDebugEvents((prev) => [...prev, { id: uid(), type: "update", detail: "MCP 服务已更新", timestamp: new Date() }]);
         }
-      }, 30);
+
+        setMessages((prev) => [...prev, { id: uid(), role: "system", content: "✓ 配置已更新", type: "confirm" }]);
+        setMessages((prev) => [...prev, { id: responseId, role: "assistant", content: "", isStreaming: true }]);
+
+        let charIndex = 0;
+        const interval = setInterval(() => {
+          charIndex += 2;
+          if (charIndex >= fullText.length) {
+            clearInterval(interval);
+            setMessages((prev) =>
+              prev.map((m) => m.id === responseId ? { ...m, content: fullText, isStreaming: false } : m)
+            );
+            setIsThinking(false);
+          } else {
+            setMessages((prev) =>
+              prev.map((m) => m.id === responseId ? { ...m, content: fullText.slice(0, charIndex) } : m)
+            );
+          }
+        }, 30);
+      }
     }, streamDelay);
   };
 
-  /* ── Right: Preview send ── */
+  /* ── Preview send (debug chat) ── */
   const handlePreviewSend = () => {
     if (!previewInput.trim() || isAgentRunning) return;
     const msg = previewInput.trim();
@@ -357,27 +552,26 @@ const CreateAgentPage = () => {
     setDebugEvents((prev) => [...prev, { id: uid(), type: "input", detail: `用户输入: "${msg}"`, timestamp: new Date() }]);
     setIsAgentRunning(true);
 
+    // Simulate tool call
     setTimeout(() => {
-      setPreviewMessages((prev) => [
-        ...prev,
-        { id: uid(), role: "tool", content: "正在调用 Web Search…", toolName: "Web Search", timestamp: new Date() },
-      ]);
-      setDebugEvents((prev) => [
-        ...prev,
-        { id: uid(), type: "tool_call", detail: "调用工具: Web Search", timestamp: new Date() },
-      ]);
+      if (agentConfig.skills.includes("Web Search")) {
+        setPreviewMessages((prev) => [
+          ...prev,
+          { id: uid(), role: "tool", content: "正在调用 Web Search…", toolName: "Web Search", timestamp: new Date() },
+        ]);
+        setDebugEvents((prev) => [...prev, { id: uid(), type: "tool_call", detail: "调用工具: Web Search", timestamp: new Date() }]);
+      }
     }, 600);
 
     setTimeout(() => {
-      setDebugEvents((prev) => [
-        ...prev,
-        { id: uid(), type: "tool_result", detail: "Web Search 返回 3 条结果", timestamp: new Date() },
-      ]);
+      if (agentConfig.skills.includes("Web Search")) {
+        setDebugEvents((prev) => [...prev, { id: uid(), type: "tool_result", detail: "Web Search 返回 3 条结果", timestamp: new Date() }]);
+      }
     }, 1200);
 
     setTimeout(() => {
       const responseId = uid();
-      const fullText = `根据搜索结果，这是我的分析：\n\n1. **关键发现**：已找到与「${msg}」相关的信息\n2. **建议操作**：可以进一步深入分析\n3. **参考来源**：已附上相关链接`;
+      const fullText = `根据你的需求，这是我的回答：\n\n1. **关键信息**：已分析与「${msg}」相关的内容\n2. **建议操作**：可以进一步优化和调整\n3. **当前状态**：智能体运行正常`;
 
       setPreviewMessages((prev) => [
         ...prev,
@@ -406,17 +600,29 @@ const CreateAgentPage = () => {
     }, 1800);
   };
 
-  const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text);
+  const formatTime = (d: Date) => d.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+
+  const handlePublish = (target: "marketplace" | "agent") => {
+    setPublishOpen(false);
+    toast({
+      title: target === "marketplace" ? "已发布到应用广场" : "已作为独立应用发布",
+      description: `${agentConfig.name || "我的智能体"} 已成功发布`,
+    });
   };
 
-  const formatTime = (d: Date) => d.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  const rightTabs = agentCreated
+    ? [
+        { key: "config" as const, label: "配置", icon: Settings2 },
+        { key: "preview" as const, label: "调试", icon: MessageSquare },
+        { key: "logs" as const, label: "日志", icon: ScrollText },
+      ]
+    : [{ key: "config" as const, label: "配置", icon: Settings2 }];
 
   return (
     <div className="flex flex-col h-full animate-fade-in">
       <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0">
         {/* ── Left: Chat ── */}
-        <ResizablePanel defaultSize={35} minSize={20} maxSize={60} className="flex flex-col min-w-0">
+        <ResizablePanel defaultSize={38} minSize={20} maxSize={55} className="flex flex-col min-w-0">
           <div ref={leftScrollRef} className="flex-1 overflow-auto p-5 space-y-3">
             {messages.map((msg) => (
               <div key={msg.id}>
@@ -425,42 +631,38 @@ const CreateAgentPage = () => {
                     <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0" />
                     {msg.content}
                   </div>
-                ) : msg.type === "api-call" ? (
-                  <div className="border border-border rounded-lg overflow-hidden max-w-lg">
-                    <div className="flex items-center gap-2 px-3 py-1.5 border-b border-border bg-muted/30">
-                      <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 text-[10px] font-mono">
-                        POST
-                      </Badge>
-                      <span className="text-xs text-foreground font-mono">
-                        {msg.content.split("\n")[0].replace("POST  ", "")}
-                      </span>
-                      <div className="ml-auto">
-                        <button onClick={() => handleCopy(msg.content.split("\n\n").slice(1).join("\n\n"))} className="text-muted-foreground hover:text-foreground">
-                          <Copy className="w-3 h-3" />
-                        </button>
-                      </div>
-                    </div>
-                    <pre className="p-2.5 text-[10px] text-muted-foreground font-mono whitespace-pre-wrap bg-muted/10 overflow-x-auto">
-                      {msg.content.split("\n\n").slice(1).join("\n\n")}
-                    </pre>
+                ) : msg.type === "assembly" ? (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground py-1">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-primary shrink-0" />
+                    {msg.content}
                   </div>
                 ) : msg.role === "system" ? (
                   <p className="text-xs text-muted-foreground">{msg.content}</p>
                 ) : msg.role === "user" ? (
-                  <div className="flex justify-end">
+                  <div className="flex flex-col items-end gap-1">
                     <div className="max-w-[80%] rounded-lg px-3 py-2 text-xs bg-primary text-primary-foreground whitespace-pre-wrap">
                       {msg.content}
                     </div>
+                    {msg.attachments && msg.attachments.length > 0 && (
+                      <div className="flex flex-wrap gap-1 max-w-[80%] justify-end">
+                        {msg.attachments.map((att, i) => (
+                          <Badge key={i} variant="outline" className="text-[10px] gap-1 h-5">
+                            {att.type === "skill" ? <Zap className="w-2.5 h-2.5" /> : <Server className="w-2.5 h-2.5" />}
+                            {att.name}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ) : (
-                  <div className="max-w-[80%] text-xs text-foreground whitespace-pre-wrap leading-relaxed">
+                  <div className="max-w-[85%] text-xs text-foreground whitespace-pre-wrap leading-relaxed">
                     {msg.content}
                     {msg.isStreaming && <span className="inline-block w-1 h-3.5 bg-primary ml-0.5 animate-pulse" />}
                   </div>
                 )}
               </div>
             ))}
-            {isThinking && (
+            {isThinking && !messages.some((m) => m.isStreaming) && (
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
                 正在思考…
@@ -468,18 +670,41 @@ const CreateAgentPage = () => {
             )}
           </div>
 
-          {/* Input */}
-          <div className="border-t border-border p-3">
+          {/* Input area with attachments */}
+          <div className="border-t border-border p-3 space-y-2">
+            {/* Selected attachments */}
+            {(selectedSkills.length > 0 || selectedMCPs.length > 0) && (
+              <div className="flex flex-wrap gap-1">
+                {selectedSkills.map((s) => (
+                  <Badge key={s} variant="secondary" className="text-[10px] gap-1 h-5">
+                    <Zap className="w-2.5 h-2.5" />
+                    {s}
+                    <button onClick={() => toggleSkill(s)} className="hover:text-destructive"><X className="w-2.5 h-2.5" /></button>
+                  </Badge>
+                ))}
+                {selectedMCPs.map((s) => (
+                  <Badge key={s} variant="secondary" className="text-[10px] gap-1 h-5">
+                    <Server className="w-2.5 h-2.5" />
+                    {s}
+                    <button onClick={() => toggleMCP(s)} className="hover:text-destructive"><X className="w-2.5 h-2.5" /></button>
+                  </Badge>
+                ))}
+              </div>
+            )}
             <div className="flex items-center gap-2">
+              <div className="flex gap-1">
+                <AttachmentPicker type="skill" items={availableSkills} selected={selectedSkills} onToggle={toggleSkill} />
+                <AttachmentPicker type="mcp" items={availableMCPs} selected={selectedMCPs} onToggle={toggleMCP} />
+              </div>
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-                placeholder="描述你的需求…"
+                placeholder={agentCreated ? "继续修改或完善智能体…" : "描述你想创建的智能体…"}
                 disabled={isThinking}
                 className="flex-1 h-8 text-xs"
               />
-              <Button size="icon" className="h-8 w-8" onClick={handleSend} disabled={isThinking || !input.trim()}>
+              <Button size="icon" className="h-8 w-8 shrink-0" onClick={handleSend} disabled={isThinking || !input.trim()}>
                 <Send className="w-3.5 h-3.5" />
               </Button>
             </div>
@@ -489,156 +714,194 @@ const CreateAgentPage = () => {
         <ResizableHandle withHandle />
 
         {/* ── Right: Workspace ── */}
-        <ResizablePanel defaultSize={65} minSize={30} className="flex flex-col min-w-0">
-          {/* Tabs: Config / Preview */}
+        <ResizablePanel defaultSize={62} minSize={30} className="flex flex-col min-w-0">
+          {/* Header tabs */}
           <div className="border-b border-border px-4 flex items-center justify-between">
             <div className="flex gap-1">
-              {(["config", "preview"] as const).map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setRightTab(tab)}
-                  className={`text-xs py-2.5 px-2 transition-colors ${
-                    rightTab === tab
-                      ? "font-medium text-foreground border-b-2 border-primary"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {tab === "config" ? "配置" : "预览"}
-                </button>
-              ))}
+              {rightTabs.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.key}
+                    onClick={() => setRightTab(tab.key)}
+                    className={`text-xs py-2.5 px-2.5 transition-colors flex items-center gap-1.5 ${
+                      rightTab === tab.key
+                        ? "font-medium text-foreground border-b-2 border-primary"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    {tab.label}
+                  </button>
+                );
+              })}
             </div>
-            {/* Toggle structured / raw when on config tab */}
-            {rightTab === "config" && (
-              <div className="flex items-center gap-1 bg-muted/50 rounded p-0.5">
-                <button
-                  onClick={() => setConfigViewMode("structured")}
-                  className={`p-1 rounded transition-colors ${
-                    configViewMode === "structured" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                  title="结构化视图"
-                >
-                  <Settings2 className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={() => setConfigViewMode("raw")}
-                  className={`p-1 rounded transition-colors ${
-                    configViewMode === "raw" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                  title="代码视图"
-                >
-                  <Code2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            )}
+            <div className="flex items-center gap-2">
+              {/* Toggle structured / raw when on config tab */}
+              {rightTab === "config" && (
+                <div className="flex items-center gap-1 bg-muted/50 rounded p-0.5">
+                  <button
+                    onClick={() => setConfigViewMode("structured")}
+                    className={`p-1 rounded transition-colors ${
+                      configViewMode === "structured" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                    title="结构化视图"
+                  >
+                    <Settings2 className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => setConfigViewMode("raw")}
+                    className={`p-1 rounded transition-colors ${
+                      configViewMode === "raw" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                    title="代码视图"
+                  >
+                    <Code2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+              {/* Publish button */}
+              {agentCreated && (
+                <Button size="sm" className="h-7 text-[11px] gap-1.5 px-3" onClick={() => setPublishOpen(true)}>
+                  <Rocket className="w-3 h-3" />
+                  发布
+                </Button>
+              )}
+            </div>
           </div>
 
+          {/* Content */}
           {rightTab === "config" ? (
             configViewMode === "structured" ? (
               <StructuredConfigView config={agentConfig} onConfigChange={setAgentConfig} />
             ) : (
               <RawConfigView config={agentConfig} />
             )
-          ) : (
-            <>
-              {/* Transcript / Debug tabs */}
-              <div className="flex items-center gap-3 px-4 py-2 border-b border-border">
-                {(["transcript", "debug"] as const).map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => setPreviewTab(t)}
-                    className={`text-xs pb-0.5 transition-colors ${
-                      previewTab === t
-                        ? "font-medium text-foreground border-b-2 border-primary"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {t === "transcript" ? "对话记录" : "调试日志"}
-                  </button>
-                ))}
-              </div>
-
-              {/* Content */}
+          ) : rightTab === "preview" ? (
+            <div className="flex flex-col flex-1 min-h-0">
               <div ref={rightScrollRef} className="flex-1 overflow-auto p-4">
-                {previewTab === "transcript" ? (
-                  previewMessages.length === 0 ? (
-                    <div className="flex items-center justify-center h-full text-xs text-muted-foreground">
-                      发送消息后将显示在此处
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {previewMessages.map((msg) => (
-                        <div key={msg.id}>
-                          {msg.role === "tool" ? (
-                            <div className="flex items-center gap-2 py-1.5 px-3 rounded bg-accent text-accent-foreground text-xs mx-auto w-fit">
-                              <ChevronRight className="w-3 h-3" />
-                              {msg.content}
-                            </div>
-                          ) : (
-                            <div className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                              <div
-                                className={`max-w-[80%] rounded-lg px-3 py-2 text-xs whitespace-pre-wrap ${
-                                  msg.role === "user"
-                                    ? "bg-primary text-primary-foreground"
-                                    : "bg-secondary text-secondary-foreground"
-                                }`}
-                              >
-                                {msg.content}
-                                {msg.content === "" && <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                      {isAgentRunning && previewMessages[previewMessages.length - 1]?.role !== "agent" && (
-                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                          <Loader2 className="w-3 h-3 animate-spin" />
-                          智能体处理中…
-                        </div>
-                      )}
-                    </div>
-                  )
+                {previewMessages.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
+                    <MessageSquare className="w-8 h-8 opacity-30" />
+                    <p className="text-xs">发送消息来调试智能体</p>
+                  </div>
                 ) : (
-                  <div className="space-y-1.5">
-                    {debugEvents.length === 0 ? (
-                      <div className="text-xs text-muted-foreground text-center mt-8">暂无调试日志</div>
-                    ) : (
-                      debugEvents.map((evt) => (
-                        <div key={evt.id} className="flex items-start gap-2 p-2 rounded bg-muted/50 text-[10px] font-mono">
-                          <span className="text-muted-foreground shrink-0">{formatTime(evt.timestamp)}</span>
-                          <Badge variant="outline" className="text-[9px] shrink-0">{evt.type}</Badge>
-                          <span className="text-foreground">{evt.detail}</span>
-                        </div>
-                      ))
+                  <div className="space-y-3">
+                    {previewMessages.map((msg) => (
+                      <div key={msg.id}>
+                        {msg.role === "tool" ? (
+                          <div className="flex items-center gap-2 py-1.5 px-3 rounded bg-accent text-accent-foreground text-xs mx-auto w-fit">
+                            <ChevronRight className="w-3 h-3" />
+                            {msg.content}
+                          </div>
+                        ) : (
+                          <div className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                            <div
+                              className={`max-w-[80%] rounded-lg px-3 py-2 text-xs whitespace-pre-wrap ${
+                                msg.role === "user"
+                                  ? "bg-primary text-primary-foreground"
+                                  : "bg-secondary text-secondary-foreground"
+                              }`}
+                            >
+                              {msg.content}
+                              {msg.content === "" && <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    {isAgentRunning && previewMessages[previewMessages.length - 1]?.role !== "agent" && (
+                      <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        智能体处理中…
+                      </div>
                     )}
                   </div>
                 )}
               </div>
-
-              {/* Preview input */}
+              {/* Debug chat input */}
               <div className="border-t border-border p-3">
                 <div className="flex items-center gap-2">
                   <Input
                     value={previewInput}
                     onChange={(e) => setPreviewInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handlePreviewSend()}
-                    placeholder="向智能体发送消息"
-                    disabled={!sessionActive || isAgentRunning}
+                    placeholder="向智能体发送消息来测试…"
+                    disabled={isAgentRunning}
                     className="flex-1 h-8 text-xs"
                   />
                   <Button
                     size="icon"
                     className="h-8 w-8"
                     onClick={handlePreviewSend}
-                    disabled={!sessionActive || isAgentRunning || !previewInput.trim()}
+                    disabled={isAgentRunning || !previewInput.trim()}
                   >
                     <Send className="w-3.5 h-3.5" />
                   </Button>
                 </div>
               </div>
-            </>
+            </div>
+          ) : (
+            /* Logs tab */
+            <div className="flex-1 overflow-auto p-4">
+              {debugEvents.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
+                  <Bug className="w-8 h-8 opacity-30" />
+                  <p className="text-xs">暂无日志记录</p>
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  {debugEvents.map((evt) => (
+                    <div key={evt.id} className="flex items-start gap-2 p-2 rounded bg-muted/50 text-[10px] font-mono">
+                      <span className="text-muted-foreground shrink-0">{formatTime(evt.timestamp)}</span>
+                      <Badge variant="outline" className="text-[9px] shrink-0">{evt.type}</Badge>
+                      <span className="text-foreground">{evt.detail}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
         </ResizablePanel>
       </ResizablePanelGroup>
+
+      {/* Publish Dialog */}
+      <Dialog open={publishOpen} onOpenChange={setPublishOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-base">发布智能体</DialogTitle>
+          </DialogHeader>
+          <p className="text-xs text-muted-foreground">
+            选择发布方式，将 <span className="font-medium text-foreground">{agentConfig.name || "我的智能体"}</span> 发布到平台。
+          </p>
+          <div className="grid gap-3 py-2">
+            <button
+              onClick={() => handlePublish("marketplace")}
+              className="flex items-center gap-3 border border-border rounded-lg p-4 text-left hover:border-primary/50 hover:bg-primary/5 transition-colors"
+            >
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <Package className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">发布到应用广场</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">作为独立应用发布，其他用户可以直接使用</p>
+              </div>
+            </button>
+            <button
+              onClick={() => handlePublish("agent")}
+              className="flex items-center gap-3 border border-border rounded-lg p-4 text-left hover:border-primary/50 hover:bg-primary/5 transition-colors"
+            >
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <Bot className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">发布为项目智能体</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">添加到项目智能体列表，供团队内部使用</p>
+              </div>
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
