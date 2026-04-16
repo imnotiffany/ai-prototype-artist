@@ -14,6 +14,7 @@ const menuSections = [
     label: "管理",
     items: [
       { name: "项目管理", path: "/project-agents", icon: FolderOpen },
+      { name: "资源库", path: "/resources", icon: BookOpen },
       { name: "会话记录", path: "/sessions", icon: MessageSquare },
       { name: "凭据金库", path: "/vault", icon: KeyRound },
     ],

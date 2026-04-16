@@ -15,6 +15,7 @@ import CreateAgentPage from "./pages/CreateAgentPage";
 import CreatePage from "./pages/CreatePage";
 import CreateWebPage from "./pages/CreateWebPage";
 import CreateSkillPage from "./pages/CreateSkillPage";
+import ResourceLibrary from "./pages/ResourceLibrary";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

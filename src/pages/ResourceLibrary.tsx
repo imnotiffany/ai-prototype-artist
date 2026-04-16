@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Zap, Server, Plus, Search, Trash2, ExternalLink, Package } from "lucide-react";
+import { Zap, Server, Plus, Search, Trash2, Package } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
