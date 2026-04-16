@@ -44,7 +44,7 @@ const statusOptions = [
 
 const ProjectAgents = () => {
   const navigate = useNavigate();
-  const [uploadOpen, setUploadOpen] = useState(false);
+  
   const [searchName, setSearchName] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
