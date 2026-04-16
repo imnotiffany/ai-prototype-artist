@@ -31,7 +31,9 @@ const CreatePage = () => {
     } else if (activeTab === "web") {
       navigate("/create-web");
     }
-    // skill can navigate to its own page in the future
+    } else if (activeTab === "skill") {
+      navigate("/create-skill");
+    }
   };
 
   return (
