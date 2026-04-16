@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Upload, RotateCcw } from "lucide-react";
-import { UploadAgentDialog } from "@/components/UploadAgentDialog";
+import { Plus, RotateCcw } from "lucide-react";
 
 
 interface ProjectApp {
