@@ -31,6 +31,7 @@ const App = () => (
           <Route path="/vault" element={<AppLayout><VaultPage /></AppLayout>} />
           <Route path="/workspace" element={<AppLayout><WorkspacePage /></AppLayout>} />
           <Route path="/project-agents" element={<AppLayout><ProjectAgents /></AppLayout>} />
+          <Route path="/create" element={<AppLayout><CreatePage /></AppLayout>} />
           <Route path="/create-agent" element={<AppLayout><CreateAgentPage /></AppLayout>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
