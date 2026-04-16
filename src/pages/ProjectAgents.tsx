@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Upload, RotateCcw } from "lucide-react";
 import { UploadAgentDialog } from "@/components/UploadAgentDialog";
-import { categories } from "@/data/mockData";
+
 
 interface ProjectApp {
   id: string;
