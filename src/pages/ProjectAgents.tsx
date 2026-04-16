@@ -185,7 +185,7 @@ const ProjectAgents = () => {
         )}
       </div>
 
-      <UploadAgentDialog open={uploadOpen} onOpenChange={setUploadOpen} />
+      
     </div>
   );
 };
