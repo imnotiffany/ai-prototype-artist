@@ -1,18 +1,19 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Compass, LayoutGrid, FolderOpen, MessageSquare, KeyRound } from "lucide-react";
+import { Compass, Plus, FolderOpen, MessageSquare, KeyRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const menuSections = [
   {
-    label: "探索",
+    label: "工作台",
     items: [
+      { name: "新建项目", path: "/create", icon: Plus },
       { name: "智能体广场", path: "/", icon: Compass },
     ],
   },
   {
-    label: "工作台",
+    label: "管理",
     items: [
-      { name: "项目智能体", path: "/project-agents", icon: FolderOpen },
+      { name: "项目管理", path: "/project-agents", icon: FolderOpen },
       { name: "会话记录", path: "/sessions", icon: MessageSquare },
       { name: "凭据金库", path: "/vault", icon: KeyRound },
     ],
