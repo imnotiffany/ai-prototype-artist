@@ -93,10 +93,6 @@ const ProjectAgents = () => {
               <Plus className="w-3.5 h-3.5" />
               创建应用
             </Button>
-            <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs" onClick={() => setUploadOpen(true)}>
-              <Upload className="w-3.5 h-3.5" />
-              上传应用
-            </Button>
           </div>
         </div>
 
