@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Compass, Plus, FolderOpen, MessageSquare, KeyRound } from "lucide-react";
+import { Compass, Plus, FolderOpen, MessageSquare, KeyRound, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const menuSections = [
