@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Upload, RotateCcw } from "lucide-react";
-import { UploadAgentDialog } from "@/components/UploadAgentDialog";
+import { Plus, RotateCcw } from "lucide-react";
 
 
 interface ProjectApp {
@@ -45,7 +44,7 @@ const statusOptions = [
 
 const ProjectAgents = () => {
   const navigate = useNavigate();
-  const [uploadOpen, setUploadOpen] = useState(false);
+  
   const [searchName, setSearchName] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -92,10 +91,6 @@ const ProjectAgents = () => {
             <Button size="sm" className="gap-1.5 h-8 text-xs" onClick={() => navigate("/create")}>
               <Plus className="w-3.5 h-3.5" />
               创建应用
-            </Button>
-            <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs" onClick={() => setUploadOpen(true)}>
-              <Upload className="w-3.5 h-3.5" />
-              上传应用
             </Button>
           </div>
         </div>
@@ -190,7 +185,7 @@ const ProjectAgents = () => {
         )}
       </div>
 
-      <UploadAgentDialog open={uploadOpen} onOpenChange={setUploadOpen} />
+      
     </div>
   );
 };
