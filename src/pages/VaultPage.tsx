@@ -7,10 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Pencil, Trash2 } from "lucide-react";
-import { mockCredentials } from "@/data/mockData";
+import { mockCredentials, sharedResources } from "@/data/mockData";
 
 const VaultPage = () => {
   const [createOpen, setCreateOpen] = useState(false);
+
+  // Get MCP names from shared resources for the dropdown
+  const mcpOptions = sharedResources.filter((r) => r.type === "mcp").map((r) => r.name);
 
   return (
     <div className="p-6 max-w-[1000px] mx-auto animate-fade-in">
@@ -80,7 +83,14 @@ const VaultPage = () => {
             </div>
             <div>
               <Label>关联 MCP 服务器</Label>
-              <Input className="mt-1.5" placeholder="选择 MCP 服务器" />
+              <Select>
+                <SelectTrigger className="mt-1.5"><SelectValue placeholder="选择 MCP 服务器" /></SelectTrigger>
+                <SelectContent>
+                  {mcpOptions.map((mcp) => (
+                    <SelectItem key={mcp} value={mcp}>{mcp}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label>Token 值</Label>

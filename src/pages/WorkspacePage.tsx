@@ -1,11 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Download } from "lucide-react";
-import { mockAgents } from "@/data/mockData";
+import { getMyAgents } from "@/data/mockData";
 
 const WorkspacePage = () => {
   const navigate = useNavigate();
-  const myAgents = mockAgents.filter((_, i) => i < 3); // Simulate "my agents"
+  const myAgents = getMyAgents().slice(0, 6);
 
   return (
     <div className="p-6 max-w-[1200px] mx-auto animate-fade-in">
@@ -29,6 +29,9 @@ const WorkspacePage = () => {
                   {agent.tags.slice(0, 2).map((tag, i) => (
                     <Badge key={i} variant="outline" className="text-xs">{tag}</Badge>
                   ))}
+                  <Badge variant="outline" className="text-[10px]">
+                    {agent.status === "published" ? "已发布" : agent.status === "draft" ? "草稿" : "项目"}
+                  </Badge>
                 </div>
               </div>
             </div>

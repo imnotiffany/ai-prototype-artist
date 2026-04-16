@@ -65,34 +65,14 @@ const defaultConfig: AgentConfig = {
   mcpServers: [],
 };
 
-/* ── Available Skills & MCPs ── */
-const availableSkills = [
-  { name: "Web Search", description: "联网搜索能力" },
-  { name: "Code Analysis", description: "代码分析与审查" },
-  { name: "Email Parser", description: "邮件内容解析" },
-  { name: "Translation Engine", description: "多语言翻译引擎" },
-  { name: "Content Generation", description: "内容生成与创作" },
-  { name: "SQL Generator", description: "SQL 查询生成" },
-  { name: "File Processor", description: "文件读写与处理" },
-  { name: "Data Visualizer", description: "数据可视化" },
-];
-
-const availableMCPs = [
-  { name: "GitHub MCP", description: "GitHub 仓库与 Issue 管理" },
-  { name: "Gmail MCP", description: "Gmail 邮件收发" },
-  { name: "Slack MCP", description: "Slack 消息与频道" },
-  { name: "Notion MCP", description: "Notion 页面与数据库" },
-  { name: "Jira MCP", description: "Jira 任务与项目管理" },
-  { name: "Google Drive MCP", description: "Google Drive 文件管理" },
-  { name: "Confluence MCP", description: "Confluence 文档" },
-  { name: "Linear MCP", description: "Linear 项目管理" },
-];
+/* ── Available Skills & MCPs (from shared resource library) ── */
+import { getActiveSkills, getActiveMCPs } from "@/data/mockData";
+const availableSkills = getActiveSkills();
+const availableMCPs = getActiveMCPs();
 
 const versions = ["v1", "v2", "v3"];
 
 /* ── NLP Detection: extract skill/MCP names from natural language ── */
-const allSkillNames = availableSkills.map((s) => s.name.toLowerCase());
-const allMCPNames = availableMCPs.map((s) => s.name.toLowerCase());
 
 const detectFromText = (text: string): { detectedSkills: string[]; detectedMCPs: string[] } => {
   const lower = text.toLowerCase();

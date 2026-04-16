@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Search, Download, Clock } from "lucide-react";
+import { Search, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { mockAgents, categories } from "@/data/mockData";
+import { getMarketplaceAgents, categories } from "@/data/mockData";
 
 const AgentMarketplace = () => {
   const navigate = useNavigate();
@@ -12,7 +12,9 @@ const AgentMarketplace = () => {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<"latest" | "downloads">("latest");
 
-  const filtered = mockAgents
+  const allPublished = getMarketplaceAgents();
+
+  const filtered = allPublished
     .filter((a) => {
       const matchSearch =
         !search ||

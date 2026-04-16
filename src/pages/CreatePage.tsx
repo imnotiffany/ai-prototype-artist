@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Monitor, Bot, Zap, ArrowRight, Clock, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { mockAgents } from "@/data/mockData";
+import { Badge } from "@/components/ui/badge";
+import { getRecentAgents, getMyAgents } from "@/data/mockData";
 
 const tabs = [
   { key: "web", label: "网页应用", icon: Monitor },
@@ -23,7 +24,8 @@ const CreatePage = () => {
   const [activeTab, setActiveTab] = useState<TabKey>("agent");
   const [description, setDescription] = useState("");
 
-  const recentAgents = mockAgents.slice(0, 3);
+  const myAgents = getMyAgents().slice(0, 3);
+  const hotAgents = getRecentAgents().slice(0, 3);
 
   const handleCreate = () => {
     if (activeTab === "agent") {
@@ -104,23 +106,52 @@ const CreatePage = () => {
 
       {/* Recent & Hot sections */}
       <div className="max-w-2xl mx-auto px-6 mt-10">
-        {/* Recent */}
+        {/* My recent projects */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-1.5 text-sm font-medium text-foreground">
               <Clock className="w-3.5 h-3.5 text-muted-foreground" />
               近期创建
             </div>
-            <button className="text-xs text-muted-foreground hover:text-primary transition-colors">
+            <button
+              className="text-xs text-muted-foreground hover:text-primary transition-colors"
+              onClick={() => navigate("/project-agents")}
+            >
               查看全部 →
             </button>
           </div>
-          <div className="text-center py-8 text-xs text-muted-foreground">
-            暂无近期创建的项目
-          </div>
+          {myAgents.length > 0 ? (
+            <div className="grid grid-cols-3 gap-3">
+              {myAgents.map((agent) => (
+                <div
+                  key={agent.id}
+                  onClick={() => navigate(`/agent/${agent.id}`)}
+                  className="border border-border rounded-lg p-3 hover:shadow-sm transition-shadow cursor-pointer bg-card"
+                >
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="text-lg">{agent.avatar}</span>
+                    <h4 className="text-xs font-medium text-foreground truncate">{agent.name}</h4>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
+                    {agent.description}
+                  </p>
+                  <div className="flex items-center gap-1.5 mt-2">
+                    <Badge variant="outline" className="text-[9px] h-4 px-1.5">
+                      {agent.status === "published" ? "已发布" : agent.status === "draft" ? "草稿" : "项目"}
+                    </Badge>
+                    <span className="text-[10px] text-muted-foreground">{agent.updatedAt}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-xs text-muted-foreground">
+              暂无近期创建的项目
+            </div>
+          )}
         </div>
 
-        {/* Hot agents */}
+        {/* Hot agents from marketplace */}
         <div className="mb-12">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-1.5 text-sm font-medium text-foreground">
@@ -135,14 +166,17 @@ const CreatePage = () => {
             </button>
           </div>
           <div className="grid grid-cols-3 gap-3">
-            {recentAgents.map((agent) => (
+            {hotAgents.map((agent) => (
               <div
                 key={agent.id}
                 onClick={() => navigate(`/agent/${agent.id}`)}
                 className="border border-border rounded-lg p-3 hover:shadow-sm transition-shadow cursor-pointer bg-card"
               >
-                <h4 className="text-xs font-medium text-foreground truncate">{agent.name}</h4>
-                <p className="text-[11px] text-muted-foreground line-clamp-2 mt-1 leading-relaxed">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-lg">{agent.avatar}</span>
+                  <h4 className="text-xs font-medium text-foreground truncate">{agent.name}</h4>
+                </div>
+                <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
                   {agent.description}
                 </p>
                 <div className="flex items-center gap-1 mt-2 text-[10px] text-muted-foreground">
