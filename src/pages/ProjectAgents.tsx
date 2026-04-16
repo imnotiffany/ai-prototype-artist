@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, RotateCcw } from "lucide-react";
-import { mockAgents, categories, type Agent } from "@/data/mockData";
+import { mockAgents, type Agent } from "@/data/mockData";
 
 const MY_AUTHOR_ID = "01441970";
 
