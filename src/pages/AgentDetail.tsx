@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ArrowLeft, Upload, Download, MessageSquare, Cpu, Server } from "lucide-react";
-import { mockAgents } from "@/data/mockData";
+import { mockAgents, sharedResources } from "@/data/mockData";
 
 const AgentDetail = () => {
   const { id } = useParams();
@@ -13,13 +13,23 @@ const AgentDetail = () => {
 
   if (!agent) return <div className="p-6">智能体不存在</div>;
 
+  // Look up skill/MCP details from shared resources
+  const skillDetails = agent.skills.map((s) => {
+    const res = sharedResources.find((r) => r.name === s && r.type === "skill");
+    return { name: s, description: res?.description ?? "" };
+  });
+  const mcpDetails = agent.mcpServers.map((s) => {
+    const res = sharedResources.find((r) => r.name === s && r.type === "mcp");
+    return { name: s, description: res?.description ?? "" };
+  });
+
   return (
     <div className="p-6 max-w-[1200px] mx-auto animate-fade-in">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-        <button onClick={() => navigate("/")} className="hover:text-foreground transition-colors flex items-center gap-1">
+        <button onClick={() => navigate(-1)} className="hover:text-foreground transition-colors flex items-center gap-1">
           <ArrowLeft className="w-3.5 h-3.5" />
-          智能体广场
+          返回
         </button>
         <span>/</span>
         <span className="text-foreground">{agent.name}</span>
@@ -38,6 +48,9 @@ const AgentDetail = () => {
               {agent.tags.map((tag, i) => (
                 <Badge key={i} variant={i === 0 ? "default" : "outline"} className="text-xs">{tag}</Badge>
               ))}
+              <Badge variant="outline" className="text-xs">
+                {agent.status === "published" ? "已发布" : agent.status === "draft" ? "草稿" : "项目"}
+              </Badge>
             </div>
           </div>
         </div>
@@ -77,11 +90,12 @@ const AgentDetail = () => {
                 <Cpu className="w-4 h-4 text-primary" />
                 挂载的 Skill
               </h3>
-              {agent.skills.length > 0 ? (
+              {skillDetails.length > 0 ? (
                 <div className="space-y-2">
-                  {agent.skills.map((s, i) => (
-                    <div key={i} className="flex items-center gap-2 text-sm p-2 bg-secondary rounded">
-                      <span>{s}</span>
+                  {skillDetails.map((s, i) => (
+                    <div key={i} className="flex items-center justify-between text-sm p-2 bg-secondary rounded">
+                      <span>{s.name}</span>
+                      {s.description && <span className="text-xs text-muted-foreground">{s.description}</span>}
                     </div>
                   ))}
                 </div>
@@ -94,11 +108,12 @@ const AgentDetail = () => {
                 <Server className="w-4 h-4 text-primary" />
                 挂载的 MCP 服务器
               </h3>
-              {agent.mcpServers.length > 0 ? (
+              {mcpDetails.length > 0 ? (
                 <div className="space-y-2">
-                  {agent.mcpServers.map((s, i) => (
-                    <div key={i} className="flex items-center gap-2 text-sm p-2 bg-secondary rounded">
-                      <span>{s}</span>
+                  {mcpDetails.map((s, i) => (
+                    <div key={i} className="flex items-center justify-between text-sm p-2 bg-secondary rounded">
+                      <span>{s.name}</span>
+                      {s.description && <span className="text-xs text-muted-foreground">{s.description}</span>}
                     </div>
                   ))}
                 </div>
@@ -128,57 +143,63 @@ const AgentDetail = () => {
         </TabsContent>
 
         <TabsContent value="versions" className="mt-4">
-          <div className="flex items-center justify-end gap-2 mb-4">
-            <Button variant="outline" className="gap-1.5">
-              <Upload className="w-4 h-4" />
-              更新版本
-            </Button>
-            <Button variant="outline" className="gap-1.5">
-              <Download className="w-4 h-4" />
-              下载智能体
-            </Button>
-          </div>
-          <div className="border border-border rounded-lg overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>版本号</TableHead>
-                  <TableHead>创建时间</TableHead>
-                  <TableHead>文件大小</TableHead>
-                  <TableHead>下载数</TableHead>
-                  <TableHead>状态</TableHead>
-                  <TableHead>创建人</TableHead>
-                  <TableHead>操作</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {agent.versions.map((v) => (
-                  <TableRow key={v.version}>
-                    <TableCell className="font-medium">{v.version}</TableCell>
-                    <TableCell>{v.createdAt}</TableCell>
-                    <TableCell>{v.fileSize}</TableCell>
-                    <TableCell>{v.downloads}</TableCell>
-                    <TableCell>
-                      <Badge variant={v.status === "published" ? "default" : "outline"}>
-                        {v.status === "published" ? "已发布" : "未发布"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{v.creator}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button size="sm" variant="ghost">下载</Button>
-                        {v.status === "unpublished" ? (
-                          <Button size="sm">发布广场</Button>
-                        ) : (
-                          <Button size="sm" variant="outline">下线广场</Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          {agent.versions.length === 0 ? (
+            <div className="text-center py-12 text-sm text-muted-foreground">暂无版本记录</div>
+          ) : (
+            <>
+              <div className="flex items-center justify-end gap-2 mb-4">
+                <Button variant="outline" className="gap-1.5">
+                  <Upload className="w-4 h-4" />
+                  更新版本
+                </Button>
+                <Button variant="outline" className="gap-1.5">
+                  <Download className="w-4 h-4" />
+                  下载智能体
+                </Button>
+              </div>
+              <div className="border border-border rounded-lg overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>版本号</TableHead>
+                      <TableHead>创建时间</TableHead>
+                      <TableHead>文件大小</TableHead>
+                      <TableHead>下载数</TableHead>
+                      <TableHead>状态</TableHead>
+                      <TableHead>创建人</TableHead>
+                      <TableHead>操作</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {agent.versions.map((v) => (
+                      <TableRow key={v.version}>
+                        <TableCell className="font-medium">{v.version}</TableCell>
+                        <TableCell>{v.createdAt}</TableCell>
+                        <TableCell>{v.fileSize}</TableCell>
+                        <TableCell>{v.downloads}</TableCell>
+                        <TableCell>
+                          <Badge variant={v.status === "published" ? "default" : "outline"}>
+                            {v.status === "published" ? "已发布" : "未发布"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{v.creator}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Button size="sm" variant="ghost">下载</Button>
+                            {v.status === "unpublished" ? (
+                              <Button size="sm">发布广场</Button>
+                            ) : (
+                              <Button size="sm" variant="outline">下线广场</Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
+          )}
         </TabsContent>
       </Tabs>
     </div>

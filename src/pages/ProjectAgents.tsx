@@ -6,34 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, RotateCcw } from "lucide-react";
+import { mockAgents, categories, type Agent } from "@/data/mockData";
 
-
-interface ProjectApp {
-  id: string;
-  name: string;
-  avatar: string;
-  category: string;
-  description: string;
-  platform: string;
-  author: string;
-  authorId: string;
-  updatedAt: string;
-  creationType: "ai" | "upload";
-  status: "published" | "draft" | "project";
-  featured?: boolean;
-}
-
-const projectApps: ProjectApp[] = [
-  { id: "p1", name: "雨是神明放的烟花 副本", avatar: "🌧️", category: "视觉设计", description: "暮色里的雨，是神明燃尽的烟花余烬，千万滴雨同时坠落，落满山川湖海，让每个抬头看天的人，都能接住一场专属的绽放。", platform: "AI技术平台", author: "廖奕通", authorId: "01441970", updatedAt: "2026-04-13", creationType: "ai", status: "project" },
-  { id: "p2", name: "Apple风证件照生成", avatar: "📷", category: "视觉设计", description: "上传照片智能生成专业证件照。支持多比例、多张生成及迭代优化，打造专业职场形象", platform: "AI技术平台", author: "廖奕通", authorId: "01441970", updatedAt: "2026-04-10", creationType: "ai", status: "published" },
-  { id: "p3", name: "漫画工坊", avatar: "🎨", category: "视觉设计", description: "一键生成精美漫画，轻松将创意变成生动的漫画作品", platform: "AI技术平台", author: "廖奕通", authorId: "01441970", updatedAt: "2026-04-01", creationType: "ai", status: "draft" },
-  { id: "p4", name: "JSON万能工具箱", avatar: "🟢", category: "技术研发", description: "集JSON格式检查、格式化、差异对比和转表格于一体的高效处理工具", platform: "AI技术平台", author: "廖奕通", authorId: "01441970", updatedAt: "2026-04-01", creationType: "ai", status: "published" },
-  { id: "p5", name: "Prompt精炼大师", avatar: "🅿️", category: "技术研发", description: "智能润色优化你的Prompt，使其更完整、更有逻辑，支持中英文输出切换", platform: "AI技术平台", author: "廖奕通", authorId: "01441970", updatedAt: "2026-03-31", creationType: "ai", status: "published" },
-  { id: "p6", name: "小说秒变漫画", avatar: "⬛", category: "视觉设计", description: "输入小说内容，AI自动将文字转为精美漫画画面，一键生成漫画作品。", platform: "AI技术平台", author: "廖奕通", authorId: "01441970", updatedAt: "2026-03-31", creationType: "ai", status: "draft" },
-  { id: "p7", name: "实时文字转语音", avatar: "🎵", category: "精选应用", description: "实时文字转语音", platform: "AI技术平台", author: "张毅超", authorId: "01422596", updatedAt: "2026-03-25", creationType: "upload", status: "published", featured: true },
-  { id: "p8", name: "豆包视频生成", avatar: "🎬", category: "视觉设计", description: "调用Seedance 1.5 Pro为您生成短视频，支持配置参考图片、时长、画幅、运镜方式", platform: "AI技术平台", author: "廖奕通", authorId: "01441970", updatedAt: "2026-03-25", creationType: "upload", status: "published" },
-  { id: "p9", name: "智能重绘助手", avatar: "🎨", category: "视觉设计", description: "上传图片，AI帮你重新绘制生成新的图像", platform: "AI技术平台", author: "杨彪龙", authorId: "01419965", updatedAt: "2026-03-24", creationType: "ai", status: "project", featured: true },
-];
+const MY_AUTHOR_ID = "01441970";
 
 const statusOptions = [
   { value: "all", label: "全部" },
@@ -44,16 +19,17 @@ const statusOptions = [
 
 const ProjectAgents = () => {
   const navigate = useNavigate();
-  
+
   const [searchName, setSearchName] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [onlyMine, setOnlyMine] = useState(false);
 
-  const filtered = projectApps.filter((app) => {
+  const filtered = mockAgents.filter((app) => {
     if (searchName && !app.name.toLowerCase().includes(searchName.toLowerCase())) return false;
     if (categoryFilter !== "all" && app.category !== categoryFilter) return false;
     if (statusFilter !== "all" && app.status !== statusFilter) return false;
+    if (onlyMine && app.authorId !== MY_AUTHOR_ID) return false;
     return true;
   });
 
@@ -64,7 +40,7 @@ const ProjectAgents = () => {
     setOnlyMine(false);
   };
 
-  const getStatusBadge = (app: ProjectApp) => {
+  const getStatusBadge = (app: Agent) => {
     const badges: React.ReactNode[] = [];
     if (app.creationType === "ai") {
       badges.push(<Badge key="ai" className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-0 text-[10px] px-1.5 h-5">AI创建</Badge>);
@@ -75,11 +51,16 @@ const ProjectAgents = () => {
     if (app.status === "published") {
       badges.push(<Badge key="pub" className="bg-green-100 text-green-700 hover:bg-green-100 border-0 text-[10px] px-1.5 h-5">已发布</Badge>);
     }
+    if (app.status === "draft") {
+      badges.push(<Badge key="draft" className="bg-gray-100 text-gray-600 hover:bg-gray-100 border-0 text-[10px] px-1.5 h-5">草稿</Badge>);
+    }
     if (app.status === "project") {
       badges.push(<Badge key="proj" className="bg-orange-100 text-orange-700 hover:bg-orange-100 border-0 text-[10px] px-1.5 h-5">项目</Badge>);
     }
     return badges;
   };
+
+  const usedCategories = [...new Set(mockAgents.map((a) => a.category))];
 
   return (
     <div className="flex-1 overflow-auto">
@@ -114,7 +95,7 @@ const ProjectAgents = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all" className="text-xs">全部</SelectItem>
-                {[...new Set(projectApps.map(a => a.category))].map((cat) => (
+                {usedCategories.map((cat) => (
                   <SelectItem key={cat} value={cat} className="text-xs">{cat}</SelectItem>
                 ))}
               </SelectContent>
@@ -184,8 +165,6 @@ const ProjectAgents = () => {
           <div className="text-center py-16 text-sm text-muted-foreground">暂无匹配的应用</div>
         )}
       </div>
-
-      
     </div>
   );
 };

@@ -15,7 +15,7 @@ const SessionList = () => {
           <div
             key={session.id}
             className="border border-border rounded-lg p-4 hover:shadow-sm transition-shadow cursor-pointer flex items-center justify-between"
-            onClick={() => navigate(`/chat/1`)}
+            onClick={() => navigate(`/chat/${session.agentId}`)}
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-xl">

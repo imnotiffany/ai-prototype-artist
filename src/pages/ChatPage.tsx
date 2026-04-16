@@ -32,9 +32,12 @@ const ChatPage = () => {
     setMessages((prev) => [...prev, { role: "user", content: userMsg }]);
     setIsRunning(true);
 
-    // Simulate tool call
+    // Simulate tool call based on agent's actual skills
+    const firstSkill = agent.skills[0];
     setTimeout(() => {
-      setMessages((prev) => [...prev, { role: "tool", content: "正在调用 Web Search 工具…", toolName: "Web Search" }]);
+      if (firstSkill) {
+        setMessages((prev) => [...prev, { role: "tool", content: `正在调用 ${firstSkill} 工具…`, toolName: firstSkill }]);
+      }
     }, 800);
 
     // Simulate agent response

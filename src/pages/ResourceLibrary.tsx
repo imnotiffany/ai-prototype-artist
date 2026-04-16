@@ -8,38 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-
-interface Resource {
-  id: string;
-  name: string;
-  type: "skill" | "mcp";
-  description: string;
-  status: "active" | "inactive";
-  addedAt: string;
-  usageCount: number;
-}
-
-const defaultResources: Resource[] = [
-  { id: "s1", name: "Web Search", type: "skill", description: "联网搜索能力，支持多搜索引擎", status: "active", addedAt: "2026-04-10", usageCount: 12 },
-  { id: "s2", name: "Code Analysis", type: "skill", description: "代码分析与审查，支持多语言", status: "active", addedAt: "2026-04-08", usageCount: 8 },
-  { id: "s3", name: "Email Parser", type: "skill", description: "邮件内容解析与结构化提取", status: "active", addedAt: "2026-04-05", usageCount: 5 },
-  { id: "s4", name: "Translation Engine", type: "skill", description: "多语言翻译引擎，支持中英日韩", status: "active", addedAt: "2026-04-01", usageCount: 15 },
-  { id: "s5", name: "Content Generation", type: "skill", description: "内容生成与创作", status: "inactive", addedAt: "2026-03-28", usageCount: 3 },
-  { id: "s6", name: "SQL Generator", type: "skill", description: "SQL 查询自动生成与优化", status: "active", addedAt: "2026-03-25", usageCount: 7 },
-  { id: "s7", name: "File Processor", type: "skill", description: "文件读写与格式转换", status: "active", addedAt: "2026-04-12", usageCount: 4 },
-  { id: "s8", name: "Data Visualizer", type: "skill", description: "数据可视化图表生成", status: "inactive", addedAt: "2026-03-20", usageCount: 2 },
-  { id: "m1", name: "GitHub MCP", type: "mcp", description: "GitHub 仓库、Issue、PR 管理", status: "active", addedAt: "2026-04-10", usageCount: 20 },
-  { id: "m2", name: "Gmail MCP", type: "mcp", description: "Gmail 邮件收发与管理", status: "active", addedAt: "2026-04-08", usageCount: 10 },
-  { id: "m3", name: "Slack MCP", type: "mcp", description: "Slack 消息与频道管理", status: "active", addedAt: "2026-04-05", usageCount: 6 },
-  { id: "m4", name: "Notion MCP", type: "mcp", description: "Notion 页面与数据库操作", status: "active", addedAt: "2026-04-01", usageCount: 9 },
-  { id: "m5", name: "Jira MCP", type: "mcp", description: "Jira 任务与项目管理", status: "inactive", addedAt: "2026-03-28", usageCount: 4 },
-  { id: "m6", name: "Google Drive MCP", type: "mcp", description: "Google Drive 文件管理", status: "active", addedAt: "2026-03-25", usageCount: 11 },
-  { id: "m7", name: "Confluence MCP", type: "mcp", description: "Confluence 文档协作", status: "inactive", addedAt: "2026-03-20", usageCount: 1 },
-  { id: "m8", name: "Linear MCP", type: "mcp", description: "Linear 项目与 Issue 管理", status: "active", addedAt: "2026-04-13", usageCount: 3 },
-];
+import { sharedResources, type Resource } from "@/data/mockData";
 
 const ResourceLibrary = () => {
-  const [resources, setResources] = useState<Resource[]>(defaultResources);
+  const [resources, setResources] = useState<Resource[]>([...sharedResources]);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "skill" | "mcp">("all");
   const [addOpen, setAddOpen] = useState(false);
