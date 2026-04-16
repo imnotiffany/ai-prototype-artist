@@ -38,6 +38,7 @@ const App = () => (
           <Route path="/create-web" element={<AppLayout><CreateWebPage /></AppLayout>} />
           <Route path="/create-agent" element={<AppLayout><CreateAgentPage /></AppLayout>} />
           <Route path="/create-skill" element={<AppLayout><CreateSkillPage /></AppLayout>} />
+          <Route path="/resources" element={<AppLayout><ResourceLibrary /></AppLayout>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
