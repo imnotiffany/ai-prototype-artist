@@ -28,6 +28,8 @@ export interface Agent {
   versions: Version[];
   creationType: "ai" | "upload";
   status: "published" | "draft" | "project";
+  /** "agent" = 对话型智能体（点击进入对话），"app" = 网页应用（点击直接运行） */
+  kind: "agent" | "app";
   featured?: boolean;
 }
 
