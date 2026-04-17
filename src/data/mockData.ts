@@ -105,15 +105,15 @@ export const getActiveMCPs = () =>
 
 /* ── Unified Agents (marketplace + project) ── */
 export const mockAgents: Agent[] = [
-  // Marketplace / published agents
+  // ── Marketplace / published ──
   {
-    id: "1", name: "inbox-searcher", avatar: "📧",
+    id: "1", name: "邮箱智能检索", avatar: "📧",
     description: "邮箱收件箱智能检索助手，可接入对应邮件相关上下文与检索目标，返回对应问题的答案",
     category: "数据分析", tags: ["数据分析", "高分智能体", "dataops"],
     platform: "AI技术平台", author: "张三", authorId: "01234567",
     updatedAt: "2026-04-04", downloads: 123,
     skills: ["Web Search", "Email Parser"], mcpServers: ["Gmail MCP", "Outlook MCP"],
-    sessionCount: 89, creationType: "ai", status: "published",
+    sessionCount: 89, creationType: "ai", status: "published", kind: "agent",
     versions: [
       { version: "v0.0.3", createdAt: "2026-04-04", fileSize: "12KB", downloads: 45, status: "published", creator: "张三" },
       { version: "v0.0.2", createdAt: "2026-03-20", fileSize: "10KB", downloads: 60, status: "unpublished", creator: "张三" },
@@ -121,66 +121,66 @@ export const mockAgents: Agent[] = [
     ],
   },
   {
-    id: "2", name: "code-reviewer", avatar: "🔍",
+    id: "2", name: "代码审查助手", avatar: "🔍",
     description: "智能代码审查助手，自动分析代码质量、安全漏洞和性能问题，生成详细审查报告",
     category: "编程开发", tags: ["编程开发", "代码审查", "devops"],
     platform: "AI技术平台", author: "李四", authorId: "01234568",
     updatedAt: "2026-04-10", downloads: 256,
     skills: ["Code Analysis", "Security Scanner"], mcpServers: ["GitHub MCP"],
-    sessionCount: 150, creationType: "ai", status: "published",
+    sessionCount: 150, creationType: "ai", status: "published", kind: "agent",
     versions: [
       { version: "v0.1.0", createdAt: "2026-04-10", fileSize: "15KB", downloads: 120, status: "published", creator: "李四" },
     ],
   },
   {
-    id: "3", name: "doc-translator", avatar: "🌐",
+    id: "3", name: "多语言文档翻译", avatar: "🌐",
     description: "多语言文档翻译智能体，支持中英日韩等主流语言互译，保留原文格式与排版",
     category: "文档处理", tags: ["文档处理", "翻译", "多语言"],
     platform: "AI技术平台", author: "王五", authorId: "01234569",
     updatedAt: "2026-04-08", downloads: 412,
     skills: ["Translation Engine"], mcpServers: ["Google Translate MCP"],
-    sessionCount: 230, creationType: "ai", status: "published",
+    sessionCount: 230, creationType: "ai", status: "published", kind: "agent",
     versions: [
       { version: "v1.0.0", createdAt: "2026-04-08", fileSize: "20KB", downloads: 412, status: "published", creator: "王五" },
     ],
   },
   {
-    id: "4", name: "ops-monitor", avatar: "🖥️",
+    id: "4", name: "运维监控助手", avatar: "🖥️",
     description: "自动化运维监控智能体，实时分析系统日志与指标，自动告警并给出修复建议",
     category: "自动运维", tags: ["自动运维", "监控", "告警"],
     platform: "基础架构部", author: "赵六", authorId: "01234570",
     updatedAt: "2026-04-12", downloads: 87,
     skills: ["Log Analyzer", "Alert Manager"], mcpServers: ["Prometheus MCP", "Grafana MCP"],
-    sessionCount: 45, creationType: "ai", status: "published",
+    sessionCount: 45, creationType: "ai", status: "published", kind: "agent",
     versions: [
       { version: "v0.2.0", createdAt: "2026-04-12", fileSize: "18KB", downloads: 87, status: "published", creator: "赵六" },
     ],
   },
   {
-    id: "5", name: "content-writer", avatar: "✍️",
+    id: "5", name: "内容创作大师", avatar: "✍️",
     description: "智能内容创作助手，支持营销文案、技术文档、社交媒体帖子等多种风格写作",
     category: "内容创作", tags: ["内容创作", "文案", "营销"],
     platform: "市场部", author: "钱七", authorId: "01234571",
     updatedAt: "2026-04-11", downloads: 198,
     skills: ["Content Generation", "SEO Optimizer"], mcpServers: [],
-    sessionCount: 120, creationType: "ai", status: "published",
+    sessionCount: 120, creationType: "ai", status: "published", kind: "agent",
     versions: [
       { version: "v0.3.1", createdAt: "2026-04-11", fileSize: "14KB", downloads: 198, status: "published", creator: "钱七" },
     ],
   },
   {
-    id: "6", name: "data-pipeline", avatar: "📊",
+    id: "6", name: "数据管道编排", avatar: "📊",
     description: "数据管道编排智能体，自动设计和优化ETL流程，支持多数据源接入与转换",
     category: "数据分析", tags: ["数据分析", "ETL", "数据工程"],
     platform: "数据中心", author: "孙八", authorId: "01234572",
     updatedAt: "2026-04-09", downloads: 156,
     skills: ["SQL Generator", "Schema Analyzer"], mcpServers: ["BigQuery MCP", "Snowflake MCP"],
-    sessionCount: 78, creationType: "ai", status: "published",
+    sessionCount: 78, creationType: "ai", status: "published", kind: "agent",
     versions: [
       { version: "v0.1.2", createdAt: "2026-04-09", fileSize: "22KB", downloads: 156, status: "published", creator: "孙八" },
     ],
   },
-  // Project-only agents (my creations)
+  // ── Project agents (我的) ──
   {
     id: "p1", name: "雨是神明放的烟花 副本", avatar: "🌧️",
     description: "暮色里的雨，是神明燃尽的烟花余烬，千万滴雨同时坠落，落满山川湖海，让每个抬头看天的人，都能接住一场专属的绽放。",
@@ -188,7 +188,7 @@ export const mockAgents: Agent[] = [
     platform: "AI技术平台", author: "廖奕通", authorId: "01441970",
     updatedAt: "2026-04-13", downloads: 0,
     skills: [], mcpServers: [],
-    sessionCount: 0, creationType: "ai", status: "project",
+    sessionCount: 0, creationType: "ai", status: "project", kind: "app",
     versions: [],
   },
   {
@@ -198,7 +198,7 @@ export const mockAgents: Agent[] = [
     platform: "AI技术平台", author: "廖奕通", authorId: "01441970",
     updatedAt: "2026-04-10", downloads: 34,
     skills: ["File Processor"], mcpServers: [],
-    sessionCount: 12, creationType: "ai", status: "published",
+    sessionCount: 12, creationType: "ai", status: "published", kind: "app",
     versions: [
       { version: "v1.0.0", createdAt: "2026-04-10", fileSize: "16KB", downloads: 34, status: "published", creator: "廖奕通" },
     ],
@@ -210,7 +210,7 @@ export const mockAgents: Agent[] = [
     platform: "AI技术平台", author: "廖奕通", authorId: "01441970",
     updatedAt: "2026-04-01", downloads: 0,
     skills: ["Content Generation"], mcpServers: [],
-    sessionCount: 0, creationType: "ai", status: "draft",
+    sessionCount: 0, creationType: "ai", status: "draft", kind: "app",
     versions: [],
   },
   {
@@ -220,7 +220,7 @@ export const mockAgents: Agent[] = [
     platform: "AI技术平台", author: "廖奕通", authorId: "01441970",
     updatedAt: "2026-04-01", downloads: 56,
     skills: ["File Processor"], mcpServers: [],
-    sessionCount: 20, creationType: "ai", status: "published",
+    sessionCount: 20, creationType: "ai", status: "published", kind: "app",
     versions: [
       { version: "v1.0.0", createdAt: "2026-04-01", fileSize: "10KB", downloads: 56, status: "published", creator: "廖奕通" },
     ],
@@ -232,7 +232,7 @@ export const mockAgents: Agent[] = [
     platform: "AI技术平台", author: "廖奕通", authorId: "01441970",
     updatedAt: "2026-03-31", downloads: 78,
     skills: ["Content Generation", "Translation Engine"], mcpServers: [],
-    sessionCount: 35, creationType: "ai", status: "published",
+    sessionCount: 35, creationType: "ai", status: "published", kind: "agent",
     versions: [
       { version: "v1.0.0", createdAt: "2026-03-31", fileSize: "8KB", downloads: 78, status: "published", creator: "廖奕通" },
     ],
@@ -244,7 +244,7 @@ export const mockAgents: Agent[] = [
     platform: "AI技术平台", author: "廖奕通", authorId: "01441970",
     updatedAt: "2026-03-31", downloads: 0,
     skills: ["Content Generation"], mcpServers: [],
-    sessionCount: 0, creationType: "ai", status: "draft",
+    sessionCount: 0, creationType: "ai", status: "draft", kind: "app",
     versions: [],
   },
   {
@@ -254,7 +254,7 @@ export const mockAgents: Agent[] = [
     platform: "AI技术平台", author: "张毅超", authorId: "01422596",
     updatedAt: "2026-03-25", downloads: 145,
     skills: [], mcpServers: [],
-    sessionCount: 60, creationType: "upload", status: "published", featured: true,
+    sessionCount: 60, creationType: "upload", status: "published", kind: "app", featured: true,
     versions: [
       { version: "v1.0.0", createdAt: "2026-03-25", fileSize: "25KB", downloads: 145, status: "published", creator: "张毅超" },
     ],
@@ -266,7 +266,7 @@ export const mockAgents: Agent[] = [
     platform: "AI技术平台", author: "廖奕通", authorId: "01441970",
     updatedAt: "2026-03-25", downloads: 67,
     skills: ["File Processor"], mcpServers: ["Google Drive MCP"],
-    sessionCount: 25, creationType: "upload", status: "published",
+    sessionCount: 25, creationType: "upload", status: "published", kind: "app",
     versions: [
       { version: "v1.0.0", createdAt: "2026-03-25", fileSize: "30KB", downloads: 67, status: "published", creator: "廖奕通" },
     ],
@@ -278,7 +278,7 @@ export const mockAgents: Agent[] = [
     platform: "AI技术平台", author: "杨彪龙", authorId: "01419965",
     updatedAt: "2026-03-24", downloads: 23,
     skills: ["File Processor"], mcpServers: [],
-    sessionCount: 8, creationType: "ai", status: "project", featured: true,
+    sessionCount: 8, creationType: "ai", status: "project", kind: "app", featured: true,
     versions: [],
   },
 ];
