@@ -16,6 +16,7 @@ import CreatePage from "./pages/CreatePage";
 import CreateWebPage from "./pages/CreateWebPage";
 import CreateSkillPage from "./pages/CreateSkillPage";
 import ResourceLibrary from "./pages/ResourceLibrary";
+import AppRunner from "./pages/AppRunner";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/" element={<AppLayout><AgentMarketplace /></AppLayout>} />
           <Route path="/agent/:id" element={<AppLayout><AgentDetail /></AppLayout>} />
           <Route path="/chat/:id" element={<AppLayout><ChatPage /></AppLayout>} />
+          <Route path="/app/:id" element={<AppLayout><AppRunner /></AppLayout>} />
           <Route path="/sessions" element={<AppLayout><SessionList /></AppLayout>} />
           <Route path="/vault" element={<AppLayout><VaultPage /></AppLayout>} />
           <Route path="/workspace" element={<AppLayout><WorkspacePage /></AppLayout>} />
