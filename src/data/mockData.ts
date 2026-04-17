@@ -290,9 +290,9 @@ export const getRecentAgents = () => [...mockAgents].sort((a, b) => b.updatedAt.
 
 /* ── Sessions (reference real agent IDs) ── */
 export const mockSessions: Session[] = [
-  { id: "s1", agentId: "1", agentName: "inbox-searcher", agentAvatar: "📧", lastMessage: "已找到3封与项目预算相关的邮件", lastActiveAt: "2026-04-13 10:30", status: "ended" },
-  { id: "s2", agentId: "2", agentName: "code-reviewer", agentAvatar: "🔍", lastMessage: "发现2个潜在安全漏洞，建议立即修复", lastActiveAt: "2026-04-13 09:15", status: "running" },
-  { id: "s3", agentId: "3", agentName: "doc-translator", agentAvatar: "🌐", lastMessage: "文档翻译完成，共翻译1,200字", lastActiveAt: "2026-04-12 16:45", status: "ended" },
+  { id: "s1", agentId: "1", agentName: "邮箱智能检索", agentAvatar: "📧", lastMessage: "已找到3封与项目预算相关的邮件", lastActiveAt: "2026-04-13 10:30", status: "ended" },
+  { id: "s2", agentId: "2", agentName: "代码审查助手", agentAvatar: "🔍", lastMessage: "发现2个潜在安全漏洞，建议立即修复", lastActiveAt: "2026-04-13 09:15", status: "running" },
+  { id: "s3", agentId: "3", agentName: "多语言文档翻译", agentAvatar: "🌐", lastMessage: "文档翻译完成，共翻译1,200字", lastActiveAt: "2026-04-12 16:45", status: "ended" },
   { id: "s4", agentId: "p2", agentName: "Apple风证件照生成", agentAvatar: "📷", lastMessage: "证件照已生成，共3张不同比例", lastActiveAt: "2026-04-11 14:20", status: "ended" },
   { id: "s5", agentId: "p5", agentName: "Prompt精炼大师", agentAvatar: "🅿️", lastMessage: "已优化你的 Prompt，逻辑更清晰", lastActiveAt: "2026-04-10 16:00", status: "ended" },
 ];
