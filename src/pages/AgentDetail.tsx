@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, Upload, Download, MessageSquare, Cpu, Server } from "lucide-react";
+import { ArrowLeft, Upload, Download, MessageSquare, Cpu, Server, Activity, Container, ScrollText, TrendingUp } from "lucide-react";
 import { mockAgents, sharedResources } from "@/data/mockData";
 
 const AgentDetail = () => {
@@ -63,6 +63,7 @@ const AgentDetail = () => {
       <Tabs defaultValue="detail">
         <TabsList>
           <TabsTrigger value="detail">智能体详情</TabsTrigger>
+          <TabsTrigger value="runtime" className="gap-1.5"><Activity className="w-3.5 h-3.5" />运行状态</TabsTrigger>
           <TabsTrigger value="versions">版本管理</TabsTrigger>
         </TabsList>
 
@@ -138,6 +139,85 @@ const AgentDetail = () => {
                 {agent.description}<br/><br/>
                 该智能体基于 Claude Managed Agents 技术，采用自主 Agent 模式，用户只需给出目标，Agent 自行决定调用哪些工具完成任务。
               </p>
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* Runtime Tab */}
+        <TabsContent value="runtime" className="mt-4 space-y-4">
+          {/* Container & metrics */}
+          <div className="grid grid-cols-4 gap-3">
+            <div className="border border-border rounded-lg p-4 bg-card">
+              <div className="flex items-center justify-between"><span className="text-xs text-muted-foreground">容器状态</span><Container className="w-4 h-4 text-green-500" /></div>
+              <div className="text-base font-semibold mt-1.5 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />运行中
+              </div>
+              <div className="text-[10px] text-muted-foreground mt-0.5">3 个实例</div>
+            </div>
+            <div className="border border-border rounded-lg p-4 bg-card">
+              <div className="flex items-center justify-between"><span className="text-xs text-muted-foreground">CPU 使用率</span><TrendingUp className="w-4 h-4 text-primary" /></div>
+              <div className="text-base font-semibold mt-1.5">38%</div>
+              <div className="text-[10px] text-muted-foreground mt-0.5">最近 5 分钟</div>
+            </div>
+            <div className="border border-border rounded-lg p-4 bg-card">
+              <div className="flex items-center justify-between"><span className="text-xs text-muted-foreground">内存</span><TrendingUp className="w-4 h-4 text-primary" /></div>
+              <div className="text-base font-semibold mt-1.5">512MB</div>
+              <div className="text-[10px] text-muted-foreground mt-0.5">/ 1024MB</div>
+            </div>
+            <div className="border border-border rounded-lg p-4 bg-card">
+              <div className="flex items-center justify-between"><span className="text-xs text-muted-foreground">活跃 Session</span><MessageSquare className="w-4 h-4 text-primary" /></div>
+              <div className="text-base font-semibold mt-1.5">{Math.floor(agent.sessionCount / 10)}</div>
+              <div className="text-[10px] text-muted-foreground mt-0.5">SSE 长连接</div>
+            </div>
+          </div>
+
+          {/* Active sessions list */}
+          <div className="border border-border rounded-lg bg-card">
+            <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+              <h3 className="text-sm font-medium flex items-center gap-1.5"><MessageSquare className="w-4 h-4 text-primary" />活跃 Session</h3>
+              <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => navigate("/sessions")}>查看全部</Button>
+            </div>
+            <div className="divide-y divide-border">
+              {[
+                { id: "sess-001", user: "廖奕通", duration: "00:12:34", status: "running" },
+                { id: "sess-002", user: "张毅超", duration: "00:03:12", status: "running" },
+                { id: "sess-003", user: "李四", duration: "01:24:08", status: "running" },
+              ].map((s) => (
+                <div key={s.id} className="px-4 py-2.5 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-muted-foreground">{s.id}</span>
+                    <span>{s.user}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-muted-foreground">{s.duration}</span>
+                    <Badge variant="outline" className="text-[10px] gap-1"><span className="w-1.5 h-1.5 rounded-full bg-green-500" />运行中</Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Logs */}
+          <div className="border border-border rounded-lg bg-card">
+            <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+              <h3 className="text-sm font-medium flex items-center gap-1.5"><ScrollText className="w-4 h-4 text-primary" />实时日志</h3>
+              <Badge variant="outline" className="text-[10px]">最近 10 条</Badge>
+            </div>
+            <div className="p-3 font-mono text-[11px] space-y-1 max-h-64 overflow-auto bg-muted/20">
+              {[
+                { t: "10:24:18", lvl: "INFO", msg: "Session sess-003 created, container assigned to pod-7f8c" },
+                { t: "10:24:15", lvl: "INFO", msg: "Tool call: Web Search, query=\"季度财报模板\"" },
+                { t: "10:24:12", lvl: "INFO", msg: "MCP gateway: gmail_mcp.list_messages — 200 OK (124ms)" },
+                { t: "10:23:58", lvl: "WARN", msg: "Rate limit close to threshold: 85/100 req/min" },
+                { t: "10:23:42", lvl: "INFO", msg: "Session sess-001 resumed from snapshot" },
+                { t: "10:23:18", lvl: "INFO", msg: "Container pod-7f8c health check passed" },
+              ].map((l, i) => (
+                <div key={i} className="flex gap-2">
+                  <span className="text-muted-foreground">{l.t}</span>
+                  <span className={l.lvl === "WARN" ? "text-orange-500" : "text-green-500"}>[{l.lvl}]</span>
+                  <span className="text-foreground/80">{l.msg}</span>
+                </div>
+              ))}
             </div>
           </div>
         </TabsContent>

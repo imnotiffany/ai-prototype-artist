@@ -474,15 +474,40 @@ const CreateAgentPage = () => {
         setSelectedSkills([]);
         setSelectedMCPs([]);
 
-        // Assembly notification
-        setMessages((prev) => [...prev, { id: uid(), role: "system", content: "⚙️ 正在组装智能体…", type: "assembly" }]);
+        // Step 1: 需求解析
+        setMessages((prev) => [...prev, { id: uid(), role: "system", content: "🔎 解析需求中…", type: "assembly" }]);
+
+        // Step 2: 匹配 MCP / Skill 可视化卡片
+        setTimeout(() => {
+          const matchedAttachments = [
+            ...newConfig.skills.map((s) => ({ type: "skill" as const, name: s })),
+            ...newConfig.mcpServers.map((s) => ({ type: "mcp" as const, name: s })),
+          ];
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: uid(),
+              role: "system",
+              content: matchedAttachments.length > 0
+                ? `🎯 已从资源库匹配到 ${newConfig.skills.length} 个 Skill / ${newConfig.mcpServers.length} 个 MCP`
+                : "ℹ️ 本次未匹配到额外资源，将使用内置工具",
+              type: "text",
+              attachments: matchedAttachments.length > 0 ? matchedAttachments : undefined,
+            },
+          ]);
+        }, 400);
+
+        // Step 3: 组装通知
+        setTimeout(() => {
+          setMessages((prev) => [...prev, { id: uid(), role: "system", content: "⚙️ 正在生成 System Prompt 和草稿配置…", type: "assembly" }]);
+        }, 900);
 
         setTimeout(() => {
-          setMessages((prev) => [...prev, { id: uid(), role: "system", content: "✅ 智能体已创建完成！配置已自动生成。", type: "confirm" }]);
+          setMessages((prev) => [...prev, { id: uid(), role: "system", content: "✅ 智能体草稿已生成，可在右侧微调", type: "confirm" }]);
 
           // Stream assistant response
           const responseId = uid();
-          const fullText = `智能体已创建成功！\n\n**配置摘要：**\n- 模型：${newConfig.model}\n- 技能：${newConfig.skills.length > 0 ? newConfig.skills.join("、") : "无"}\n- MCP：${newConfig.mcpServers.length > 0 ? newConfig.mcpServers.join("、") : "无"}\n\n你可以在右侧「配置」面板查看和编辑详细配置，或切换到「调试」面板发送消息测试智能体。\n\n如果需要修改，直接告诉我即可。`;
+          const fullText = `智能体草稿已生成！\n\n**配置摘要：**\n- 模型：${newConfig.model}\n- 技能：${newConfig.skills.length > 0 ? newConfig.skills.join("、") : "无"}\n- MCP：${newConfig.mcpServers.length > 0 ? newConfig.mcpServers.join("、") : "无"}\n\n你可以在右侧「配置」面板查看和编辑详细配置，或切换到「调试」面板发送消息测试智能体。\n\n如果需要修改，直接告诉我即可。`;
 
           setMessages((prev) => [...prev, { id: responseId, role: "assistant", content: "", isStreaming: true }]);
           let charIndex = 0;
@@ -509,7 +534,7 @@ const CreateAgentPage = () => {
             { id: uid(), type: "config", detail: `技能: [${newConfig.skills.join(", ")}]`, timestamp: new Date() },
             { id: uid(), type: "config", detail: `MCP: [${newConfig.mcpServers.join(", ")}]`, timestamp: new Date() },
           ]);
-        }, 1200);
+        }, 1800);
       } else {
         // Subsequent messages: refine the agent
         const lower = userMsg.toLowerCase();
@@ -646,7 +671,21 @@ const CreateAgentPage = () => {
                     {msg.content}
                   </div>
                 ) : msg.role === "system" ? (
-                  <p className="text-xs text-muted-foreground">{msg.content}</p>
+                  <div>
+                    <p className="text-xs text-muted-foreground">{msg.content}</p>
+                    {msg.attachments && msg.attachments.length > 0 && (
+                      <div className="mt-2 border border-border rounded-lg p-2.5 bg-muted/30">
+                        <div className="flex flex-wrap gap-1.5">
+                          {msg.attachments.map((att, i) => (
+                            <Badge key={i} variant="secondary" className="text-[10px] gap-1 h-5 bg-card">
+                              {att.type === "skill" ? <Zap className="w-2.5 h-2.5 text-primary" /> : <Server className="w-2.5 h-2.5 text-primary" />}
+                              {att.name}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 ) : msg.role === "user" ? (
                   <div className="flex flex-col items-end gap-1">
                     <div className="max-w-[80%] rounded-lg px-3 py-2 text-xs bg-primary text-primary-foreground whitespace-pre-wrap">

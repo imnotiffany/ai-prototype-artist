@@ -12,11 +12,13 @@ import VaultPage from "./pages/VaultPage";
 import WorkspacePage from "./pages/WorkspacePage";
 import ProjectAgents from "./pages/ProjectAgents";
 import CreateAgentPage from "./pages/CreateAgentPage";
+import CreateAgentManualPage from "./pages/CreateAgentManualPage";
 import CreatePage from "./pages/CreatePage";
 import CreateWebPage from "./pages/CreateWebPage";
 import CreateSkillPage from "./pages/CreateSkillPage";
 import ResourceLibrary from "./pages/ResourceLibrary";
 import AppRunner from "./pages/AppRunner";
+import GovernancePage from "./pages/GovernancePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,8 +41,10 @@ const App = () => (
           <Route path="/create" element={<AppLayout><CreatePage /></AppLayout>} />
           <Route path="/create-web" element={<AppLayout><CreateWebPage /></AppLayout>} />
           <Route path="/create-agent" element={<AppLayout><CreateAgentPage /></AppLayout>} />
+          <Route path="/create-agent-manual" element={<AppLayout><CreateAgentManualPage /></AppLayout>} />
           <Route path="/create-skill" element={<AppLayout><CreateSkillPage /></AppLayout>} />
           <Route path="/resources" element={<AppLayout><ResourceLibrary /></AppLayout>} />
+          <Route path="/governance" element={<AppLayout><GovernancePage /></AppLayout>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
