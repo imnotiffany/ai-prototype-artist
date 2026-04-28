@@ -671,7 +671,21 @@ const CreateAgentPage = () => {
                     {msg.content}
                   </div>
                 ) : msg.role === "system" ? (
-                  <p className="text-xs text-muted-foreground">{msg.content}</p>
+                  <div>
+                    <p className="text-xs text-muted-foreground">{msg.content}</p>
+                    {msg.attachments && msg.attachments.length > 0 && (
+                      <div className="mt-2 border border-border rounded-lg p-2.5 bg-muted/30">
+                        <div className="flex flex-wrap gap-1.5">
+                          {msg.attachments.map((att, i) => (
+                            <Badge key={i} variant="secondary" className="text-[10px] gap-1 h-5 bg-card">
+                              {att.type === "skill" ? <Zap className="w-2.5 h-2.5 text-primary" /> : <Server className="w-2.5 h-2.5 text-primary" />}
+                              {att.name}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 ) : msg.role === "user" ? (
                   <div className="flex flex-col items-end gap-1">
                     <div className="max-w-[80%] rounded-lg px-3 py-2 text-xs bg-primary text-primary-foreground whitespace-pre-wrap">
