@@ -90,7 +90,15 @@ const CreatePage = () => {
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-end px-4 pb-3">
+          <div className="flex items-center justify-between px-4 pb-3">
+            {activeTab === "agent" ? (
+              <button
+                onClick={() => navigate("/create-agent-manual")}
+                className="text-[11px] text-muted-foreground hover:text-primary transition-colors"
+              >
+                高级用户？前往手动组装 →
+              </button>
+            ) : <span />}
             <Button
               size="sm"
               className="gap-1.5 text-xs h-8 px-4"
