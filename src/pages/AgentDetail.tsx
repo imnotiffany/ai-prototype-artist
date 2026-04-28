@@ -221,6 +221,8 @@ const AgentDetail = () => {
             </div>
           </div>
         </TabsContent>
+
+        <TabsContent value="versions" className="mt-4">
           {agent.versions.length === 0 ? (
             <div className="text-center py-12 text-sm text-muted-foreground">暂无版本记录</div>
           ) : (
