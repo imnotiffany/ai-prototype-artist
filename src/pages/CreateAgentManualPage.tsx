@@ -340,12 +340,13 @@ const CreateAgentManualPage = () => {
                 <Switch checked={persistentFs} onCheckedChange={setPersistentFs} />
               </div>
               <div>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-1">
                   <Label className="text-xs">环境变量</Label>
                   <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setEnvVars([...envVars, { k: "", v: "" }])}>
                     <Plus className="w-3 h-3" /> 添加
                   </Button>
                 </div>
+                <p className="text-[10px] text-muted-foreground mb-2">注入容器的非敏感运行时配置（如 workspace 路径、时区、日志级别等）。<span className="text-amber-600 dark:text-amber-500">API Key、Token 等敏感凭证请使用下方「凭据金库」</span></p>
                 <div className="space-y-1.5">
                   {envVars.map((v, i) => (
                     <div key={i} className="flex items-center gap-1.5">
