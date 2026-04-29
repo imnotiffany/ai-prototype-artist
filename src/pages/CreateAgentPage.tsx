@@ -489,7 +489,7 @@ const CreateAgentPage = () => {
               id: uid(),
               role: "system",
               content: matchedAttachments.length > 0
-                ? `🎯 已从资源库匹配到 ${newConfig.skills.length} 个 Skill / ${newConfig.mcpServers.length} 个 MCP`
+                ? `🎯 已从 Skill 市场 / MCP 广场匹配到 ${newConfig.skills.length} 个 Skill / ${newConfig.mcpServers.length} 个 MCP`
                 : "ℹ️ 本次未匹配到额外资源，将使用内置工具",
               type: "text",
               attachments: matchedAttachments.length > 0 ? matchedAttachments : undefined,
