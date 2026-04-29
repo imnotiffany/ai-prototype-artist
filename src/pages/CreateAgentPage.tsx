@@ -132,6 +132,7 @@ const assembleAgent = (
     ],
     skills: allSkills,
     mcpServers: allMCPs,
+    fengsheng: { enabled: false, appKey: "", appSecret: "", robotCode: "", connected: false },
   };
 };
 
