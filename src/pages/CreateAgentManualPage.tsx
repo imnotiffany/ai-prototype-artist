@@ -100,7 +100,7 @@ const CreateAgentManualPage = () => {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-72 p-2" align="start">
-        <p className="text-[11px] text-muted-foreground px-2 py-1">从资源库选择</p>
+        <p className="text-[11px] text-muted-foreground px-2 py-1">从{label === "Skill" ? "Skill 市场" : "MCP 广场"}选择</p>
         <div className="max-h-64 overflow-auto">
           {items.map((it) => {
             const sel = selected.includes(it.name);
