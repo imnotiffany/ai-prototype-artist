@@ -52,6 +52,13 @@ const CreateAgentManualPage = () => {
   const [whitelistInput, setWhitelistInput] = useState("");
   const [whitelist, setWhitelist] = useState<string[]>(["api.sf-express.com"]);
 
+  // FengSheng NEXT bot
+  const [fsAppKey, setFsAppKey] = useState("");
+  const [fsAppSecret, setFsAppSecret] = useState("");
+  const [fsRobotCode, setFsRobotCode] = useState("");
+  const [fsSecretVisible, setFsSecretVisible] = useState(false);
+  const [fsConnected, setFsConnected] = useState(false);
+
   const addTag = () => {
     const t = tagInput.trim();
     if (t && !tags.includes(t)) setTags([...tags, t]);
