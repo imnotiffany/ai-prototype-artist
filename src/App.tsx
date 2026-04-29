@@ -7,7 +7,7 @@ import { AppLayout } from "@/components/AppLayout";
 import AgentMarketplace from "./pages/AgentMarketplace";
 import AgentDetail from "./pages/AgentDetail";
 import ChatPage from "./pages/ChatPage";
-import SessionList from "./pages/SessionList";
+
 import VaultPage from "./pages/VaultPage";
 import WorkspacePage from "./pages/WorkspacePage";
 import ProjectAgents from "./pages/ProjectAgents";
@@ -33,7 +33,7 @@ const App = () => (
           <Route path="/agent/:id" element={<AppLayout><AgentDetail /></AppLayout>} />
           <Route path="/chat/:id" element={<AppLayout><ChatPage /></AppLayout>} />
           <Route path="/app/:id" element={<AppLayout><AppRunner /></AppLayout>} />
-          <Route path="/sessions" element={<AppLayout><SessionList /></AppLayout>} />
+          
           <Route path="/vault" element={<AppLayout><VaultPage /></AppLayout>} />
           <Route path="/workspace" element={<AppLayout><WorkspacePage /></AppLayout>} />
           <Route path="/project-agents" element={<AppLayout><ProjectAgents /></AppLayout>} />
