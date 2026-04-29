@@ -157,12 +157,11 @@ const CreateAgentManualPage = () => {
 
       <div className="max-w-4xl mx-auto px-6 py-5">
         <Tabs defaultValue="basic">
-          <TabsList className="grid grid-cols-7 h-9">
+          <TabsList className="grid grid-cols-6 h-9">
             <TabsTrigger value="basic" className="text-xs">基础信息</TabsTrigger>
             <TabsTrigger value="model" className="text-xs">模型配置</TabsTrigger>
-            <TabsTrigger value="prompt" className="text-xs">System Prompt</TabsTrigger>
-            <TabsTrigger value="bindings" className="text-xs">能力绑定</TabsTrigger>
-            <TabsTrigger value="subagent" className="text-xs">Subagent</TabsTrigger>
+            <TabsTrigger value="prompt" className="text-xs">系统提示词</TabsTrigger>
+            <TabsTrigger value="bindings" className="text-xs">原子能力</TabsTrigger>
             <TabsTrigger value="env" className="text-xs">环境凭证</TabsTrigger>
             <TabsTrigger value="network" className="text-xs">网络策略</TabsTrigger>
           </TabsList>
@@ -253,7 +252,7 @@ const CreateAgentManualPage = () => {
           {/* Prompt */}
           <TabsContent value="prompt" className="mt-4">
             <div className="border border-border rounded-lg p-5 bg-card">
-              <Label className="text-xs">System Prompt</Label>
+              <Label className="text-xs">系统提示词</Label>
               <p className="text-[10px] text-muted-foreground mb-2">定义智能体身份、行为约束和输出格式</p>
               <Textarea className="font-mono text-xs leading-relaxed" rows={18} value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)} />
               <div className="flex items-center justify-between mt-2">
@@ -306,15 +305,12 @@ const CreateAgentManualPage = () => {
               )}
               <p className="text-[10px] text-muted-foreground mt-2">凭证将从「凭据金库」自动注入，未配置可前往金库添加</p>
             </div>
-          </TabsContent>
 
-          {/* Subagent */}
-          <TabsContent value="subagent" className="mt-4">
             <div className="border border-border rounded-lg p-5 bg-card">
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <Label className="text-xs flex items-center gap-1.5"><Bot className="w-3.5 h-3.5" /> Subagent 绑定</Label>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">让当前智能体可以调用其他智能体作为子任务执行者</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">允许当前智能体调用其他智能体作为子任务执行者</p>
                 </div>
                 <PickerPopover items={subagents.map((a) => ({ name: a.name, description: a.description }))} selected={selSubagents} onToggle={(n) => toggle(selSubagents, setSelSubagents, n)} icon={<Bot className="w-3 h-3" />} label="Subagent" />
               </div>
@@ -344,12 +340,13 @@ const CreateAgentManualPage = () => {
                 <Switch checked={persistentFs} onCheckedChange={setPersistentFs} />
               </div>
               <div>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-1">
                   <Label className="text-xs">环境变量</Label>
                   <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setEnvVars([...envVars, { k: "", v: "" }])}>
                     <Plus className="w-3 h-3" /> 添加
                   </Button>
                 </div>
+                <p className="text-[10px] text-muted-foreground mb-2">注入容器的非敏感运行时配置（如 workspace 路径、时区、日志级别等）。<span className="text-amber-600 dark:text-amber-500">API Key、Token 等敏感凭证请使用下方「凭据金库」</span></p>
                 <div className="space-y-1.5">
                   {envVars.map((v, i) => (
                     <div key={i} className="flex items-center gap-1.5">
