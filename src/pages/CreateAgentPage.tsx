@@ -657,11 +657,11 @@ const CreateAgentPage = () => {
 
   const rightTabs = agentCreated
     ? [
-        { key: "config" as const, label: "配置", icon: Settings2 },
-        { key: "preview" as const, label: "调试", icon: MessageSquare },
-        { key: "logs" as const, label: "日志", icon: ScrollText },
+        { key: "preview" as const, label: "在线体验", icon: MessageSquare },
+        { key: "config" as const, label: "配置", icon: FormInput },
+        { key: "logs" as const, label: "运行记录", icon: History },
       ]
-    : [{ key: "config" as const, label: "配置", icon: Settings2 }];
+    : [{ key: "config" as const, label: "配置", icon: FormInput }];
 
   return (
     <div className="flex flex-col h-full animate-fade-in">
