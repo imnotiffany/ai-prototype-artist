@@ -18,7 +18,6 @@ import CreateWebPage from "./pages/CreateWebPage";
 import CreateSkillPage from "./pages/CreateSkillPage";
 
 import AppRunner from "./pages/AppRunner";
-import GovernancePage from "./pages/GovernancePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,7 +43,6 @@ const App = () => (
           <Route path="/create-agent-manual" element={<AppLayout><CreateAgentManualPage /></AppLayout>} />
           <Route path="/create-skill" element={<AppLayout><CreateSkillPage /></AppLayout>} />
           
-          <Route path="/governance" element={<AppLayout><GovernancePage /></AppLayout>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
