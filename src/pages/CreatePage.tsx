@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Monitor, Bot, Zap, ArrowRight, Clock, Flame } from "lucide-react";
+import { Monitor, Bot, Zap, ArrowRight, Clock, Flame, Sparkles, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getRecentAgents, getMyAgents } from "@/data/mockData";
@@ -22,6 +22,7 @@ const placeholders: Record<TabKey, string> = {
 const CreatePage = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabKey>("agent");
+  const [agentMode, setAgentMode] = useState<"auto" | "manual">("auto");
   const [description, setDescription] = useState("");
 
   const myAgents = getMyAgents().slice(0, 3);
@@ -29,7 +30,7 @@ const CreatePage = () => {
 
   const handleCreate = () => {
     if (activeTab === "agent") {
-      navigate("/create-agent");
+      navigate(agentMode === "manual" ? "/create-agent-manual" : "/create-agent");
     } else if (activeTab === "web") {
       navigate("/create-web");
     } else if (activeTab === "skill") {
@@ -78,34 +79,68 @@ const CreatePage = () => {
             })}
           </div>
 
+          {/* Agent: mode selector */}
+          {activeTab === "agent" && (
+            <div className="px-4 pt-4 grid grid-cols-2 gap-2.5">
+              <button
+                onClick={() => setAgentMode("auto")}
+                className={`text-left rounded-lg border p-3 transition-all ${
+                  agentMode === "auto"
+                    ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+                    : "border-border bg-background hover:border-primary/40"
+                }`}
+              >
+                <div className="flex items-center gap-1.5 mb-1">
+                  <Sparkles className={`w-3.5 h-3.5 ${agentMode === "auto" ? "text-primary" : "text-muted-foreground"}`} />
+                  <span className="text-xs font-medium text-foreground">自动组装</span>
+                  <Badge variant="secondary" className="text-[9px] h-4 px-1.5 ml-auto">推荐</Badge>
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  描述需求，AI 自动匹配 Skill / MCP 并生成草稿
+                </p>
+              </button>
+              <button
+                onClick={() => setAgentMode("manual")}
+                className={`text-left rounded-lg border p-3 transition-all ${
+                  agentMode === "manual"
+                    ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+                    : "border-border bg-background hover:border-primary/40"
+                }`}
+              >
+                <div className="flex items-center gap-1.5 mb-1">
+                  <SlidersHorizontal className={`w-3.5 h-3.5 ${agentMode === "manual" ? "text-primary" : "text-muted-foreground"}`} />
+                  <span className="text-xs font-medium text-foreground">手动组装</span>
+                  <Badge variant="outline" className="text-[9px] h-4 px-1.5 ml-auto">高级</Badge>
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  自行配置模型、提示词、Skill / MCP、子智能体
+                </p>
+              </button>
+            </div>
+          )}
+
           {/* Textarea */}
-          <div className="p-4">
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder={placeholders[activeTab]}
-              rows={4}
-              className="w-full resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none leading-relaxed"
-            />
-          </div>
+          {!(activeTab === "agent" && agentMode === "manual") && (
+            <div className="p-4">
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder={placeholders[activeTab]}
+                rows={4}
+                className="w-full resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none leading-relaxed"
+              />
+            </div>
+          )}
 
           {/* Footer */}
-          <div className="flex items-center justify-between px-4 pb-3">
-            {activeTab === "agent" ? (
-              <button
-                onClick={() => navigate("/create-agent-manual")}
-                className="text-[11px] text-muted-foreground hover:text-primary transition-colors"
-              >
-                高级用户？前往手动组装 →
-              </button>
-            ) : <span />}
+          <div className="flex items-center justify-end px-4 py-3">
             <Button
               size="sm"
               className="gap-1.5 text-xs h-8 px-4"
               onClick={handleCreate}
-              disabled={!description.trim()}
+              disabled={activeTab === "agent" && agentMode === "manual" ? false : !description.trim()}
             >
-              立即创建
+              {activeTab === "agent" && agentMode === "manual" ? "进入手动组装" : "立即创建"}
               <ArrowRight className="w-3.5 h-3.5" />
             </Button>
           </div>
