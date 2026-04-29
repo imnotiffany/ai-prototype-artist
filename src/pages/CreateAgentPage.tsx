@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import {
   Send, ChevronRight, CheckCircle2, Copy, Loader2, ChevronDown, Code2, Settings2,
   Zap, Server, Plus, X, Rocket, Package, Bot, ScrollText, MessageSquare, Bug,
+  History, FormInput, KeyRound, Link2, Eye, EyeOff,
 } from "lucide-react";
+import { Label } from "@/components/ui/label";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +53,13 @@ interface AgentConfig {
   tools: { name: string; id: string; permissions: number; permissionPolicy: string }[];
   skills: string[];
   mcpServers: string[];
+  fengsheng: {
+    enabled: boolean;
+    appKey: string;
+    appSecret: string;
+    robotCode: string;
+    connected: boolean;
+  };
 }
 
 const defaultConfig: AgentConfig = {
@@ -63,6 +72,7 @@ const defaultConfig: AgentConfig = {
   ],
   skills: [],
   mcpServers: [],
+  fengsheng: { enabled: false, appKey: "", appSecret: "", robotCode: "", connected: false },
 };
 
 /* ── Available Skills & MCPs (from shared resource library) ── */
@@ -122,6 +132,7 @@ const assembleAgent = (
     ],
     skills: allSkills,
     mcpServers: allMCPs,
+    fengsheng: { enabled: false, appKey: "", appSecret: "", robotCode: "", connected: false },
   };
 };
 
@@ -327,6 +338,105 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
             </div>
           )}
         </div>
+
+        {/* 丰声 NEXT 机器人接入 */}
+        <FengshengSection config={config} onConfigChange={onConfigChange} />
+      </div>
+    </div>
+  );
+};
+
+/* ── 丰声 NEXT 接入 ── */
+const FengshengSection = ({
+  config,
+  onConfigChange,
+}: {
+  config: AgentConfig;
+  onConfigChange: (c: AgentConfig) => void;
+}) => {
+  const [secretVisible, setSecretVisible] = useState(false);
+  const fs = config.fengsheng;
+  const update = (patch: Partial<AgentConfig["fengsheng"]>) =>
+    onConfigChange({ ...config, fengsheng: { ...fs, ...patch } });
+
+  return (
+    <div className="px-5 py-4 border-t border-border">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center">
+            <MessageSquare className="w-3.5 h-3.5 text-primary" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold">丰声 NEXT 机器人接入</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">将该智能体发布为丰声 NEXT 群聊机器人</p>
+          </div>
+        </div>
+        <Badge
+          variant="outline"
+          className={`text-[10px] gap-1 ${fs.connected ? "text-emerald-600 border-emerald-600/40 bg-emerald-500/10" : "text-muted-foreground"}`}
+        >
+          <span className={`w-1.5 h-1.5 rounded-full ${fs.connected ? "bg-emerald-500" : "bg-muted-foreground/50"}`} />
+          {fs.connected ? "已连接" : "未连接"}
+        </Badge>
+      </div>
+
+      <div className="space-y-3 border border-border rounded-lg p-3 bg-muted/20">
+        <div>
+          <Label className="text-[11px]">Client ID（AppKey） <span className="text-destructive">*</span></Label>
+          <Input
+            className="mt-1 h-8 text-xs font-mono"
+            placeholder="企业应用 AppKey"
+            value={fs.appKey}
+            onChange={(e) => update({ appKey: e.target.value, connected: false })}
+          />
+        </div>
+        <div>
+          <Label className="text-[11px]">Client Secret（AppSecret） <span className="text-destructive">*</span></Label>
+          <div className="relative mt-1">
+            <Input
+              className="h-8 text-xs font-mono pr-9"
+              type={secretVisible ? "text" : "password"}
+              placeholder="企业应用 AppSecret"
+              value={fs.appSecret}
+              onChange={(e) => update({ appSecret: e.target.value, connected: false })}
+            />
+            <button
+              type="button"
+              onClick={() => setSecretVisible(!secretVisible)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              {secretVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+            </button>
+          </div>
+        </div>
+        <div>
+          <Label className="text-[11px]">Robot Code <span className="text-destructive">*</span></Label>
+          <Input
+            className="mt-1 h-8 text-xs font-mono"
+            placeholder="机器人编码"
+            value={fs.robotCode}
+            onChange={(e) => update({ robotCode: e.target.value, connected: false })}
+          />
+        </div>
+        <Button
+          size="sm"
+          variant={fs.connected ? "outline" : "default"}
+          className="h-7 w-full text-xs gap-1.5"
+          onClick={() => {
+            if (!fs.appKey || !fs.appSecret || !fs.robotCode) {
+              toast({ title: "请先填写完整的应用凭证", variant: "destructive" });
+              return;
+            }
+            update({ connected: true, enabled: true });
+            toast({ title: "丰声 NEXT 机器人已连接", description: `Robot ${fs.robotCode}` });
+          }}
+        >
+          {fs.connected ? <CheckCircle2 className="w-3 h-3" /> : <Link2 className="w-3 h-3" />}
+          {fs.connected ? "已连接" : "连接并发布到丰声 NEXT"}
+        </Button>
+        <p className="text-[10px] text-muted-foreground leading-relaxed">
+          在丰声 NEXT 开发者后台「机器人管理」获取凭证；连接成功后，群聊中 @ 机器人即可触发对话。
+        </p>
       </div>
     </div>
   );
@@ -646,11 +756,11 @@ const CreateAgentPage = () => {
 
   const rightTabs = agentCreated
     ? [
-        { key: "config" as const, label: "配置", icon: Settings2 },
-        { key: "preview" as const, label: "调试", icon: MessageSquare },
-        { key: "logs" as const, label: "日志", icon: ScrollText },
+        { key: "preview" as const, label: "在线体验", icon: MessageSquare },
+        { key: "config" as const, label: "配置", icon: FormInput },
+        { key: "logs" as const, label: "运行记录", icon: History },
       ]
-    : [{ key: "config" as const, label: "配置", icon: Settings2 }];
+    : [{ key: "config" as const, label: "配置", icon: FormInput }];
 
   return (
     <div className="flex flex-col h-full animate-fade-in">
