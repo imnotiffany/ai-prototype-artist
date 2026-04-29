@@ -55,7 +55,7 @@ const AgentMarketplace = () => {
           <span className="text-primary font-bold">样样都慧</span>
         </h1>
         <p className="mt-2 text-xs text-muted-foreground">
-          精选全场景应用、智能体与技能，汇聚实战力量，让业务化繁为简
+          精选全场景应用及智能体，汇聚实战力量，让业务化繁为简
         </p>
       </div>
 
