@@ -252,7 +252,7 @@ const CreateAgentManualPage = () => {
           {/* Prompt */}
           <TabsContent value="prompt" className="mt-4">
             <div className="border border-border rounded-lg p-5 bg-card">
-              <Label className="text-xs">System Prompt</Label>
+              <Label className="text-xs">系统提示词</Label>
               <p className="text-[10px] text-muted-foreground mb-2">定义智能体身份、行为约束和输出格式</p>
               <Textarea className="font-mono text-xs leading-relaxed" rows={18} value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)} />
               <div className="flex items-center justify-between mt-2">
