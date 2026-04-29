@@ -114,6 +114,45 @@ export const PublishDialog = ({ open, onOpenChange, defaultName = "", defaultDes
                 </label>
               );
             })}
+
+            {fsSelected && (
+              <div className="border border-primary/40 bg-primary/5 rounded-lg p-3 space-y-2.5 mt-2">
+                <div className="flex items-center gap-1.5 text-xs font-medium">
+                  <KeyRound className="w-3.5 h-3.5 text-primary" />
+                  丰声 NEXT 应用凭证
+                </div>
+                <div>
+                  <Label className="text-[11px]">Client ID（AppKey） <span className="text-destructive">*</span></Label>
+                  <Input className="mt-1 h-8 text-xs font-mono" placeholder="企业应用 AppKey" value={fsAppKey} onChange={(e) => setFsAppKey(e.target.value)} />
+                </div>
+                <div>
+                  <Label className="text-[11px]">Client Secret（AppSecret） <span className="text-destructive">*</span></Label>
+                  <div className="relative mt-1">
+                    <Input
+                      className="h-8 text-xs font-mono pr-9"
+                      type={fsSecretVisible ? "text" : "password"}
+                      placeholder="企业应用 AppSecret"
+                      value={fsAppSecret}
+                      onChange={(e) => setFsAppSecret(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setFsSecretVisible(!fsSecretVisible)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {fsSecretVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-[11px]">Robot Code <span className="text-destructive">*</span></Label>
+                  <Input className="mt-1 h-8 text-xs font-mono" placeholder="机器人编码" value={fsRobotCode} onChange={(e) => setFsRobotCode(e.target.value)} />
+                </div>
+                <p className="text-[10px] text-muted-foreground leading-relaxed">
+                  在丰声 NEXT 开发者后台「机器人管理」获取，凭据将通过「凭据金库」加密存储
+                </p>
+              </div>
+            )}
           </div>
         )}
 
