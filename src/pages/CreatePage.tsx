@@ -22,6 +22,7 @@ const placeholders: Record<TabKey, string> = {
 const CreatePage = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabKey>("agent");
+  const [agentMode, setAgentMode] = useState<"auto" | "manual">("auto");
   const [description, setDescription] = useState("");
 
   const myAgents = getMyAgents().slice(0, 3);
@@ -29,7 +30,7 @@ const CreatePage = () => {
 
   const handleCreate = () => {
     if (activeTab === "agent") {
-      navigate("/create-agent");
+      navigate(agentMode === "manual" ? "/create-agent-manual" : "/create-agent");
     } else if (activeTab === "web") {
       navigate("/create-web");
     } else if (activeTab === "skill") {
