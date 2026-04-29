@@ -46,7 +46,7 @@ const CreatePage = () => {
           万千功能，<span className="text-primary">一语慧聚</span>
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          描述你的想法，一键快速构建功能完整的强大应用
+          描述你的想法，一键快速构建功能完整的强大应用、智能体或技能
         </p>
       </div>
 
