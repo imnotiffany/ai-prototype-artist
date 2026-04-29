@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Monitor, Bot, Zap, ArrowRight, Clock, Flame } from "lucide-react";
+import { Monitor, Bot, Zap, ArrowRight, Clock, Flame, Sparkles, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getRecentAgents, getMyAgents } from "@/data/mockData";
