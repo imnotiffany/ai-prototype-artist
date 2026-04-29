@@ -16,7 +16,6 @@ const menuSections = [
       { name: "项目管理", path: "/project-agents", icon: FolderOpen },
       { name: "会话记录", path: "/sessions", icon: MessageSquare },
       { name: "凭据金库", path: "/vault", icon: KeyRound },
-      { name: "数据看板", path: "/governance", icon: BarChart3 },
     ],
   },
 ];
