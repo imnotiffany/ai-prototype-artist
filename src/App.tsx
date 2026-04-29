@@ -43,7 +43,6 @@ const App = () => (
           <Route path="/create-agent-manual" element={<AppLayout><CreateAgentManualPage /></AppLayout>} />
           <Route path="/create-skill" element={<AppLayout><CreateSkillPage /></AppLayout>} />
           
-          <Route path="/governance" element={<AppLayout><GovernancePage /></AppLayout>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
