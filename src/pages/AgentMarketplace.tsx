@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Clock, MessageSquare, Globe, Download } from "lucide-react";
+import { Search, Clock, MessageSquare, Globe, Zap } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
@@ -184,32 +184,31 @@ const AgentMarketplace = () => {
                     </div>
                   </div>
                 </div>
-                <p className="text-[11px] text-muted-foreground line-clamp-2 mb-3 leading-relaxed">
+                <p className="text-[11px] text-muted-foreground line-clamp-2 mb-2 leading-relaxed">
                   {agent.description}
                 </p>
-                <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                  <span className="truncate">
-                    {agent.platform} · {agent.author}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between mt-1.5">
-                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-3">
+                  <span className="truncate">{agent.platform} · {agent.author}</span>
+                  <div className="flex items-center gap-1 shrink-0">
                     <Clock className="w-3 h-3" />
-                    {agent.updatedAt}更新
+                    {agent.updatedAt}
                   </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toast({
-                        title: "已订阅",
-                        description: `${agent.name} 配置已复制到「我的应用」，可立即使用`,
-                      });
-                    }}
-                    className="text-[10px] text-primary hover:underline flex items-center gap-0.5"
-                  >
-                    <Download className="w-2.5 h-2.5" />订阅
-                  </button>
                 </div>
+                <Button
+                  size="sm"
+                  className="w-full h-7 text-xs gap-1"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toast({
+                      title: "已复制到「我的项目」",
+                      description: `${agent.name} 配置已克隆，可立即体验`,
+                    });
+                    navigate("/project-agents");
+                  }}
+                >
+                  <Zap className="w-3 h-3" />
+                  快速体验
+                </Button>
               </div>
             );
           })}
