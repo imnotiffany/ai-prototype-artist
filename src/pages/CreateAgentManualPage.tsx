@@ -157,12 +157,11 @@ const CreateAgentManualPage = () => {
 
       <div className="max-w-4xl mx-auto px-6 py-5">
         <Tabs defaultValue="basic">
-          <TabsList className="grid grid-cols-7 h-9">
+          <TabsList className="grid grid-cols-6 h-9">
             <TabsTrigger value="basic" className="text-xs">基础信息</TabsTrigger>
             <TabsTrigger value="model" className="text-xs">模型配置</TabsTrigger>
-            <TabsTrigger value="prompt" className="text-xs">System Prompt</TabsTrigger>
-            <TabsTrigger value="bindings" className="text-xs">能力绑定</TabsTrigger>
-            <TabsTrigger value="subagent" className="text-xs">Subagent</TabsTrigger>
+            <TabsTrigger value="prompt" className="text-xs">系统提示词</TabsTrigger>
+            <TabsTrigger value="bindings" className="text-xs">原子能力</TabsTrigger>
             <TabsTrigger value="env" className="text-xs">环境凭证</TabsTrigger>
             <TabsTrigger value="network" className="text-xs">网络策略</TabsTrigger>
           </TabsList>
