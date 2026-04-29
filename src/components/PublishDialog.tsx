@@ -29,12 +29,18 @@ export const PublishDialog = ({ open, onOpenChange, defaultName = "", defaultDes
   const [desc, setDesc] = useState(defaultDescription);
   const [version, setVersion] = useState("v1.0.0");
   const [selChannels, setSelChannels] = useState<string[]>(["marketplace"]);
+  const [fsAppKey, setFsAppKey] = useState("");
+  const [fsAppSecret, setFsAppSecret] = useState("");
+  const [fsRobotCode, setFsRobotCode] = useState("");
+  const [fsSecretVisible, setFsSecretVisible] = useState(false);
 
   const reset = () => { setStep(1); };
   const close = () => { onOpenChange(false); setTimeout(reset, 300); };
 
   const toggleChannel = (id: string) =>
     setSelChannels((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
+
+  const fsSelected = selChannels.includes("fengsheng");
 
   const submit = () => {
     toast({
