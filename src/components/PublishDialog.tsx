@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, ArrowRight, Check, Globe, MessageSquare, Webhook, Activity, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Globe, MessageSquare, Webhook, Activity, ShieldCheck, Eye, EyeOff, KeyRound } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface Props {
