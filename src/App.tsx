@@ -18,7 +18,6 @@ import CreateWebPage from "./pages/CreateWebPage";
 import CreateSkillPage from "./pages/CreateSkillPage";
 
 import AppRunner from "./pages/AppRunner";
-import GovernancePage from "./pages/GovernancePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
