@@ -130,7 +130,7 @@ const ProjectAgents = () => {
             <div
               key={app.id}
               className="relative border border-border rounded-lg p-4 hover:shadow-md hover:border-primary/40 transition-all cursor-pointer bg-card"
-              onClick={() => navigate(app.kind === "app" ? `/app/${app.id}` : `/chat/${app.id}`)}
+              onClick={() => navigate(app.kind === "app" ? `/app/${app.id}` : `/agent/${app.id}`)}
             >
               <div
                 className={`absolute top-2 right-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium ${
