@@ -42,12 +42,8 @@ const ProjectAgents = () => {
 
   const getStatusBadge = (app: Agent) => {
     const badges: React.ReactNode[] = [];
-    if (app.creationType === "ai") {
-      badges.push(<Badge key="ai" className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-0 text-[10px] px-1.5 h-5">AI创建</Badge>);
-    }
-    if (app.creationType === "upload") {
-      badges.push(<Badge key="upload" className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-0 text-[10px] px-1.5 h-5">上传</Badge>);
-    }
+
+
     if (app.status === "published") {
       badges.push(<Badge key="pub" className="bg-green-100 text-green-700 hover:bg-green-100 border-0 text-[10px] px-1.5 h-5">已发布</Badge>);
     }
