@@ -183,7 +183,18 @@ export const PublishDialog = ({ open, onOpenChange, defaultName = "", defaultDes
             {step === 1 ? "取消" : <><ArrowLeft className="w-3 h-3" />上一步</>}
           </Button>
           {step < 3 ? (
-            <Button size="sm" className="h-8 text-xs gap-1" disabled={step === 1 && !name.trim()} onClick={() => setStep(step + 1)}>
+            <Button
+              size="sm"
+              className="h-8 text-xs gap-1"
+              disabled={step === 1 && !name.trim()}
+              onClick={() => {
+                if (step === 2 && fsSelected && (!fsAppKey || !fsAppSecret || !fsRobotCode)) {
+                  toast({ title: "请填写完整的丰声 NEXT 应用凭证", variant: "destructive" });
+                  return;
+                }
+                setStep(step + 1);
+              }}
+            >
               下一步<ArrowRight className="w-3 h-3" />
             </Button>
           ) : (
