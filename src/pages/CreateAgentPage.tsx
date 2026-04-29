@@ -53,6 +53,13 @@ interface AgentConfig {
   tools: { name: string; id: string; permissions: number; permissionPolicy: string }[];
   skills: string[];
   mcpServers: string[];
+  fengsheng: {
+    enabled: boolean;
+    appKey: string;
+    appSecret: string;
+    robotCode: string;
+    connected: boolean;
+  };
 }
 
 const defaultConfig: AgentConfig = {
@@ -65,6 +72,7 @@ const defaultConfig: AgentConfig = {
   ],
   skills: [],
   mcpServers: [],
+  fengsheng: { enabled: false, appKey: "", appSecret: "", robotCode: "", connected: false },
 };
 
 /* ── Available Skills & MCPs (from shared resource library) ── */
