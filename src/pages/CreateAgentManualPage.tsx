@@ -305,15 +305,12 @@ const CreateAgentManualPage = () => {
               )}
               <p className="text-[10px] text-muted-foreground mt-2">凭证将从「凭据金库」自动注入，未配置可前往金库添加</p>
             </div>
-          </TabsContent>
 
-          {/* Subagent */}
-          <TabsContent value="subagent" className="mt-4">
             <div className="border border-border rounded-lg p-5 bg-card">
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <Label className="text-xs flex items-center gap-1.5"><Bot className="w-3.5 h-3.5" /> Subagent 绑定</Label>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">让当前智能体可以调用其他智能体作为子任务执行者</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">允许当前智能体调用其他智能体作为子任务执行者</p>
                 </div>
                 <PickerPopover items={subagents.map((a) => ({ name: a.name, description: a.description }))} selected={selSubagents} onToggle={(n) => toggle(selSubagents, setSelSubagents, n)} icon={<Bot className="w-3 h-3" />} label="Subagent" />
               </div>
