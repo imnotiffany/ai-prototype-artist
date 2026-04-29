@@ -740,10 +740,6 @@ const CreateAgentPage = () => {
               </div>
             )}
             <div className="flex items-center gap-2">
-              <div className="flex gap-1">
-                <AttachmentPicker type="skill" items={availableSkills} selected={selectedSkills} onToggle={toggleSkill} />
-                <AttachmentPicker type="mcp" items={availableMCPs} selected={selectedMCPs} onToggle={toggleMCP} />
-              </div>
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
