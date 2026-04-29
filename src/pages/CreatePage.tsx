@@ -43,11 +43,10 @@ const CreatePage = () => {
       {/* Hero */}
       <div className="pt-16 pb-8 text-center">
         <h1 className="text-2xl font-semibold text-foreground tracking-tight">
-          描述你的想法，
-          <span className="text-primary">即刻构建</span>
+          万千功能，<span className="text-primary">一语慧聚</span>
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          通过自然语言快速创建网页应用、智能体或技能
+          描述你的想法，一键快速构建功能完整的强大应用
         </p>
       </div>
 

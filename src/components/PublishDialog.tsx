@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, ArrowRight, Check, Globe, MessageSquare, Webhook, Activity, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Globe, MessageSquare, Webhook, Activity, ShieldCheck, Eye, EyeOff, KeyRound } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface Props {
@@ -29,12 +29,18 @@ export const PublishDialog = ({ open, onOpenChange, defaultName = "", defaultDes
   const [desc, setDesc] = useState(defaultDescription);
   const [version, setVersion] = useState("v1.0.0");
   const [selChannels, setSelChannels] = useState<string[]>(["marketplace"]);
+  const [fsAppKey, setFsAppKey] = useState("");
+  const [fsAppSecret, setFsAppSecret] = useState("");
+  const [fsRobotCode, setFsRobotCode] = useState("");
+  const [fsSecretVisible, setFsSecretVisible] = useState(false);
 
   const reset = () => { setStep(1); };
   const close = () => { onOpenChange(false); setTimeout(reset, 300); };
 
   const toggleChannel = (id: string) =>
     setSelChannels((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
+
+  const fsSelected = selChannels.includes("fengsheng");
 
   const submit = () => {
     toast({
@@ -108,6 +114,45 @@ export const PublishDialog = ({ open, onOpenChange, defaultName = "", defaultDes
                 </label>
               );
             })}
+
+            {fsSelected && (
+              <div className="border border-primary/40 bg-primary/5 rounded-lg p-3 space-y-2.5 mt-2">
+                <div className="flex items-center gap-1.5 text-xs font-medium">
+                  <KeyRound className="w-3.5 h-3.5 text-primary" />
+                  丰声 NEXT 应用凭证
+                </div>
+                <div>
+                  <Label className="text-[11px]">Client ID（AppKey） <span className="text-destructive">*</span></Label>
+                  <Input className="mt-1 h-8 text-xs font-mono" placeholder="企业应用 AppKey" value={fsAppKey} onChange={(e) => setFsAppKey(e.target.value)} />
+                </div>
+                <div>
+                  <Label className="text-[11px]">Client Secret（AppSecret） <span className="text-destructive">*</span></Label>
+                  <div className="relative mt-1">
+                    <Input
+                      className="h-8 text-xs font-mono pr-9"
+                      type={fsSecretVisible ? "text" : "password"}
+                      placeholder="企业应用 AppSecret"
+                      value={fsAppSecret}
+                      onChange={(e) => setFsAppSecret(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setFsSecretVisible(!fsSecretVisible)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {fsSecretVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-[11px]">Robot Code <span className="text-destructive">*</span></Label>
+                  <Input className="mt-1 h-8 text-xs font-mono" placeholder="机器人编码" value={fsRobotCode} onChange={(e) => setFsRobotCode(e.target.value)} />
+                </div>
+                <p className="text-[10px] text-muted-foreground leading-relaxed">
+                  在丰声 NEXT 开发者后台「机器人管理」获取，凭据将通过「凭据金库」加密存储
+                </p>
+              </div>
+            )}
           </div>
         )}
 
@@ -138,7 +183,18 @@ export const PublishDialog = ({ open, onOpenChange, defaultName = "", defaultDes
             {step === 1 ? "取消" : <><ArrowLeft className="w-3 h-3" />上一步</>}
           </Button>
           {step < 3 ? (
-            <Button size="sm" className="h-8 text-xs gap-1" disabled={step === 1 && !name.trim()} onClick={() => setStep(step + 1)}>
+            <Button
+              size="sm"
+              className="h-8 text-xs gap-1"
+              disabled={step === 1 && !name.trim()}
+              onClick={() => {
+                if (step === 2 && fsSelected && (!fsAppKey || !fsAppSecret || !fsRobotCode)) {
+                  toast({ title: "请填写完整的丰声 NEXT 应用凭证", variant: "destructive" });
+                  return;
+                }
+                setStep(step + 1);
+              }}
+            >
               下一步<ArrowRight className="w-3 h-3" />
             </Button>
           ) : (
