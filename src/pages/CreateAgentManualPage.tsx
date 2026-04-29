@@ -418,6 +418,116 @@ const CreateAgentManualPage = () => {
               </RadioGroup>
             </div>
           </TabsContent>
+
+          {/* FengSheng NEXT Bot */}
+          <TabsContent value="fengsheng" className="mt-4 space-y-4">
+            <div className="border border-border rounded-lg p-5 bg-card">
+              <div className="flex items-start justify-between mb-1">
+                <div className="flex items-start gap-2">
+                  <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
+                    <MessageSquare className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold">丰声 NEXT 机器人接入</h3>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      配置企业应用凭证，将该智能体发布为丰声 NEXT 群聊机器人，群成员 @ 即可触发对话
+                    </p>
+                  </div>
+                </div>
+                <Badge
+                  variant="outline"
+                  className={`text-[10px] gap-1 ${fsConnected ? "text-emerald-600 border-emerald-600/40 bg-emerald-500/10" : "text-muted-foreground"}`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${fsConnected ? "bg-emerald-500" : "bg-muted-foreground/50"}`} />
+                  {fsConnected ? "已连接" : "未连接"}
+                </Badge>
+              </div>
+            </div>
+
+            <div className="border border-border rounded-lg p-5 bg-card space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-semibold flex items-center gap-1.5">
+                  <KeyRound className="w-3.5 h-3.5" />
+                  应用凭证
+                </h4>
+                <Button
+                  size="sm"
+                  variant={fsConnected ? "outline" : "default"}
+                  className="h-7 text-xs gap-1.5"
+                  onClick={() => {
+                    if (!fsAppKey || !fsAppSecret || !fsRobotCode) {
+                      toast({ title: "请先填写完整的应用凭证", variant: "destructive" });
+                      return;
+                    }
+                    setFsConnected(true);
+                    toast({ title: "丰声 NEXT 机器人已连接", description: `Robot ${fsRobotCode}` });
+                  }}
+                >
+                  {fsConnected ? <CheckCircle2 className="w-3 h-3" /> : <Link2 className="w-3 h-3" />}
+                  {fsConnected ? "已连接" : "连接"}
+                </Button>
+              </div>
+
+              <div>
+                <Label className="text-xs">
+                  Client ID（AppKey） <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  className="mt-1.5 h-8 text-xs font-mono"
+                  placeholder="企业应用 AppKey"
+                  value={fsAppKey}
+                  onChange={(e) => setFsAppKey(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs">
+                  Client Secret（AppSecret） <span className="text-destructive">*</span>
+                </Label>
+                <div className="relative mt-1.5">
+                  <Input
+                    className="h-8 text-xs font-mono pr-9"
+                    type={fsSecretVisible ? "text" : "password"}
+                    placeholder="企业应用 AppSecret"
+                    value={fsAppSecret}
+                    onChange={(e) => setFsAppSecret(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setFsSecretVisible(!fsSecretVisible)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {fsSecretVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-xs">
+                  Robot Code <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  className="mt-1.5 h-8 text-xs font-mono"
+                  placeholder="机器人编码"
+                  value={fsRobotCode}
+                  onChange={(e) => setFsRobotCode(e.target.value)}
+                />
+                <p className="text-[10px] text-muted-foreground mt-1.5">
+                  在丰声 NEXT 开发者后台「机器人管理」中获取，凭据将通过「凭据金库」加密存储
+                </p>
+              </div>
+            </div>
+
+            <div className="border border-border rounded-lg p-5 bg-card space-y-3">
+              <h4 className="text-xs font-semibold">接入说明</h4>
+              <ol className="text-[11px] text-muted-foreground space-y-1.5 list-decimal pl-4 leading-relaxed">
+                <li>登录丰声 NEXT 开发者后台，创建企业内部应用并开通「机器人」能力</li>
+                <li>复制应用的 AppKey、AppSecret 与 Robot Code，粘贴至上方对应字段</li>
+                <li>点击「连接」校验凭证，校验通过后保存并发布智能体</li>
+                <li>在目标群聊中添加该机器人，即可通过 @ 机器人触发对话</li>
+              </ol>
+            </div>
+          </TabsContent>
         </Tabs>
       </div>
     </div>
