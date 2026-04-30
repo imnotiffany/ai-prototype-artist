@@ -316,11 +316,27 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
           {/* Prompt */}
           <TabsContent value="prompt" className="mt-4">
             <div className="border border-border rounded-lg p-5 bg-card">
-              <Label className="text-xs">系统提示词</Label>
-              <p className="text-[10px] text-muted-foreground mb-2">定义智能体身份、行为约束和输出格式</p>
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div>
+                  <Label className="text-xs">系统提示词</Label>
+                  <p className="text-[10px] text-muted-foreground">定义智能体身份、行为约束和输出格式</p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs gap-1.5 border-primary/40 text-primary hover:bg-primary/10 hover:text-primary"
+                  onClick={handleAutoGeneratePrompt}
+                  disabled={generatingPrompt}
+                >
+                  {generatingPrompt ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                  AI 自动生成
+                </Button>
+              </div>
               <Textarea className="font-mono text-xs leading-relaxed" rows={18} value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)} />
               <div className="flex items-center justify-between mt-2">
-                <p className="text-[10px] text-muted-foreground">{systemPrompt.length} 字符</p>
+                <p className="text-[10px] text-muted-foreground">
+                  {systemPrompt.length} 字符 · 将根据已绑定的 {selSkills.length} 个 Skill 与 {selMCPs.length} 个 MCP 生成
+                </p>
                 <Button size="sm" variant="ghost" className="h-7 text-xs">从模板导入</Button>
               </div>
             </div>
