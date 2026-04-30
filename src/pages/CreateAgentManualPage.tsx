@@ -346,25 +346,6 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
           <TabsContent value="bindings" className="mt-4 space-y-4">
             <div className="border border-border rounded-lg p-5 bg-card">
               <div className="flex items-center justify-between mb-3">
-                <Label className="text-xs flex items-center gap-1.5"><Zap className="w-3.5 h-3.5" /> Skill 绑定</Label>
-                <PickerPopover items={skills} selected={selSkills} onToggle={(n) => toggle(selSkills, setSelSkills, n)} icon={<Zap className="w-3 h-3" />} label="Skill" />
-              </div>
-              {selSkills.length === 0 ? (
-                <p className="text-xs text-muted-foreground py-2">未绑定任何 Skill</p>
-              ) : (
-                <div className="space-y-1.5">
-                  {selSkills.map((s) => (
-                    <div key={s} className="flex items-center justify-between border border-border rounded px-3 py-1.5 text-xs">
-                      <span className="flex items-center gap-1.5"><Zap className="w-3 h-3 text-primary" />{s}</span>
-                      <button onClick={() => toggle(selSkills, setSelSkills, s)} className="text-muted-foreground hover:text-destructive"><X className="w-3 h-3" /></button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="border border-border rounded-lg p-5 bg-card">
-              <div className="flex items-center justify-between mb-3">
                 <Label className="text-xs flex items-center gap-1.5"><Server className="w-3.5 h-3.5" /> MCP 服务绑定</Label>
                 <PickerPopover items={mcps} selected={selMCPs} onToggle={(n) => toggle(selMCPs, setSelMCPs, n)} icon={<Server className="w-3 h-3" />} label="MCP" />
               </div>
@@ -384,6 +365,25 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                 </div>
               )}
               <p className="text-[10px] text-muted-foreground mt-2">凭证将从「凭据金库」自动注入，未配置可前往金库添加</p>
+            </div>
+
+            <div className="border border-border rounded-lg p-5 bg-card">
+              <div className="flex items-center justify-between mb-3">
+                <Label className="text-xs flex items-center gap-1.5"><Zap className="w-3.5 h-3.5" /> Skill 绑定</Label>
+                <PickerPopover items={skills} selected={selSkills} onToggle={(n) => toggle(selSkills, setSelSkills, n)} icon={<Zap className="w-3 h-3" />} label="Skill" />
+              </div>
+              {selSkills.length === 0 ? (
+                <p className="text-xs text-muted-foreground py-2">未绑定任何 Skill</p>
+              ) : (
+                <div className="space-y-1.5">
+                  {selSkills.map((s) => (
+                    <div key={s} className="flex items-center justify-between border border-border rounded px-3 py-1.5 text-xs">
+                      <span className="flex items-center gap-1.5"><Zap className="w-3 h-3 text-primary" />{s}</span>
+                      <button onClick={() => toggle(selSkills, setSelSkills, s)} className="text-muted-foreground hover:text-destructive"><X className="w-3 h-3" /></button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="border border-border rounded-lg p-5 bg-card">
