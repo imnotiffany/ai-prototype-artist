@@ -75,6 +75,61 @@ const CreateAgentManualPage = () => {
     setWhitelistInput("");
   };
 
+  const handleAutoGeneratePrompt = () => {
+    setGeneratingPrompt(true);
+    setTimeout(() => {
+      const roleLine = name.trim() ? `你是「${name.trim()}」` : "你是一个专业的 AI 智能体";
+      const descLine = description.trim() ? `，${description.trim()}。` : "，致力于高质量地完成用户交付的任务。";
+
+      const skillLines = selSkills.length
+        ? selSkills.map((s) => {
+            const meta = skills.find((x) => x.name === s);
+            return `- ${s}${meta ? `：${meta.description}` : ""}`;
+          }).join("\n")
+        : "- （未绑定 Skill）";
+
+      const mcpLines = selMCPs.length
+        ? selMCPs.map((s) => {
+            const meta = mcps.find((x) => x.name === s);
+            return `- ${s}${meta ? `：${meta.description}` : ""}`;
+          }).join("\n")
+        : "- （未绑定 MCP 服务）";
+
+      const subLines = selSubagents.length
+        ? selSubagents.map((s) => `- ${s}`).join("\n")
+        : "";
+
+      const generated = `# 角色
+${roleLine}${descLine}
+
+# 你拥有的能力
+## Skills（原子能力）
+${skillLines}
+
+## MCP 服务（外部工具）
+${mcpLines}
+${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
+# 工作流程
+1. 仔细理解用户意图，必要时主动澄清关键信息。
+2. 根据任务类型，从上述能力中选择最合适的工具组合。
+3. 调用工具前简要说明计划；调用后基于结果迭代下一步。
+4. 对涉及外部数据写入或敏感操作的步骤，先与用户确认再执行。
+
+# 输出规范
+- 使用清晰的 Markdown 结构组织回答。
+- 引用工具返回的数据时，注明来源（Skill / MCP 名称）。
+- 遇到不确定或工具不可用时，如实告知，不要编造结果。
+
+# 约束
+- 严格遵守公司数据安全与合规要求。
+- 不要在回复中暴露密钥、Token 或其他凭证。`;
+
+      setSystemPrompt(generated);
+      setGeneratingPrompt(false);
+      toast({ title: "已根据当前能力生成系统提示词", description: `Skill ${selSkills.length} · MCP ${selMCPs.length} · Subagent ${selSubagents.length}` });
+    }, 800);
+  };
+
   const handleSave = (publish: boolean) => {
     if (!name.trim()) {
       toast({ title: "请填写智能体名称", variant: "destructive" });
