@@ -37,6 +37,7 @@ const CreateAgentManualPage = () => {
 
   // Prompt
   const [systemPrompt, setSystemPrompt] = useState("你是一个专业的 AI 助手，请根据用户需求提供准确、结构化的回答。");
+  const [generatingPrompt, setGeneratingPrompt] = useState(false);
 
   // Bindings
   const [selSkills, setSelSkills] = useState<string[]>([]);
