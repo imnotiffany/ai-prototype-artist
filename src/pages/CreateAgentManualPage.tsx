@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, Rocket, Plus, X, Settings2, Cpu, Server, Zap, Shield, KeyRound, Bot, MessageSquare, Eye, EyeOff, Link2, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Save, Rocket, Plus, X, Settings2, Cpu, Server, Zap, Shield, KeyRound, Bot, MessageSquare, Eye, EyeOff, Link2, CheckCircle2, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,6 +37,7 @@ const CreateAgentManualPage = () => {
 
   // Prompt
   const [systemPrompt, setSystemPrompt] = useState("你是一个专业的 AI 助手，请根据用户需求提供准确、结构化的回答。");
+  const [generatingPrompt, setGeneratingPrompt] = useState(false);
 
   // Bindings
   const [selSkills, setSelSkills] = useState<string[]>([]);
@@ -72,6 +73,61 @@ const CreateAgentManualPage = () => {
     const w = whitelistInput.trim();
     if (w && !whitelist.includes(w)) setWhitelist([...whitelist, w]);
     setWhitelistInput("");
+  };
+
+  const handleAutoGeneratePrompt = () => {
+    setGeneratingPrompt(true);
+    setTimeout(() => {
+      const roleLine = name.trim() ? `你是「${name.trim()}」` : "你是一个专业的 AI 智能体";
+      const descLine = description.trim() ? `，${description.trim()}。` : "，致力于高质量地完成用户交付的任务。";
+
+      const skillLines = selSkills.length
+        ? selSkills.map((s) => {
+            const meta = skills.find((x) => x.name === s);
+            return `- ${s}${meta ? `：${meta.description}` : ""}`;
+          }).join("\n")
+        : "- （未绑定 Skill）";
+
+      const mcpLines = selMCPs.length
+        ? selMCPs.map((s) => {
+            const meta = mcps.find((x) => x.name === s);
+            return `- ${s}${meta ? `：${meta.description}` : ""}`;
+          }).join("\n")
+        : "- （未绑定 MCP 服务）";
+
+      const subLines = selSubagents.length
+        ? selSubagents.map((s) => `- ${s}`).join("\n")
+        : "";
+
+      const generated = `# 角色
+${roleLine}${descLine}
+
+# 你拥有的能力
+## Skills（原子能力）
+${skillLines}
+
+## MCP 服务（外部工具）
+${mcpLines}
+${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
+# 工作流程
+1. 仔细理解用户意图，必要时主动澄清关键信息。
+2. 根据任务类型，从上述能力中选择最合适的工具组合。
+3. 调用工具前简要说明计划；调用后基于结果迭代下一步。
+4. 对涉及外部数据写入或敏感操作的步骤，先与用户确认再执行。
+
+# 输出规范
+- 使用清晰的 Markdown 结构组织回答。
+- 引用工具返回的数据时，注明来源（Skill / MCP 名称）。
+- 遇到不确定或工具不可用时，如实告知，不要编造结果。
+
+# 约束
+- 严格遵守公司数据安全与合规要求。
+- 不要在回复中暴露密钥、Token 或其他凭证。`;
+
+      setSystemPrompt(generated);
+      setGeneratingPrompt(false);
+      toast({ title: "已根据当前能力生成系统提示词", description: `Skill ${selSkills.length} · MCP ${selMCPs.length} · Subagent ${selSubagents.length}` });
+    }, 800);
   };
 
   const handleSave = (publish: boolean) => {
@@ -260,11 +316,27 @@ const CreateAgentManualPage = () => {
           {/* Prompt */}
           <TabsContent value="prompt" className="mt-4">
             <div className="border border-border rounded-lg p-5 bg-card">
-              <Label className="text-xs">系统提示词</Label>
-              <p className="text-[10px] text-muted-foreground mb-2">定义智能体身份、行为约束和输出格式</p>
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div>
+                  <Label className="text-xs">系统提示词</Label>
+                  <p className="text-[10px] text-muted-foreground">定义智能体身份、行为约束和输出格式</p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs gap-1.5 border-primary/40 text-primary hover:bg-primary/10 hover:text-primary"
+                  onClick={handleAutoGeneratePrompt}
+                  disabled={generatingPrompt}
+                >
+                  {generatingPrompt ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                  AI 自动生成
+                </Button>
+              </div>
               <Textarea className="font-mono text-xs leading-relaxed" rows={18} value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)} />
               <div className="flex items-center justify-between mt-2">
-                <p className="text-[10px] text-muted-foreground">{systemPrompt.length} 字符</p>
+                <p className="text-[10px] text-muted-foreground">
+                  {systemPrompt.length} 字符 · 将根据已绑定的 {selSkills.length} 个 Skill 与 {selMCPs.length} 个 MCP 生成
+                </p>
                 <Button size="sm" variant="ghost" className="h-7 text-xs">从模板导入</Button>
               </div>
             </div>
