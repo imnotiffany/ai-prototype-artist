@@ -43,18 +43,34 @@ const mockRuns: RunRecord[] = [
   { id: "run-005", source: "Web 端", trigger: "李四",   startedAt: "2026-04-29 09:20:55", duration: "00:02:18", status: "running", prompt: "对比一下竞品最近 3 个月的更新" },
 ];
 
-const mockTranscript = [
-  { role: "user", content: "帮我整理今天的销售周报，按区域汇总" },
-  { role: "agent", content: "好的，我先查询今天各区域的销售数据。", tools: [{ name: "web_search", count: 2 }, { name: "丰景台数据查询v2", count: 1 }] },
-  { role: "agent", content: "已汇总完成，华东区 ¥1.2M（环比 +8%）、华南区 ¥0.9M（+3%）、华北区 ¥0.7M（-2%）。\n\n报告已生成 → 销售周报_20260429.md" },
+import type { TranscriptEvent, DebugEvent } from "@/components/RunViews";
+
+const buildMockTranscript = (userPrompt: string): TranscriptEvent[] => [
+  { id: "s0", type: "system", message: "会话开始 · claude-sonnet-4-6" },
+  { id: "u0", type: "user", content: userPrompt },
+  { id: "a0", type: "agent", content: "好的，我先查询今天各区域的销售数据。" },
+  {
+    id: "t0",
+    type: "tools",
+    calls: [
+      { id: "c1", kind: "search", name: "web_search", summary: 'q: "销售数据 2026-04-29"', status: "success",
+        input: '{"q":"销售数据 2026-04-29"}', output: '{"results":[{"title":"华东 Q2"},{"title":"华南 Q2"}]}' },
+      { id: "c2", kind: "mcp", name: "丰景台数据查询v2", summary: "region=ALL · 412ms", status: "success",
+        input: '{"region":"ALL"}', output: '{"east":1200000,"south":900000,"north":700000}' },
+    ],
+  },
+  { id: "a1", type: "agent",
+    content: "已汇总完成，华东区 ¥1.2M（环比 +8%）、华南区 ¥0.9M（+3%）、华北区 ¥0.7M（-2%）。\n\n报告已生成 → 销售周报_20260429.md" },
+  { id: "s1", type: "system", message: "会话结束 · 用时 6.5s · 1552 tokens" },
 ];
-const mockDebugEvents = [
-  { t: "10:24:18.102", type: "session.start", data: { session_id: "sess-9f2c", model: "claude-sonnet-4-6" } },
-  { t: "10:24:18.245", type: "llm.request",   data: { messages: 1, tokens_in: 1240 } },
-  { t: "10:24:19.812", type: "tool.call",     data: { name: "web_search", args: { q: "销售数据 2026-04-29" } } },
-  { t: "10:24:21.044", type: "tool.result",   data: { name: "web_search", bytes: 4821, latency_ms: 1232 } },
-  { t: "10:24:24.501", type: "llm.response",  data: { tokens_out: 312, finish_reason: "stop" } },
-  { t: "10:24:24.612", type: "session.end",   data: { status: "success", total_ms: 6510, total_tokens: 1552 } },
+
+const mockDebugEvents: DebugEvent[] = [
+  { id: "d1", ts: "10:24:18.102", type: "session.start", data: { session_id: "sess-9f2c", model: "claude-sonnet-4-6" } },
+  { id: "d2", ts: "10:24:18.245", type: "llm.request",   data: { messages: 1, tokens_in: 1240 } },
+  { id: "d3", ts: "10:24:19.812", type: "tool.call",     data: { name: "web_search", args: { q: "销售数据 2026-04-29" } } },
+  { id: "d4", ts: "10:24:21.044", type: "tool.result",   data: { name: "web_search", bytes: 4821, latency_ms: 1232 } },
+  { id: "d5", ts: "10:24:24.501", type: "llm.response",  data: { tokens_out: 312, finish_reason: "stop" } },
+  { id: "d6", ts: "10:24:24.612", type: "session.end",   data: { status: "success", total_ms: 6510, total_tokens: 1552 } },
 ];
 
 type LogLevel = "info" | "tool" | "thought" | "warn" | "error" | "result";
