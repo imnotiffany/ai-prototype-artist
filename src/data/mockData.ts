@@ -317,8 +317,14 @@ export const mockAgents: Agent[] = [
   },
 ];
 
+/* 给历史已发布数据补默认 publishScope（mock 兜底） */
+mockAgents.forEach((a) => {
+  if (a.status === "published" && !a.publishScope) a.publishScope = "marketplace";
+});
+
 /* ── Helper: filter agents by context ── */
-export const getMarketplaceAgents = () => mockAgents.filter((a) => a.status === "published");
+export const getMarketplaceAgents = () =>
+  mockAgents.filter((a) => a.status === "published" && a.publishScope === "marketplace");
 export const getMyAgents = () => mockAgents.filter((a) => ["01441970", "01422596", "01419965"].includes(a.authorId));
 export const getRecentAgents = () => [...mockAgents].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 6);
 
