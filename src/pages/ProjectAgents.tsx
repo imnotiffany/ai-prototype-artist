@@ -8,6 +8,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, RotateCcw, Rocket } from "lucide-react";
 import { mockAgents, type Agent } from "@/data/mockData";
 import { PublishAgentDialog } from "@/components/PublishAgentDialog";
+import { AgentRuntimeBadge, type AgentRuntimeStatus } from "@/components/AgentRuntimeBadge";
+
+const runtimeStatusFor = (id: string): AgentRuntimeStatus => {
+  const opts: AgentRuntimeStatus[] = ["running", "done", "starting", "failed", "stopped"];
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return opts[h % opts.length];
+};
 
 const MY_AUTHOR_ID = "01441970";
 
@@ -167,6 +175,7 @@ const ProjectAgents = () => {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <h3 className="text-sm font-medium truncate max-w-[140px]">{app.name}</h3>
+                    {app.kind !== "app" && <AgentRuntimeBadge status={runtimeStatusFor(app.id)} />}
                     {getStatusBadge(app)}
                   </div>
                   <div className="flex items-center gap-1.5 mt-1">
