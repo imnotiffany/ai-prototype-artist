@@ -27,7 +27,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 type RunStatus = "success" | "failed" | "running";
 interface RunRecord {
   id: string;
-  source: "钉钉" | "Web 端" | "API";
+  source: "丰声 NEXT" | "Web 端" | "API";
   trigger: string;
   startedAt: string;
   duration: string;
@@ -35,10 +35,10 @@ interface RunRecord {
   prompt: string;
 }
 const mockRuns: RunRecord[] = [
-  { id: "run-001", source: "钉钉",  trigger: "廖奕通", startedAt: "2026-04-29 10:24:18", duration: "00:00:42", status: "success", prompt: "帮我整理今天的销售周报，按区域汇总" },
+  { id: "run-001", source: "丰声 NEXT",  trigger: "廖奕通", startedAt: "2026-04-29 10:24:18", duration: "00:00:42", status: "success", prompt: "帮我整理今天的销售周报，按区域汇总" },
   { id: "run-002", source: "Web 端", trigger: "张毅超", startedAt: "2026-04-29 10:18:03", duration: "00:01:12", status: "success", prompt: "分析一下 Q1 用户留存数据" },
   { id: "run-003", source: "API",    trigger: "system",  startedAt: "2026-04-29 09:55:41", duration: "00:00:08", status: "failed",  prompt: "scheduled job: daily-summary" },
-  { id: "run-004", source: "钉钉",  trigger: "杨彪龙", startedAt: "2026-04-29 09:42:11", duration: "00:00:33", status: "success", prompt: "把昨天的会议纪要总结一下" },
+  { id: "run-004", source: "丰声 NEXT",  trigger: "杨彪龙", startedAt: "2026-04-29 09:42:11", duration: "00:00:33", status: "success", prompt: "把昨天的会议纪要总结一下" },
   { id: "run-005", source: "Web 端", trigger: "李四",   startedAt: "2026-04-29 09:20:55", duration: "00:02:18", status: "running", prompt: "对比一下竞品最近 3 个月的更新" },
 ];
 
