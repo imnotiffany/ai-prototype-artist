@@ -128,31 +128,49 @@ const VaultPage = () => {
             <TableRow>
               <TableHead>凭据名称</TableHead>
               <TableHead>凭据类型</TableHead>
-              <TableHead>关联 MCP 服务器</TableHead>
+              <TableHead>关联 MCP</TableHead>
+              <TableHead>使用情况</TableHead>
               <TableHead>创建时间</TableHead>
               <TableHead className="w-24">操作</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {mockCredentials.map((cred) => (
-              <TableRow key={cred.id}>
-                <TableCell className="font-medium text-xs">{cred.name}</TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="text-[10px] gap-1">
-                    {cred.type === "OAuth 2.0" ? <Lock className="w-3 h-3" /> : <KeyRound className="w-3 h-3" />}
-                    {cred.type}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-xs">{cred.mcpServer}</TableCell>
-                <TableCell className="text-xs text-muted-foreground">{cred.createdAt}</TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-1">
-                    <Button size="icon" variant="ghost" className="h-7 w-7"><Pencil className="w-3.5 h-3.5" /></Button>
-                    <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive"><Trash2 className="w-3.5 h-3.5" /></Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+            {mockCredentials.map((cred) => {
+              const agents = linkedAgents(cred.mcpServer);
+              return (
+                <TableRow key={cred.id}>
+                  <TableCell className="font-medium text-xs">{cred.name}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="text-[10px] gap-1">
+                      {cred.type === "OAuth 2.0" ? <Lock className="w-3 h-3" /> : <KeyRound className="w-3 h-3" />}
+                      {cred.type}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-xs">{cred.mcpServer}</TableCell>
+                  <TableCell>
+                    {agents.length > 0 ? (
+                      <Badge variant="secondary" className="text-[10px] gap-1">
+                        <Bot className="w-3 h-3" />
+                        {agents.length} 个智能体
+                      </Badge>
+                    ) : (
+                      <span className="text-[11px] text-muted-foreground">未使用</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{cred.createdAt}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEdit(cred)} title="编辑">
+                        <Pencil className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeleteTarget(cred)} title="删除">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>
