@@ -129,6 +129,19 @@ const VaultPage = () => {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div>
+              <Label className="text-xs">关联 MCP 服务器 <span className="text-destructive">*</span></Label>
+              <Select value={mcpServer} onValueChange={setMcpServer}>
+                <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue placeholder="先选择需要绑定的 MCP" /></SelectTrigger>
+                <SelectContent>
+                  {mcpOptions.map((mcp) => (
+                    <SelectItem key={mcp} value={mcp} className="text-xs">{mcp}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-[10px] text-muted-foreground mt-1">同一 MCP 可保存多个凭据，运行时可在智能体内选择</p>
+            </div>
+
+            <div>
               <Label className="text-xs">凭据名称</Label>
               <Input className="mt-1.5 h-8 text-xs" value={credName} onChange={(e) => setCredName(e.target.value)} placeholder="自定义名称，例如 Gmail 工作账号" />
             </div>
@@ -151,18 +164,6 @@ const VaultPage = () => {
                   </div>
                 </label>
               </RadioGroup>
-            </div>
-
-            <div>
-              <Label className="text-xs">关联 MCP 服务器</Label>
-              <Select value={mcpServer} onValueChange={setMcpServer}>
-                <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue placeholder="选择 MCP 服务器" /></SelectTrigger>
-                <SelectContent>
-                  {mcpOptions.map((mcp) => (
-                    <SelectItem key={mcp} value={mcp} className="text-xs">{mcp}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
 
             {credType === "Bearer Token" ? (

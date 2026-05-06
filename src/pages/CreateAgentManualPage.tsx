@@ -14,7 +14,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
-import { categories, getActiveSkills, getActiveMCPs, mockAgents } from "@/data/mockData";
+import { categories, getActiveSkills, getActiveMCPs, mockAgents, mockCredentials } from "@/data/mockData";
 
 const skills = getActiveSkills();
 const mcps = getActiveMCPs();
@@ -47,7 +47,7 @@ const CreateAgentManualPage = () => {
 
   // Env
   const [persistentFs, setPersistentFs] = useState(true);
-  const [envVars, setEnvVars] = useState<{ k: string; v: string }[]>([{ k: "WORKSPACE", v: "/workspace" }]);
+  const [mcpCredentialMap, setMcpCredentialMap] = useState<Record<string, string>>({});
 
   // Network
   const [networkPolicy, setNetworkPolicy] = useState<"intranet" | "whitelist" | "open">("whitelist");
@@ -249,17 +249,17 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
       </div>
 
       <div className="max-w-4xl mx-auto px-6 py-5">
-        <Tabs defaultValue="model">
-          <TabsList className="grid grid-cols-5 h-9">
-            <TabsTrigger value="model" className="text-xs">模型配置</TabsTrigger>
-            <TabsTrigger value="bindings" className="text-xs">原子能力</TabsTrigger>
+        <Tabs defaultValue="capability">
+          <TabsList className="grid grid-cols-4 h-9">
+            <TabsTrigger value="capability" className="text-xs">能力配置</TabsTrigger>
             <TabsTrigger value="prompt" className="text-xs">系统提示词</TabsTrigger>
             <TabsTrigger value="env" className="text-xs">凭据配置</TabsTrigger>
             <TabsTrigger value="fengsheng" className="text-xs">丰声 NEXT</TabsTrigger>
           </TabsList>
 
-          {/* Model */}
-          <TabsContent value="model" className="mt-4 space-y-4">
+          {/* Capability: 基座模型 + MCP + Skill + Subagent */}
+          <TabsContent value="capability" className="mt-4 space-y-4">
+            {/* 基座模型 */}
             <div className="border border-border rounded-lg p-5 space-y-5 bg-card">
               <div>
                 <Label className="text-xs flex items-center gap-1.5"><Cpu className="w-3.5 h-3.5" /> 基座模型</Label>
@@ -295,6 +295,73 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                 <Switch checked={stream} onCheckedChange={setStream} />
               </div>
             </div>
+
+            {/* MCP 绑定 */}
+            <div className="border border-border rounded-lg p-5 bg-card">
+              <div className="flex items-center justify-between mb-3">
+                <Label className="text-xs flex items-center gap-1.5"><Server className="w-3.5 h-3.5" /> MCP 服务绑定</Label>
+                <PickerPopover items={mcps} selected={selMCPs} onToggle={(n) => toggle(selMCPs, setSelMCPs, n)} icon={<Server className="w-3 h-3" />} label="MCP" />
+              </div>
+              {selMCPs.length === 0 ? (
+                <p className="text-xs text-muted-foreground py-2">未绑定任何 MCP 服务</p>
+              ) : (
+                <div className="space-y-1.5">
+                  {selMCPs.map((s) => (
+                    <div key={s} className="flex items-center justify-between border border-border rounded px-3 py-1.5 text-xs">
+                      <span className="flex items-center gap-1.5"><Server className="w-3 h-3 text-primary" />{s}</span>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-[9px] h-4">需凭证</Badge>
+                        <button onClick={() => toggle(selMCPs, setSelMCPs, s)} className="text-muted-foreground hover:text-destructive"><X className="w-3 h-3" /></button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <p className="text-[10px] text-muted-foreground mt-2">凭证将从「凭据金库」自动注入；如某 MCP 存在多个凭据，请前往「凭据配置」选择</p>
+            </div>
+
+            {/* Skill 绑定 */}
+            <div className="border border-border rounded-lg p-5 bg-card">
+              <div className="flex items-center justify-between mb-3">
+                <Label className="text-xs flex items-center gap-1.5"><Zap className="w-3.5 h-3.5" /> Skill 绑定</Label>
+                <PickerPopover items={skills} selected={selSkills} onToggle={(n) => toggle(selSkills, setSelSkills, n)} icon={<Zap className="w-3 h-3" />} label="Skill" />
+              </div>
+              {selSkills.length === 0 ? (
+                <p className="text-xs text-muted-foreground py-2">未绑定任何 Skill</p>
+              ) : (
+                <div className="space-y-1.5">
+                  {selSkills.map((s) => (
+                    <div key={s} className="flex items-center justify-between border border-border rounded px-3 py-1.5 text-xs">
+                      <span className="flex items-center gap-1.5"><Zap className="w-3 h-3 text-primary" />{s}</span>
+                      <button onClick={() => toggle(selSkills, setSelSkills, s)} className="text-muted-foreground hover:text-destructive"><X className="w-3 h-3" /></button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Subagent 绑定 */}
+            <div className="border border-border rounded-lg p-5 bg-card">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <Label className="text-xs flex items-center gap-1.5"><Bot className="w-3.5 h-3.5" /> Subagent 绑定</Label>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">允许当前智能体调用其他智能体作为子任务执行者</p>
+                </div>
+                <PickerPopover items={subagents.map((a) => ({ name: a.name, description: a.description }))} selected={selSubagents} onToggle={(n) => toggle(selSubagents, setSelSubagents, n)} icon={<Bot className="w-3 h-3" />} label="Subagent" />
+              </div>
+              {selSubagents.length === 0 ? (
+                <p className="text-xs text-muted-foreground py-2">未绑定任何 Subagent</p>
+              ) : (
+                <div className="space-y-1.5">
+                  {selSubagents.map((s) => (
+                    <div key={s} className="flex items-center justify-between border border-border rounded px-3 py-1.5 text-xs">
+                      <span className="flex items-center gap-1.5"><Bot className="w-3 h-3 text-primary" />{s}</span>
+                      <button onClick={() => toggle(selSubagents, setSelSubagents, s)} className="text-muted-foreground hover:text-destructive"><X className="w-3 h-3" /></button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </TabsContent>
 
           {/* Prompt */}
@@ -326,87 +393,61 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
             </div>
           </TabsContent>
 
-          {/* Bindings */}
-          <TabsContent value="bindings" className="mt-4 space-y-4">
+          {/* Credentials */}
+          <TabsContent value="env" className="mt-4 space-y-4">
             <div className="border border-border rounded-lg p-5 bg-card">
-              <div className="flex items-center justify-between mb-3">
-                <Label className="text-xs flex items-center gap-1.5"><Server className="w-3.5 h-3.5" /> MCP 服务绑定</Label>
-                <PickerPopover items={mcps} selected={selMCPs} onToggle={(n) => toggle(selMCPs, setSelMCPs, n)} icon={<Server className="w-3 h-3" />} label="MCP" />
+              <div className="mb-3">
+                <Label className="text-xs flex items-center gap-1.5"><KeyRound className="w-3.5 h-3.5" /> MCP 凭据绑定</Label>
+                <p className="text-[10px] text-muted-foreground mt-0.5">为每个已绑定的 MCP 选择运行时使用的凭据；单凭据 MCP 将自动选中</p>
               </div>
               {selMCPs.length === 0 ? (
-                <p className="text-xs text-muted-foreground py-2">未绑定任何 MCP 服务</p>
+                <p className="text-xs text-muted-foreground py-2">尚未绑定 MCP，请先到「能力配置」中添加</p>
               ) : (
-                <div className="space-y-1.5">
-                  {selMCPs.map((s) => (
-                    <div key={s} className="flex items-center justify-between border border-border rounded px-3 py-1.5 text-xs">
-                      <span className="flex items-center gap-1.5"><Server className="w-3 h-3 text-primary" />{s}</span>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-[9px] h-4">需凭证</Badge>
-                        <button onClick={() => toggle(selMCPs, setSelMCPs, s)} className="text-muted-foreground hover:text-destructive"><X className="w-3 h-3" /></button>
+                <div className="space-y-2">
+                  {selMCPs.map((mcpName) => {
+                    const creds = mockCredentials.filter((c) => c.mcpServer === mcpName);
+                    const current = mcpCredentialMap[mcpName] ?? (creds.length === 1 ? creds[0].id : "");
+                    return (
+                      <div key={mcpName} className="border border-border rounded-lg p-3 flex items-center gap-3">
+                        <Server className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <span className="text-xs font-medium min-w-[120px]">{mcpName}</span>
+                        {creds.length === 0 ? (
+                          <div className="flex items-center gap-2 ml-auto">
+                            <span className="text-[10px] text-amber-600 dark:text-amber-500">尚无可用凭据</span>
+                            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => navigate("/vault")}>前往金库添加</Button>
+                          </div>
+                        ) : creds.length === 1 ? (
+                          <div className="flex items-center gap-1.5 ml-auto">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                            <span className="text-xs">{creds[0].name}</span>
+                            <Badge variant="outline" className="text-[9px] h-4 ml-1">自动选中</Badge>
+                          </div>
+                        ) : (
+                          <div className="ml-auto w-56">
+                            <Select value={current} onValueChange={(v) => setMcpCredentialMap({ ...mcpCredentialMap, [mcpName]: v })}>
+                              <SelectTrigger className="h-7 text-xs"><SelectValue placeholder="选择凭据" /></SelectTrigger>
+                              <SelectContent>
+                                {creds.map((c) => (
+                                  <SelectItem key={c.id} value={c.id} className="text-xs">{c.name}（{c.type}）</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <p className="text-[10px] text-muted-foreground mt-2">凭证将从「凭据金库」自动注入，未配置可前往金库添加</p>
-            </div>
-
-            <div className="border border-border rounded-lg p-5 bg-card">
-              <div className="flex items-center justify-between mb-3">
-                <Label className="text-xs flex items-center gap-1.5"><Zap className="w-3.5 h-3.5" /> Skill 绑定</Label>
-                <PickerPopover items={skills} selected={selSkills} onToggle={(n) => toggle(selSkills, setSelSkills, n)} icon={<Zap className="w-3 h-3" />} label="Skill" />
-              </div>
-              {selSkills.length === 0 ? (
-                <p className="text-xs text-muted-foreground py-2">未绑定任何 Skill</p>
-              ) : (
-                <div className="space-y-1.5">
-                  {selSkills.map((s) => (
-                    <div key={s} className="flex items-center justify-between border border-border rounded px-3 py-1.5 text-xs">
-                      <span className="flex items-center gap-1.5"><Zap className="w-3 h-3 text-primary" />{s}</span>
-                      <button onClick={() => toggle(selSkills, setSelSkills, s)} className="text-muted-foreground hover:text-destructive"><X className="w-3 h-3" /></button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
 
             <div className="border border-border rounded-lg p-5 bg-card">
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <Label className="text-xs flex items-center gap-1.5"><Bot className="w-3.5 h-3.5" /> Subagent 绑定</Label>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">允许当前智能体调用其他智能体作为子任务执行者</p>
-                </div>
-                <PickerPopover items={subagents.map((a) => ({ name: a.name, description: a.description }))} selected={selSubagents} onToggle={(n) => toggle(selSubagents, setSelSubagents, n)} icon={<Bot className="w-3 h-3" />} label="Subagent" />
-              </div>
-              {selSubagents.length === 0 ? (
-                <p className="text-xs text-muted-foreground py-2">未绑定任何 Subagent</p>
-              ) : (
-                <div className="space-y-1.5">
-                  {selSubagents.map((s) => (
-                    <div key={s} className="flex items-center justify-between border border-border rounded px-3 py-1.5 text-xs">
-                      <span className="flex items-center gap-1.5"><Bot className="w-3 h-3 text-primary" />{s}</span>
-                      <button onClick={() => toggle(selSubagents, setSelSubagents, s)} className="text-muted-foreground hover:text-destructive"><X className="w-3 h-3" /></button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          {/* Env */}
-          <TabsContent value="env" className="mt-4 space-y-4">
-            <div className="border border-border rounded-lg p-5 bg-card space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <Label className="text-xs flex items-center gap-1.5"><Settings2 className="w-3.5 h-3.5" /> 持久化文件系统</Label>
                   <p className="text-[10px] text-muted-foreground">容器重启后保留 /workspace 数据</p>
                 </div>
                 <Switch checked={persistentFs} onCheckedChange={setPersistentFs} />
-              </div>
-              <div className="border-t border-border pt-3">
-                <Label className="text-xs flex items-center gap-1.5 mb-1.5"><KeyRound className="w-3.5 h-3.5" /> 凭据金库</Label>
-                <p className="text-[10px] text-muted-foreground">MCP 所需 API Key / OAuth Token 统一在金库中安全存储</p>
-                <Button size="sm" variant="outline" className="h-7 text-xs mt-2" onClick={() => navigate("/vault")}>前往金库管理</Button>
               </div>
             </div>
           </TabsContent>
