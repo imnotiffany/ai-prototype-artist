@@ -925,9 +925,9 @@ const AgentDetail = () => {
               )}
               <DialogFooter>
                 <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setViewingVersion(null)}>关闭</Button>
-                {viewingVersion && !viewingVersion.current && (
-                  <Button size="sm" className="h-8 text-xs gap-1" onClick={() => { handleRollback(viewingVersion); setViewingVersion(null); }}>
-                    <RotateCcw className="w-3 h-3" />回滚到此版本
+                {viewingVersion && !(viewingVersion.current && agent.status === "published") && (
+                  <Button size="sm" className="h-8 text-xs gap-1" onClick={() => { handleRollback(viewingVersion); setViewingVersion(null); setPublishOpen(true); }}>
+                    <Rocket className="w-3 h-3" />发布此版本
                   </Button>
                 )}
               </DialogFooter>
