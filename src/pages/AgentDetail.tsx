@@ -310,7 +310,7 @@ const AgentDetail = () => {
             {/* Left: assistant */}
             <div className="border border-border rounded-lg bg-card flex flex-col h-[640px]">
               <div className="px-3 h-10 shrink-0 border-b border-border flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-primary" />
+                <BotIcon className="w-3.5 h-3.5 text-primary" />
                 <span className="text-xs font-semibold">调试助手</span>
                 <Badge variant="outline" className="text-[10px] h-4">AI</Badge>
               </div>
