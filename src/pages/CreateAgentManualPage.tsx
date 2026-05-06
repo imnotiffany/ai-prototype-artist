@@ -339,7 +339,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
             <div className="border border-border rounded-lg p-5 bg-card">
               <div className="flex items-center justify-between mb-3">
                 <Label className="text-xs flex items-center gap-1.5"><Server className="w-3.5 h-3.5" /> MCP 服务绑定</Label>
-                <PickerPopover items={mcps} selected={selMCPs} onToggle={(n) => toggle(selMCPs, setSelMCPs, n)} icon={<Server className="w-3 h-3" />} label="MCP" />
+                <PickerDialog items={mcps} selected={selMCPs} onToggle={(n) => toggle(selMCPs, setSelMCPs, n)} icon={<Server className="w-3.5 h-3.5" />} label="MCP" marketLink="/" deployBadge={() => "云端"} />
               </div>
               {selMCPs.length === 0 ? (
                 <p className="text-xs text-muted-foreground py-2">未绑定任何 MCP 服务</p>
@@ -363,7 +363,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
             <div className="border border-border rounded-lg p-5 bg-card">
               <div className="flex items-center justify-between mb-3">
                 <Label className="text-xs flex items-center gap-1.5"><Zap className="w-3.5 h-3.5" /> Skill 绑定</Label>
-                <PickerPopover items={skills} selected={selSkills} onToggle={(n) => toggle(selSkills, setSelSkills, n)} icon={<Zap className="w-3 h-3" />} label="Skill" />
+                <PickerDialog items={skills} selected={selSkills} onToggle={(n) => toggle(selSkills, setSelSkills, n)} icon={<Zap className="w-3.5 h-3.5" />} label="Skill" marketLink="/" />
               </div>
               {selSkills.length === 0 ? (
                 <p className="text-xs text-muted-foreground py-2">未绑定任何 Skill</p>
@@ -386,7 +386,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                   <Label className="text-xs flex items-center gap-1.5"><Bot className="w-3.5 h-3.5" /> Subagent 绑定</Label>
                   <p className="text-[10px] text-muted-foreground mt-0.5">允许当前智能体调用其他智能体作为子任务执行者</p>
                 </div>
-                <PickerPopover items={subagents.map((a) => ({ name: a.name, description: a.description }))} selected={selSubagents} onToggle={(n) => toggle(selSubagents, setSelSubagents, n)} icon={<Bot className="w-3 h-3" />} label="Subagent" />
+                <PickerDialog items={subagents.map((a) => ({ name: a.name, description: a.description }))} selected={selSubagents} onToggle={(n) => toggle(selSubagents, setSelSubagents, n)} icon={<Bot className="w-3.5 h-3.5" />} label="Subagent" marketLink="/" />
               </div>
               {selSubagents.length === 0 ? (
                 <p className="text-xs text-muted-foreground py-2">未绑定任何 Subagent</p>
