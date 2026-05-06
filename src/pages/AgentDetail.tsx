@@ -250,8 +250,8 @@ const AgentDetail = () => {
         <div className="flex items-start gap-4 min-w-0">
           <div className="w-14 h-14 rounded-xl bg-secondary flex items-center justify-center text-2xl shrink-0">{agent.avatar}</div>
           <div className="min-w-0">
-            <h1 className="text-xl font-semibold text-foreground truncate">{agent.name}</h1>
-            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{agent.description}</p>
+            <h1 className="text-xl font-semibold text-foreground truncate">{name}</h1>
+            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{description}</p>
             <div className="flex items-center gap-2 mt-2 flex-wrap">
               {agent.tags.map((tag, i) => (
                 <Badge key={i} variant={i === 0 ? "default" : "outline"} className="text-xs">{tag}</Badge>
@@ -262,6 +262,14 @@ const AgentDetail = () => {
               <Badge variant="outline" className="text-[10px] font-mono">{versions.find((v) => v.current)?.v}</Badge>
             </div>
           </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={openEditInfo}>
+            <Pencil className="w-3.5 h-3.5" />编辑基本信息
+          </Button>
+          <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setPublishOpen(true)}>
+            <Rocket className="w-3.5 h-3.5" />发布
+          </Button>
         </div>
       </div>
 
