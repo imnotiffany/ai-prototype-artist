@@ -169,52 +169,113 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
     navigate("/project-agents");
   };
 
-  const PickerPopover = ({
+  const PickerDialog = ({
     items,
     selected,
     onToggle,
     icon,
     label,
+    marketLink,
+    deployBadge,
   }: {
     items: { name: string; description: string }[];
     selected: string[];
     onToggle: (n: string) => void;
     icon: React.ReactNode;
     label: string;
-  }) => (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
-          <Plus className="w-3 h-3" />
-          添加 {label}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-72 p-2" align="start">
-        <p className="text-[11px] text-muted-foreground px-2 py-1">从{label === "Skill" ? "Skill 市场" : "MCP 广场"}选择</p>
-        <div className="max-h-64 overflow-auto">
-          {items.map((it) => {
-            const sel = selected.includes(it.name);
-            return (
-              <button
-                key={it.name}
-                onClick={() => onToggle(it.name)}
-                className={`w-full text-left px-2 py-1.5 rounded text-xs flex items-start gap-2 ${
-                  sel ? "bg-primary/10 text-primary" : "hover:bg-muted"
-                }`}
-              >
-                <div className="mt-0.5">{icon}</div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium truncate">{it.name}</p>
-                  <p className="text-[10px] text-muted-foreground truncate">{it.description}</p>
+    marketLink: string;
+    deployBadge?: (name: string) => string;
+  }) => {
+    const [open, setOpen] = useState(false);
+    const [search, setSearch] = useState("");
+    const filtered = items.filter(
+      (it) => it.name.toLowerCase().includes(search.toLowerCase()) ||
+              it.description.toLowerCase().includes(search.toLowerCase())
+    );
+    return (
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
+            <Plus className="w-3 h-3" />
+            添加 {label}
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="max-w-3xl max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="text-sm flex items-center gap-2">
+              选择 {label}
+              <Badge variant="secondary" className="text-[10px] font-normal">已选 {selected.length}</Badge>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex items-center gap-2">
+            <Input
+              className="h-8 text-xs"
+              placeholder={`搜索 ${label} 名称或功能描述`}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <Button variant="ghost" size="sm" className="h-8 text-xs gap-1 shrink-0" onClick={() => window.open(marketLink, "_blank")}>
+              前往{label === "Skill" ? "Skill 广场" : label === "MCP" ? "MCP 广场" : "智能体广场"}
+              <ExternalLink className="w-3 h-3" />
+            </Button>
+          </div>
+          <div className="overflow-auto -mx-1 px-1 grid grid-cols-2 gap-2.5">
+            {filtered.map((it) => {
+              const sel = selected.includes(it.name);
+              return (
+                <div
+                  key={it.name}
+                  className={`border rounded-lg p-3 transition-colors ${
+                    sel ? "border-primary bg-primary/5 ring-1 ring-primary/30" : "border-border hover:border-primary/40 bg-card"
+                  }`}
+                >
+                  <div className="flex items-start gap-2 mb-1.5">
+                    <div className={`w-7 h-7 rounded flex items-center justify-center shrink-0 ${sel ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
+                      {icon}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold truncate">{it.name}</p>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        {deployBadge && (
+                          <Badge variant="outline" className="text-[9px] h-4 px-1.5">{deployBadge(it.name)}</Badge>
+                        )}
+                      </div>
+                    </div>
+                    {sel && <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed mb-2.5 min-h-[32px]">
+                    {it.description}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <button
+                      className="text-[10px] text-primary hover:underline flex items-center gap-0.5"
+                      onClick={() => window.open(`${marketLink}#${encodeURIComponent(it.name)}`, "_blank")}
+                    >
+                      查看详情 <ExternalLink className="w-2.5 h-2.5" />
+                    </button>
+                    <Button
+                      size="sm"
+                      variant={sel ? "outline" : "default"}
+                      className="h-6 text-[10px] px-2"
+                      onClick={() => onToggle(it.name)}
+                    >
+                      {sel ? "移除" : "添加"}
+                    </Button>
+                  </div>
                 </div>
-                {sel && <X className="w-3 h-3 shrink-0 mt-0.5" />}
-              </button>
-            );
-          })}
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
+              );
+            })}
+            {filtered.length === 0 && (
+              <p className="col-span-2 text-center text-xs text-muted-foreground py-8">未找到匹配的 {label}</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setOpen(false)}>完成</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  };
 
   return (
     <div className="flex-1 overflow-auto animate-fade-in">
