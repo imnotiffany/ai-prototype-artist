@@ -668,8 +668,9 @@ const AgentDetail = () => {
               <header className="px-4 py-2.5 border-b border-border">
                 <h3 className="text-sm font-semibold flex items-center gap-1.5">
                   <MessageSquare className="w-3.5 h-3.5 text-primary" />丰声 NEXT 机器人
+                  <span className="text-[10px] px-1.5 h-4 leading-4 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 font-normal">可选</span>
                 </h3>
-                <p className="text-[11px] text-muted-foreground mt-0.5">发布为丰声 NEXT 群聊机器人，群成员 @ 即可触发对话</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">仅在需要把智能体发布为群聊机器人（成员 @ 即可触发）时配置；不配置不影响其他渠道使用</p>
               </header>
               <div className="p-4 space-y-3">
                 <div>
