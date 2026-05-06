@@ -251,20 +251,31 @@ const AgentDetail = () => {
       </div>
 
       {/* Header */}
-      <div className="flex items-start justify-between mb-6 gap-4">
-        <div className="flex items-start gap-4 min-w-0">
-          <div className="w-14 h-14 rounded-xl bg-secondary flex items-center justify-center text-2xl shrink-0">{agent.avatar}</div>
+      <div className="flex items-start justify-between mb-5 gap-4">
+        <div className="flex items-start gap-3 min-w-0">
+          <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center text-xl shrink-0">{agent.avatar}</div>
           <div className="min-w-0">
-            <h1 className="text-xl font-semibold text-foreground truncate">{name}</h1>
-            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{description}</p>
-            <div className="flex items-center gap-2 mt-2 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-base font-semibold text-foreground truncate">{name}</h1>
+              <span className={`inline-flex items-center gap-1 text-[10px] px-1.5 h-5 rounded-md border ${
+                agent.status === "published"
+                  ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:border-emerald-800"
+                  : agent.status === "draft"
+                  ? "border-border bg-muted text-muted-foreground"
+                  : "border-border bg-muted text-muted-foreground"
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${agent.status === "published" ? "bg-emerald-500" : "bg-muted-foreground/60"}`} />
+                {agent.status === "published" ? "已发布" : agent.status === "draft" ? "草稿" : "项目内"}
+              </span>
+              <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 h-5 rounded-md inline-flex items-center">
+                {versions.find((v) => v.current)?.v}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1 line-clamp-2 max-w-2xl">{description}</p>
+            <div className="flex items-center gap-1.5 mt-2 flex-wrap">
               {agent.tags.map((tag, i) => (
-                <Badge key={i} variant={i === 0 ? "default" : "outline"} className="text-xs">{tag}</Badge>
+                <Badge key={i} variant="outline" className="text-[10px] h-5 px-1.5 font-normal">{tag}</Badge>
               ))}
-              <Badge variant="outline" className="text-xs">
-                {agent.status === "published" ? "已发布" : agent.status === "draft" ? "草稿" : "项目"}
-              </Badge>
-              <Badge variant="outline" className="text-[10px] font-mono">{versions.find((v) => v.current)?.v}</Badge>
             </div>
           </div>
         </div>
@@ -279,11 +290,11 @@ const AgentDetail = () => {
       </div>
 
       <Tabs defaultValue={initialTab}>
-        <TabsList>
-          <TabsTrigger value="debug" className="gap-1.5"><Bug className="w-3.5 h-3.5" />调试</TabsTrigger>
-          <TabsTrigger value="config" className="gap-1.5"><Settings2 className="w-3.5 h-3.5" />配置</TabsTrigger>
-          <TabsTrigger value="runs" className="gap-1.5"><MessageSquare className="w-3.5 h-3.5" />运行记录</TabsTrigger>
-          <TabsTrigger value="versions" className="gap-1.5"><History className="w-3.5 h-3.5" />版本</TabsTrigger>
+        <TabsList className="h-9 bg-transparent border-b border-border w-full justify-start rounded-none p-0 gap-1">
+          <TabsTrigger value="debug" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><Bug className="w-3.5 h-3.5" />调试</TabsTrigger>
+          <TabsTrigger value="config" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><Settings2 className="w-3.5 h-3.5" />配置</TabsTrigger>
+          <TabsTrigger value="runs" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><MessageSquare className="w-3.5 h-3.5" />运行记录</TabsTrigger>
+          <TabsTrigger value="versions" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><History className="w-3.5 h-3.5" />版本</TabsTrigger>
         </TabsList>
 
         {/* ───────── 调试 ───────── */}
