@@ -51,8 +51,8 @@ const AgentMarketplace = () => {
       {/* Hero */}
       <div className="pt-12 pb-6 text-center">
         <h1 className="text-2xl font-semibold text-foreground tracking-tight">
-          数字同事就位，
-          <span className="text-primary font-bold">组建你的专属团队</span>
+          数字同事，
+          <span className="text-primary font-bold">立马上岗</span>
         </h1>
         <p className="mt-2 text-xs text-muted-foreground">
           精选全场景应用及智能体，汇聚实战力量，让业务化繁为简
@@ -121,7 +121,7 @@ const AgentMarketplace = () => {
               onClick={() => setSortBy("downloads")}
               className={`px-2 py-0.5 rounded ${sortBy === "downloads" ? "text-primary font-medium" : "hover:text-foreground"}`}
             >
-              下载量
+              使用量
             </button>
           </div>
           <div className="h-4 w-px bg-border" />
