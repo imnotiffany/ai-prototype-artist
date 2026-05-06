@@ -131,7 +131,7 @@ const AgentDetail = () => {
     if (s.status !== "pending") return;
     setSystemPrompt((p) => p.trim() + s.addition);
     updateSuggestionStatus(s.id, "adopted");
-    toast({ title: "已采纳建议", description: "系统提示词已更新，可在下方保存为新版本" });
+    toast({ title: "已采纳建议", description: "系统提示词已更新" });
   };
 
   const rejectSuggestion = (s: PromptSuggestion) => {
@@ -156,7 +156,7 @@ const AgentDetail = () => {
         ...m,
         {
           role: "assistant",
-          content: `根据你的反馈，建议在系统提示词中追加这段说明。点击「采纳」即可应用，应用后可在下方一键保存为新版本或同时发布上线。`,
+          content: `根据你的反馈，建议在系统提示词中追加这段说明。点击「采纳」即可应用。`,
           suggestion,
         },
       ]);
@@ -411,9 +411,6 @@ const AgentDetail = () => {
                     </Button>
                     <Button size="sm" variant="outline" className="h-6 text-[11px] gap-1" onClick={handleSave}>
                       <Save className="w-3 h-3" />保存为 {nextVersion}
-                    </Button>
-                    <Button size="sm" className="h-6 text-[11px] gap-1" onClick={() => { handleSave(); setPublishOpen(true); }}>
-                      <Rocket className="w-3 h-3" />保存并发布
                     </Button>
                   </div>
                 </div>
