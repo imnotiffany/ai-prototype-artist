@@ -926,15 +926,15 @@ const AgentDetail = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <p className="text-[11px] text-muted-foreground mb-1.5">绑定 Skill</p>
-                      <div className="flex flex-wrap gap-1">
-                        {selSkills.length ? selSkills.map((s) => <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>) : <span className="text-[11px] text-muted-foreground">无</span>}
-                      </div>
-                    </div>
-                    <div>
                       <p className="text-[11px] text-muted-foreground mb-1.5">绑定 MCP</p>
                       <div className="flex flex-wrap gap-1">
                         {mcpBindings.length ? mcpBindings.map((b) => <Badge key={b.name} variant="secondary" className="text-[10px]">{b.name}</Badge>) : <span className="text-[11px] text-muted-foreground">无</span>}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-[11px] text-muted-foreground mb-1.5">绑定 Skill</p>
+                      <div className="flex flex-wrap gap-1">
+                        {selSkills.length ? selSkills.map((s) => <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>) : <span className="text-[11px] text-muted-foreground">无</span>}
                       </div>
                     </div>
                   </div>
