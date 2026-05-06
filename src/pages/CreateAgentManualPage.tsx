@@ -668,7 +668,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                 <div className="flex-1 overflow-auto p-4 space-y-3">
                   {assistantMessages.length === 0 && (
                     <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground gap-2 px-4">
-                      <Sparkles className="w-7 h-7 opacity-30" />
+                      <Bot className="w-7 h-7 opacity-30" />
                       <p className="text-xs">在右侧发起一轮调试后，我会主动告诉你做了哪些优化</p>
                       <p className="text-[10px] leading-relaxed">你也可以直接和我说："帮我修改提示词"、"补充某个能力的用途"</p>
                     </div>
