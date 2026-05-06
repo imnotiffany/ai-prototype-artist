@@ -12,6 +12,7 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { categories, getActiveSkills, getActiveMCPs, mockAgents } from "@/data/mockData";
 
@@ -22,12 +23,12 @@ const subagents = mockAgents.filter((a) => a.kind === "agent").slice(0, 8);
 const CreateAgentManualPage = () => {
   const navigate = useNavigate();
 
-  // Basic
+  // Basic (filled at publish time)
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState(categories[0]);
-  const [tagInput, setTagInput] = useState("");
-  const [tags, setTags] = useState<string[]>([]);
+  const [publishOpen, setPublishOpen] = useState(false);
+  const [generatingMeta, setGeneratingMeta] = useState(false);
 
   // Model
   const [model, setModel] = useState("claude-sonnet-4-6");
@@ -60,10 +61,29 @@ const CreateAgentManualPage = () => {
   const [fsSecretVisible, setFsSecretVisible] = useState(false);
   const [fsConnected, setFsConnected] = useState(false);
 
-  const addTag = () => {
-    const t = tagInput.trim();
-    if (t && !tags.includes(t)) setTags([...tags, t]);
-    setTagInput("");
+  const handleAutoGenerateMeta = () => {
+    setGeneratingMeta(true);
+    setTimeout(() => {
+      const skillNames = selSkills.slice(0, 2).join("、");
+      const mcpNames = selMCPs.slice(0, 2).join("、");
+      const capSummary = [skillNames, mcpNames].filter(Boolean).join(" + ") || "通用对话";
+      const guessedName = selMCPs[0]
+        ? `${selMCPs[0]} 助手`
+        : selSkills[0]
+        ? `${selSkills[0]} 智能体`
+        : "通用 AI 助手";
+      const guessedDesc = `基于 ${capSummary} 的智能体，可根据用户输入自动调用对应能力完成任务。`;
+      const guessedCategory =
+        selMCPs.some((m) => /邮件|mail/i.test(m)) ? "办公协作" :
+        selMCPs.some((m) => /数据|db|sql/i.test(m)) ? "数据分析" :
+        selSkills.some((s) => /代码|code/i.test(s)) ? "研发提效" :
+        categories[0];
+      if (!name) setName(guessedName);
+      if (!description) setDescription(guessedDesc);
+      setCategory(guessedCategory);
+      setGeneratingMeta(false);
+      toast({ title: "已根据当前配置生成基础信息" });
+    }, 600);
   };
 
   const toggle = (list: string[], setList: (v: string[]) => void, name: string) =>
@@ -130,16 +150,26 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
     }, 800);
   };
 
-  const handleSave = (publish: boolean) => {
+  const handleSaveDraft = () => {
+    toast({
+      title: "草稿已保存",
+      description: `${selSkills.length} Skill / ${selMCPs.length} MCP / ${selSubagents.length} Subagent`,
+    });
+  };
+
+  const openPublish = () => {
+    handleAutoGenerateMeta();
+    setPublishOpen(true);
+  };
+
+  const handlePublish = () => {
     if (!name.trim()) {
       toast({ title: "请填写智能体名称", variant: "destructive" });
       return;
     }
-    toast({
-      title: publish ? "已发布智能体" : "草稿已保存",
-      description: `${name} · ${selSkills.length} Skill / ${selMCPs.length} MCP / ${selSubagents.length} Subagent`,
-    });
-    if (publish) navigate("/project-agents");
+    toast({ title: "已发布智能体", description: `${name} · ${category}` });
+    setPublishOpen(false);
+    navigate("/project-agents");
   };
 
   const PickerPopover = ({
@@ -207,11 +237,11 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={() => handleSave(false)}>
+          <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={handleSaveDraft}>
             <Save className="w-3.5 h-3.5" />
             保存草稿
           </Button>
-          <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => handleSave(true)}>
+          <Button size="sm" className="h-8 text-xs gap-1.5" onClick={openPublish}>
             <Rocket className="w-3.5 h-3.5" />
             保存并发布
           </Button>
@@ -219,59 +249,14 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
       </div>
 
       <div className="max-w-4xl mx-auto px-6 py-5">
-        <Tabs defaultValue="basic">
-          <TabsList className="grid grid-cols-6 h-9">
-            <TabsTrigger value="basic" className="text-xs">基础信息</TabsTrigger>
+        <Tabs defaultValue="model">
+          <TabsList className="grid grid-cols-5 h-9">
             <TabsTrigger value="model" className="text-xs">模型配置</TabsTrigger>
             <TabsTrigger value="bindings" className="text-xs">原子能力</TabsTrigger>
             <TabsTrigger value="prompt" className="text-xs">系统提示词</TabsTrigger>
             <TabsTrigger value="env" className="text-xs">凭据配置</TabsTrigger>
             <TabsTrigger value="fengsheng" className="text-xs">丰声 NEXT</TabsTrigger>
           </TabsList>
-
-          {/* Basic */}
-          <TabsContent value="basic" className="mt-4 space-y-4">
-            <div className="border border-border rounded-lg p-5 space-y-4 bg-card">
-              <div>
-                <Label className="text-xs">智能体名称 <span className="text-destructive">*</span></Label>
-                <Input className="mt-1.5 h-8 text-xs" value={name} onChange={(e) => setName(e.target.value)} placeholder="例如：财务月报助手" />
-              </div>
-              <div>
-                <Label className="text-xs">描述</Label>
-                <Textarea className="mt-1.5 text-xs" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="一句话描述智能体能力，不超过 60 字" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-xs">分类</Label>
-                  <Select value={category} onValueChange={setCategory}>
-                    <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {categories.map((c) => <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="text-xs">标签</Label>
-                  <div className="flex gap-1.5 mt-1.5">
-                    <Input className="h-8 text-xs flex-1" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addTag()} placeholder="回车添加" />
-                    <Button size="sm" variant="outline" className="h-8 text-xs" onClick={addTag}>添加</Button>
-                  </div>
-                  {tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {tags.map((t) => (
-                        <Badge key={t} variant="secondary" className="text-[10px] gap-1">
-                          {t}
-                          <button onClick={() => setTags(tags.filter((x) => x !== t))} className="hover:text-destructive">
-                            <X className="w-2.5 h-2.5" />
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </TabsContent>
 
           {/* Model */}
           <TabsContent value="model" className="mt-4 space-y-4">
@@ -540,6 +525,55 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
           </TabsContent>
         </Tabs>
       </div>
+
+      <Dialog open={publishOpen} onOpenChange={setPublishOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-sm">保存并发布</DialogTitle>
+            <DialogDescription className="text-xs">
+              确认智能体的基础信息，AI 已根据系统提示词与原子能力自动生成一版，可直接修改。
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-1">
+            <div className="flex items-center justify-end">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs gap-1.5 text-primary"
+                onClick={handleAutoGenerateMeta}
+                disabled={generatingMeta}
+              >
+                {generatingMeta ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                重新生成
+              </Button>
+            </div>
+            <div>
+              <Label className="text-xs">名称 <span className="text-destructive">*</span></Label>
+              <Input className="mt-1.5 h-8 text-xs" value={name} onChange={(e) => setName(e.target.value)} placeholder="例如：财务月报助手" />
+            </div>
+            <div>
+              <Label className="text-xs">描述</Label>
+              <Textarea className="mt-1.5 text-xs" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="一句话描述智能体能力" />
+            </div>
+            <div>
+              <Label className="text-xs">分类</Label>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {categories.map((c) => <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setPublishOpen(false)}>取消</Button>
+            <Button size="sm" className="h-8 text-xs gap-1.5" onClick={handlePublish}>
+              <Rocket className="w-3.5 h-3.5" />
+              确认发布
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
