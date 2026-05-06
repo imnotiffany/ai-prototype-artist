@@ -341,7 +341,7 @@ const AgentDetail = () => {
           <div className="border border-border rounded-lg px-4 py-3 bg-gradient-to-r from-primary/10 to-primary/5 mb-4">
             <p className="text-xs">
               <span className="font-medium">调试模式</span>
-              <span className="text-muted-foreground"> · 左侧与调试 AI 沟通配置调整，右侧直接与智能体对话验证效果。当前未保存的修改不会影响线上运行。</span>
+              <span className="text-muted-foreground"> · 左侧与调试 AI 沟通配置调整，右侧直接与智能体对话验证效果。调试期间的修改不会影响线上，需要先「保存」生成新版本，再点右上角「发布」推送上线。</span>
             </p>
           </div>
 
