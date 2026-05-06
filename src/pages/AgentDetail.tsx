@@ -102,7 +102,8 @@ const AgentDetail = () => {
   }) !== JSON.stringify(savedSnapshot), [name, description, model, systemPrompt, selSkills, mcpBindings, fsAppKey, fsAppSecret, fsRobotCode, savedSnapshot]);
 
   /* ── Debug state ── */
-  type ChatMsg = { role: "user" | "assistant"; content: string };
+  type PromptSuggestion = { id: string; addition: string; summaryNote: string; status: "pending" | "adopted" | "rejected" };
+  type ChatMsg = { role: "user" | "assistant"; content: string; suggestion?: PromptSuggestion };
   type RunMsg = { role: "user" | "assistant"; content: string; tool?: string; status?: "ok" | "error" };
   const [assistantInput, setAssistantInput] = useState("");
   const [assistantMessages, setAssistantMessages] = useState<ChatMsg[]>([]);
@@ -120,13 +121,45 @@ const AgentDetail = () => {
     setDebugLogs((l) => [...l, { id: ++logIdRef.current, ts, level, message, meta }]);
   };
 
+  const updateSuggestionStatus = (id: string, status: "adopted" | "rejected") => {
+    setAssistantMessages((msgs) =>
+      msgs.map((m) => (m.suggestion?.id === id ? { ...m, suggestion: { ...m.suggestion, status } } : m))
+    );
+  };
+
+  const adoptSuggestion = (s: PromptSuggestion) => {
+    if (s.status !== "pending") return;
+    setSystemPrompt((p) => p.trim() + s.addition);
+    updateSuggestionStatus(s.id, "adopted");
+    toast({ title: "已采纳建议", description: "系统提示词已更新，可在下方保存为新版本" });
+  };
+
+  const rejectSuggestion = (s: PromptSuggestion) => {
+    if (s.status !== "pending") return;
+    updateSuggestionStatus(s.id, "rejected");
+  };
+
   const sendAssistantMessage = () => {
     if (!assistantInput.trim()) return;
     const text = assistantInput.trim();
     setAssistantMessages((m) => [...m, { role: "user", content: text }]);
     setAssistantInput("");
     setTimeout(() => {
-      setAssistantMessages((m) => [...m, { role: "assistant", content: `已记录你的调整建议："${text}"。我会在右侧下一轮调试中应用。` }]);
+      const addition = `\n\n# 用户调试反馈\n- ${text}`;
+      const suggestion: PromptSuggestion = {
+        id: `s-${Date.now()}`,
+        addition,
+        summaryNote: text.slice(0, 40),
+        status: "pending",
+      };
+      setAssistantMessages((m) => [
+        ...m,
+        {
+          role: "assistant",
+          content: `根据你的反馈，建议在系统提示词中追加这段说明。点击「采纳」即可应用，应用后可在下方一键保存为新版本或同时发布上线。`,
+          suggestion,
+        },
+      ]);
     }, 600);
   };
 
