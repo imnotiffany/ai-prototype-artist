@@ -399,25 +399,63 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
             {/* MCP 绑定 */}
             <div className="border border-border rounded-lg p-5 bg-card">
               <div className="flex items-center justify-between mb-3">
-                <Label className="text-xs">MCP 绑定</Label>
-                <CapabilityPickerDialog items={mcps} selected={selMCPs} onToggle={(n) => toggle(selMCPs, setSelMCPs, n)} icon={<Server className="w-3.5 h-3.5" />} label="MCP" marketLink="/" deployBadge={() => "云端"} />
+                <div>
+                  <Label className="text-xs">MCP 绑定</Label>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">连接外部系统，每个 MCP 需要绑定一个凭据</p>
+                </div>
+                <CapabilityPickerDialog items={mcps} selected={selMCPs} onToggle={(n) => toggle(selMCPs, setSelMCPs, n)} icon={<Server className="w-3.5 h-3.5" />} label="MCP" marketLink="/" deployBadge={() => "云端"} trigger={<Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0"><Plus className="w-3 h-3" />添加 MCP</Button>} />
               </div>
               {selMCPs.length === 0 ? (
-                <p className="text-xs text-muted-foreground py-2">未绑定任何 MCP 服务</p>
+                <p className="text-xs text-muted-foreground text-center py-4">尚未绑定任何 MCP。点击右上角「添加 MCP」选择。</p>
               ) : (
-                <div className="space-y-1.5">
-                  {selMCPs.map((s) => (
-                    <div key={s} className="flex items-center justify-between border border-border rounded px-3 py-1.5 text-xs">
-                      <span className="flex items-center gap-1.5"><Server className="w-3 h-3 text-primary" />{s}</span>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-[9px] h-4">需凭证</Badge>
-                        <button onClick={() => toggle(selMCPs, setSelMCPs, s)} className="text-muted-foreground hover:text-destructive"><X className="w-3 h-3" /></button>
+                <div className="space-y-2">
+                  {selMCPs.map((mcpName) => {
+                    const creds = mockCredentials.filter((c) => c.mcpServer === mcpName);
+                    const current = mcpCredentialMap[mcpName] ?? (creds.length === 1 ? creds[0].id : "");
+                    const credMissing = !current;
+                    return (
+                      <div key={mcpName} className={`border rounded-md p-3 space-y-2 ${credMissing ? "border-amber-300 bg-amber-50/40 dark:bg-amber-950/20" : "border-border"}`}>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-medium flex items-center gap-1.5">
+                            <Server className="w-3 h-3 text-primary" />{mcpName}
+                            {credMissing && (
+                              <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-0 text-[9px] h-4 gap-1">
+                                <AlertTriangle className="w-2.5 h-2.5" />未绑定凭据
+                              </Badge>
+                            )}
+                          </span>
+                          <button onClick={() => toggle(selMCPs, setSelMCPs, mcpName)} className="text-muted-foreground hover:text-destructive p-1" title="移除">
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Label className="text-[11px] text-muted-foreground shrink-0">凭据</Label>
+                          {creds.length === 0 ? (
+                            <>
+                              <span className="text-[11px] text-amber-600 dark:text-amber-500 flex-1">该 MCP 暂无可用凭据</span>
+                              <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => navigate("/vault")}>
+                                前往凭据管理 <ExternalLink className="w-3 h-3" />
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Select value={current} onValueChange={(v) => setMcpCredentialMap({ ...mcpCredentialMap, [mcpName]: v })}>
+                                <SelectTrigger className="h-7 text-xs"><SelectValue placeholder="选择凭据" /></SelectTrigger>
+                                <SelectContent>
+                                  {creds.map((c) => (
+                                    <SelectItem key={c.id} value={c.id} className="text-xs">{c.name} <span className="text-muted-foreground ml-1">({c.type})</span></SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <Button size="sm" variant="ghost" className="h-7 text-[10px]" onClick={() => navigate("/vault")}>凭据管理</Button>
+                            </>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
-              <p className="text-[10px] text-muted-foreground mt-2">凭证将从「凭据金库」自动注入；如某 MCP 存在多个凭据，请前往「凭据配置」选择</p>
             </div>
 
             {/* Skill 绑定 */}
