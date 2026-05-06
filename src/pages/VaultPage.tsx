@@ -171,7 +171,8 @@ const VaultPage = () => {
               <TableHead className="text-sm">关联 MCP</TableHead>
               <TableHead className="text-sm">使用情况</TableHead>
               <TableHead className="text-sm">创建时间</TableHead>
-              <TableHead className="w-24 text-sm">操作</TableHead>
+              <TableHead className="text-sm w-28">连接状态</TableHead>
+              <TableHead className="w-32 text-sm">操作</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -199,7 +200,21 @@ const VaultPage = () => {
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">{cred.createdAt}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-1">
+                    {testingId === cred.id ? (
+                      <Badge variant="outline" className="text-[10px] gap-1 font-normal"><Loader2 className="w-3 h-3 animate-spin" />测试中</Badge>
+                    ) : testResult[cred.id] === "ok" ? (
+                      <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0 text-[10px] gap-1"><CheckCircle2 className="w-3 h-3" />已连通</Badge>
+                    ) : testResult[cred.id] === "fail" ? (
+                      <Badge className="bg-red-100 text-red-700 hover:bg-red-100 border-0 text-[10px] gap-1"><XCircle className="w-3 h-3" />失败</Badge>
+                    ) : (
+                      <span className="text-[11px] text-muted-foreground">未测试</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-0.5">
+                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => runTest(cred.id, cred.name)} title="测试连接" disabled={testingId === cred.id}>
+                        <Plug className="w-3.5 h-3.5" />
+                      </Button>
                       <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEdit(cred)} title="编辑">
                         <Pencil className="w-3.5 h-3.5" />
                       </Button>
