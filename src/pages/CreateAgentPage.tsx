@@ -617,6 +617,7 @@ const CreateAgentPage = () => {
               prev.map((m) => m.id === responseId ? { ...m, content: fullText, isStreaming: false } : m)
             );
             setIsThinking(false);
+            setThinkingStartedAt(null);
           } else {
             setMessages((prev) =>
               prev.map((m) => m.id === responseId ? { ...m, content: fullText.slice(0, charIndex) } : m)
