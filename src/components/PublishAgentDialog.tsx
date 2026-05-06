@@ -34,7 +34,8 @@ const RequiredLabel = ({ children }: { children: React.ReactNode }) => (
   </label>
 );
 
-export const PublishAgentDialog = ({ open, onOpenChange, agentName, versions, defaultScope = "marketplace" }: Props) => {
+export const PublishAgentDialog = ({ open, onOpenChange, agentName, versions, defaultScope = "marketplace", kind = "agent" }: Props) => {
+  const noun = kind === "app" ? "应用" : "智能体";
   const [name, setName] = useState(agentName);
   const [desc, setDesc] = useState("");
   const [category, setCategory] = useState<string>("");
