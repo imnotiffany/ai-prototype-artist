@@ -987,6 +987,7 @@ const AgentDetail = () => {
         onOpenChange={setPublishOpen}
         agentName={name}
         versions={versions}
+        kind={agent.kind}
       />
     </div>
   );
