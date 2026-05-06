@@ -1,8 +1,9 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Info, History, Share2 } from "lucide-react";
+import { ArrowLeft, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { mockAgents } from "@/data/mockData";
+import { AgentInfoPanel } from "@/components/AgentInfoPanel";
 
 const AppRunner = () => {
   const { id } = useParams();
@@ -46,20 +47,23 @@ const AppRunner = () => {
         </div>
       </div>
 
-      {/* App content area — placeholder for the running app */}
-      <div className="flex-1 overflow-auto">
-        <div className="h-full flex items-center justify-center bg-muted/10">
-          <div className="text-center max-w-md px-6">
-            <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4 text-4xl">
-              {app.avatar}
+      {/* Body: app content + right info panel */}
+      <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 overflow-auto">
+          <div className="h-full flex items-center justify-center bg-muted/10">
+            <div className="text-center max-w-md px-6">
+              <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4 text-4xl">
+                {app.avatar}
+              </div>
+              <h2 className="text-base font-semibold mb-2">{app.name}</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed">{app.description}</p>
+              <p className="text-xs text-muted-foreground/60 mt-6">
+                这里会嵌入应用的运行界面（iframe / 内嵌页面）
+              </p>
             </div>
-            <h2 className="text-base font-semibold mb-2">{app.name}</h2>
-            <p className="text-sm text-muted-foreground leading-relaxed">{app.description}</p>
-            <p className="text-xs text-muted-foreground/60 mt-6">
-              这里会嵌入应用的运行界面（iframe / 内嵌页面）
-            </p>
           </div>
         </div>
+        <AgentInfoPanel agent={app} />
       </div>
     </div>
   );
