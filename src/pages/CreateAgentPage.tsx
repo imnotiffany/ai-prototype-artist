@@ -764,10 +764,7 @@ const CreateAgentPage = () => {
               </div>
             ))}
             {isThinking && !messages.some((m) => m.isStreaming) && (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                正在思考…
-              </div>
+              <AIStatusPill stageIndex={thinkingStage} startedAt={thinkingStartedAt ?? undefined} />
             )}
           </div>
 
