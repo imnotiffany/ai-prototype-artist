@@ -44,7 +44,7 @@ const mockRuns: RunRecord[] = [
   { id: "run-005", source: "Web 端", trigger: "李四",   startedAt: "2026-04-29 09:20:55", duration: "00:02:18", status: "running", prompt: "对比一下竞品最近 3 个月的更新" },
 ];
 
-import type { TranscriptEvent, DebugEvent } from "@/components/RunViews";
+
 
 const buildMockTranscript = (userPrompt: string): TranscriptEvent[] => [
   { id: "s0", type: "system", message: "会话开始 · claude-sonnet-4-6" },
