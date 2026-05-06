@@ -410,14 +410,19 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
               ) : (
                 <div className="space-y-2">
                   {selMCPs.map((mcpName) => {
+                    const mcpMeta = mcps.find((m) => m.name === mcpName);
+                    const needsCred = !!mcpMeta?.requiresCredential;
                     const creds = mockCredentials.filter((c) => c.mcpServer === mcpName);
                     const current = mcpCredentialMap[mcpName] ?? (creds.length === 1 ? creds[0].id : "");
-                    const credMissing = !current;
+                    const credMissing = needsCred && !current;
                     return (
                       <div key={mcpName} className={`border rounded-md p-3 space-y-2 ${credMissing ? "border-amber-300 bg-amber-50/40 dark:bg-amber-950/20" : "border-border"}`}>
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-medium flex items-center gap-1.5">
                             <Server className="w-3 h-3 text-primary" />{mcpName}
+                            {!needsCred && (
+                              <Badge variant="outline" className="border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30 text-[9px] h-4 px-1.5">免凭据</Badge>
+                            )}
                             {credMissing && (
                               <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-0 text-[9px] h-4 gap-1">
                                 <AlertTriangle className="w-2.5 h-2.5" />未绑定凭据
@@ -428,29 +433,31 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                             <X className="w-3.5 h-3.5" />
                           </button>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Label className="text-[11px] text-muted-foreground shrink-0">凭据</Label>
-                          {creds.length === 0 ? (
-                            <>
-                              <span className="text-[11px] text-amber-600 dark:text-amber-500 flex-1">该 MCP 暂无可用凭据</span>
-                              <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => navigate("/vault")}>
-                                前往凭据管理 <ExternalLink className="w-3 h-3" />
-                              </Button>
-                            </>
-                          ) : (
-                            <>
-                              <Select value={current} onValueChange={(v) => setMcpCredentialMap({ ...mcpCredentialMap, [mcpName]: v })}>
-                                <SelectTrigger className="h-7 text-xs"><SelectValue placeholder="选择凭据" /></SelectTrigger>
-                                <SelectContent>
-                                  {creds.map((c) => (
-                                    <SelectItem key={c.id} value={c.id} className="text-xs">{c.name} <span className="text-muted-foreground ml-1">({c.type})</span></SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <Button size="sm" variant="ghost" className="h-7 text-[10px]" onClick={() => navigate("/vault")}>凭据管理</Button>
-                            </>
-                          )}
-                        </div>
+                        {needsCred && (
+                          <div className="flex items-center gap-2">
+                            <Label className="text-[11px] text-muted-foreground shrink-0">凭据</Label>
+                            {creds.length === 0 ? (
+                              <>
+                                <span className="text-[11px] text-amber-600 dark:text-amber-500 flex-1">该 MCP 暂无可用凭据</span>
+                                <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => navigate("/vault")}>
+                                  前往凭据管理 <ExternalLink className="w-3 h-3" />
+                                </Button>
+                              </>
+                            ) : (
+                              <>
+                                <Select value={current} onValueChange={(v) => setMcpCredentialMap({ ...mcpCredentialMap, [mcpName]: v })}>
+                                  <SelectTrigger className="h-7 text-xs"><SelectValue placeholder="选择凭据" /></SelectTrigger>
+                                  <SelectContent>
+                                    {creds.map((c) => (
+                                      <SelectItem key={c.id} value={c.id} className="text-xs">{c.name} <span className="text-muted-foreground ml-1">({c.type})</span></SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <Button size="sm" variant="ghost" className="h-7 text-[10px]" onClick={() => navigate("/vault")}>凭据管理</Button>
+                              </>
+                            )}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
