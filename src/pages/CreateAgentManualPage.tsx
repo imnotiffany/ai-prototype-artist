@@ -340,7 +340,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
     setTimeout(() => {
       setPublishingToMarket(false);
       setPublishStage("done");
-      toast({ title: "已发布到数字同事", description: name });
+      toast({ title: "已发布到应用广场", description: name });
     }, 700);
   };
 
@@ -883,7 +883,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   保存到项目管理
                 </DialogTitle>
                 <DialogDescription className="text-[11px]">
-                  确认基础信息后保存到项目管理；保存成功后可继续发布到数字同事
+                  确认基础信息后保存到项目管理；保存成功后可继续发布到应用广场
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-3 py-1">
@@ -903,7 +903,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                         {generatingAvatar ? "生成中…" : "AI 重新生成"}
                       </Button>
                       <p className="text-[10px] text-muted-foreground mt-1 leading-relaxed">
-                        头像将随智能体一起发布到数字同事
+                        头像将随智能体一起发布到应用广场
                       </p>
                     </div>
                   </div>
@@ -953,10 +953,10 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               <DialogHeader>
                 <DialogTitle className="text-sm flex items-center gap-1.5">
                   <Store className="w-4 h-4 text-primary" />
-                  发布到数字同事
+                  发布到应用广场
                 </DialogTitle>
                 <DialogDescription className="text-[11px]">
-                  发布后，团队成员可在数字同事发现并使用该智能体；也可暂不发布，仅保留在项目内部使用
+                  发布后，团队成员可在应用广场发现并使用该智能体；也可暂不发布，仅保留在项目内部使用
                 </DialogDescription>
               </DialogHeader>
               <div className="border border-border rounded-lg p-3 bg-muted/40 my-1 flex items-center gap-3">
@@ -970,7 +970,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 <Button variant="outline" size="sm" className="h-8 text-xs" onClick={handleSkipMarket}>暂不发布</Button>
                 <Button size="sm" className="h-8 text-xs gap-1.5" onClick={handlePublishToMarket} disabled={publishingToMarket}>
                   {publishingToMarket ? <Loader2 className="w-3 h-3 animate-spin" /> : <Rocket className="w-3 h-3" />}
-                  发布到数字同事
+                  发布到应用广场
                 </Button>
               </DialogFooter>
             </>
@@ -984,12 +984,12 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   发布成功
                 </DialogTitle>
                 <DialogDescription className="text-[11px]">
-                  「{name}」已发布到数字同事，团队成员现在即可使用
+                  「{name}」已发布到应用广场，团队成员现在即可使用
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>
                 <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => { setPublishOpen(false); navigate("/project-agents"); }}>前往项目管理</Button>
-                <Button size="sm" className="h-8 text-xs" onClick={() => { setPublishOpen(false); navigate("/"); }}>查看数字同事</Button>
+                <Button size="sm" className="h-8 text-xs" onClick={() => { setPublishOpen(false); navigate("/"); }}>查看应用广场</Button>
               </DialogFooter>
             </>
           )}

@@ -51,7 +51,7 @@ const AgentMarketplace = () => {
       {/* Hero */}
       <div className="pt-12 pb-6 text-center">
         <h1 className="text-2xl font-semibold text-foreground tracking-tight">
-          数字同事，
+          应用广场，
           <span className="text-primary font-bold">立马上岗</span>
         </h1>
         <p className="mt-2 text-xs text-muted-foreground">
