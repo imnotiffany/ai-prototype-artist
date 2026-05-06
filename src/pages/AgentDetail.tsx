@@ -834,7 +834,7 @@ const AgentDetail = () => {
         <TabsContent value="versions" className="mt-4">
           <div className="border border-border rounded-lg px-4 py-3 bg-muted/40 mb-4">
             <p className="text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">关于版本</span> · 每次在「配置」中点击保存，都会自动生成一个新版本。可在此查看任意历史版本快照，或选择某个版本重新发布上线。
+              <span className="font-medium text-foreground">关于版本</span> · 每次点击保存，都会自动生成一个新版本。可在此查看任意历史版本快照，或选择某个版本重新发布上线。
             </p>
           </div>
           <div className="border border-border rounded-lg bg-card overflow-hidden">
