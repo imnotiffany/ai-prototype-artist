@@ -109,7 +109,20 @@ const ProjectAgents = () => {
             </Select>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-muted-foreground whitespace-nowrap">应用状态</span>
+            <span className="text-xs text-muted-foreground whitespace-nowrap">类型</span>
+            <Select value={kindFilter} onValueChange={(v) => setKindFilter(v as "all" | "app" | "agent")}>
+              <SelectTrigger className="h-8 text-xs w-24">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all" className="text-xs">全部</SelectItem>
+                <SelectItem value="app" className="text-xs">应用</SelectItem>
+                <SelectItem value="agent" className="text-xs">智能体</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-muted-foreground whitespace-nowrap">状态</span>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="h-8 text-xs w-24">
                 <SelectValue />
