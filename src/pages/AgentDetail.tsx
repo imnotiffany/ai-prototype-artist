@@ -365,7 +365,7 @@ const AgentDetail = () => {
           <div className="border border-border rounded-lg px-3 py-2 bg-gradient-to-r from-primary/10 to-primary/5 mb-4">
             <p className="text-xs">
               <span className="font-medium">调试模式</span>
-              <span className="text-muted-foreground"> · 左侧调整配置，右侧验证效果，修改不会影响线上。</span>
+              <span className="text-muted-foreground"> · 左侧调整配置，右侧验证效果，修改完毕请发布成新版本</span>
             </p>
           </div>
 
