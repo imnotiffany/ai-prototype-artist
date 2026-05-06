@@ -137,20 +137,47 @@ const VaultPage = () => {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div>
-              <Label className="text-xs">关联 MCP 服务器 <span className="text-destructive">*</span></Label>
-              <Select value={mcpServer} onValueChange={setMcpServer}>
-                <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue placeholder="先选择需要绑定的 MCP" /></SelectTrigger>
-                <SelectContent>
-                  {mcpOptions.map((mcp) => (
-                    <SelectItem key={mcp} value={mcp} className="text-xs">{mcp}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label className="text-xs">关联 MCP <span className="text-destructive">*</span></Label>
+              <Popover open={mcpPickerOpen} onOpenChange={setMcpPickerOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    className="mt-1.5 h-8 w-full justify-between text-xs font-normal"
+                  >
+                    <span className={mcpServer ? "" : "text-muted-foreground"}>
+                      {mcpServer || "搜索并选择需要绑定的 MCP"}
+                    </span>
+                    <ChevronsUpDown className="w-3 h-3 opacity-50 shrink-0" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="p-0 w-[--radix-popover-trigger-width]" align="start">
+                  <Command>
+                    <CommandInput placeholder="输入 MCP 名称搜索…" className="h-8 text-xs" />
+                    <CommandList>
+                      <CommandEmpty className="py-4 text-center text-xs text-muted-foreground">未找到匹配的 MCP</CommandEmpty>
+                      <CommandGroup>
+                        {mcpOptions.map((mcp) => (
+                          <CommandItem
+                            key={mcp}
+                            value={mcp}
+                            onSelect={() => { setMcpServer(mcp); setMcpPickerOpen(false); }}
+                            className="text-xs"
+                          >
+                            <Check className={`mr-2 h-3 w-3 ${mcpServer === mcp ? "opacity-100" : "opacity-0"}`} />
+                            {mcp}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
               <p className="text-[10px] text-muted-foreground mt-1">同一 MCP 可保存多个凭据，运行时可在智能体内选择</p>
             </div>
 
             <div>
-              <Label className="text-xs">凭据名称</Label>
+              <Label className="text-xs">凭据名称 <span className="text-destructive">*</span></Label>
               <Input className="mt-1.5 h-8 text-xs" value={credName} onChange={(e) => setCredName(e.target.value)} placeholder="自定义名称，例如 Gmail 工作账号" />
             </div>
 
