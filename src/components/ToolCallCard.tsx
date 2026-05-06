@@ -81,11 +81,21 @@ const kindLabel = (kind: ToolCallKind) => {
 
 const truncate = (s: string, n = 60) => (s.length > n ? s.slice(0, n) + "…" : s);
 
+const totalMs = (call: ToolCall): number | undefined => {
+  if (!call.steps || call.steps.length === 0) return undefined;
+  const sum = call.steps.reduce((a, s) => a + (s.ms ?? 0), 0);
+  return sum > 0 ? sum : undefined;
+};
+
 const Card = ({ call }: { call: ToolCall }) => {
   const [open, setOpen] = useState(false);
   const Icon = iconFor(call.kind);
   const isError = call.status === "failed";
-  const canExpand = call.status !== "running";
+  const canExpand = call.status !== "running" && (
+    !!call.params?.length || !!call.input ||
+    !!call.resultItems?.length || !!call.output || !!call.error
+  );
+  const ms = totalMs(call);
 
   return (
     <div
@@ -108,18 +118,24 @@ const Card = ({ call }: { call: ToolCall }) => {
           )}
         />
         <Icon className="w-3.5 h-3.5 text-primary shrink-0" />
-        <span className="text-[11px] font-semibold text-foreground shrink-0">{call.name}</span>
-        {call.provider && (
-          <span className="text-[10px] text-muted-foreground shrink-0 hidden sm:inline">· {call.provider}</span>
-        )}
-        <span className="text-[11px] font-mono text-muted-foreground truncate flex-1 text-right">
-          {truncate(call.summary)}
+        <span className="text-[11px] font-mono text-foreground truncate flex-1">
+          {call.endpoint || call.name}
         </span>
-        <span className="shrink-0">
-          {call.status === "running" && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />}
-          {call.status === "success" && <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />}
+        <span className="shrink-0 flex items-center gap-2">
+          {call.status === "running" && (
+            <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              调用中
+            </span>
+          )}
+          {call.status === "success" && (
+            <>
+              {ms != null && <span className="text-[10px] text-muted-foreground tabular-nums">{ms}ms</span>}
+              <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
+            </>
+          )}
           {call.status === "failed" && (
-            <span className="flex items-center gap-1 text-[10px] text-destructive max-w-[140px] truncate">
+            <span className="flex items-center gap-1 text-[10px] text-destructive max-w-[160px] truncate">
               <AlertCircle className="w-3 h-3 shrink-0" />
               {(call.error ?? "调用失败").split("\n")[0]}
             </span>
@@ -129,15 +145,6 @@ const Card = ({ call }: { call: ToolCall }) => {
 
       {open && canExpand && (
         <div className="px-3 pb-3 pt-2 space-y-3 border-t border-border/60 text-[11px]">
-          {/* endpoint 单独一行（如果有），不再单独搞"调用资源"区块 */}
-          {call.endpoint && (
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-muted-foreground">端点</span>
-              <code className="font-mono text-[10px] text-foreground/80 bg-muted/60 px-1.5 py-0.5 rounded">
-                {call.endpoint}
-              </code>
-            </div>
-          )}
 
           {/* 2. 请求参数 */}
           {(call.params && call.params.length > 0) ? (
@@ -167,34 +174,7 @@ const Card = ({ call }: { call: ToolCall }) => {
             </section>
           ) : null}
 
-          {/* 3. 调用过程时间线 */}
-          {call.steps && call.steps.length > 0 && (
-            <section className="space-y-1">
-              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">调用过程</p>
-              <ol className="relative ml-1 border-l border-border/60 pl-3 space-y-1.5">
-                {call.steps.map((s, i) => {
-                  const dotCls =
-                    s.status === "failed" ? "bg-destructive"
-                    : s.status === "running" ? "bg-amber-400 animate-pulse"
-                    : "bg-emerald-500";
-                  return (
-                    <li key={i} className="relative">
-                      <span className={cn("absolute -left-[15px] top-[5px] w-1.5 h-1.5 rounded-full", dotCls)} />
-                      <div className="flex items-baseline gap-2 flex-wrap">
-                        <span className="text-foreground font-medium">{s.label}</span>
-                        {typeof s.ms === "number" && (
-                          <span className="text-[10px] text-muted-foreground tabular-nums">{s.ms}ms</span>
-                        )}
-                      </div>
-                      {s.detail && (
-                        <p className="text-[10px] text-muted-foreground mt-0.5">{s.detail}</p>
-                      )}
-                    </li>
-                  );
-                })}
-              </ol>
-            </section>
-          )}
+          {/* 调用过程时间线已移除：极简模式只保留 参数 / 结果 */}
 
           {/* 4. 返回结果 */}
           {(call.resultItems && call.resultItems.length > 0) ? (
