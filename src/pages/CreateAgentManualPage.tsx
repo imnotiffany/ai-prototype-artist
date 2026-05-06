@@ -401,7 +401,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <Label className="text-xs">MCP 绑定</Label>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">连接外部系统，每个 MCP 需要绑定一个凭据</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">连接外部系统；部分 MCP 需要绑定凭据后才能调用</p>
                 </div>
                 <CapabilityPickerDialog items={mcps} selected={selMCPs} onToggle={(n) => toggle(selMCPs, setSelMCPs, n)} icon={<Server className="w-3.5 h-3.5" />} label="MCP" marketLink="/" deployBadge={(n) => mcps.find((m) => m.name === n)?.deployment ?? "云端"} trigger={<Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0"><Plus className="w-3 h-3" />添加 MCP</Button>} />
               </div>
