@@ -369,10 +369,9 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
 
       <div className="max-w-6xl mx-auto px-6 py-5">
         <Tabs defaultValue="capability">
-          <TabsList className="grid grid-cols-5 h-9">
+          <TabsList className="grid grid-cols-4 h-9">
             <TabsTrigger value="capability" className="text-xs">能力配置</TabsTrigger>
             <TabsTrigger value="prompt" className="text-xs">系统提示词</TabsTrigger>
-            <TabsTrigger value="env" className="text-xs">凭据配置</TabsTrigger>
             <TabsTrigger value="fengsheng" className="text-xs">丰声 NEXT</TabsTrigger>
             <TabsTrigger value="debug" className="text-xs">调试</TabsTrigger>
           </TabsList>
