@@ -372,7 +372,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
           <TabsList className="grid grid-cols-4 h-9">
             <TabsTrigger value="capability" className="text-xs">能力配置</TabsTrigger>
             <TabsTrigger value="prompt" className="text-xs">系统提示词</TabsTrigger>
-            <TabsTrigger value="fengsheng" className="text-xs">丰声 NEXT</TabsTrigger>
+            <TabsTrigger value="fengsheng" className="text-xs gap-1.5">丰声 NEXT<span className="text-[9px] px-1 h-3.5 leading-[14px] rounded bg-muted text-muted-foreground font-normal">可选</span></TabsTrigger>
             <TabsTrigger value="debug" className="text-xs">调试</TabsTrigger>
           </TabsList>
 
