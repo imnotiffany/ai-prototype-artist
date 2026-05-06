@@ -527,36 +527,29 @@ const AgentDetail = () => {
               </Tabs>
             </div>
           </div>
+
+          {/* Sticky bottom action bar (debug) */}
+          {isDirty && (
+            <div className="sticky bottom-4 mt-4 mx-auto max-w-3xl z-10 border border-amber-300 bg-amber-50/95 dark:bg-amber-950/40 backdrop-blur rounded-lg shadow-lg px-4 py-2.5 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-xs min-w-0">
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                <span className="font-medium text-amber-900 dark:text-amber-200">调试期间的修改尚未保存，不会影响线上</span>
+                <span className="text-amber-700/80 dark:text-amber-300/80 truncate">· 保存后将生成新版本，需到右上角「发布」才能上线</span>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <Button size="sm" variant="ghost" className="h-7 text-xs gap-1.5" onClick={handleRevert}>
+                  <RotateCcw className="w-3 h-3" />撤销
+                </Button>
+                <Button size="sm" className="h-7 text-xs gap-1.5" onClick={handleSave}>
+                  <Save className="w-3 h-3" />保存
+                </Button>
+              </div>
+            </div>
+          )}
         </TabsContent>
 
         {/* ───────── 配置 ───────── */}
         <TabsContent value="config" className="mt-4">
-          {/* Sticky save bar */}
-          <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border border-border rounded-lg px-4 py-2.5 mb-4 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs">
-              {isDirty ? (
-                <>
-                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                  <span className="font-medium">有未保存的修改</span>
-                  <span className="text-muted-foreground">· 保存后会自动生成新版本，可在「版本」中查看或回滚</span>
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
-                  <span className="text-muted-foreground">当前为已保存版本 {versions.find((v) => v.current)?.v}</span>
-                </>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <Button size="sm" variant="ghost" className="h-8 text-xs gap-1.5" onClick={handleRevert} disabled={!isDirty}>
-                <RotateCcw className="w-3.5 h-3.5" />撤销修改
-              </Button>
-              <Button size="sm" className="h-8 text-xs gap-1.5" onClick={handleSave} disabled={!isDirty}>
-                <Save className="w-3.5 h-3.5" />保存为新版本
-              </Button>
-            </div>
-          </div>
-
           <div className="space-y-4">
             <p className="text-[11px] text-muted-foreground px-1">
               名称、描述等基本信息请通过页面右上角的「编辑基本信息」修改，不会产生新版本。以下配置变更会生成新版本。
