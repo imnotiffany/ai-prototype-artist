@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Plus, Pencil, Trash2, KeyRound, ShieldCheck, Lock, Check, ChevronsUpDown, AlertTriangle, Bot } from "lucide-react";
+import { Plus, Pencil, Trash2, KeyRound, ShieldCheck, Lock, Check, ChevronsUpDown, AlertTriangle, Bot, Plug, Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { mockCredentials, sharedResources, mockAgents } from "@/data/mockData";
 import { toast } from "@/hooks/use-toast";
 
@@ -39,6 +39,46 @@ const VaultPage = () => {
   const [mcpPickerOpen, setMcpPickerOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<typeof mockCredentials[number] | null>(null);
+  const [testingId, setTestingId] = useState<string | null>(null);
+  const [testResult, setTestResult] = useState<Record<string, "ok" | "fail">>({});
+  const [formTesting, setFormTesting] = useState(false);
+  const [formTestResult, setFormTestResult] = useState<"ok" | "fail" | null>(null);
+
+  const runTest = (id: string, label: string) => {
+    setTestingId(id);
+    setTimeout(() => {
+      const ok = Math.random() > 0.2;
+      setTestResult((r) => ({ ...r, [id]: ok ? "ok" : "fail" }));
+      setTestingId(null);
+      toast({
+        title: ok ? "连接成功" : "连接失败",
+        description: ok ? `${label} 已与目标 MCP 完成握手` : `${label} 无法连接，请检查凭据值或 MCP 服务可达性`,
+        variant: ok ? "default" : "destructive",
+      });
+    }, 900);
+  };
+
+  const runFormTest = () => {
+    if (!mcpServer) {
+      toast({ title: "请先选择关联 MCP", variant: "destructive" });
+      return;
+    }
+    if (credType === "Bearer Token" && !tokenValue) {
+      toast({ title: "请输入 Token 值", variant: "destructive" });
+      return;
+    }
+    if (credType === "OAuth 2.0" && (!oauthClientId || !oauthClientSecret)) {
+      toast({ title: "请填写 OAuth Client ID/Secret", variant: "destructive" });
+      return;
+    }
+    setFormTesting(true);
+    setFormTestResult(null);
+    setTimeout(() => {
+      const ok = Math.random() > 0.2;
+      setFormTesting(false);
+      setFormTestResult(ok ? "ok" : "fail");
+    }, 900);
+  };
 
   const linkedAgents = (mcpName: string) =>
     mockAgents.filter((a) => a.mcpServers?.includes(mcpName)).map((a) => a.name);
