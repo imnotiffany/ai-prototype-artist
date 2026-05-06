@@ -158,6 +158,14 @@ export const PublishAgentDialog = ({ open, onOpenChange, agentName, versions, de
               <span className="text-muted-foreground">版本</span>
               <span className="font-mono">{versionV}</span>
             </div>
+            {scope === "marketplace" && (
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">允许复制</span>
+                <span className={allowCopy ? "text-primary font-medium" : "text-muted-foreground"}>
+                  {allowCopy ? "已开启" : "已关闭"}
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="flex items-start gap-2 text-[11px] text-muted-foreground">
