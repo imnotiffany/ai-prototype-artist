@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState, useMemo, useRef, useEffect } from "react";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,22 +10,15 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import {
-  ArrowLeft, MessageSquare, Send, Save, Play, Code2, FormInput,
-  History, Server, Wrench, Bot, ChevronDown, ChevronRight, CheckCircle2, XCircle, Clock,
+  ArrowLeft, MessageSquare, Send, Save, Bot, ChevronDown, ChevronRight, CheckCircle2, XCircle, Clock,
+  History, Server, Sparkles, Bug, Terminal, Loader2, Mic, MicOff, Zap, Plus, X, RotateCcw, Eye, Search, Settings2,
+  Brain, Wrench, Info, AlertTriangle, AlertCircle, Copy,
 } from "lucide-react";
-import { mockAgents, getActiveMCPs, mockCredentials } from "@/data/mockData";
+import { mockAgents, getActiveMCPs, getActiveSkills, mockCredentials } from "@/data/mockData";
 import { toast } from "@/hooks/use-toast";
-
-/* ───────── Built-in tools ───────── */
-const builtInTools = [
-  { key: "web_search", name: "web_search", desc: "联网搜索：查询实时资讯", default: true },
-  { key: "bash", name: "bash", desc: "执行 Shell 命令", default: false },
-  { key: "file_io", name: "file_io", desc: "读写工作区文件", default: true },
-  { key: "code_exec", name: "code_exec", desc: "Python / Node 代码执行沙箱", default: false },
-  { key: "image_gen", name: "image_gen", desc: "图像生成", default: false },
-  { key: "fetch_url", name: "fetch_url", desc: "抓取网页内容并转 Markdown", default: true },
-];
 
 /* ───────── Mock run history ───────── */
 type RunStatus = "success" | "failed" | "running";
@@ -46,120 +39,167 @@ const mockRuns: RunRecord[] = [
   { id: "run-005", source: "Web 端", trigger: "李四",   startedAt: "2026-04-29 09:20:55", duration: "00:02:18", status: "running", prompt: "对比一下竞品最近 3 个月的更新" },
 ];
 
-/* ───────── Mock transcript / debug ───────── */
 const mockTranscript = [
   { role: "user", content: "帮我整理今天的销售周报，按区域汇总" },
   { role: "agent", content: "好的，我先查询今天各区域的销售数据。", tools: [{ name: "web_search", count: 2 }, { name: "BigQuery MCP", count: 1 }] },
   { role: "agent", content: "已汇总完成，华东区 ¥1.2M（环比 +8%）、华南区 ¥0.9M（+3%）、华北区 ¥0.7M（-2%）。\n\n报告已生成 → 销售周报_20260429.md" },
 ];
 const mockDebugEvents = [
-  { t: "10:24:18.102", type: "session.start",      data: { session_id: "sess-9f2c", model: "claude-sonnet-4-6" } },
-  { t: "10:24:18.245", type: "llm.request",        data: { messages: 1, tokens_in: 1240 } },
-  { t: "10:24:19.812", type: "tool.call",          data: { name: "web_search", args: { q: "销售数据 2026-04-29" } } },
-  { t: "10:24:21.044", type: "tool.result",        data: { name: "web_search", bytes: 4821, latency_ms: 1232 } },
-  { t: "10:24:21.330", type: "tool.call",          data: { name: "BigQuery MCP", args: { sql: "SELECT region, sum(amount) ..." } } },
-  { t: "10:24:23.118", type: "tool.result",        data: { name: "BigQuery MCP", rows: 3, latency_ms: 1788 } },
-  { t: "10:24:24.501", type: "llm.response",       data: { tokens_out: 312, finish_reason: "stop" } },
-  { t: "10:24:24.612", type: "session.end",        data: { status: "success", total_ms: 6510, total_tokens: 1552 } },
+  { t: "10:24:18.102", type: "session.start", data: { session_id: "sess-9f2c", model: "claude-sonnet-4-6" } },
+  { t: "10:24:18.245", type: "llm.request",   data: { messages: 1, tokens_in: 1240 } },
+  { t: "10:24:19.812", type: "tool.call",     data: { name: "web_search", args: { q: "销售数据 2026-04-29" } } },
+  { t: "10:24:21.044", type: "tool.result",   data: { name: "web_search", bytes: 4821, latency_ms: 1232 } },
+  { t: "10:24:24.501", type: "llm.response",  data: { tokens_out: 312, finish_reason: "stop" } },
+  { t: "10:24:24.612", type: "session.end",   data: { status: "success", total_ms: 6510, total_tokens: 1552 } },
 ];
 
-/* ───────── YAML helpers ───────── */
-const buildYaml = (cfg: {
-  name: string; description: string; model: string; systemPrompt: string;
-  tools: string[]; mcpServers: { name: string; credential: string }[];
-  dingtalk: { enabled: boolean; webhook: string };
-}) => `# Agent Configuration
-name: ${cfg.name}
-description: ${cfg.description || ""}
-model: ${cfg.model}
-
-system_prompt: |
-${cfg.systemPrompt.split("\n").map((l) => "  " + l).join("\n")}
-
-tools:
-${cfg.tools.map((t) => `  - ${t}`).join("\n") || "  []"}
-
-mcp_servers:
-${cfg.mcpServers.map((m) => `  - name: ${m.name}\n    credential: ${m.credential || "(未绑定)"}`).join("\n") || "  []"}
-
-integrations:
-  dingtalk:
-    enabled: ${cfg.dingtalk.enabled}
-    webhook: ${cfg.dingtalk.webhook || "''"}
-`;
+type LogLevel = "info" | "tool" | "thought" | "warn" | "error" | "result";
+type LogEntry = { id: number; ts: string; level: LogLevel; message: string; meta?: string };
 
 const AgentDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get("tab") === "versions" ? "versions" : "debug";
   const agent = mockAgents.find((a) => a.id === id);
 
-  /* ── Online experience state ── */
-  const [chatInput, setChatInput] = useState("");
-  const [chatMessages, setChatMessages] = useState<{ role: "user" | "agent"; content: string }[]>([]);
+  /* ── Saved snapshot vs current draft (for "未保存" indicator) ── */
+  const initialSnapshot = useMemo(() => ({
+    name: agent?.name ?? "",
+    description: agent?.description ?? "",
+    model: "claude-sonnet-4-6",
+    systemPrompt: "你是一名严谨的业务助理。请根据用户问题，调用合适的工具完成任务，并以结构化方式输出结果。",
+    skills: [] as string[],
+    mcpBindings: ((agent?.mcpServers ?? []) as string[]).map((m) => ({ name: m, credential: "" })),
+    dingEnabled: false,
+    dingWebhook: "",
+  }), [agent]);
 
-  /* ── Config state (form ⇄ yaml) ── */
-  const [editMode, setEditMode] = useState<"form" | "yaml">("form");
-  const [name, setName] = useState(agent?.name ?? "");
-  const [description, setDescription] = useState(agent?.description ?? "");
-  const [model, setModel] = useState("claude-sonnet-4-6");
-  const [systemPrompt, setSystemPrompt] = useState(
-    "你是一名严谨的业务助理。请根据用户问题，调用合适的工具完成任务，并以结构化方式输出结果。"
-  );
-  const [enabledTools, setEnabledTools] = useState<string[]>(builtInTools.filter((t) => t.default).map((t) => t.key));
-  const [mcpBindings, setMcpBindings] = useState<{ name: string; credential: string }[]>(
-    (agent?.mcpServers ?? []).map((m) => ({ name: m, credential: "" }))
-  );
-  const [dingEnabled, setDingEnabled] = useState(false);
-  const [dingWebhook, setDingWebhook] = useState("");
+  const [name, setName] = useState(initialSnapshot.name);
+  const [description, setDescription] = useState(initialSnapshot.description);
+  const [model, setModel] = useState(initialSnapshot.model);
+  const [systemPrompt, setSystemPrompt] = useState(initialSnapshot.systemPrompt);
+  const [selSkills, setSelSkills] = useState<string[]>(initialSnapshot.skills);
+  const [mcpBindings, setMcpBindings] = useState<{ name: string; credential: string }[]>(initialSnapshot.mcpBindings);
+  const [dingEnabled, setDingEnabled] = useState(initialSnapshot.dingEnabled);
+  const [dingWebhook, setDingWebhook] = useState(initialSnapshot.dingWebhook);
+  const [savedSnapshot, setSavedSnapshot] = useState(initialSnapshot);
+
   const [versions, setVersions] = useState([
-    { v: "v3", at: "2026-04-25 14:02", by: "廖奕通", note: "新增 BigQuery MCP" },
-    { v: "v2", at: "2026-04-18 09:30", by: "廖奕通", note: "调整 system prompt 风格" },
-    { v: "v1", at: "2026-04-10 16:45", by: "廖奕通", note: "初始版本" },
+    { v: "v3", at: "2026-04-25 14:02", by: "廖奕通", note: "新增 BigQuery MCP", current: true },
+    { v: "v2", at: "2026-04-18 09:30", by: "廖奕通", note: "调整 system prompt 风格", current: false },
+    { v: "v1", at: "2026-04-10 16:45", by: "廖奕通", note: "初始版本", current: false },
   ]);
 
-  const cfgYaml = useMemo(
-    () => buildYaml({ name, description, model, systemPrompt, tools: enabledTools, mcpServers: mcpBindings, dingtalk: { enabled: dingEnabled, webhook: dingWebhook } }),
-    [name, description, model, systemPrompt, enabledTools, mcpBindings, dingEnabled, dingWebhook]
-  );
-  const [yamlDraft, setYamlDraft] = useState(cfgYaml);
+  const isDirty = useMemo(() => JSON.stringify({
+    name, description, model, systemPrompt, skills: selSkills, mcpBindings, dingEnabled, dingWebhook,
+  }) !== JSON.stringify(savedSnapshot), [name, description, model, systemPrompt, selSkills, mcpBindings, dingEnabled, dingWebhook, savedSnapshot]);
 
-  /* ── Run history state ── */
+  /* ── Debug state ── */
+  type ChatMsg = { role: "user" | "assistant"; content: string };
+  type RunMsg = { role: "user" | "assistant"; content: string; tool?: string; status?: "ok" | "error" };
+  const [assistantInput, setAssistantInput] = useState("");
+  const [assistantMessages, setAssistantMessages] = useState<ChatMsg[]>([]);
+  const [debugInput, setDebugInput] = useState("");
+  const [runMessages, setRunMessages] = useState<RunMsg[]>([]);
+  const [debugRunning, setDebugRunning] = useState(false);
+  const [voiceRecording, setVoiceRecording] = useState(false);
+  const [debugLogs, setDebugLogs] = useState<LogEntry[]>([]);
+  const [runView, setRunView] = useState<"chat" | "logs">("chat");
+  const [logFilter, setLogFilter] = useState<"all" | LogLevel>("all");
+  const logIdRef = useRef(0);
+
+  const pushLog = (level: LogLevel, message: string, meta?: string) => {
+    const ts = new Date().toLocaleTimeString("zh-CN", { hour12: false }) + "." + String(Date.now() % 1000).padStart(3, "0");
+    setDebugLogs((l) => [...l, { id: ++logIdRef.current, ts, level, message, meta }]);
+  };
+
+  const sendAssistantMessage = () => {
+    if (!assistantInput.trim()) return;
+    const text = assistantInput.trim();
+    setAssistantMessages((m) => [...m, { role: "user", content: text }]);
+    setAssistantInput("");
+    setTimeout(() => {
+      setAssistantMessages((m) => [...m, { role: "assistant", content: `已记录你的调整建议："${text}"。我会在右侧下一轮调试中应用。` }]);
+    }, 600);
+  };
+
+  const runDebug = () => {
+    if (!debugInput.trim() || debugRunning) return;
+    const text = debugInput.trim();
+    setRunMessages((m) => [...m, { role: "user", content: text }]);
+    setDebugInput("");
+    setDebugRunning(true);
+    pushLog("info", `[runtime] 启动容器 sandbox-${id}`, `image=cloud-code:1.4.2`);
+    pushLog("thought", `[reasoning] 解析用户意图：${text.slice(0, 40)}`);
+    setTimeout(() => {
+      pushLog("tool", `[tool_use] 调用 web_search`, `args={q:"${text.slice(0, 20)}"}`);
+    }, 500);
+    setTimeout(() => {
+      pushLog("result", `[tool_result] web_search 返回 5 条结果`, `latency=820ms`);
+      setRunMessages((m) => [...m, { role: "assistant", content: `（调试响应）已根据「${text}」执行任务，详情见左侧运行日志。`, tool: "web_search" }]);
+      setDebugRunning(false);
+    }, 1500);
+  };
+
+  const toggleVoice = () => {
+    if (voiceRecording) {
+      setVoiceRecording(false);
+      setDebugInput((v) => v + (v ? " " : "") + "（语音输入示例文本）");
+    } else {
+      setVoiceRecording(true);
+    }
+  };
+
+  /* ── Run history ── */
   const [activeRun, setActiveRun] = useState<RunRecord | null>(null);
-  const [runView, setRunView] = useState<"transcript" | "debug">("transcript");
+  const [runDetailView, setRunDetailView] = useState<"transcript" | "debug">("transcript");
   const [expandedTools, setExpandedTools] = useState<Record<number, boolean>>({});
 
   if (!agent) return <div className="p-6">智能体不存在</div>;
 
   const allMcpOptions = getActiveMCPs().map((m) => m.name);
+  const allSkillOptions = getActiveSkills().map((s) => s.name);
   const credentialsByMcp = (mcp: string) => mockCredentials.filter((c) => c.mcpServer === mcp);
 
-  const handleSend = () => {
-    if (!chatInput.trim()) return;
-    setChatMessages([...chatMessages, { role: "user", content: chatInput }, { role: "agent", content: "（演示）已收到，正在调度工具处理…" }]);
-    setChatInput("");
-  };
-
-  const handleSaveConfig = () => {
-    if (editMode === "yaml") {
-      // pretend to parse
-      toast({ title: "YAML 已应用", description: "已与表单同步" });
-    }
+  /* ── Config actions ── */
+  const handleSave = () => {
     const next = `v${versions.length + 1}`;
-    setVersions([{ v: next, at: new Date().toISOString().slice(0, 16).replace("T", " "), by: "廖奕通", note: "更新配置" }, ...versions]);
+    setVersions([
+      { v: next, at: new Date().toISOString().slice(0, 16).replace("T", " "), by: "廖奕通", note: "更新配置", current: true },
+      ...versions.map((v) => ({ ...v, current: false })),
+    ]);
+    setSavedSnapshot({ name, description, model, systemPrompt, skills: selSkills, mcpBindings, dingEnabled, dingWebhook });
     toast({ title: "已保存", description: `生成新版本 ${next}` });
   };
 
-  const toggleTool = (k: string) =>
-    setEnabledTools(enabledTools.includes(k) ? enabledTools.filter((x) => x !== k) : [...enabledTools, k]);
+  const handleRevert = () => {
+    setName(savedSnapshot.name);
+    setDescription(savedSnapshot.description);
+    setModel(savedSnapshot.model);
+    setSystemPrompt(savedSnapshot.systemPrompt);
+    setSelSkills(savedSnapshot.skills);
+    setMcpBindings(savedSnapshot.mcpBindings);
+    setDingEnabled(savedSnapshot.dingEnabled);
+    setDingWebhook(savedSnapshot.dingWebhook);
+    toast({ title: "已撤销修改" });
+  };
+
+  const handleRollback = (v: typeof versions[0]) => {
+    setVersions(versions.map((x) => ({ ...x, current: x.v === v.v })));
+    toast({ title: `已回滚到 ${v.v}`, description: v.note });
+  };
 
   const updateMcpCred = (i: number, cred: string) =>
     setMcpBindings(mcpBindings.map((m, idx) => (idx === i ? { ...m, credential: cred } : m)));
-
   const removeMcp = (i: number) => setMcpBindings(mcpBindings.filter((_, idx) => idx !== i));
   const addMcp = (n: string) => {
     if (mcpBindings.find((m) => m.name === n)) return;
     setMcpBindings([...mcpBindings, { name: n, credential: "" }]);
   };
+
+  const toggleSkill = (s: string) =>
+    setSelSkills(selSkills.includes(s) ? selSkills.filter((x) => x !== s) : [...selSkills, s]);
 
   const statusBadge = (s: RunStatus) => {
     if (s === "success") return <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-0 text-[10px] gap-1"><CheckCircle2 className="w-3 h-3" />成功</Badge>;
@@ -167,274 +207,485 @@ const AgentDetail = () => {
     return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-0 text-[10px] gap-1"><Clock className="w-3 h-3" />运行中</Badge>;
   };
 
+  /* ── Searchable add poppers ── */
+  const [mcpSearch, setMcpSearch] = useState("");
+  const [skillSearch, setSkillSearch] = useState("");
+  const [mcpPopOpen, setMcpPopOpen] = useState(false);
+  const [skillPopOpen, setSkillPopOpen] = useState(false);
+
   return (
-    <div className="p-6 max-w-[1200px] mx-auto animate-fade-in">
+    <div className="p-6 max-w-[1280px] mx-auto animate-fade-in">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
         <button onClick={() => navigate(-1)} className="hover:text-foreground transition-colors flex items-center gap-1">
-          <ArrowLeft className="w-3.5 h-3.5" />
-          返回
+          <ArrowLeft className="w-3.5 h-3.5" />返回
         </button>
         <span>/</span>
         <span className="text-foreground">{agent.name}</span>
       </div>
 
       {/* Header */}
-      <div className="flex items-start justify-between mb-6">
-        <div className="flex items-start gap-4">
-          <div className="w-16 h-16 rounded-xl bg-secondary flex items-center justify-center text-3xl">{agent.avatar}</div>
-          <div>
-            <h1 className="text-xl font-semibold text-foreground">{agent.name}</h1>
-            <p className="text-sm text-muted-foreground mt-1">{agent.description}</p>
-            <div className="flex items-center gap-2 mt-2">
+      <div className="flex items-start justify-between mb-6 gap-4">
+        <div className="flex items-start gap-4 min-w-0">
+          <div className="w-14 h-14 rounded-xl bg-secondary flex items-center justify-center text-2xl shrink-0">{agent.avatar}</div>
+          <div className="min-w-0">
+            <h1 className="text-xl font-semibold text-foreground truncate">{agent.name}</h1>
+            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{agent.description}</p>
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
               {agent.tags.map((tag, i) => (
                 <Badge key={i} variant={i === 0 ? "default" : "outline"} className="text-xs">{tag}</Badge>
               ))}
               <Badge variant="outline" className="text-xs">
                 {agent.status === "published" ? "已发布" : agent.status === "draft" ? "草稿" : "项目"}
               </Badge>
+              <Badge variant="outline" className="text-[10px] font-mono">{versions.find((v) => v.current)?.v}</Badge>
             </div>
           </div>
         </div>
       </div>
 
-      <Tabs defaultValue="experience">
+      <Tabs defaultValue={initialTab}>
         <TabsList>
-          <TabsTrigger value="experience" className="gap-1.5"><MessageSquare className="w-3.5 h-3.5" />在线体验</TabsTrigger>
-          <TabsTrigger value="config" className="gap-1.5"><FormInput className="w-3.5 h-3.5" />配置</TabsTrigger>
-          <TabsTrigger value="runs" className="gap-1.5"><History className="w-3.5 h-3.5" />运行记录</TabsTrigger>
+          <TabsTrigger value="debug" className="gap-1.5"><Bug className="w-3.5 h-3.5" />调试</TabsTrigger>
+          <TabsTrigger value="config" className="gap-1.5"><Settings2 className="w-3.5 h-3.5" />配置</TabsTrigger>
+          <TabsTrigger value="runs" className="gap-1.5"><MessageSquare className="w-3.5 h-3.5" />运行记录</TabsTrigger>
+          <TabsTrigger value="versions" className="gap-1.5"><History className="w-3.5 h-3.5" />版本</TabsTrigger>
         </TabsList>
 
-        {/* ───────── 在线体验 ───────── */}
-        <TabsContent value="experience" className="mt-4">
-          <div className="border border-border rounded-lg bg-card flex flex-col h-[560px]">
-            <div className="px-4 py-2.5 border-b border-border flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-xs font-medium">在线试运行</span>
-                <span className="text-[11px] text-muted-foreground">使用当前未保存配置</span>
+        {/* ───────── 调试 ───────── */}
+        <TabsContent value="debug" className="mt-4">
+          <div className="border border-border rounded-lg px-4 py-3 bg-gradient-to-r from-primary/10 to-primary/5 mb-4">
+            <p className="text-xs">
+              <span className="font-medium">调试模式</span>
+              <span className="text-muted-foreground"> · 左侧与调试 AI 沟通配置调整，右侧直接与智能体对话验证效果。当前未保存的修改不会影响线上运行。</span>
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            {/* Left: assistant */}
+            <div className="border border-border rounded-lg bg-card flex flex-col h-[640px]">
+              <div className="px-3 h-10 shrink-0 border-b border-border flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-primary" />
+                <span className="text-xs font-semibold">调试助手</span>
+                <Badge variant="outline" className="text-[10px] h-4">AI</Badge>
               </div>
-              <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setChatMessages([])}>清空对话</Button>
-            </div>
-            <div className="flex-1 overflow-auto p-4 space-y-3">
-              {chatMessages.length === 0 ? (
-                <div className="text-center text-xs text-muted-foreground py-12">
-                  在下方输入消息开始体验，对话不会被保存到运行记录
-                </div>
-              ) : (
-                chatMessages.map((m, i) => (
-                  <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[70%] rounded-2xl px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap ${
-                      m.role === "user" ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"
-                    }`}>{m.content}</div>
+              <div className="flex-1 overflow-auto p-4 space-y-3">
+                {assistantMessages.length === 0 && (
+                  <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground gap-2 px-4">
+                    <Sparkles className="w-7 h-7 opacity-30" />
+                    <p className="text-xs">告诉我你想怎么调整这个智能体</p>
+                    <p className="text-[10px] leading-relaxed">例如："让回复更简洁"、"补充一下 BigQuery 的用途"</p>
                   </div>
-                ))
-              )}
+                )}
+                {assistantMessages.map((msg, i) => (
+                  <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                    <div className={`max-w-[85%] rounded-lg px-3 py-2 text-xs whitespace-pre-wrap leading-relaxed ${
+                      msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
+                    }`}>{msg.content}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="border-t border-border p-3 flex items-center gap-2">
+                <Input
+                  className="h-8 text-xs"
+                  placeholder='告诉我要怎么调整'
+                  value={assistantInput}
+                  onChange={(e) => setAssistantInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendAssistantMessage(); } }}
+                />
+                <Button size="sm" className="h-8 text-xs gap-1.5" onClick={sendAssistantMessage} disabled={!assistantInput.trim()}>
+                  <Send className="w-3 h-3" />发送
+                </Button>
+              </div>
             </div>
-            <div className="border-t border-border p-3 flex items-center gap-2">
-              <Input
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                placeholder="输入消息，回车发送…"
-                className="h-8 text-xs"
-              />
-              <Button size="sm" className="h-8 text-xs gap-1" onClick={handleSend}><Send className="w-3 h-3" />发送</Button>
+
+            {/* Right: agent run with chat/logs tab */}
+            <div className="border border-border rounded-lg bg-card flex flex-col h-[640px]">
+              <Tabs value={runView} onValueChange={(v) => setRunView(v as "chat" | "logs")} className="flex flex-col flex-1 min-h-0">
+                <div className="px-3 h-10 shrink-0 border-b border-border flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <Bot className="w-3.5 h-3.5 text-primary shrink-0" />
+                    <span className="text-xs font-semibold shrink-0">智能体运行</span>
+                    {debugRunning && (
+                      <span className="flex items-center gap-1 text-[10px] text-muted-foreground shrink-0 ml-1">
+                        <Loader2 className="w-2.5 h-2.5 animate-spin" />运行中
+                      </span>
+                    )}
+                  </div>
+                  <TabsList className="h-7 p-0.5 shrink-0">
+                    <TabsTrigger value="chat" className="text-[11px] h-6 px-2 gap-1">
+                      <Bot className="w-3 h-3" />对话
+                    </TabsTrigger>
+                    <TabsTrigger value="logs" className="text-[11px] h-6 px-2 gap-1">
+                      <Terminal className="w-3 h-3" />日志
+                      {debugLogs.length > 0 && (
+                        <span className="ml-0.5 px-1 rounded bg-muted text-muted-foreground text-[9px] leading-tight">{debugLogs.length}</span>
+                      )}
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+
+                <TabsContent value="chat" forceMount className="flex-1 flex flex-col min-h-0 mt-0 data-[state=inactive]:hidden">
+                  <div className="flex-1 overflow-auto p-4 space-y-3 min-h-0">
+                    {runMessages.length === 0 && (
+                      <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground gap-2">
+                        <MessageSquare className="w-7 h-7 opacity-30" />
+                        <p className="text-xs">输入测试任务，与智能体真实对话</p>
+                      </div>
+                    )}
+                    {runMessages.map((msg, i) => (
+                      <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                        <div className={`max-w-[85%] rounded-lg px-3 py-2 text-xs whitespace-pre-wrap leading-relaxed ${
+                          msg.role === "user" ? "bg-primary text-primary-foreground" :
+                          msg.status === "error" ? "bg-destructive/10 border border-destructive/30 text-destructive" :
+                          "bg-muted"
+                        }`}>
+                          {msg.role === "assistant" && msg.tool && (
+                            <div className="flex items-center gap-1 mb-1 text-[10px] opacity-70">
+                              <Zap className="w-2.5 h-2.5" />调用：{msg.tool}
+                            </div>
+                          )}
+                          {msg.content}
+                        </div>
+                      </div>
+                    ))}
+                    {debugRunning && (
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <Loader2 className="w-3 h-3 animate-spin" />智能体执行中…
+                        <button type="button" onClick={() => setRunView("logs")} className="text-primary hover:underline">查看运行日志 →</button>
+                      </div>
+                    )}
+                  </div>
+                  <div className="border-t border-border p-3 flex items-center gap-2">
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant={voiceRecording ? "default" : "outline"}
+                      className={`h-8 w-8 shrink-0 ${voiceRecording ? "animate-pulse" : ""}`}
+                      onClick={toggleVoice}
+                      title={voiceRecording ? "结束语音输入" : "语音输入"}
+                    >
+                      {voiceRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                    </Button>
+                    <Input
+                      className="h-8 text-xs"
+                      placeholder={voiceRecording ? "正在录音…再次点击麦克风结束" : "输入测试任务，回车发送"}
+                      value={debugInput}
+                      onChange={(e) => setDebugInput(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); runDebug(); } }}
+                    />
+                    <Button size="sm" className="h-8 text-xs gap-1.5" onClick={runDebug} disabled={debugRunning || !debugInput.trim()}>
+                      <Send className="w-3 h-3" />发送
+                    </Button>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="logs" forceMount className="flex-1 flex flex-col min-h-0 mt-0 bg-zinc-950 text-zinc-100 rounded-b-lg overflow-hidden data-[state=inactive]:hidden">
+                  <div className="px-3 h-9 shrink-0 border-b border-zinc-800 flex items-center justify-between gap-2 text-[11px]">
+                    <div className="flex items-center gap-1.5 text-zinc-300 min-w-0">
+                      <Terminal className="w-3 h-3 shrink-0" />
+                      <span className="font-mono truncate">runtime.log</span>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <select
+                        value={logFilter}
+                        onChange={(e) => setLogFilter(e.target.value as typeof logFilter)}
+                        className="bg-zinc-900 border border-zinc-700 text-zinc-200 rounded px-1.5 py-0.5 text-[10px] font-mono focus:outline-none focus:border-zinc-500"
+                      >
+                        {(["all", "info", "thought", "tool", "warn", "error"] as const).map((f) => (
+                          <option key={f} value={f}>{f}</option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(debugLogs.map((l) => `[${l.ts}] ${l.level.toUpperCase()} ${l.message}${l.meta ? ` | ${l.meta}` : ""}`).join("\n"));
+                          toast({ title: "日志已复制到剪贴板" });
+                        }}
+                        className="p-1 rounded text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
+                        title="复制全部日志"
+                      >
+                        <Copy className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex-1 overflow-auto px-3 py-2 font-mono text-[11px] leading-relaxed">
+                    {debugLogs.length === 0 ? (
+                      <p className="text-zinc-500 text-center py-3">暂无运行日志，发送一条调试消息即可查看</p>
+                    ) : (
+                      debugLogs
+                        .filter((l) => logFilter === "all" || l.level === logFilter)
+                        .map((l) => {
+                          const colorMap: Record<LogLevel, string> = {
+                            info: "text-sky-300", thought: "text-violet-300", tool: "text-emerald-300",
+                            warn: "text-amber-300", error: "text-red-400", result: "text-cyan-300",
+                          };
+                          const iconMap: Record<LogLevel, JSX.Element> = {
+                            info: <Info className="w-2.5 h-2.5" />, thought: <Brain className="w-2.5 h-2.5" />,
+                            tool: <Wrench className="w-2.5 h-2.5" />, warn: <AlertTriangle className="w-2.5 h-2.5" />,
+                            error: <AlertCircle className="w-2.5 h-2.5" />, result: <CheckCircle2 className="w-2.5 h-2.5" />,
+                          };
+                          return (
+                            <div key={l.id} className="flex gap-2 py-0.5">
+                              <span className="text-zinc-500 shrink-0">{l.ts}</span>
+                              <span className={`shrink-0 flex items-center gap-1 ${colorMap[l.level]}`}>
+                                {iconMap[l.level]}{l.level.padEnd(7)}
+                              </span>
+                              <span className="text-zinc-200 break-all">
+                                {l.message}
+                                {l.meta && <span className="text-zinc-500 ml-2">{l.meta}</span>}
+                              </span>
+                            </div>
+                          );
+                        })
+                    )}
+                  </div>
+                </TabsContent>
+              </Tabs>
             </div>
           </div>
         </TabsContent>
 
         {/* ───────── 配置 ───────── */}
         <TabsContent value="config" className="mt-4">
-          {/* Mode switcher + actions */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="inline-flex items-center bg-muted rounded-md p-0.5">
-              <button
-                onClick={() => setEditMode("form")}
-                className={`px-3 py-1 text-xs rounded transition-colors flex items-center gap-1 ${
-                  editMode === "form" ? "bg-background text-foreground shadow-sm font-medium" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <FormInput className="w-3 h-3" />表单
-              </button>
-              <button
-                onClick={() => { setYamlDraft(cfgYaml); setEditMode("yaml"); }}
-                className={`px-3 py-1 text-xs rounded transition-colors flex items-center gap-1 ${
-                  editMode === "yaml" ? "bg-background text-foreground shadow-sm font-medium" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Code2 className="w-3 h-3" />YAML
-              </button>
+          {/* Sticky save bar */}
+          <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border border-border rounded-lg px-4 py-2.5 mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs">
+              {isDirty ? (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                  <span className="font-medium">有未保存的修改</span>
+                  <span className="text-muted-foreground">· 保存后会自动生成新版本，可在「版本」中查看或回滚</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
+                  <span className="text-muted-foreground">当前为已保存版本 {versions.find((v) => v.current)?.v}</span>
+                </>
+              )}
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-[10px]">当前 {versions[0]?.v}</Badge>
-              <Button size="sm" className="h-8 text-xs gap-1.5" onClick={handleSaveConfig}>
+              <Button size="sm" variant="ghost" className="h-8 text-xs gap-1.5" onClick={handleRevert} disabled={!isDirty}>
+                <RotateCcw className="w-3.5 h-3.5" />撤销修改
+              </Button>
+              <Button size="sm" className="h-8 text-xs gap-1.5" onClick={handleSave} disabled={!isDirty}>
                 <Save className="w-3.5 h-3.5" />保存为新版本
               </Button>
             </div>
           </div>
 
-          {editMode === "yaml" ? (
-            <div className="border border-border rounded-lg bg-card">
-              <div className="px-4 py-2 border-b border-border flex items-center justify-between">
-                <span className="text-[11px] text-muted-foreground">编辑 YAML，保存时将与表单字段同步</span>
-                <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setYamlDraft(cfgYaml)}>从表单重新生成</Button>
+          <div className="space-y-4">
+            {/* 1. 基本信息 */}
+            <section className="border border-border rounded-lg bg-card">
+              <header className="px-4 py-2.5 border-b border-border">
+                <h3 className="text-sm font-semibold">基本信息</h3>
+                <p className="text-[11px] text-muted-foreground mt-0.5">智能体的名称与简介，会展示给所有使用者</p>
+              </header>
+              <div className="p-4 space-y-3">
+                <div>
+                  <Label className="text-xs">名称</Label>
+                  <Input value={name} onChange={(e) => setName(e.target.value)} className="mt-1.5 h-8 text-xs" />
+                </div>
+                <div>
+                  <Label className="text-xs">描述</Label>
+                  <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} className="mt-1.5 text-xs" />
+                </div>
               </div>
-              <Textarea
-                value={yamlDraft}
-                onChange={(e) => setYamlDraft(e.target.value)}
-                className="font-mono text-xs leading-relaxed border-0 rounded-none resize-none focus-visible:ring-0"
-                rows={26}
-              />
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              {/* Left: main config */}
-              <div className="lg:col-span-2 space-y-4">
-                {/* 基本信息 */}
-                <div className="border border-border rounded-lg p-4 bg-card space-y-3">
-                  <h3 className="text-xs font-semibold">基本信息</h3>
-                  <div>
-                    <Label className="text-xs">名称</Label>
-                    <Input value={name} onChange={(e) => setName(e.target.value)} className="mt-1.5 h-8 text-xs" />
-                  </div>
-                  <div>
-                    <Label className="text-xs">描述</Label>
-                    <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} className="mt-1.5 text-xs" />
-                  </div>
-                </div>
+            </section>
 
-                {/* Model + SP */}
-                <div className="border border-border rounded-lg p-4 bg-card space-y-3">
-                  <h3 className="text-xs font-semibold">模型与提示词</h3>
-                  <div>
-                    <Label className="text-xs">Model</Label>
-                    <Select value={model} onValueChange={setModel}>
-                      <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="claude-sonnet-4-6" className="text-xs">claude-sonnet-4-6（推荐）</SelectItem>
-                        <SelectItem value="claude-haiku-3-5" className="text-xs">claude-haiku-3-5（快速）</SelectItem>
-                        <SelectItem value="gpt-4o" className="text-xs">gpt-4o</SelectItem>
-                        <SelectItem value="gemini-2.5-pro" className="text-xs">gemini-2.5-pro</SelectItem>
-                        <SelectItem value="deepseek-v3" className="text-xs">deepseek-v3</SelectItem>
-                        <SelectItem value="qwen-max" className="text-xs">qwen-max</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label className="text-xs">System Prompt</Label>
-                    <Textarea value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)} rows={8}
-                      className="mt-1.5 font-mono text-xs leading-relaxed" />
-                  </div>
+            {/* 2. 模型与提示词 */}
+            <section className="border border-border rounded-lg bg-card">
+              <header className="px-4 py-2.5 border-b border-border">
+                <h3 className="text-sm font-semibold">模型与提示词</h3>
+                <p className="text-[11px] text-muted-foreground mt-0.5">决定智能体的"大脑"和工作方式</p>
+              </header>
+              <div className="p-4 space-y-3">
+                <div>
+                  <Label className="text-xs">模型</Label>
+                  <Select value={model} onValueChange={setModel}>
+                    <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="claude-sonnet-4-6" className="text-xs">claude-sonnet-4-6（推荐）</SelectItem>
+                      <SelectItem value="claude-haiku-3-5" className="text-xs">claude-haiku-3-5（快速）</SelectItem>
+                      <SelectItem value="gpt-4o" className="text-xs">gpt-4o</SelectItem>
+                      <SelectItem value="gemini-2.5-pro" className="text-xs">gemini-2.5-pro</SelectItem>
+                      <SelectItem value="deepseek-v3" className="text-xs">deepseek-v3</SelectItem>
+                      <SelectItem value="qwen-max" className="text-xs">qwen-max</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
+                <div>
+                  <Label className="text-xs">系统提示词</Label>
+                  <Textarea value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)} rows={8}
+                    className="mt-1.5 font-mono text-xs leading-relaxed" />
+                  <p className="text-[10px] text-muted-foreground mt-1.5">告诉智能体"你是谁、要做什么、怎么回答"。</p>
+                </div>
+              </div>
+            </section>
 
-                {/* Tools */}
-                <div className="border border-border rounded-lg p-4 bg-card">
-                  <h3 className="text-xs font-semibold flex items-center gap-1.5 mb-3"><Wrench className="w-3.5 h-3.5" />Tools 工具集</h3>
-                  <div className="space-y-1.5">
-                    {builtInTools.map((t) => (
-                      <div key={t.key} className="flex items-center justify-between border border-border rounded px-3 py-2">
-                        <div>
-                          <div className="text-xs font-mono">{t.name}</div>
-                          <div className="text-[10px] text-muted-foreground">{t.desc}</div>
-                        </div>
-                        <Switch checked={enabledTools.includes(t.key)} onCheckedChange={() => toggleTool(t.key)} />
+            {/* 3. 能力 — Skills */}
+            <section className="border border-border rounded-lg bg-card">
+              <header className="px-4 py-2.5 border-b border-border flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <h3 className="text-sm font-semibold flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-primary" />Skills 技能</h3>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">预制的能力包，让智能体掌握特定领域的工作流</p>
+                </div>
+                <Popover open={skillPopOpen} onOpenChange={setSkillPopOpen}>
+                  <PopoverTrigger asChild>
+                    <Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0"><Plus className="w-3 h-3" />添加 Skill</Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64 p-0" align="end">
+                    <div className="p-2 border-b border-border">
+                      <div className="relative">
+                        <Search className="w-3 h-3 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                        <Input value={skillSearch} onChange={(e) => setSkillSearch(e.target.value)} placeholder="搜索 Skill" className="h-7 pl-7 text-xs" autoFocus />
                       </div>
+                    </div>
+                    <div className="max-h-60 overflow-auto p-1">
+                      {allSkillOptions.filter((s) => s.toLowerCase().includes(skillSearch.toLowerCase())).map((s) => {
+                        const checked = selSkills.includes(s);
+                        return (
+                          <button
+                            key={s}
+                            onClick={() => { toggleSkill(s); }}
+                            className="w-full text-left px-2 py-1.5 text-xs rounded hover:bg-muted flex items-center justify-between gap-2"
+                          >
+                            <span className="truncate">{s}</span>
+                            {checked && <CheckCircle2 className="w-3 h-3 text-primary shrink-0" />}
+                          </button>
+                        );
+                      })}
+                      {allSkillOptions.filter((s) => s.toLowerCase().includes(skillSearch.toLowerCase())).length === 0 && (
+                        <p className="text-[11px] text-muted-foreground py-3 text-center">无匹配项</p>
+                      )}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </header>
+              <div className="p-4">
+                {selSkills.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-4">尚未添加 Skill。点击右上角「添加 Skill」选择。</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {selSkills.map((s) => (
+                      <Badge key={s} variant="secondary" className="text-xs gap-1 pl-2.5 pr-1 py-1">
+                        <Sparkles className="w-3 h-3 text-primary" />
+                        {s}
+                        <button onClick={() => toggleSkill(s)} className="ml-1 p-0.5 rounded hover:bg-muted-foreground/20">
+                          <X className="w-3 h-3" />
+                        </button>
+                      </Badge>
                     ))}
                   </div>
-                </div>
+                )}
+              </div>
+            </section>
 
-                {/* MCP Servers */}
-                <div className="border border-border rounded-lg p-4 bg-card">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-xs font-semibold flex items-center gap-1.5"><Server className="w-3.5 h-3.5" />MCP Servers</h3>
-                    <Select value="" onValueChange={addMcp}>
-                      <SelectTrigger className="h-7 w-32 text-xs"><SelectValue placeholder="+ 添加" /></SelectTrigger>
-                      <SelectContent>
-                        {allMcpOptions.map((m) => (
-                          <SelectItem key={m} value={m} className="text-xs">{m}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {mcpBindings.length === 0 ? (
-                    <p className="text-xs text-muted-foreground py-2">未绑定任何 MCP 服务</p>
-                  ) : (
-                    <div className="space-y-2">
-                      {mcpBindings.map((b, i) => {
-                        const creds = credentialsByMcp(b.name);
+            {/* 4. 能力 — MCP Servers */}
+            <section className="border border-border rounded-lg bg-card">
+              <header className="px-4 py-2.5 border-b border-border flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <h3 className="text-sm font-semibold flex items-center gap-1.5"><Server className="w-3.5 h-3.5 text-primary" />MCP 服务</h3>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">连接外部系统（数据库、SaaS、内部 API），每个服务需要绑定一个凭据</p>
+                </div>
+                <Popover open={mcpPopOpen} onOpenChange={setMcpPopOpen}>
+                  <PopoverTrigger asChild>
+                    <Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0"><Plus className="w-3 h-3" />关联 MCP</Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64 p-0" align="end">
+                    <div className="p-2 border-b border-border">
+                      <div className="relative">
+                        <Search className="w-3 h-3 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                        <Input value={mcpSearch} onChange={(e) => setMcpSearch(e.target.value)} placeholder="搜索 MCP" className="h-7 pl-7 text-xs" autoFocus />
+                      </div>
+                    </div>
+                    <div className="max-h-60 overflow-auto p-1">
+                      {allMcpOptions.filter((m) => m.toLowerCase().includes(mcpSearch.toLowerCase())).map((m) => {
+                        const checked = !!mcpBindings.find((b) => b.name === m);
                         return (
-                          <div key={b.name} className="border border-border rounded p-2.5 space-y-2">
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs font-medium flex items-center gap-1.5"><Server className="w-3 h-3 text-primary" />{b.name}</span>
-                              <button onClick={() => removeMcp(i)} className="text-[10px] text-muted-foreground hover:text-destructive">移除</button>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Label className="text-[10px] text-muted-foreground shrink-0">凭据</Label>
-                              <Select value={b.credential} onValueChange={(v) => updateMcpCred(i, v)}>
-                                <SelectTrigger className="h-7 text-xs"><SelectValue placeholder={creds.length ? "选择凭据" : "凭据库无可用凭据"} /></SelectTrigger>
-                                <SelectContent>
-                                  {creds.map((c) => (
-                                    <SelectItem key={c.id} value={c.name} className="text-xs">{c.name} <span className="text-muted-foreground">({c.type})</span></SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <Button size="sm" variant="ghost" className="h-7 text-[10px]" onClick={() => navigate("/vault")}>管理</Button>
-                            </div>
-                          </div>
+                          <button
+                            key={m}
+                            onClick={() => { if (!checked) addMcp(m); else removeMcp(mcpBindings.findIndex((b) => b.name === m)); }}
+                            className="w-full text-left px-2 py-1.5 text-xs rounded hover:bg-muted flex items-center justify-between gap-2"
+                          >
+                            <span className="truncate">{m}</span>
+                            {checked && <CheckCircle2 className="w-3 h-3 text-primary shrink-0" />}
+                          </button>
                         );
                       })}
                     </div>
-                  )}
-                </div>
-
-                {/* DingTalk */}
-                <div className="border border-border rounded-lg p-4 bg-card space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-xs font-semibold">钉钉机器人接入</h3>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">将 Agent 发布至钉钉群聊，群成员 @ 即可触发</p>
-                    </div>
-                    <Switch checked={dingEnabled} onCheckedChange={setDingEnabled} />
-                  </div>
-                  {dingEnabled && (
-                    <div>
-                      <Label className="text-xs">Webhook 地址</Label>
-                      <Input value={dingWebhook} onChange={(e) => setDingWebhook(e.target.value)}
-                        placeholder="https://oapi.dingtalk.com/robot/send?access_token=..."
-                        className="mt-1.5 h-8 text-xs font-mono" />
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Right: version control */}
-              <div className="border border-border rounded-lg bg-card h-fit">
-                <div className="px-4 py-2.5 border-b border-border flex items-center justify-between">
-                  <h3 className="text-xs font-semibold flex items-center gap-1.5"><History className="w-3.5 h-3.5" />版本历史</h3>
-                  <Badge variant="outline" className="text-[10px]">{versions.length}</Badge>
-                </div>
-                <div className="divide-y divide-border max-h-[520px] overflow-auto">
-                  {versions.map((v, i) => (
-                    <div key={v.v} className="px-4 py-2.5 hover:bg-muted/40">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-mono font-semibold">{v.v}</span>
-                        {i === 0 && <Badge className="bg-primary/10 text-primary hover:bg-primary/10 border-0 text-[9px] h-4">当前</Badge>}
-                      </div>
-                      <div className="text-[10px] text-muted-foreground mt-0.5">{v.at} · {v.by}</div>
-                      <div className="text-[11px] text-foreground/80 mt-1">{v.note}</div>
-                      {i !== 0 && (
-                        <div className="flex gap-1 mt-1.5">
-                          <Button size="sm" variant="ghost" className="h-6 text-[10px] px-2">查看</Button>
-                          <Button size="sm" variant="ghost" className="h-6 text-[10px] px-2">回滚</Button>
+                  </PopoverContent>
+                </Popover>
+              </header>
+              <div className="p-4">
+                {mcpBindings.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-4">尚未关联 MCP。点击右上角「关联 MCP」选择。</p>
+                ) : (
+                  <div className="space-y-2">
+                    {mcpBindings.map((b, i) => {
+                      const creds = credentialsByMcp(b.name);
+                      const credMissing = !b.credential;
+                      return (
+                        <div key={b.name} className={`border rounded-md p-3 space-y-2 ${credMissing ? "border-amber-300 bg-amber-50/40" : "border-border"}`}>
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-medium flex items-center gap-1.5">
+                              <Server className="w-3 h-3 text-primary" />{b.name}
+                              {credMissing && (
+                                <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-0 text-[9px] h-4 gap-1">
+                                  <AlertTriangle className="w-2.5 h-2.5" />未绑定凭据
+                                </Badge>
+                              )}
+                            </span>
+                            <button onClick={() => removeMcp(i)} className="text-muted-foreground hover:text-destructive p-1" title="移除">
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Label className="text-[11px] text-muted-foreground shrink-0">凭据</Label>
+                            <Select value={b.credential} onValueChange={(v) => updateMcpCred(i, v)}>
+                              <SelectTrigger className="h-7 text-xs"><SelectValue placeholder={creds.length ? "选择凭据" : "凭据库无可用凭据"} /></SelectTrigger>
+                              <SelectContent>
+                                {creds.map((c) => (
+                                  <SelectItem key={c.id} value={c.name} className="text-xs">
+                                    {c.name} <span className="text-muted-foreground ml-1">({c.type})</span>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <Button size="sm" variant="ghost" className="h-7 text-[10px]" onClick={() => navigate("/vault")}>管理凭据</Button>
+                          </div>
                         </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            </section>
+
+            {/* 5. 接入与发布 */}
+            <section className="border border-border rounded-lg bg-card">
+              <header className="px-4 py-2.5 border-b border-border">
+                <h3 className="text-sm font-semibold">外部接入</h3>
+                <p className="text-[11px] text-muted-foreground mt-0.5">让外部系统能调用这个智能体</p>
+              </header>
+              <div className="p-4 space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <Label className="text-xs">钉钉机器人</Label>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">发布至钉钉群聊，群成员 @ 即可触发</p>
+                  </div>
+                  <Switch checked={dingEnabled} onCheckedChange={setDingEnabled} />
+                </div>
+                {dingEnabled && (
+                  <div>
+                    <Label className="text-xs">Webhook 地址</Label>
+                    <Input value={dingWebhook} onChange={(e) => setDingWebhook(e.target.value)}
+                      placeholder="https://oapi.dingtalk.com/robot/send?access_token=..."
+                      className="mt-1.5 h-8 text-xs font-mono" />
+                  </div>
+                )}
+              </div>
+            </section>
+          </div>
         </TabsContent>
 
         {/* ───────── 运行记录 ───────── */}
@@ -453,7 +704,7 @@ const AgentDetail = () => {
               </TableHeader>
               <TableBody>
                 {mockRuns.map((r) => (
-                  <TableRow key={r.id} className="cursor-pointer" onClick={() => { setActiveRun(r); setRunView("transcript"); setExpandedTools({}); }}>
+                  <TableRow key={r.id} className="cursor-pointer" onClick={() => { setActiveRun(r); setRunDetailView("transcript"); setExpandedTools({}); }}>
                     <TableCell><Badge variant="outline" className="text-[10px]">{r.source}</Badge></TableCell>
                     <TableCell className="text-xs">{r.trigger}</TableCell>
                     <TableCell className="text-xs text-muted-foreground truncate max-w-[280px]">{r.prompt}</TableCell>
@@ -466,7 +717,6 @@ const AgentDetail = () => {
             </Table>
           </div>
 
-          {/* Detail sheet */}
           <Sheet open={!!activeRun} onOpenChange={(o) => !o && setActiveRun(null)}>
             <SheetContent className="w-[640px] sm:max-w-[640px] p-0 flex flex-col">
               <SheetHeader className="px-5 py-3 border-b border-border">
@@ -486,26 +736,22 @@ const AgentDetail = () => {
                 </div>
                 <div className="inline-flex items-center bg-muted rounded-md p-0.5 w-fit mt-2">
                   <button
-                    onClick={() => setRunView("transcript")}
+                    onClick={() => setRunDetailView("transcript")}
                     className={`px-3 py-1 text-xs rounded transition-colors ${
-                      runView === "transcript" ? "bg-background text-foreground shadow-sm font-medium" : "text-muted-foreground hover:text-foreground"
+                      runDetailView === "transcript" ? "bg-background text-foreground shadow-sm font-medium" : "text-muted-foreground hover:text-foreground"
                     }`}
-                  >
-                    对话视图
-                  </button>
+                  >对话视图</button>
                   <button
-                    onClick={() => setRunView("debug")}
+                    onClick={() => setRunDetailView("debug")}
                     className={`px-3 py-1 text-xs rounded transition-colors ${
-                      runView === "debug" ? "bg-background text-foreground shadow-sm font-medium" : "text-muted-foreground hover:text-foreground"
+                      runDetailView === "debug" ? "bg-background text-foreground shadow-sm font-medium" : "text-muted-foreground hover:text-foreground"
                     }`}
-                  >
-                    调试视图
-                  </button>
+                  >调试视图</button>
                 </div>
               </SheetHeader>
 
               <div className="flex-1 overflow-auto p-5">
-                {runView === "transcript" ? (
+                {runDetailView === "transcript" ? (
                   <div className="space-y-3">
                     <div className="flex justify-end">
                       <div className="max-w-[80%] rounded-2xl px-3 py-2 text-xs bg-primary text-primary-foreground whitespace-pre-wrap">
@@ -552,6 +798,53 @@ const AgentDetail = () => {
               </div>
             </SheetContent>
           </Sheet>
+        </TabsContent>
+
+        {/* ───────── 版本 ───────── */}
+        <TabsContent value="versions" className="mt-4">
+          <div className="border border-border rounded-lg px-4 py-3 bg-muted/40 mb-4">
+            <p className="text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">关于版本</span> · 每次在「配置」中点击保存，都会自动生成一个新版本。你可以随时查看历史变更内容，或将当前线上版本回滚到任意历史版本。
+            </p>
+          </div>
+          <div className="border border-border rounded-lg bg-card divide-y divide-border">
+            {versions.map((v) => (
+              <div key={v.v} className="px-4 py-3 flex items-center justify-between gap-4 hover:bg-muted/30">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="text-sm font-mono font-semibold w-10 shrink-0">{v.v}</span>
+                  <div className="min-w-0">
+                    <div className="text-xs flex items-center gap-2">
+                      <span className="truncate">{v.note}</span>
+                      {v.current && <Badge className="bg-primary/10 text-primary hover:bg-primary/10 border-0 text-[9px] h-4 shrink-0">当前线上</Badge>}
+                    </div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5">{v.at} · {v.by}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1"><Eye className="w-3 h-3" />查看</Button>
+                  {!v.current && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1"><RotateCcw className="w-3 h-3" />回滚</Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>回滚到 {v.v}？</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            将把当前线上版本切换到 <span className="font-mono">{v.v}</span>（{v.note}）。已发布的接入端会立即使用该版本。
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>取消</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleRollback(v)}>确认回滚</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         </TabsContent>
       </Tabs>
     </div>
