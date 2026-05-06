@@ -178,8 +178,12 @@ const VaultPage = () => {
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>新增凭据</DialogTitle>
-            <DialogDescription className="text-xs">凭据将以加密形式存储，仅在 Agent 运行时由系统注入</DialogDescription>
+            <DialogTitle>{editingId ? "编辑凭据" : "新增凭据"}</DialogTitle>
+            <DialogDescription className="text-xs">
+              {editingId
+                ? "可修改名称与凭据值；保存后将自动同步到使用该凭据的所有智能体"
+                : "凭据将以加密形式存储，仅在 Agent 运行时由系统注入"}
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div>
