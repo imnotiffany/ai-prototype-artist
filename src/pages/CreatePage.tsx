@@ -110,9 +110,6 @@ const CreatePage = () => {
                   </p>
                 </div>
               </div>
-              <p className="text-[11px] text-muted-foreground leading-relaxed px-0.5">
-                💡 当前版本仅支持「手动组装」，下个版本将上线「自动组装」——你只需用一句话描述需求，AI 会自动从 Skill 市场、MCP 广场及子智能体中智能匹配并生成可运行的智能体草稿。
-              </p>
             </div>
           )}
 
