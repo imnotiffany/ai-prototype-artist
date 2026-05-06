@@ -81,27 +81,8 @@ const AgentMarketplace = () => {
         </Button>
       </div>
 
-      {/* Type filter (app vs agent) */}
-      <div className="flex items-center justify-center gap-1 mb-4 px-6">
-        <div className="inline-flex items-center bg-muted rounded-md p-0.5">
-          {kindTabs.map((t) => (
-            <button
-              key={t.value}
-              onClick={() => setKindFilter(t.value)}
-              className={`px-4 py-1 text-xs rounded transition-colors ${
-                kindFilter === t.value
-                  ? "bg-background text-foreground shadow-sm font-medium"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Category filters */}
-      <div className="flex items-center justify-center gap-1.5 mb-5 px-6 flex-wrap">
+      {/* Category filters + sort/kind controls */}
+      <div className="flex items-center gap-1.5 mb-5 px-6 flex-wrap">
         <button
           onClick={() => setActiveCategory(null)}
           className={`px-3 py-1 rounded text-xs transition-colors ${
@@ -126,20 +107,39 @@ const AgentMarketplace = () => {
           </button>
         ))}
 
-        <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
-          <button
-            onClick={() => setSortBy("latest")}
-            className={`px-2 py-0.5 rounded ${sortBy === "latest" ? "text-primary font-medium" : "hover:text-foreground"}`}
-          >
-            最新
-          </button>
-          <span className="text-border">|</span>
-          <button
-            onClick={() => setSortBy("downloads")}
-            className={`px-2 py-0.5 rounded ${sortBy === "downloads" ? "text-primary font-medium" : "hover:text-foreground"}`}
-          >
-            下载量
-          </button>
+        {/* Right cluster: sort + kind filter */}
+        <div className="ml-auto flex items-center gap-3 text-xs">
+          <div className="flex items-center gap-1 text-muted-foreground">
+            <button
+              onClick={() => setSortBy("latest")}
+              className={`px-2 py-0.5 rounded ${sortBy === "latest" ? "text-primary font-medium" : "hover:text-foreground"}`}
+            >
+              最新
+            </button>
+            <span className="text-border">|</span>
+            <button
+              onClick={() => setSortBy("downloads")}
+              className={`px-2 py-0.5 rounded ${sortBy === "downloads" ? "text-primary font-medium" : "hover:text-foreground"}`}
+            >
+              下载量
+            </button>
+          </div>
+          <div className="h-4 w-px bg-border" />
+          <div className="inline-flex items-center bg-muted rounded-md p-0.5">
+            {kindTabs.map((t) => (
+              <button
+                key={t.value}
+                onClick={() => setKindFilter(t.value)}
+                className={`px-2.5 py-0.5 text-xs rounded transition-colors ${
+                  kindFilter === t.value
+                    ? "bg-background text-foreground shadow-sm font-medium"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
