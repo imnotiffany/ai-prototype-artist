@@ -102,9 +102,8 @@ const CreateAgentManualPage = () => {
     setDebugLogs((l) => [...l, { id: ++logIdRef.current, ts, level, message, meta }]);
   };
 
-  // Publish flow
-  const [publishStage, setPublishStage] = useState<"project" | "marketplace" | "done">("project");
-  const [publishingToMarket, setPublishingToMarket] = useState(false);
+  // Publish flow (single-step save)
+
 
   // After each run, AI proposes optimization (user must adopt to apply)
   const autoOptimizeAfterRun = (userInput: string) => {
