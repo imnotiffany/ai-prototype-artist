@@ -716,6 +716,8 @@ const CreateAgentPage = () => {
                     <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0" />
                     {msg.content}
                   </div>
+                ) : msg.type === "tool-calls" && msg.toolCalls ? (
+                  <ToolCallGroup calls={msg.toolCalls} />
                 ) : msg.type === "assembly" ? (
                   <div className="flex items-center gap-2 text-xs text-muted-foreground py-1">
                     <Loader2 className="w-3.5 h-3.5 animate-spin text-primary shrink-0" />
