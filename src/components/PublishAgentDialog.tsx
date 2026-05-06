@@ -179,13 +179,13 @@ export const PublishAgentDialog = ({ open, onOpenChange, agentName, versions, de
               disabled={scope !== "marketplace"}
             />
             <p className="text-xs text-muted-foreground mt-2">
-              开启后，其他用户可以将此应用复制到自己的项目中
+              开启后，其他用户可以将此{noun}复制到自己的项目中
             </p>
           </div>
 
           {/* App Icon */}
           <div>
-            <RequiredLabel>应用图标</RequiredLabel>
+            <RequiredLabel>{noun}图标</RequiredLabel>
             <div className="flex items-center gap-3">
               <input
                 ref={fileInputRef}
