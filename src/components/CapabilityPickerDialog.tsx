@@ -122,9 +122,6 @@ export const CapabilityPickerDialog = ({
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-semibold truncate">{it.name}</p>
                     <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-                      {deployBadge && (
-                        <Badge variant="outline" className="text-[9px] h-4 px-1.5">{deployBadge(it.name)}</Badge>
-                      )}
                       {isMcp && (
                         it.requiresCredential ? (
                           <Badge variant="outline" className="text-[9px] h-4 px-1.5 gap-0.5 border-amber-300 text-amber-700 bg-amber-50/60 dark:bg-amber-950/30">
