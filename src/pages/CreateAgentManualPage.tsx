@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, Rocket, Plus, X, Settings2, Cpu, Server, Zap, Shield, KeyRound, Bot, MessageSquare, Eye, EyeOff, Link2, CheckCircle2, Wand, Loader2, ExternalLink, Play, Send, AlertCircle, Bug, FolderKanban, Store, ArrowRight, Mic, MicOff, HelpCircle, FileEdit, Terminal, ChevronDown, ChevronUp, Copy, Brain, Wrench, Info, AlertTriangle, Trash2, RefreshCw } from "lucide-react";
+import { ArrowLeft, Save, Rocket, Plus, X, Settings2, Cpu, Server, Zap, Shield, KeyRound, Bot, MessageSquare, Eye, EyeOff, Link2, CheckCircle2, Wand, Loader2, ExternalLink, Play, Send, AlertCircle, Bug, FolderKanban, Store, ArrowRight, Mic, MicOff, HelpCircle, FileEdit, Terminal, ChevronDown, ChevronUp, Copy, Brain, Wrench, Info, AlertTriangle, Trash2, RefreshCw, Code2, FileCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,6 +29,8 @@ const CreateAgentManualPage = () => {
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState(categories[0]);
   const [publishOpen, setPublishOpen] = useState(false);
+  const [specOpen, setSpecOpen] = useState(false);
+  const [specFormat, setSpecFormat] = useState<"yaml" | "json">("yaml");
   const [generatingMeta, setGeneratingMeta] = useState(false);
   const [avatarSeed, setAvatarSeed] = useState(() => Math.random().toString(36).slice(2, 10));
   const [generatingAvatar, setGeneratingAvatar] = useState(false);
@@ -361,6 +363,10 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={() => setSpecOpen(true)}>
+            <FileCode className="w-3.5 h-3.5" />
+            查看配置文档
+          </Button>
           <Button size="sm" className="h-8 text-xs gap-1.5" onClick={openPublish}>
             <Save className="w-3.5 h-3.5" />
             保存
