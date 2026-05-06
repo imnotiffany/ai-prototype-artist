@@ -147,11 +147,11 @@ const AgentMarketplace = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {filtered.map((agent) => {
             const isApp = agent.kind === "app";
+            const allowCopy = agent.allowCopy !== false;
             return (
               <div
                 key={agent.id}
-                className="relative border border-border rounded-lg p-4 hover:shadow-sm hover:border-primary/40 transition-all cursor-pointer bg-card"
-                onClick={() => openAgent(agent, navigate)}
+                className="relative border border-border rounded-lg p-4 hover:shadow-sm hover:border-primary/40 transition-all bg-card flex flex-col"
               >
                 {/* Kind corner badge */}
                 <div
@@ -193,6 +193,38 @@ const AgentMarketplace = () => {
                     <Clock className="w-3 h-3" />
                     {agent.updatedAt}
                   </div>
+                </div>
+
+                {/* Actions */}
+                <div className="mt-auto flex items-center gap-1.5">
+                  <Button
+                    size="sm"
+                    variant="default"
+                    className="h-7 text-[11px] flex-1"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openAgent(agent, navigate);
+                    }}
+                  >
+                    在线体验
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-[11px] flex-1"
+                    disabled={!allowCopy}
+                    title={allowCopy ? "复制到我的项目" : "创建者未开放复制"}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!allowCopy) return;
+                      toast({
+                        title: "已复制到项目内",
+                        description: `${agent.name} 已添加到「我的项目」，可在项目中继续编辑`,
+                      });
+                    }}
+                  >
+                    {allowCopy ? "复制到项目内" : "不允许复制"}
+                  </Button>
                 </div>
               </div>
             );

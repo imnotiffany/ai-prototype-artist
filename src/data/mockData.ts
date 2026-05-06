@@ -39,6 +39,8 @@ export interface Agent {
   /** "agent" = 对话型智能体（点击进入对话），"app" = 网页应用（点击直接运行） */
   kind: "agent" | "app";
   featured?: boolean;
+  /** 是否允许其他用户复制到自己项目内（由创建者发布时设置，默认 true） */
+  allowCopy?: boolean;
 }
 
 export interface Version {

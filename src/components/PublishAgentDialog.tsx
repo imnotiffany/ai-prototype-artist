@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Globe, FolderKanban, Check, Rocket, AlertCircle } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Globe, FolderKanban, Check, Rocket, AlertCircle, Copy } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 export interface AgentVersion {
@@ -41,6 +42,7 @@ const scopes = [
 export const PublishAgentDialog = ({ open, onOpenChange, agentName, versions, defaultScope = "marketplace" }: Props) => {
   const [scope, setScope] = useState<"marketplace" | "project">(defaultScope);
   const [versionV, setVersionV] = useState<string>(versions.find((v) => v.current)?.v ?? versions[0]?.v ?? "");
+  const [allowCopy, setAllowCopy] = useState(true);
 
   useEffect(() => {
     if (open) {
@@ -124,6 +126,22 @@ export const PublishAgentDialog = ({ open, onOpenChange, agentName, versions, de
             )}
           </div>
 
+          {/* Allow copy (only when publishing to marketplace) */}
+          {scope === "marketplace" && (
+            <div className="flex items-start gap-2.5 border border-border rounded-lg p-3">
+              <Copy className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs font-medium">允许其他用户复制到项目内</p>
+                  <Switch checked={allowCopy} onCheckedChange={setAllowCopy} />
+                </div>
+                <p className="text-[10px] text-muted-foreground mt-1 leading-relaxed">
+                  开启后，他人可在广场卡片点击「复制到项目内」获得独立可编辑副本；关闭则仅支持在线体验
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Summary */}
           <div className="border border-border rounded-lg p-3 bg-muted/30 space-y-1.5">
             <div className="flex justify-between text-xs">
@@ -140,6 +158,14 @@ export const PublishAgentDialog = ({ open, onOpenChange, agentName, versions, de
               <span className="text-muted-foreground">版本</span>
               <span className="font-mono">{versionV}</span>
             </div>
+            {scope === "marketplace" && (
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">允许复制</span>
+                <span className={allowCopy ? "text-primary font-medium" : "text-muted-foreground"}>
+                  {allowCopy ? "已开启" : "已关闭"}
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="flex items-start gap-2 text-[11px] text-muted-foreground">

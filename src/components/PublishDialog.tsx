@@ -33,6 +33,7 @@ export const PublishDialog = ({ open, onOpenChange, defaultName = "", defaultDes
   const [fsAppSecret, setFsAppSecret] = useState("");
   const [fsRobotCode, setFsRobotCode] = useState("");
   const [fsSecretVisible, setFsSecretVisible] = useState(false);
+  const [allowCopy, setAllowCopy] = useState(true);
 
   const reset = () => { setStep(1); };
   const close = () => { onOpenChange(false); setTimeout(reset, 300); };
@@ -85,6 +86,15 @@ export const PublishDialog = ({ open, onOpenChange, defaultName = "", defaultDes
               <Label className="text-xs">版本号</Label>
               <Input className="mt-1.5 h-8 text-xs w-32 font-mono" value={version} onChange={(e) => setVersion(e.target.value)} />
             </div>
+            <label className="flex items-start gap-2.5 border border-border rounded-lg p-3 cursor-pointer hover:border-primary/40 transition-colors">
+              <Checkbox checked={allowCopy} onCheckedChange={(v) => setAllowCopy(!!v)} className="mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium">允许其他用户复制到自己的项目</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">
+                  开启后，他人可在广场卡片点击「复制到项目内」，获得一份独立可编辑的副本；关闭则仅支持在线体验
+                </p>
+              </div>
+            </label>
           </div>
         )}
 
@@ -170,6 +180,7 @@ export const PublishDialog = ({ open, onOpenChange, defaultName = "", defaultDes
                   })}
                 </div>
               </div>
+              <div className="flex justify-between text-xs"><span className="text-muted-foreground">允许复制</span><span className={allowCopy ? "text-primary font-medium" : "text-muted-foreground"}>{allowCopy ? "已开启" : "已关闭"}</span></div>
             </div>
             <div className="flex items-start gap-2 text-[11px] text-muted-foreground border border-border rounded-lg p-2.5 bg-muted/20">
               <ShieldCheck className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
