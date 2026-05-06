@@ -162,6 +162,9 @@ const AgentDetail = () => {
   const [runDetailView, setRunDetailView] = useState<"transcript" | "debug">("transcript");
   const [expandedTools, setExpandedTools] = useState<Record<number, boolean>>({});
 
+  /* ── Version detail dialog ── */
+  const [viewingVersion, setViewingVersion] = useState<typeof versions[0] | null>(null);
+
   if (!agent) return <div className="p-6">智能体不存在</div>;
 
   const allMcpOptions = getActiveMCPs().map((m) => m.name);
