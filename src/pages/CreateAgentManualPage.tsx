@@ -30,6 +30,16 @@ const CreateAgentManualPage = () => {
   const [category, setCategory] = useState(categories[0]);
   const [publishOpen, setPublishOpen] = useState(false);
   const [generatingMeta, setGeneratingMeta] = useState(false);
+  const [avatarSeed, setAvatarSeed] = useState(() => Math.random().toString(36).slice(2, 10));
+  const [generatingAvatar, setGeneratingAvatar] = useState(false);
+  const avatarUrl = `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${encodeURIComponent(avatarSeed)}&backgroundColor=dbeafe,fde68a,bbf7d0,fecaca,e9d5ff`;
+  const regenerateAvatar = () => {
+    setGeneratingAvatar(true);
+    setTimeout(() => {
+      setAvatarSeed(Math.random().toString(36).slice(2, 10) + Date.now().toString(36));
+      setGeneratingAvatar(false);
+    }, 600);
+  };
 
   // Model
   const [model, setModel] = useState("claude-sonnet-4-6");
