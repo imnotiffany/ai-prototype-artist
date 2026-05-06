@@ -144,7 +144,7 @@ const ProjectAgents = () => {
                     : "bg-purple-500/10 text-purple-600 dark:text-purple-400"
                 }`}
               >
-                {app.kind === "app" ? "应用" : "Agent"}
+                {app.kind === "app" ? "应用" : "智能体"}
               </div>
 
               <div className="flex items-start gap-3 mb-2 pr-14">

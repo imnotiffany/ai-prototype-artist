@@ -732,7 +732,7 @@ const AgentDetail = () => {
               <TableBody>
                 {mockRuns.map((r) => (
                   <TableRow key={r.id} className="cursor-pointer" onClick={() => { setActiveRun(r); setRunDetailView("transcript"); setExpandedTools({}); }}>
-                    <TableCell><Badge variant="outline" className="text-[10px]">{r.source}</Badge></TableCell>
+                    <TableCell><Badge variant="outline" className="text-[10px] whitespace-nowrap">{r.source}</Badge></TableCell>
                     <TableCell className="text-xs">{r.trigger}</TableCell>
                     <TableCell className="text-xs text-muted-foreground truncate max-w-[280px]">{r.prompt}</TableCell>
                     <TableCell className="text-xs font-mono text-muted-foreground">{r.startedAt}</TableCell>
