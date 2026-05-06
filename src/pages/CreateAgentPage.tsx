@@ -64,7 +64,7 @@ interface AgentConfig {
 
 const defaultConfig: AgentConfig = {
   name: "",
-  version: "v1",
+  version: "v0.0.1",
   model: "claude-sonnet-4-6",
   systemPrompt: "",
   tools: [
@@ -80,7 +80,7 @@ import { getActiveSkills, getActiveMCPs } from "@/data/mockData";
 const availableSkills = getActiveSkills();
 const availableMCPs = getActiveMCPs();
 
-const versions = ["v1", "v2", "v3"];
+const versions = ["v0.0.1", "v0.0.2", "v0.0.3"];
 
 /* ── NLP Detection: extract skill/MCP names from natural language ── */
 
@@ -124,7 +124,7 @@ const assembleAgent = (
 
   return {
     name: description.slice(0, 20).replace(/[，。！？]/g, ""),
-    version: "v1",
+    version: "v0.0.1",
     model,
     systemPrompt,
     tools: [
