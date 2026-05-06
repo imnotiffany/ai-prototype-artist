@@ -834,7 +834,7 @@ const AgentDetail = () => {
         <TabsContent value="versions" className="mt-4">
           <div className="border border-border rounded-lg px-4 py-3 bg-muted/40 mb-4">
             <p className="text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">关于版本</span> · 每次在「配置」中点击保存，都会自动生成一个新版本。你可以随时查看历史变更内容，或将当前线上版本回滚到任意历史版本。
+              <span className="font-medium text-foreground">关于版本</span> · 每次在「配置」中点击保存，都会自动生成一个新版本。可在此查看任意历史版本快照，或选择某个版本重新发布上线。
             </p>
           </div>
           <div className="border border-border rounded-lg bg-card overflow-hidden">
@@ -850,17 +850,19 @@ const AgentDetail = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {versions.map((v) => (
+                {versions.map((v) => {
+                  const isPublished = v.current && agent.status === "published";
+                  return (
                   <TableRow key={v.v} className="hover:bg-muted/30">
                     <TableCell className="font-mono text-xs">{v.v}</TableCell>
                     <TableCell className="text-xs">{v.note}</TableCell>
                     <TableCell className="text-xs">{v.by}</TableCell>
                     <TableCell className="text-xs font-mono text-muted-foreground">{v.at}</TableCell>
                     <TableCell>
-                      {v.current ? (
-                        <Badge className="bg-primary/10 text-primary hover:bg-primary/10 border-0 text-[10px] h-5">当前线上</Badge>
+                      {isPublished ? (
+                        <Badge variant="outline" className="text-[10px] h-5 px-1.5 border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30">已发布</Badge>
                       ) : (
-                        <span className="text-[10px] text-muted-foreground">历史</span>
+                        <span className="text-[10px] text-muted-foreground">未发布</span>
                       )}
                     </TableCell>
                     <TableCell className="text-right">
@@ -868,29 +870,16 @@ const AgentDetail = () => {
                         <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1" onClick={() => setViewingVersion(v)}>
                           <Eye className="w-3 h-3" />查看
                         </Button>
-                        {!v.current && (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1"><RotateCcw className="w-3 h-3" />回滚</Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>回滚到 {v.v}？</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  将把当前线上版本切换到 <span className="font-mono">{v.v}</span>（{v.note}）。已发布的接入端会立即使用该版本。
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>取消</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleRollback(v)}>确认回滚</AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                        {!isPublished && (
+                          <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1" onClick={() => { handleRollback(v); setPublishOpen(true); }}>
+                            <Rocket className="w-3 h-3" />发布
+                          </Button>
                         )}
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                  );
+                })}
               </TableBody>
             </Table>
           </div>
