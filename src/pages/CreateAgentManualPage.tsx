@@ -220,13 +220,12 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
 
       <div className="max-w-4xl mx-auto px-6 py-5">
         <Tabs defaultValue="basic">
-          <TabsList className="grid grid-cols-7 h-9">
+          <TabsList className="grid grid-cols-6 h-9">
             <TabsTrigger value="basic" className="text-xs">基础信息</TabsTrigger>
             <TabsTrigger value="model" className="text-xs">模型配置</TabsTrigger>
             <TabsTrigger value="bindings" className="text-xs">原子能力</TabsTrigger>
             <TabsTrigger value="prompt" className="text-xs">系统提示词</TabsTrigger>
             <TabsTrigger value="env" className="text-xs">凭据配置</TabsTrigger>
-            <TabsTrigger value="network" className="text-xs">网络策略</TabsTrigger>
             <TabsTrigger value="fengsheng" className="text-xs">丰声 NEXT</TabsTrigger>
           </TabsList>
 
@@ -424,52 +423,6 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                 <p className="text-[10px] text-muted-foreground">MCP 所需 API Key / OAuth Token 统一在金库中安全存储</p>
                 <Button size="sm" variant="outline" className="h-7 text-xs mt-2" onClick={() => navigate("/vault")}>前往金库管理</Button>
               </div>
-            </div>
-          </TabsContent>
-
-          {/* Network */}
-          <TabsContent value="network" className="mt-4">
-            <div className="border border-border rounded-lg p-5 bg-card">
-              <Label className="text-xs flex items-center gap-1.5 mb-3"><Shield className="w-3.5 h-3.5" /> 网络访问策略</Label>
-              <RadioGroup value={networkPolicy} onValueChange={(v) => setNetworkPolicy(v as typeof networkPolicy)} className="space-y-2">
-                <label className="flex items-start gap-2 border border-border rounded-lg p-3 cursor-pointer hover:bg-muted/30">
-                  <RadioGroupItem value="intranet" className="mt-0.5" />
-                  <div>
-                    <p className="text-xs font-medium">仅内网</p>
-                    <p className="text-[10px] text-muted-foreground">只能访问公司内网资源，最高安全等级</p>
-                  </div>
-                </label>
-                <label className="flex items-start gap-2 border border-border rounded-lg p-3 cursor-pointer hover:bg-muted/30">
-                  <RadioGroupItem value="whitelist" className="mt-0.5" />
-                  <div className="flex-1">
-                    <p className="text-xs font-medium">白名单</p>
-                    <p className="text-[10px] text-muted-foreground">允许访问指定域名</p>
-                    {networkPolicy === "whitelist" && (
-                      <div className="mt-2">
-                        <div className="flex gap-1.5">
-                          <Input className="h-7 text-xs flex-1 font-mono" placeholder="example.com" value={whitelistInput} onChange={(e) => setWhitelistInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addWhitelist()} />
-                          <Button size="sm" variant="outline" className="h-7 text-xs" onClick={addWhitelist}>添加</Button>
-                        </div>
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {whitelist.map((w) => (
-                            <Badge key={w} variant="secondary" className="text-[10px] gap-1 font-mono">
-                              {w}
-                              <button onClick={() => setWhitelist(whitelist.filter((x) => x !== w))} className="hover:text-destructive"><X className="w-2.5 h-2.5" /></button>
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </label>
-                <label className="flex items-start gap-2 border border-border rounded-lg p-3 cursor-pointer hover:bg-muted/30">
-                  <RadioGroupItem value="open" className="mt-0.5" />
-                  <div>
-                    <p className="text-xs font-medium">全开放</p>
-                    <p className="text-[10px] text-muted-foreground">允许访问任意公网，需安全审批</p>
-                  </div>
-                </label>
-              </RadioGroup>
             </div>
           </TabsContent>
 
