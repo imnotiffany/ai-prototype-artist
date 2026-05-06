@@ -81,11 +81,21 @@ const kindLabel = (kind: ToolCallKind) => {
 
 const truncate = (s: string, n = 60) => (s.length > n ? s.slice(0, n) + "…" : s);
 
+const totalMs = (call: ToolCall): number | undefined => {
+  if (!call.steps || call.steps.length === 0) return undefined;
+  const sum = call.steps.reduce((a, s) => a + (s.ms ?? 0), 0);
+  return sum > 0 ? sum : undefined;
+};
+
 const Card = ({ call }: { call: ToolCall }) => {
   const [open, setOpen] = useState(false);
   const Icon = iconFor(call.kind);
   const isError = call.status === "failed";
-  const canExpand = call.status !== "running";
+  const canExpand = call.status !== "running" && (
+    !!call.params?.length || !!call.input ||
+    !!call.resultItems?.length || !!call.output || !!call.error
+  );
+  const ms = totalMs(call);
 
   return (
     <div
