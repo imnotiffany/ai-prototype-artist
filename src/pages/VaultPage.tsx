@@ -34,6 +34,7 @@ const VaultPage = () => {
     setCredName(""); setMcpServer(""); setTokenValue("");
     setOauthClientId(""); setOauthClientSecret(""); setOauthAuthUrl(""); setOauthTokenUrl(""); setOauthScopes("");
     setCredType("Bearer Token");
+    setFormTestResult(null); setFormTesting(false);
   };
 
   const [mcpPickerOpen, setMcpPickerOpen] = useState(false);
