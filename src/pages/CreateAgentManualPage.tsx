@@ -805,89 +805,109 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                 </div>
               </div>
 
-              {/* Right: Agent Run + Logs */}
-              <div className="flex flex-col gap-4 h-[640px]">
-                <div className="border border-border rounded-lg bg-card flex flex-col flex-1 min-h-0">
-                  <div className="px-4 py-2 border-b border-border flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      <Bot className="w-3.5 h-3.5 text-primary" />
-                      <span className="text-xs font-semibold">智能体运行</span>
-                      <Badge variant="outline" className="text-[10px] h-4">
+              {/* Right: Agent Run with tabbed Chat / Logs view */}
+              <div className="border border-border rounded-lg bg-card flex flex-col h-[640px]">
+                <Tabs value={runView} onValueChange={(v) => setRunView(v as "chat" | "logs")} className="flex flex-col flex-1 min-h-0">
+                  <div className="px-4 py-2 border-b border-border flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <Bot className="w-3.5 h-3.5 text-primary shrink-0" />
+                      <span className="text-xs font-semibold shrink-0">智能体运行</span>
+                      <Badge variant="outline" className="text-[10px] h-4 truncate">
                         {model} · {selMCPs.length} MCP · {selSkills.length} Skill
                       </Badge>
-                    </div>
-                    <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => { setRunMessages([]); setDebugLogs([]); }}>清空</Button>
-                  </div>
-                  <div className="flex-1 overflow-auto p-4 space-y-3 min-h-0">
-                    {runMessages.length === 0 && (
-                      <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground gap-2">
-                        <Play className="w-7 h-7 opacity-30" />
-                        <p className="text-xs">输入示例任务，与智能体真实对话</p>
-                        <p className="text-[10px]">例如："帮我查询昨天的快递订单状态"</p>
-                      </div>
-                    )}
-                    {runMessages.map((msg, i) => (
-                      <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                        <div className={`max-w-[85%] rounded-lg px-3 py-2 text-xs whitespace-pre-wrap leading-relaxed ${
-                          msg.role === "user" ? "bg-primary text-primary-foreground" :
-                          msg.status === "error" ? "bg-destructive/10 border border-destructive/30 text-destructive" :
-                          "bg-muted"
-                        }`}>
-                          {msg.role === "assistant" && msg.tool && (
-                            <div className="flex items-center gap-1 mb-1 text-[10px] opacity-70">
-                              <Zap className="w-2.5 h-2.5" /> 调用：{msg.tool}
-                            </div>
-                          )}
-                          {msg.content}
-                        </div>
-                      </div>
-                    ))}
-                    {debugRunning && (
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <Loader2 className="w-3 h-3 animate-spin" /> 智能体执行中…
-                      </div>
-                    )}
-                  </div>
-                  <div className="border-t border-border p-3 flex items-center gap-2">
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant={voiceRecording ? "default" : "outline"}
-                      className={`h-8 w-8 shrink-0 ${voiceRecording ? "animate-pulse" : ""}`}
-                      onClick={toggleVoice}
-                      title={voiceRecording ? "结束语音输入" : "语音输入"}
-                    >
-                      {voiceRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
-                    </Button>
-                    <Input
-                      className="h-8 text-xs"
-                      placeholder={voiceRecording ? "正在录音…再次点击麦克风结束" : "输入测试任务，回车发送"}
-                      value={debugInput}
-                      onChange={(e) => setDebugInput(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); runDebug(); } }}
-                    />
-                    <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => runDebug()} disabled={debugRunning || !debugInput.trim()}>
-                      <Send className="w-3 h-3" /> 发送
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Runtime logs — persistent, default expanded */}
-                <div className={`border border-border rounded-lg bg-zinc-950 text-zinc-100 overflow-hidden flex flex-col ${logsOpen ? "h-[220px]" : "h-9"}`}>
-                  <div className="px-3 h-9 shrink-0 border-b border-zinc-800 flex items-center justify-between text-[11px]">
-                    <button
-                      className="flex items-center gap-1.5 text-zinc-300 hover:text-white"
-                      onClick={() => setLogsOpen((v) => !v)}
-                    >
-                      {logsOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
-                      <Terminal className="w-3 h-3" />
-                      <span className="font-mono">runtime.log</span>
-                      <span className="text-zinc-500">· Cloud Code Sandbox</span>
-                      {debugLogs.length > 0 && (
-                        <span className="ml-1 px-1.5 py-0 rounded bg-zinc-800 text-zinc-300 text-[10px]">{debugLogs.length}</span>
+                      {debugRunning && (
+                        <span className="flex items-center gap-1 text-[10px] text-muted-foreground shrink-0">
+                          <Loader2 className="w-2.5 h-2.5 animate-spin" /> 运行中
+                        </span>
                       )}
-                    </button>
-                    {logsOpen && (
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <TabsList className="h-7 p-0.5">
+                        <TabsTrigger value="chat" className="text-[11px] h-6 px-2 gap-1">
+                          <Bot className="w-3 h-3" /> 对话
+                        </TabsTrigger>
+                        <TabsTrigger value="logs" className="text-[11px] h-6 px-2 gap-1">
+                          <Terminal className="w-3 h-3" /> 日志
+                          {debugLogs.length > 0 && (
+                            <span className="ml-0.5 px-1 rounded bg-muted text-muted-foreground text-[9px] leading-tight">
+                              {debugLogs.length}
+                            </span>
+                          )}
+                        </TabsTrigger>
+                      </TabsList>
+                      <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => { setRunMessages([]); setDebugLogs([]); }}>清空</Button>
+                    </div>
+                  </div>
+
+                  <TabsContent value="chat" forceMount className="flex-1 flex flex-col min-h-0 mt-0 data-[state=inactive]:hidden">
+                    <div className="flex-1 overflow-auto p-4 space-y-3 min-h-0">
+                      {runMessages.length === 0 && (
+                        <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground gap-2">
+                          <Play className="w-7 h-7 opacity-30" />
+                          <p className="text-xs">输入示例任务，与智能体真实对话</p>
+                          <p className="text-[10px]">例如："帮我查询昨天的快递订单状态"</p>
+                        </div>
+                      )}
+                      {runMessages.map((msg, i) => (
+                        <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                          <div className={`max-w-[85%] rounded-lg px-3 py-2 text-xs whitespace-pre-wrap leading-relaxed ${
+                            msg.role === "user" ? "bg-primary text-primary-foreground" :
+                            msg.status === "error" ? "bg-destructive/10 border border-destructive/30 text-destructive" :
+                            "bg-muted"
+                          }`}>
+                            {msg.role === "assistant" && msg.tool && (
+                              <div className="flex items-center gap-1 mb-1 text-[10px] opacity-70">
+                                <Zap className="w-2.5 h-2.5" /> 调用：{msg.tool}
+                              </div>
+                            )}
+                            {msg.content}
+                          </div>
+                        </div>
+                      ))}
+                      {debugRunning && (
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Loader2 className="w-3 h-3 animate-spin" /> 智能体执行中…
+                          <button
+                            type="button"
+                            onClick={() => setRunView("logs")}
+                            className="text-primary hover:underline"
+                          >
+                            查看运行日志 →
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    <div className="border-t border-border p-3 flex items-center gap-2">
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant={voiceRecording ? "default" : "outline"}
+                        className={`h-8 w-8 shrink-0 ${voiceRecording ? "animate-pulse" : ""}`}
+                        onClick={toggleVoice}
+                        title={voiceRecording ? "结束语音输入" : "语音输入"}
+                      >
+                        {voiceRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                      </Button>
+                      <Input
+                        className="h-8 text-xs"
+                        placeholder={voiceRecording ? "正在录音…再次点击麦克风结束" : "输入测试任务，回车发送"}
+                        value={debugInput}
+                        onChange={(e) => setDebugInput(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); runDebug(); } }}
+                      />
+                      <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => runDebug()} disabled={debugRunning || !debugInput.trim()}>
+                        <Send className="w-3 h-3" /> 发送
+                      </Button>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="logs" forceMount className="flex-1 flex flex-col min-h-0 mt-0 bg-zinc-950 text-zinc-100 rounded-b-lg overflow-hidden data-[state=inactive]:hidden">
+                    <div className="px-3 h-9 shrink-0 border-b border-zinc-800 flex items-center justify-between text-[11px]">
+                      <div className="flex items-center gap-1.5 text-zinc-300">
+                        <Terminal className="w-3 h-3" />
+                        <span className="font-mono">runtime.log</span>
+                        <span className="text-zinc-500">· Cloud Code Sandbox</span>
+                      </div>
                       <div className="flex items-center gap-1">
                         {(["all", "info", "thought", "tool", "warn", "error"] as const).map((f) => (
                           <button
@@ -911,9 +931,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                           <Copy className="w-2.5 h-2.5" /> 复制
                         </button>
                       </div>
-                    )}
-                  </div>
-                  {logsOpen && (
+                    </div>
                     <div className="flex-1 overflow-auto px-3 py-2 font-mono text-[11px] leading-relaxed">
                       {debugLogs.length === 0 ? (
                         <p className="text-zinc-500 text-center py-3">暂无运行日志，发送一条调试消息即可查看</p>
@@ -959,8 +977,8 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                         </div>
                       )}
                     </div>
-                  )}
-                </div>
+                  </TabsContent>
+                </Tabs>
               </div>
             </div>
           </TabsContent>
