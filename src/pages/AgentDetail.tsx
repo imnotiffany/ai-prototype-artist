@@ -606,13 +606,18 @@ const AgentDetail = () => {
                 ) : (
                   <div className="space-y-2">
                     {mcpBindings.map((b, i) => {
+                      const meta = getActiveMCPs().find((m) => m.name === b.name);
+                      const needsCred = !!meta?.requiresCredential;
                       const creds = credentialsByMcp(b.name);
-                      const credMissing = !b.credential;
+                      const credMissing = needsCred && !b.credential;
                       return (
                         <div key={b.name} className={`border rounded-md p-3 space-y-2 ${credMissing ? "border-amber-300 bg-amber-50/40" : "border-border"}`}>
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-medium flex items-center gap-1.5">
                               <Server className="w-3 h-3 text-primary" />{b.name}
+                              {!needsCred && (
+                                <Badge variant="outline" className="border-emerald-300 text-emerald-700 bg-emerald-50/60 text-[9px] h-4 px-1.5">免凭据</Badge>
+                              )}
                               {credMissing && (
                                 <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-0 text-[9px] h-4 gap-1">
                                   <AlertTriangle className="w-2.5 h-2.5" />未绑定凭据
@@ -623,20 +628,22 @@ const AgentDetail = () => {
                               <X className="w-3.5 h-3.5" />
                             </button>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Label className="text-[11px] text-muted-foreground shrink-0">凭据</Label>
-                            <Select value={b.credential} onValueChange={(v) => updateMcpCred(i, v)}>
-                              <SelectTrigger className="h-7 text-xs"><SelectValue placeholder={creds.length ? "选择凭据" : "凭据库无可用凭据"} /></SelectTrigger>
-                              <SelectContent>
-                                {creds.map((c) => (
-                                  <SelectItem key={c.id} value={c.name} className="text-xs">
-                                    {c.name} <span className="text-muted-foreground ml-1">({c.type})</span>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <Button size="sm" variant="ghost" className="h-7 text-[10px]" onClick={() => navigate("/vault")}>前往凭据管理</Button>
-                          </div>
+                          {needsCred && (
+                            <div className="flex items-center gap-2">
+                              <Label className="text-[11px] text-muted-foreground shrink-0">凭据</Label>
+                              <Select value={b.credential} onValueChange={(v) => updateMcpCred(i, v)}>
+                                <SelectTrigger className="h-7 text-xs"><SelectValue placeholder={creds.length ? "选择凭据" : "凭据库无可用凭据"} /></SelectTrigger>
+                                <SelectContent>
+                                  {creds.map((c) => (
+                                    <SelectItem key={c.id} value={c.name} className="text-xs">
+                                      {c.name} <span className="text-muted-foreground ml-1">({c.type})</span>
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <Button size="sm" variant="ghost" className="h-7 text-[10px]" onClick={() => navigate("/vault")}>前往凭据管理</Button>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
