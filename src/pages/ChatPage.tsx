@@ -214,7 +214,7 @@ const ChatPage = () => {
         </div>
 
         {/* Messages — 与对话视图保持一致 */}
-        <div className="flex-1 min-h-0 flex flex-col">
+        <div className="flex-1 min-h-0">
           <RunTranscriptView
             showSearch={false}
             events={messages.map<TranscriptEvent>((m, i) => {
@@ -222,12 +222,8 @@ const ChatPage = () => {
               if (m.role === "user") return { id: `u${i}`, type: "user", content: m.content };
               return { id: `a${i}`, type: "agent", content: m.content };
             })}
+            footer={isRunning ? <AIStatusPill stages={stages} stageIndex={stageIndex} /> : undefined}
           />
-          {isRunning && (
-            <div className="px-4 pb-2 shrink-0">
-              <AIStatusPill stages={stages} stageIndex={stageIndex} />
-            </div>
-          )}
         </div>
 
         {/* Input */}
