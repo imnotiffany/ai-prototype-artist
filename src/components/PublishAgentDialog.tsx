@@ -22,6 +22,7 @@ interface Props {
   agentName: string;
   versions: AgentVersion[];
   defaultScope?: "marketplace" | "project";
+  kind?: "app" | "agent";
 }
 
 const categories = ["效率办公", "研发工程", "数据分析", "客户服务", "市场营销", "人力资源"];
