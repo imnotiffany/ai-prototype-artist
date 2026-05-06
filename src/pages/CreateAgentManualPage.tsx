@@ -268,11 +268,7 @@ const CreateAgentManualPage = () => {
   const toggle = (list: string[], setList: (v: string[]) => void, name: string) =>
     setList(list.includes(name) ? list.filter((x) => x !== name) : [...list, name]);
 
-  const addWhitelist = () => {
-    const w = whitelistInput.trim();
-    if (w && !whitelist.includes(w)) setWhitelist([...whitelist, w]);
-    setWhitelistInput("");
-  };
+
 
   const handleAutoGeneratePrompt = () => {
     setGeneratingPrompt(true);
