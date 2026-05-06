@@ -70,7 +70,8 @@ const CreateAgentManualPage = () => {
   const [fsConnected, setFsConnected] = useState(false);
 
   // Debug — three streams: assistant chat (left), agent run (right), runtime logs (right bottom)
-  type ChatMsg = { role: "user" | "assistant"; content: string };
+  type PromptSuggestion = { id: string; addition: string; summaryNote: string; status: "pending" | "adopted" | "rejected" };
+  type ChatMsg = { role: "user" | "assistant"; content: string; suggestion?: PromptSuggestion };
   type RunMsg = { role: "user" | "assistant"; content: string; tool?: string; status?: "ok" | "error" };
   const [assistantInput, setAssistantInput] = useState("");
   const [assistantMessages, setAssistantMessages] = useState<ChatMsg[]>([]);
