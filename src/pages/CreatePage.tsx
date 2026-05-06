@@ -93,7 +93,7 @@ const CreatePage = () => {
                   <div className="flex items-center gap-1.5 mb-1">
                     <Wand className="w-3.5 h-3.5 text-muted-foreground" />
                     <span className="text-xs font-medium text-muted-foreground">自动组装</span>
-                    <Badge variant="secondary" className="text-[9px] h-4 px-1.5 ml-auto">即将上线</Badge>
+                    <Badge variant="secondary" className="text-[10px] h-4 px-1.5 ml-auto">即将上线</Badge>
                   </div>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
                     输入需求一句话描述，AI 自动检索匹配 MCP / Skill / 子智能体 并生成智能体
@@ -103,7 +103,7 @@ const CreatePage = () => {
                   <div className="flex items-center gap-1.5 mb-1">
                     <SlidersHorizontal className="w-3.5 h-3.5 text-primary" />
                     <span className="text-xs font-medium text-foreground">手动组装</span>
-                    <Badge variant="outline" className="text-[9px] h-4 px-1.5 ml-auto">当前可用</Badge>
+                    <Badge variant="outline" className="text-[10px] h-4 px-1.5 ml-auto">当前可用</Badge>
                   </div>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
                     自行配置模型、提示词、MCP / Skill、子智能体，并对接至丰声 NEXT 机器人
@@ -160,7 +160,7 @@ const CreatePage = () => {
                     {agent.description}
                   </p>
                   <div className="flex items-center gap-1.5 mt-2">
-                    <Badge variant="outline" className="text-[9px] h-4 px-1.5">
+                    <Badge variant="outline" className="text-[10px] h-4 px-1.5">
                       {agent.status === "published" ? (agent.publishScope === "marketplace" ? "已发布到广场" : "已发布到项目") : "未发布"}
                     </Badge>
                     <span className="text-[10px] text-muted-foreground">{agent.updatedAt}</span>

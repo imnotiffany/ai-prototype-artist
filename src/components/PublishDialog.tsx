@@ -117,7 +117,7 @@ export const PublishDialog = ({ open, onOpenChange, defaultName = "", defaultDes
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
                       <p className="text-xs font-medium">{c.name}</p>
-                      {c.recommended && <Badge variant="secondary" className="text-[9px] h-4">推荐</Badge>}
+                      {c.recommended && <Badge variant="secondary" className="text-[10px] h-4">推荐</Badge>}
                     </div>
                     <p className="text-[10px] text-muted-foreground mt-0.5">{c.desc}</p>
                   </div>
