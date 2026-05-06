@@ -96,7 +96,7 @@ const CreatePage = () => {
                     <Badge variant="secondary" className="text-[9px] h-4 px-1.5 ml-auto">即将上线</Badge>
                   </div>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    输入需求一句话描述，AI 自动检索匹配 Skill / MCP / 子智能体并生成草稿
+                    输入需求一句话描述，AI 自动检索匹配 Skill / MCP / Subagent 并生成智能体
                   </p>
                 </div>
                 <div className="text-left rounded-lg border border-primary bg-primary/5 ring-1 ring-primary/30 p-3">
