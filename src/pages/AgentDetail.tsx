@@ -863,6 +863,42 @@ const AgentDetail = () => {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Edit basic info dialog */}
+      <Dialog open={editInfoOpen} onOpenChange={setEditInfoOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base flex items-center gap-2">
+              <Pencil className="w-4 h-4 text-primary" />编辑基本信息
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-1">
+            <p className="text-[11px] text-muted-foreground">
+              名称与描述是展示给使用者的「门面」，调整这些不会影响智能体行为，因此不会产生新版本。
+            </p>
+            <div>
+              <Label className="text-xs">名称</Label>
+              <Input value={draftName} onChange={(e) => setDraftName(e.target.value)} className="mt-1.5 h-9 text-xs" />
+            </div>
+            <div>
+              <Label className="text-xs">描述</Label>
+              <Textarea value={draftDesc} onChange={(e) => setDraftDesc(e.target.value)} rows={3} className="mt-1.5 text-xs" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => setEditInfoOpen(false)}>取消</Button>
+            <Button size="sm" className="h-8 text-xs" onClick={saveBasicInfo} disabled={!draftName.trim()}>保存</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Publish dialog */}
+      <PublishAgentDialog
+        open={publishOpen}
+        onOpenChange={setPublishOpen}
+        agentName={name}
+        versions={versions}
+      />
     </div>
   );
 };
