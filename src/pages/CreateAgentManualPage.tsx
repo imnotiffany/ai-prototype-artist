@@ -58,25 +58,29 @@ const CreateAgentManualPage = () => {
   const [fsSecretVisible, setFsSecretVisible] = useState(false);
   const [fsConnected, setFsConnected] = useState(false);
 
-  // Debug
-  type DebugSuggestion = { kind: "prompt"; updatedPrompt: string; summary: string } | { kind: "clarify"; questions: string[] };
-  type DebugMsg = {
-    role: "user" | "assistant" | "system";
-    content: string;
-    status?: "ok" | "error";
-    tool?: string;
-    suggestion?: DebugSuggestion;
-  };
+  // Debug — three streams: assistant chat (left), agent run (right), runtime logs (right bottom)
+  type ChatMsg = { role: "user" | "assistant"; content: string };
+  type RunMsg = { role: "user" | "assistant"; content: string; tool?: string; status?: "ok" | "error" };
+  const [assistantInput, setAssistantInput] = useState("");
+  const [assistantMessages, setAssistantMessages] = useState<ChatMsg[]>([]);
+  const [assistantThinking, setAssistantThinking] = useState(false);
   const [debugInput, setDebugInput] = useState("");
-  const [debugMessages, setDebugMessages] = useState<DebugMsg[]>([]);
+  const [runMessages, setRunMessages] = useState<RunMsg[]>([]);
   const [debugRunning, setDebugRunning] = useState(false);
   const [voiceRecording, setVoiceRecording] = useState(false);
 
-  // Runtime logs (Cloud Code style)
+  // Track all changes auto-applied during debugging — surfaced at save time
+  type DebugChange = { ts: string; summary: string; field: "prompt" | "binding" | "model" | "credential" };
+  const [debugChanges, setDebugChanges] = useState<DebugChange[]>([]);
+  const recordChange = (field: DebugChange["field"], summary: string) => {
+    setDebugChanges((c) => [...c, { ts: new Date().toLocaleTimeString("zh-CN", { hour12: false }), field, summary }]);
+  };
+
+  // Runtime logs (Cloud Code style) — persistent panel, user can collapse
   type LogLevel = "info" | "tool" | "thought" | "warn" | "error" | "result";
   type LogEntry = { id: number; ts: string; level: LogLevel; message: string; meta?: string };
   const [debugLogs, setDebugLogs] = useState<LogEntry[]>([]);
-  const [logsOpen, setLogsOpen] = useState(false);
+  const [logsOpen, setLogsOpen] = useState(true);
   const [logFilter, setLogFilter] = useState<"all" | LogLevel>("all");
   const logIdRef = (globalThis as any).__logIdRef ?? { current: 0 };
   (globalThis as any).__logIdRef = logIdRef;
@@ -90,38 +94,48 @@ const CreateAgentManualPage = () => {
   const [publishStage, setPublishStage] = useState<"project" | "marketplace" | "done">("project");
   const [publishingToMarket, setPublishingToMarket] = useState(false);
 
-  const buildOptimizationSuggestion = (userInput: string): DebugSuggestion => {
-    // If user has bound capabilities but their purpose isn't documented in the prompt, ask for clarification
-    const undocumented = [
-      ...selMCPs.filter((m) => !systemPrompt.includes(m)),
-      ...selSkills.filter((s) => !systemPrompt.includes(s)),
-    ];
-    if (undocumented.length > 0) {
-      return {
-        kind: "clarify",
-        questions: undocumented.slice(0, 3).map(
-          (n) => `你绑定了「${n}」，但系统提示词里没有说明它的用途。请用一句话告诉我：在什么场景下应该调用它？`
-        ),
-      };
-    }
-    // Otherwise propose a refined system prompt grounded in the test input
-    const refined = `${systemPrompt.trim()}\n\n# 来自调试的补充指引\n- 用户曾以「${userInput}」类问题进行测试，遇到该类问题时应优先：\n  1. 拆解任务目标，明确需要哪些 MCP / Skill\n  2. 引用工具返回的数据并标注来源\n  3. 输出结构化结果，避免冗余寒暄`;
-    return {
-      kind: "prompt",
-      updatedPrompt: refined,
-      summary: "基于本轮调试反馈，建议在系统提示词中补充任务拆解、来源标注与输出结构化的工作流。",
-    };
+  // After each run, AI auto-optimizes (silently apply + announce in left chat)
+  const autoOptimizeAfterRun = (userInput: string) => {
+    setTimeout(() => {
+      const undocumented = [
+        ...selMCPs.filter((m) => !systemPrompt.includes(m)),
+        ...selSkills.filter((s) => !systemPrompt.includes(s)),
+      ];
+      if (undocumented.length > 0) {
+        // Need clarification — ask in left chat
+        const target = undocumented[0];
+        setAssistantMessages((m) => [
+          ...m,
+          {
+            role: "assistant",
+            content: `我注意到你绑定了「${target}」，但系统提示词里没有说明它的用途。\n\n请用一句话告诉我：在什么场景下应该调用「${target}」？我会据此完善提示词。`,
+          },
+        ]);
+        return;
+      }
+      // Otherwise auto-apply optimization and tell user what was changed
+      const addition = `\n\n# 来自调试的补充指引\n- 用户曾以「${userInput}」类问题进行测试，遇到该类问题时应优先：\n  1. 拆解任务目标，明确需要哪些 MCP / Skill\n  2. 引用工具返回的数据并标注来源\n  3. 输出结构化结果，避免冗余寒暄`;
+      if (!systemPrompt.includes("# 来自调试的补充指引")) {
+        setSystemPrompt((p) => p.trim() + addition);
+        recordChange("prompt", `补充提示词：基于「${userInput}」类任务，新增"任务拆解 / 来源标注 / 结构化输出"工作流`);
+        setAssistantMessages((m) => [
+          ...m,
+          {
+            role: "assistant",
+            content: `我已根据本轮调试自动优化了系统提示词：\n\n· 补充了「任务拆解 → 工具选择 → 来源标注 → 结构化输出」的工作流\n· 加入了与「${userInput}」类任务的对齐指引\n\n你可以继续测试其他场景，或在保存时一次性确认所有调试期改动。`,
+          },
+        ]);
+      }
+    }, 900);
   };
 
   const runDebug = (overrideInput?: string) => {
     const text = (overrideInput ?? debugInput).trim();
     if (!text) return;
-    const userMsg: DebugMsg = { role: "user", content: text };
-    setDebugMessages((m) => [...m, userMsg]);
+    setRunMessages((m) => [...m, { role: "user", content: text }]);
     setDebugInput("");
     setDebugRunning(true);
 
-    // Simulated Cloud Code runtime trace
     const tool = selMCPs[0] || selSkills[0] || "内置推理";
     pushLog("info", `[session] 接收用户输入`, `text="${text}"`);
     pushLog("info", `[runtime] 启动容器 sandbox-${Math.random().toString(36).slice(2, 6)}`, `image=cloud-code:1.4.2 · workspace=/workspace`);
@@ -134,37 +148,56 @@ const CreateAgentManualPage = () => {
     setTimeout(() => pushLog("thought", `[reasoning] 整合工具返回，生成结构化回复`), 600);
 
     setTimeout(() => {
-      const ok: DebugMsg = {
-        role: "assistant",
-        status: "ok",
-        tool,
-        content: `已通过 ${tool} 完成响应：根据你的输入「${text}」生成结果（模拟输出）。`,
-      };
-      const suggestionMsg: DebugMsg = {
-        role: "system",
-        content: "",
-        suggestion: buildOptimizationSuggestion(text),
-      };
-      setDebugMessages((m) => [...m, ok, suggestionMsg]);
+      setRunMessages((m) => [
+        ...m,
+        {
+          role: "assistant",
+          status: "ok",
+          tool,
+          content: `已通过 ${tool} 完成响应：根据你的输入「${text}」生成结果（模拟输出）。`,
+        },
+      ]);
       pushLog("result", `[done] 推理完成 · 用时 698ms · tokens in=312 out=128`);
       setDebugRunning(false);
+      autoOptimizeAfterRun(text);
     }, 700);
   };
 
-  const applyPromptSuggestion = (newPrompt: string, msgIndex: number) => {
-    setSystemPrompt(newPrompt);
-    setDebugMessages((m) =>
-      m.map((msg, i) =>
-        i === msgIndex ? { ...msg, suggestion: undefined, content: "✓ 已采纳建议并更新系统提示词" } : msg
-      )
-    );
-    toast({ title: "系统提示词已更新" });
-  };
-
-  const dismissSuggestion = (msgIndex: number) => {
-    setDebugMessages((m) =>
-      m.map((msg, i) => (i === msgIndex ? { ...msg, suggestion: undefined, content: "已忽略本次建议" } : msg))
-    );
+  const sendAssistantMessage = () => {
+    const text = assistantInput.trim();
+    if (!text) return;
+    setAssistantMessages((m) => [...m, { role: "user", content: text }]);
+    setAssistantInput("");
+    setAssistantThinking(true);
+    setTimeout(() => {
+      // Heuristic: detect intents like "改提示词" / "绑定 X" / general clarification reply
+      let reply = "";
+      if (/提示词|prompt/i.test(text)) {
+        const note = `\n\n# 用户调试反馈\n- ${text}`;
+        setSystemPrompt((p) => p + note);
+        recordChange("prompt", `根据你的反馈追加到提示词："${text.slice(0, 30)}${text.length > 30 ? "…" : ""}"`);
+        reply = `好的，我已经把这条要求追加到系统提示词里了。可以在右侧继续发起一轮调试验证效果。`;
+      } else if (/绑定|添加.*MCP|加上.*Skill/i.test(text)) {
+        reply = `好的。请在「能力配置」里勾选具体的 MCP / Skill；如果你告诉我服务名称，我也可以直接帮你添加。`;
+      } else {
+        // Treat as clarification answer for purpose of an MCP/Skill
+        const undocumented = [
+          ...selMCPs.filter((m) => !systemPrompt.includes(m)),
+          ...selSkills.filter((s) => !systemPrompt.includes(s)),
+        ];
+        if (undocumented[0]) {
+          const target = undocumented[0];
+          const addition = `\n\n# 能力说明\n- 「${target}」：${text}`;
+          setSystemPrompt((p) => p + addition);
+          recordChange("prompt", `补充「${target}」的用途说明：${text.slice(0, 40)}${text.length > 40 ? "…" : ""}`);
+          reply = `已记录「${target}」的用途，并写入系统提示词。如果还有其他工具需要说明，告诉我即可。`;
+        } else {
+          reply = `收到。你可以让我"修改提示词"、"补充某个能力的用途"，或在右侧直接发起一轮调试。`;
+        }
+      }
+      setAssistantMessages((m) => [...m, { role: "assistant", content: reply }]);
+      setAssistantThinking(false);
+    }, 600);
   };
 
   const toggleVoice = () => {
