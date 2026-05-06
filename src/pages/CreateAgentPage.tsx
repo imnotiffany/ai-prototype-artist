@@ -80,7 +80,7 @@ import { getActiveSkills, getActiveMCPs } from "@/data/mockData";
 const availableSkills = getActiveSkills();
 const availableMCPs = getActiveMCPs();
 
-const versions = ["v1", "v2", "v3"];
+const versions = ["v0.0.1", "v0.0.2", "v0.0.3"];
 
 /* ── NLP Detection: extract skill/MCP names from natural language ── */
 
