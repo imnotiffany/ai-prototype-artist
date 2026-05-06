@@ -811,7 +811,7 @@ const AgentDetail = () => {
               </TableHeader>
               <TableBody>
                 {mockRuns.map((r) => (
-                  <TableRow key={r.id} className="cursor-pointer" onClick={() => { setActiveRun(r); setRunDetailView("transcript"); setExpandedTools({}); }}>
+                  <TableRow key={r.id} className="cursor-pointer" onClick={() => setActiveRun(r)}>
                     <TableCell><Badge variant="outline" className="text-[10px] whitespace-nowrap">{r.source}</Badge></TableCell>
                     <TableCell className="text-xs">{r.trigger}</TableCell>
                     <TableCell className="text-xs text-muted-foreground truncate max-w-[280px]">{r.prompt}</TableCell>
