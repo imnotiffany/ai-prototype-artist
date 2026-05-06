@@ -59,57 +59,98 @@ const CreateAgentManualPage = () => {
   const [fsConnected, setFsConnected] = useState(false);
 
   // Debug
-  type DebugMsg = { role: "user" | "assistant" | "system"; content: string; status?: "ok" | "error"; tool?: string };
+  type DebugSuggestion = { kind: "prompt"; updatedPrompt: string; summary: string } | { kind: "clarify"; questions: string[] };
+  type DebugMsg = {
+    role: "user" | "assistant" | "system";
+    content: string;
+    status?: "ok" | "error";
+    tool?: string;
+    suggestion?: DebugSuggestion;
+  };
   const [debugInput, setDebugInput] = useState("");
   const [debugMessages, setDebugMessages] = useState<DebugMsg[]>([]);
   const [debugRunning, setDebugRunning] = useState(false);
-  const [debugFixing, setDebugFixing] = useState(false);
-  const [debugIssues, setDebugIssues] = useState<string[]>([]);
+  const [voiceRecording, setVoiceRecording] = useState(false);
 
   // Publish flow
   const [publishStage, setPublishStage] = useState<"project" | "marketplace" | "done">("project");
   const [publishingToMarket, setPublishingToMarket] = useState(false);
 
-  const runDebug = () => {
-    if (!debugInput.trim()) return;
-    const userMsg: DebugMsg = { role: "user", content: debugInput.trim() };
+  const buildOptimizationSuggestion = (userInput: string): DebugSuggestion => {
+    // If user has bound capabilities but their purpose isn't documented in the prompt, ask for clarification
+    const undocumented = [
+      ...selMCPs.filter((m) => !systemPrompt.includes(m)),
+      ...selSkills.filter((s) => !systemPrompt.includes(s)),
+    ];
+    if (undocumented.length > 0) {
+      return {
+        kind: "clarify",
+        questions: undocumented.slice(0, 3).map(
+          (n) => `你绑定了「${n}」，但系统提示词里没有说明它的用途。请用一句话告诉我：在什么场景下应该调用它？`
+        ),
+      };
+    }
+    // Otherwise propose a refined system prompt grounded in the test input
+    const refined = `${systemPrompt.trim()}\n\n# 来自调试的补充指引\n- 用户曾以「${userInput}」类问题进行测试，遇到该类问题时应优先：\n  1. 拆解任务目标，明确需要哪些 MCP / Skill\n  2. 引用工具返回的数据并标注来源\n  3. 输出结构化结果，避免冗余寒暄`;
+    return {
+      kind: "prompt",
+      updatedPrompt: refined,
+      summary: "基于本轮调试反馈，建议在系统提示词中补充任务拆解、来源标注与输出结构化的工作流。",
+    };
+  };
+
+  const runDebug = (overrideInput?: string) => {
+    const text = (overrideInput ?? debugInput).trim();
+    if (!text) return;
+    const userMsg: DebugMsg = { role: "user", content: text };
     setDebugMessages((m) => [...m, userMsg]);
     setDebugInput("");
     setDebugRunning(true);
     setTimeout(() => {
-      const issues: string[] = [];
-      if (selMCPs.length === 0 && selSkills.length === 0) issues.push("尚未绑定任何 MCP 或 Skill，智能体无法执行实际任务");
-      if (!systemPrompt.trim()) issues.push("系统提示词为空");
-      const missingCred = selMCPs.filter((m) => mockCredentials.filter((c) => c.mcpServer === m).length === 0);
-      if (missingCred.length) issues.push(`MCP 缺少凭据：${missingCred.join("、")}`);
-
-      if (issues.length) {
-        setDebugIssues(issues);
-        setDebugMessages((m) => [...m, { role: "assistant", status: "error", content: `执行失败：\n${issues.map((i) => `· ${i}`).join("\n")}` }]);
-      } else {
-        setDebugIssues([]);
-        const tool = selMCPs[0] || selSkills[0] || "内置推理";
-        setDebugMessages((m) => [...m, { role: "assistant", status: "ok", tool, content: `已通过 ${tool} 完成响应：根据你的输入「${userMsg.content}」生成结果（模拟输出）。` }]);
-      }
+      const tool = selMCPs[0] || selSkills[0] || "内置推理";
+      const ok: DebugMsg = {
+        role: "assistant",
+        status: "ok",
+        tool,
+        content: `已通过 ${tool} 完成响应：根据你的输入「${text}」生成结果（模拟输出）。`,
+      };
+      const suggestionMsg: DebugMsg = {
+        role: "system",
+        content: "",
+        suggestion: buildOptimizationSuggestion(text),
+      };
+      setDebugMessages((m) => [...m, ok, suggestionMsg]);
       setDebugRunning(false);
     }, 700);
   };
 
-  const autoFix = () => {
-    if (!debugIssues.length) return;
-    setDebugFixing(true);
-    setTimeout(() => {
-      const fixes: string[] = [];
-      if (debugIssues.some((i) => i.includes("未绑定"))) {
-        if (mcps[0]) { setSelMCPs((s) => Array.from(new Set([...s, mcps[0].name]))); fixes.push(`自动绑定 MCP「${mcps[0].name}」`); }
-        if (skills[0]) { setSelSkills((s) => Array.from(new Set([...s, skills[0].name]))); fixes.push(`自动绑定 Skill「${skills[0].name}」`); }
-      }
-      if (debugIssues.some((i) => i.includes("提示词"))) { handleAutoGeneratePrompt(); fixes.push("已重新生成系统提示词"); }
-      if (debugIssues.some((i) => i.includes("凭据"))) fixes.push("建议前往「凭据金库」补全缺失凭据");
-      setDebugMessages((m) => [...m, { role: "system", content: `AI 自动修复完成：\n${fixes.map((f) => `· ${f}`).join("\n")}\n请重新运行调试验证。` }]);
-      setDebugIssues([]);
-      setDebugFixing(false);
-    }, 900);
+  const applyPromptSuggestion = (newPrompt: string, msgIndex: number) => {
+    setSystemPrompt(newPrompt);
+    setDebugMessages((m) =>
+      m.map((msg, i) =>
+        i === msgIndex ? { ...msg, suggestion: undefined, content: "✓ 已采纳建议并更新系统提示词" } : msg
+      )
+    );
+    toast({ title: "系统提示词已更新" });
+  };
+
+  const dismissSuggestion = (msgIndex: number) => {
+    setDebugMessages((m) =>
+      m.map((msg, i) => (i === msgIndex ? { ...msg, suggestion: undefined, content: "已忽略本次建议" } : msg))
+    );
+  };
+
+  const toggleVoice = () => {
+    if (voiceRecording) {
+      setVoiceRecording(false);
+      // Mock transcription
+      const mockText = "帮我查询昨天的快递订单状态";
+      setDebugInput((prev) => (prev ? `${prev} ${mockText}` : mockText));
+      toast({ title: "语音已转写", description: mockText });
+    } else {
+      setVoiceRecording(true);
+      toast({ title: "开始语音输入", description: "再次点击结束录音" });
+    }
   };
 
   const handleAutoGenerateMeta = () => {
