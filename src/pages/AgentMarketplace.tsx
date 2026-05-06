@@ -144,7 +144,7 @@ const AgentMarketplace = () => {
 
       {/* Agent grid */}
       <div className="px-6 pb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           {filtered.map((agent) => {
             const isApp = agent.kind === "app";
             const allowCopy = agent.allowCopy !== false;
@@ -152,34 +152,34 @@ const AgentMarketplace = () => {
               <div
                 key={agent.id}
                 onClick={() => openAgent(agent, navigate)}
-                className="group relative border border-border rounded-xl p-5 bg-card hover:shadow-md hover:border-primary/40 transition-all cursor-pointer flex flex-col"
+                className="group relative border border-border rounded-lg p-3.5 bg-card hover:shadow-sm hover:border-primary/40 transition-all cursor-pointer flex flex-col"
               >
                 {/* Kind badge */}
                 <div
-                  className={`absolute top-3 right-3 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium ${
+                  className={`absolute top-2.5 right-2.5 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium ${
                     isApp
                       ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
                       : "bg-purple-500/10 text-purple-600 dark:text-purple-400"
                   }`}
                 >
-                  {isApp ? <Globe className="w-3 h-3" /> : <MessageSquare className="w-3 h-3" />}
+                  {isApp ? <Globe className="w-2.5 h-2.5" /> : <MessageSquare className="w-2.5 h-2.5" />}
                   {isApp ? "应用" : "智能体"}
                 </div>
 
                 {/* Header: icon + title */}
-                <div className="flex items-start gap-3 mb-3 pr-14">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/10 to-secondary flex items-center justify-center text-2xl shrink-0 shadow-sm">
+                <div className="flex items-start gap-2.5 mb-2 pr-12">
+                  <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary/10 to-secondary flex items-center justify-center text-lg shrink-0">
                     {agent.avatar}
                   </div>
-                  <div className="min-w-0 flex-1 pt-0.5">
-                    <h3 className="text-[15px] font-semibold text-foreground truncate leading-tight">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-[13px] font-semibold text-foreground truncate leading-tight">
                       {agent.name}
                     </h3>
-                    <div className="mt-2 flex items-center gap-1.5 flex-wrap">
+                    <div className="mt-1 flex items-center gap-1 flex-wrap">
                       {agent.tags.slice(0, 1).map((tag, i) => (
                         <span
                           key={i}
-                          className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-normal bg-primary/10 text-primary"
+                          className="inline-flex items-center px-1.5 py-0 rounded text-[10px] font-normal bg-primary/10 text-primary"
                         >
                           {tag}
                         </span>
@@ -189,24 +189,24 @@ const AgentMarketplace = () => {
                 </div>
 
                 {/* Description */}
-                <p className="text-[13px] text-muted-foreground line-clamp-2 leading-relaxed mb-4">
+                <p className="text-[12px] text-muted-foreground line-clamp-2 leading-relaxed mb-2.5">
                   {agent.description}
                 </p>
 
                 {/* Author chips */}
-                <div className="flex items-center gap-1.5 flex-wrap mb-3">
-                  <span className="inline-flex items-center px-2 py-1 rounded-md text-[11px] bg-muted text-muted-foreground">
+                <div className="flex items-center gap-1 flex-wrap mb-2">
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-muted text-muted-foreground">
                     {agent.platform}
                   </span>
-                  <span className="inline-flex items-center px-2 py-1 rounded-md text-[11px] bg-muted text-muted-foreground">
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-muted text-muted-foreground truncate max-w-[140px]">
                     {agent.author}
                     {agent.authorId ? `（${agent.authorId}）` : ""}
                   </span>
                 </div>
 
                 {/* Footer: updated time */}
-                <div className="mt-auto pt-2 border-t border-border/60 flex items-center justify-between">
-                  <span className="text-[11px] text-muted-foreground">{agent.updatedAt}更新</span>
+                <div className="mt-auto pt-1.5 border-t border-border/60 flex items-center justify-between">
+                  <span className="text-[10px] text-muted-foreground">{agent.updatedAt}更新</span>
                   {allowCopy && (
                     <button
                       onClick={(e) => {
@@ -216,7 +216,7 @@ const AgentMarketplace = () => {
                           description: `${agent.name} 已添加到「我的项目」，可在项目中继续编辑`,
                         });
                       }}
-                      className="text-[11px] text-primary hover:underline opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="text-[10px] text-primary hover:underline opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       复制到我的项目
                     </button>
