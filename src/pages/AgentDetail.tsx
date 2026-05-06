@@ -356,7 +356,7 @@ const AgentDetail = () => {
         <TabsList className="h-9 bg-transparent border-b border-border w-full justify-start rounded-none p-0 gap-1">
           <TabsTrigger value="debug" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><Bug className="w-3.5 h-3.5" />调试</TabsTrigger>
           <TabsTrigger value="config" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><Settings2 className="w-3.5 h-3.5" />配置</TabsTrigger>
-          <TabsTrigger value="runs" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><MessageSquare className="w-3.5 h-3.5" />运行记录</TabsTrigger>
+          <TabsTrigger value="runs" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><MessageSquare className="w-3.5 h-3.5" />会话记录</TabsTrigger>
           <TabsTrigger value="versions" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><History className="w-3.5 h-3.5" />版本</TabsTrigger>
         </TabsList>
 
@@ -705,7 +705,7 @@ const AgentDetail = () => {
           </div>
         </TabsContent>
 
-        {/* ───────── 运行记录 ───────── */}
+        {/* ───────── 会话记录 ───────── */}
         <TabsContent value="runs" className="mt-4">
           <div className="border border-border rounded-lg overflow-hidden bg-card">
             <Table>
@@ -738,8 +738,12 @@ const AgentDetail = () => {
             <SheetContent className="w-[680px] sm:max-w-[680px] p-0 flex flex-col">
               <SheetHeader className="px-5 py-3 border-b border-border space-y-1.5">
                 <SheetTitle className="text-sm flex items-center gap-2">
-                  <span>运行详情</span>
-                  {activeRun && <span className="text-xs font-mono text-muted-foreground">{activeRun.id}</span>}
+                  <span>会话详情</span>
+                  {activeRun && (
+                    <span className="text-[11px] text-muted-foreground">
+                      会话 ID：<span className="font-mono text-foreground">{activeRun.id}</span>
+                    </span>
+                  )}
                 </SheetTitle>
                 <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
                   {activeRun && (
@@ -758,7 +762,6 @@ const AgentDetail = () => {
                     transcriptEvents={buildMockTranscript(activeRun.prompt)}
                     debugEvents={mockDebugEvents}
                     debugMeta={[
-                      { label: "Session", value: "sess-9f2c" },
                       { label: "模型", value: "claude-sonnet-4-6" },
                       { label: "总耗时", value: activeRun.duration },
                       { label: "总 tokens", value: "1552" },
