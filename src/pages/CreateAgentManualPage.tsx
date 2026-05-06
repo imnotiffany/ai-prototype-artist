@@ -893,33 +893,30 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                   </TabsContent>
 
                   <TabsContent value="logs" forceMount className="flex-1 flex flex-col min-h-0 mt-0 bg-zinc-950 text-zinc-100 rounded-b-lg overflow-hidden data-[state=inactive]:hidden">
-                    <div className="px-3 h-9 shrink-0 border-b border-zinc-800 flex items-center justify-between text-[11px]">
-                      <div className="flex items-center gap-1.5 text-zinc-300">
-                        <Terminal className="w-3 h-3" />
-                        <span className="font-mono">runtime.log</span>
-                        <span className="text-zinc-500">· Cloud Code Sandbox</span>
+                    <div className="px-3 h-9 shrink-0 border-b border-zinc-800 flex items-center justify-between gap-2 text-[11px]">
+                      <div className="flex items-center gap-1.5 text-zinc-300 min-w-0">
+                        <Terminal className="w-3 h-3 shrink-0" />
+                        <span className="font-mono truncate">runtime.log</span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        {(["all", "info", "thought", "tool", "warn", "error"] as const).map((f) => (
-                          <button
-                            key={f}
-                            onClick={() => setLogFilter(f)}
-                            className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${
-                              logFilter === f ? "bg-zinc-700 text-white" : "text-zinc-400 hover:text-zinc-200"
-                            }`}
-                          >
-                            {f}
-                          </button>
-                        ))}
+                      <div className="flex items-center gap-1 shrink-0">
+                        <select
+                          value={logFilter}
+                          onChange={(e) => setLogFilter(e.target.value as typeof logFilter)}
+                          className="bg-zinc-900 border border-zinc-700 text-zinc-200 rounded px-1.5 py-0.5 text-[10px] font-mono focus:outline-none focus:border-zinc-500"
+                        >
+                          {(["all", "info", "thought", "tool", "warn", "error"] as const).map((f) => (
+                            <option key={f} value={f}>{f}</option>
+                          ))}
+                        </select>
                         <button
                           onClick={() => {
                             navigator.clipboard.writeText(debugLogs.map((l) => `[${l.ts}] ${l.level.toUpperCase()} ${l.message}${l.meta ? ` | ${l.meta}` : ""}`).join("\n"));
                             toast({ title: "日志已复制到剪贴板" });
                           }}
-                          className="ml-1 px-1.5 py-0.5 rounded text-[10px] text-zinc-400 hover:text-zinc-200 flex items-center gap-1"
+                          className="p-1 rounded text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
                           title="复制全部日志"
                         >
-                          <Copy className="w-2.5 h-2.5" /> 复制
+                          <Copy className="w-3 h-3" />
                         </button>
                       </div>
                     </div>
