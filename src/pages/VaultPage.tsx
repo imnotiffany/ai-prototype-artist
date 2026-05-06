@@ -78,7 +78,7 @@ const VaultPage = () => {
 
   const confirmDelete = () => {
     if (!deleteTarget) return;
-    toast({ title: "凭据已删除", description: `${deleteTarget.name} 已从凭据金库移除` });
+    toast({ title: "凭据已删除", description: `${deleteTarget.name} 已从凭据管理中移除` });
     setDeleteTarget(null);
   };
 
@@ -88,7 +88,7 @@ const VaultPage = () => {
         <div>
           <h1 className="text-lg font-semibold flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-primary" />
-            凭据金库
+            凭据管理
           </h1>
           <p className="text-xs text-muted-foreground mt-1">
             集中管理外部 MCP Server 与第三方 API 的认证信息，支持在多个 Agent 中复用
