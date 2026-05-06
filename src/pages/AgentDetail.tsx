@@ -23,6 +23,7 @@ import { PublishAgentDialog } from "@/components/PublishAgentDialog";
 import { AgentRuntimeBadge, type AgentRuntimeStatus } from "@/components/AgentRuntimeBadge";
 import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { RunDualView, RunningIndicator, type TranscriptEvent, type DebugEvent } from "@/components/RunViews";
 
 /* ───────── Mock run history ───────── */
 type RunStatus = "success" | "failed" | "running";
