@@ -120,8 +120,20 @@ const CreateAgentManualPage = () => {
     setDebugMessages((m) => [...m, userMsg]);
     setDebugInput("");
     setDebugRunning(true);
+
+    // Simulated Cloud Code runtime trace
+    const tool = selMCPs[0] || selSkills[0] || "内置推理";
+    pushLog("info", `[session] 接收用户输入`, `text="${text}"`);
+    pushLog("info", `[runtime] 启动容器 sandbox-${Math.random().toString(36).slice(2, 6)}`, `image=cloud-code:1.4.2 · workspace=/workspace`);
+    pushLog("info", `[model] ${model} · stream=true · context=${4096 + text.length}`);
+
+    setTimeout(() => pushLog("thought", `[reasoning] 解析用户意图：识别到任务类型，准备调用 ${tool}`), 120);
+    setTimeout(() => pushLog("tool", `[tool_use] 调用 ${tool}`, `args={"query":"${text.slice(0, 40)}"} · timeout=30s`), 280);
+    setTimeout(() => pushLog("info", `[mcp] ↔ ${tool} HTTP 200 · 142ms`), 460);
+    setTimeout(() => pushLog("tool", `[tool_result] ${tool} 返回 1 条结果`, `bytes=312`), 520);
+    setTimeout(() => pushLog("thought", `[reasoning] 整合工具返回，生成结构化回复`), 600);
+
     setTimeout(() => {
-      const tool = selMCPs[0] || selSkills[0] || "内置推理";
       const ok: DebugMsg = {
         role: "assistant",
         status: "ok",
@@ -134,6 +146,7 @@ const CreateAgentManualPage = () => {
         suggestion: buildOptimizationSuggestion(text),
       };
       setDebugMessages((m) => [...m, ok, suggestionMsg]);
+      pushLog("result", `[done] 推理完成 · 用时 698ms · tokens in=312 out=128`);
       setDebugRunning(false);
     }, 700);
   };
