@@ -651,7 +651,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
               </div>
               {debugChanges.length > 0 && (
                 <Badge variant="secondary" className="text-[10px] gap-1">
-                  <Sparkles className="w-3 h-3" />
+                  <CheckCircle2 className="w-3 h-3" />
                   调试期已优化 {debugChanges.length} 项
                 </Badge>
               )}
