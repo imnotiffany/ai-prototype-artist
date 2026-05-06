@@ -899,7 +899,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                     </div>
                     <div className="flex-1 min-w-0">
                       <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={regenerateAvatar} disabled={generatingAvatar}>
-                        <Sparkles className="w-3 h-3" />
+                        <RefreshCw className={`w-3 h-3 ${generatingAvatar ? "animate-spin" : ""}`} />
                         {generatingAvatar ? "生成中…" : "AI 重新生成"}
                       </Button>
                       <p className="text-[10px] text-muted-foreground mt-1 leading-relaxed">
