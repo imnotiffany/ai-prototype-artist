@@ -175,7 +175,6 @@ const ProjectAgents = () => {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <h3 className="text-sm font-medium truncate max-w-[140px]">{app.name}</h3>
-                    {app.kind !== "app" && <AgentRuntimeBadge status={runtimeStatusFor(app.id)} />}
                     {getStatusBadge(app)}
                   </div>
                   <div className="flex items-center gap-1.5 mt-1">
