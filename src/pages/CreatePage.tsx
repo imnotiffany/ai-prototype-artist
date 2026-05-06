@@ -38,7 +38,7 @@ const CreatePage = () => {
       {/* Hero */}
       <div className="pt-16 pb-8 text-center">
         <h1 className="text-2xl font-semibold text-foreground tracking-tight">
-          一句话描述，<span className="text-primary">数字同事即刻上岗</span>
+          一句话描述，<span className="text-primary">应用广场即刻上岗</span>
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           描述你的想法，一键快速构建功能完整的强大应用或智能体

@@ -50,7 +50,7 @@ const CreateWebPage = () => {
       toast({ title: "暂无可发布的应用", description: "请先生成应用后再发布到广场" });
       return;
     }
-    toast({ title: "已提交发布", description: "应用正在审核，稍后会出现在数字同事" });
+    toast({ title: "已提交发布", description: "应用正在审核，稍后会出现在应用广场" });
   };
 
   const handleDownload = () => {

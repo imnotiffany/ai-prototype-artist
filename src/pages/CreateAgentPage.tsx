@@ -651,7 +651,7 @@ const CreateAgentPage = () => {
   const handlePublish = (target: "marketplace" | "agent") => {
     setPublishOpen(false);
     toast({
-      title: target === "marketplace" ? "已发布到数字同事" : "已作为独立应用发布",
+      title: target === "marketplace" ? "已发布到应用广场" : "已作为独立应用发布",
       description: `${agentConfig.name || "我的智能体"} 已成功发布`,
     });
   };
@@ -939,7 +939,7 @@ const CreateAgentPage = () => {
                 <Package className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="text-sm font-medium text-foreground">发布到数字同事</p>
+                <p className="text-sm font-medium text-foreground">发布到应用广场</p>
                 <p className="text-[11px] text-muted-foreground mt-0.5">作为独立应用发布，其他用户可以直接使用</p>
               </div>
             </button>
