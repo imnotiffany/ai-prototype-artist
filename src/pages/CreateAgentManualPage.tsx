@@ -250,7 +250,7 @@ const CreateAgentManualPage = () => {
       }
       setAssistantMessages((m) => [...m, { role: "assistant", content: reply }]);
       setAssistantThinking(false);
-    }, 600);
+    }, 1600);
   };
 
   const toggleVoice = () => {
