@@ -260,25 +260,12 @@ const AgentDetail = () => {
       </div>
 
       {/* Header */}
-      <div className="flex items-start justify-between mb-5 gap-4">
+      <div className="flex items-start justify-between mb-3 gap-4">
         <div className="flex items-start gap-3 min-w-0">
           <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center text-xl shrink-0">{agent.avatar}</div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-base font-semibold text-foreground truncate">{name}</h1>
-              <span className={`inline-flex items-center gap-1 text-[10px] px-1.5 h-5 rounded-md border ${
-                agent.status === "published"
-                  ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:border-emerald-800"
-                  : agent.status === "draft"
-                  ? "border-border bg-muted text-muted-foreground"
-                  : "border-border bg-muted text-muted-foreground"
-              }`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${agent.status === "published" ? "bg-emerald-500" : "bg-muted-foreground/60"}`} />
-                {agent.status === "published" ? "已发布" : agent.status === "draft" ? "草稿" : "项目内"}
-              </span>
-              <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 h-5 rounded-md inline-flex items-center">
-                {versions.find((v) => v.current)?.v}
-              </span>
             </div>
             <p className="text-xs text-muted-foreground mt-1 line-clamp-2 max-w-2xl">{description}</p>
             <div className="flex items-center gap-1.5 mt-2 flex-wrap">
@@ -292,8 +279,51 @@ const AgentDetail = () => {
           <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={openEditInfo}>
             <Pencil className="w-3.5 h-3.5" />编辑基本信息
           </Button>
-          <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setPublishOpen(true)}>
+          <Button
+            size="sm"
+            className="h-8 text-xs gap-1.5"
+            onClick={() => setPublishOpen(true)}
+            disabled={isDirty}
+            title={isDirty ? "请先保存当前修改后再发布" : "发布"}
+          >
             <Rocket className="w-3.5 h-3.5" />发布
+          </Button>
+        </div>
+      </div>
+
+      {/* Status bar: 线上版本 / 当前调试版本 / 未保存提示 */}
+      <div className="mb-5 border border-border rounded-lg bg-card px-3 py-2 flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-3 text-xs flex-wrap">
+          <div className="flex items-center gap-1.5">
+            <span className={`w-1.5 h-1.5 rounded-full ${agent.status === "published" ? "bg-emerald-500" : "bg-muted-foreground/50"}`} />
+            <span className="text-muted-foreground">线上</span>
+            {agent.status === "published" ? (
+              <>
+                <Badge variant="outline" className="text-[10px] h-5 px-1.5 border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30">已发布</Badge>
+                <span className="font-mono text-[11px] text-foreground">{versions.find((v) => v.current)?.v}</span>
+              </>
+            ) : (
+              <span className="text-muted-foreground">未发布</span>
+            )}
+          </div>
+          <span className="w-px h-3.5 bg-border" />
+          <div className="flex items-center gap-1.5">
+            <span className="text-muted-foreground">当前调试</span>
+            <span className="font-mono text-[11px] text-foreground">{versions.find((v) => v.current)?.v}</span>
+            {isDirty && (
+              <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-0 text-[10px] h-5 px-1.5 gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                有未保存的修改
+              </Badge>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="ghost" className="h-7 text-xs gap-1.5" onClick={handleRevert} disabled={!isDirty}>
+            <RotateCcw className="w-3 h-3" />撤销
+          </Button>
+          <Button size="sm" variant={isDirty ? "default" : "outline"} className="h-7 text-xs gap-1.5" onClick={handleSave} disabled={!isDirty}>
+            <Save className="w-3 h-3" />保存
           </Button>
         </div>
       </div>
@@ -311,7 +341,7 @@ const AgentDetail = () => {
           <div className="border border-border rounded-lg px-4 py-3 bg-gradient-to-r from-primary/10 to-primary/5 mb-4">
             <p className="text-xs">
               <span className="font-medium">调试模式</span>
-              <span className="text-muted-foreground"> · 左侧与调试 AI 沟通配置调整，右侧直接与智能体对话验证效果。当前未保存的修改不会影响线上运行。</span>
+              <span className="text-muted-foreground"> · 左侧与调试 AI 沟通配置调整，右侧直接与智能体对话验证效果。调试期间的修改不会影响线上，需要先「保存」生成新版本，再点右上角「发布」推送上线。</span>
             </p>
           </div>
 
@@ -497,36 +527,29 @@ const AgentDetail = () => {
               </Tabs>
             </div>
           </div>
+
+          {/* Sticky bottom action bar (debug) */}
+          {isDirty && (
+            <div className="sticky bottom-4 mt-4 mx-auto max-w-3xl z-10 border border-amber-300 bg-amber-50/95 dark:bg-amber-950/40 backdrop-blur rounded-lg shadow-lg px-4 py-2.5 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-xs min-w-0">
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                <span className="font-medium text-amber-900 dark:text-amber-200">调试期间的修改尚未保存，不会影响线上</span>
+                <span className="text-amber-700/80 dark:text-amber-300/80 truncate">· 保存后将生成新版本，需到右上角「发布」才能上线</span>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <Button size="sm" variant="ghost" className="h-7 text-xs gap-1.5" onClick={handleRevert}>
+                  <RotateCcw className="w-3 h-3" />撤销
+                </Button>
+                <Button size="sm" className="h-7 text-xs gap-1.5" onClick={handleSave}>
+                  <Save className="w-3 h-3" />保存
+                </Button>
+              </div>
+            </div>
+          )}
         </TabsContent>
 
         {/* ───────── 配置 ───────── */}
         <TabsContent value="config" className="mt-4">
-          {/* Sticky save bar */}
-          <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border border-border rounded-lg px-4 py-2.5 mb-4 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs">
-              {isDirty ? (
-                <>
-                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                  <span className="font-medium">有未保存的修改</span>
-                  <span className="text-muted-foreground">· 保存后会自动生成新版本，可在「版本」中查看或回滚</span>
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
-                  <span className="text-muted-foreground">当前为已保存版本 {versions.find((v) => v.current)?.v}</span>
-                </>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <Button size="sm" variant="ghost" className="h-8 text-xs gap-1.5" onClick={handleRevert} disabled={!isDirty}>
-                <RotateCcw className="w-3.5 h-3.5" />撤销修改
-              </Button>
-              <Button size="sm" className="h-8 text-xs gap-1.5" onClick={handleSave} disabled={!isDirty}>
-                <Save className="w-3.5 h-3.5" />保存为新版本
-              </Button>
-            </div>
-          </div>
-
           <div className="space-y-4">
             <p className="text-[11px] text-muted-foreground px-1">
               名称、描述等基本信息请通过页面右上角的「编辑基本信息」修改，不会产生新版本。以下配置变更会生成新版本。
