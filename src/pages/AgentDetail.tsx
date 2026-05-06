@@ -162,6 +162,9 @@ const AgentDetail = () => {
   const [runDetailView, setRunDetailView] = useState<"transcript" | "debug">("transcript");
   const [expandedTools, setExpandedTools] = useState<Record<number, boolean>>({});
 
+  /* ── Version detail dialog ── */
+  const [viewingVersion, setViewingVersion] = useState<typeof versions[0] | null>(null);
+
   if (!agent) return <div className="p-6">智能体不存在</div>;
 
   const allMcpOptions = getActiveMCPs().map((m) => m.name);
@@ -170,7 +173,13 @@ const AgentDetail = () => {
 
   /* ── Config actions ── */
   const handleSave = () => {
-    const next = `v${versions.length + 1}`;
+    const bumpPatch = (v: string) => {
+      const m = v.replace(/^v/, "").split(".").map((n) => parseInt(n, 10) || 0);
+      while (m.length < 3) m.push(0);
+      m[2] += 1;
+      return "v" + m.join(".");
+    };
+    const next = bumpPatch(versions[0]?.v ?? "v0.0.0");
     setVersions([
       { v: next, at: new Date().toISOString().slice(0, 16).replace("T", " "), by: "廖奕通", note: "更新配置", current: true },
       ...versions.map((v) => ({ ...v, current: false })),
@@ -834,44 +843,113 @@ const AgentDetail = () => {
               <span className="font-medium text-foreground">关于版本</span> · 每次在「配置」中点击保存，都会自动生成一个新版本。你可以随时查看历史变更内容，或将当前线上版本回滚到任意历史版本。
             </p>
           </div>
-          <div className="border border-border rounded-lg bg-card divide-y divide-border">
-            {versions.map((v) => (
-              <div key={v.v} className="px-4 py-3 flex items-center justify-between gap-4 hover:bg-muted/30">
-                <div className="flex items-center gap-3 min-w-0">
-                  <span className="text-sm font-mono font-semibold w-10 shrink-0">{v.v}</span>
-                  <div className="min-w-0">
-                    <div className="text-xs flex items-center gap-2">
-                      <span className="truncate">{v.note}</span>
-                      {v.current && <Badge className="bg-primary/10 text-primary hover:bg-primary/10 border-0 text-[9px] h-4 shrink-0">当前线上</Badge>}
+          <div className="border border-border rounded-lg bg-card overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-28">版本号</TableHead>
+                  <TableHead>变更说明</TableHead>
+                  <TableHead className="w-24">提交人</TableHead>
+                  <TableHead className="w-40">提交时间</TableHead>
+                  <TableHead className="w-20">状态</TableHead>
+                  <TableHead className="w-40 text-right">操作</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {versions.map((v) => (
+                  <TableRow key={v.v} className="hover:bg-muted/30">
+                    <TableCell className="font-mono text-xs">{v.v}</TableCell>
+                    <TableCell className="text-xs">{v.note}</TableCell>
+                    <TableCell className="text-xs">{v.by}</TableCell>
+                    <TableCell className="text-xs font-mono text-muted-foreground">{v.at}</TableCell>
+                    <TableCell>
+                      {v.current ? (
+                        <Badge className="bg-primary/10 text-primary hover:bg-primary/10 border-0 text-[10px] h-5">当前线上</Badge>
+                      ) : (
+                        <span className="text-[10px] text-muted-foreground">历史</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1" onClick={() => setViewingVersion(v)}>
+                          <Eye className="w-3 h-3" />查看
+                        </Button>
+                        {!v.current && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1"><RotateCcw className="w-3 h-3" />回滚</Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>回滚到 {v.v}？</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  将把当前线上版本切换到 <span className="font-mono">{v.v}</span>（{v.note}）。已发布的接入端会立即使用该版本。
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>取消</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleRollback(v)}>确认回滚</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Version detail dialog */}
+          <Dialog open={!!viewingVersion} onOpenChange={(o) => !o && setViewingVersion(null)}>
+            <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+              <DialogHeader>
+                <DialogTitle className="text-sm flex items-center gap-2">
+                  版本快照
+                  <span className="font-mono text-xs">{viewingVersion?.v}</span>
+                  {viewingVersion?.current && (
+                    <Badge className="bg-primary/10 text-primary hover:bg-primary/10 border-0 text-[10px] h-5">当前线上</Badge>
+                  )}
+                </DialogTitle>
+              </DialogHeader>
+              {viewingVersion && (
+                <div className="overflow-auto space-y-3 -mx-1 px-1">
+                  <div className="border border-border rounded-md bg-muted/30 p-3 space-y-1.5">
+                    <div className="flex justify-between text-xs"><span className="text-muted-foreground">变更说明</span><span>{viewingVersion.note}</span></div>
+                    <div className="flex justify-between text-xs"><span className="text-muted-foreground">提交人</span><span>{viewingVersion.by}</span></div>
+                    <div className="flex justify-between text-xs"><span className="text-muted-foreground">提交时间</span><span className="font-mono">{viewingVersion.at}</span></div>
+                  </div>
+                  <div>
+                    <p className="text-[11px] text-muted-foreground mb-1.5">系统提示词（快照）</p>
+                    <pre className="text-[11px] font-mono leading-relaxed bg-muted/40 border border-border rounded-md p-3 whitespace-pre-wrap break-all max-h-60 overflow-auto">{systemPrompt || "（该版本未记录提示词）"}</pre>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-[11px] text-muted-foreground mb-1.5">绑定 Skill</p>
+                      <div className="flex flex-wrap gap-1">
+                        {selSkills.length ? selSkills.map((s) => <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>) : <span className="text-[11px] text-muted-foreground">无</span>}
+                      </div>
                     </div>
-                    <div className="text-[10px] text-muted-foreground mt-0.5">{v.at} · {v.by}</div>
+                    <div>
+                      <p className="text-[11px] text-muted-foreground mb-1.5">绑定 MCP</p>
+                      <div className="flex flex-wrap gap-1">
+                        {mcpBindings.length ? mcpBindings.map((b) => <Badge key={b.name} variant="secondary" className="text-[10px]">{b.name}</Badge>) : <span className="text-[11px] text-muted-foreground">无</span>}
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1"><Eye className="w-3 h-3" />查看</Button>
-                  {!v.current && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1"><RotateCcw className="w-3 h-3" />回滚</Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>回滚到 {v.v}？</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            将把当前线上版本切换到 <span className="font-mono">{v.v}</span>（{v.note}）。已发布的接入端会立即使用该版本。
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>取消</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleRollback(v)}>确认回滚</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+              )}
+              <DialogFooter>
+                <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setViewingVersion(null)}>关闭</Button>
+                {viewingVersion && !viewingVersion.current && (
+                  <Button size="sm" className="h-8 text-xs gap-1" onClick={() => { handleRollback(viewingVersion); setViewingVersion(null); }}>
+                    <RotateCcw className="w-3 h-3" />回滚到此版本
+                  </Button>
+                )}
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
       </Tabs>
 
