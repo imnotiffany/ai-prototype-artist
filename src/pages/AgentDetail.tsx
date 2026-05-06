@@ -543,48 +543,26 @@ const AgentDetail = () => {
               </div>
             </section>
 
-            {/* 3. 能力 — Skills */}
+            {/* 3. Skill 绑定 */}
             <section className="border border-border rounded-lg bg-card">
               <header className="px-4 py-2.5 border-b border-border flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <h3 className="text-sm font-semibold flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-primary" />Skills 技能</h3>
+                  <h3 className="text-sm font-semibold flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-primary" />Skill 绑定</h3>
                   <p className="text-[11px] text-muted-foreground mt-0.5">预制的能力包，让智能体掌握特定领域的工作流</p>
                 </div>
-                <Popover open={skillPopOpen} onOpenChange={setSkillPopOpen}>
-                  <PopoverTrigger asChild>
-                    <Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0"><Plus className="w-3 h-3" />添加 Skill</Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-64 p-0" align="end">
-                    <div className="p-2 border-b border-border">
-                      <div className="relative">
-                        <Search className="w-3 h-3 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                        <Input value={skillSearch} onChange={(e) => setSkillSearch(e.target.value)} placeholder="搜索 Skill" className="h-7 pl-7 text-xs" autoFocus />
-                      </div>
-                    </div>
-                    <div className="max-h-60 overflow-auto p-1">
-                      {allSkillOptions.filter((s) => s.toLowerCase().includes(skillSearch.toLowerCase())).map((s) => {
-                        const checked = selSkills.includes(s);
-                        return (
-                          <button
-                            key={s}
-                            onClick={() => { toggleSkill(s); }}
-                            className="w-full text-left px-2 py-1.5 text-xs rounded hover:bg-muted flex items-center justify-between gap-2"
-                          >
-                            <span className="truncate">{s}</span>
-                            {checked && <CheckCircle2 className="w-3 h-3 text-primary shrink-0" />}
-                          </button>
-                        );
-                      })}
-                      {allSkillOptions.filter((s) => s.toLowerCase().includes(skillSearch.toLowerCase())).length === 0 && (
-                        <p className="text-[11px] text-muted-foreground py-3 text-center">无匹配项</p>
-                      )}
-                    </div>
-                  </PopoverContent>
-                </Popover>
+                <CapabilityPickerDialog
+                  items={getActiveSkills()}
+                  selected={selSkills}
+                  onToggle={toggleSkill}
+                  icon={<Zap className="w-3.5 h-3.5" />}
+                  label="Skill"
+                  marketLink="/"
+                  trigger={<Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0"><Plus className="w-3 h-3" />添加 Skill</Button>}
+                />
               </header>
               <div className="p-4">
                 {selSkills.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-4">尚未添加 Skill。点击右上角「添加 Skill」选择。</p>
+                  <p className="text-xs text-muted-foreground text-center py-4">尚未绑定任何 Skill。点击右上角「添加 Skill」选择。</p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
                     {selSkills.map((s) => (
@@ -601,45 +579,30 @@ const AgentDetail = () => {
               </div>
             </section>
 
-            {/* 4. 能力 — MCP Servers */}
+            {/* 4. MCP 绑定 */}
             <section className="border border-border rounded-lg bg-card">
               <header className="px-4 py-2.5 border-b border-border flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <h3 className="text-sm font-semibold flex items-center gap-1.5"><Server className="w-3.5 h-3.5 text-primary" />MCP 服务</h3>
+                  <h3 className="text-sm font-semibold flex items-center gap-1.5"><Server className="w-3.5 h-3.5 text-primary" />MCP 绑定</h3>
                   <p className="text-[11px] text-muted-foreground mt-0.5">连接外部系统（数据库、SaaS、内部 API），每个服务需要绑定一个凭据</p>
                 </div>
-                <Popover open={mcpPopOpen} onOpenChange={setMcpPopOpen}>
-                  <PopoverTrigger asChild>
-                    <Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0"><Plus className="w-3 h-3" />关联 MCP</Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-64 p-0" align="end">
-                    <div className="p-2 border-b border-border">
-                      <div className="relative">
-                        <Search className="w-3 h-3 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                        <Input value={mcpSearch} onChange={(e) => setMcpSearch(e.target.value)} placeholder="搜索 MCP" className="h-7 pl-7 text-xs" autoFocus />
-                      </div>
-                    </div>
-                    <div className="max-h-60 overflow-auto p-1">
-                      {allMcpOptions.filter((m) => m.toLowerCase().includes(mcpSearch.toLowerCase())).map((m) => {
-                        const checked = !!mcpBindings.find((b) => b.name === m);
-                        return (
-                          <button
-                            key={m}
-                            onClick={() => { if (!checked) addMcp(m); else removeMcp(mcpBindings.findIndex((b) => b.name === m)); }}
-                            className="w-full text-left px-2 py-1.5 text-xs rounded hover:bg-muted flex items-center justify-between gap-2"
-                          >
-                            <span className="truncate">{m}</span>
-                            {checked && <CheckCircle2 className="w-3 h-3 text-primary shrink-0" />}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </PopoverContent>
-                </Popover>
+                <CapabilityPickerDialog
+                  items={getActiveMCPs()}
+                  selected={mcpBindings.map((b) => b.name)}
+                  onToggle={(n) => {
+                    const idx = mcpBindings.findIndex((b) => b.name === n);
+                    if (idx >= 0) removeMcp(idx); else addMcp(n);
+                  }}
+                  icon={<Server className="w-3.5 h-3.5" />}
+                  label="MCP"
+                  marketLink="/"
+                  deployBadge={() => "云端"}
+                  trigger={<Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0"><Plus className="w-3 h-3" />添加 MCP</Button>}
+                />
               </header>
               <div className="p-4">
                 {mcpBindings.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-4">尚未关联 MCP。点击右上角「关联 MCP」选择。</p>
+                  <p className="text-xs text-muted-foreground text-center py-4">尚未绑定任何 MCP。点击右上角「添加 MCP」选择。</p>
                 ) : (
                   <div className="space-y-2">
                     {mcpBindings.map((b, i) => {
@@ -682,28 +645,53 @@ const AgentDetail = () => {
               </div>
             </section>
 
-            {/* 5. 接入与发布 */}
+            {/* 5. 丰声 NEXT 机器人 */}
             <section className="border border-border rounded-lg bg-card">
               <header className="px-4 py-2.5 border-b border-border">
-                <h3 className="text-sm font-semibold">外部接入</h3>
-                <p className="text-[11px] text-muted-foreground mt-0.5">让外部系统能调用这个智能体</p>
+                <h3 className="text-sm font-semibold flex items-center gap-1.5">
+                  <MessageSquare className="w-3.5 h-3.5 text-primary" />丰声 NEXT 机器人
+                </h3>
+                <p className="text-[11px] text-muted-foreground mt-0.5">发布为丰声 NEXT 群聊机器人，群成员 @ 即可触发对话</p>
               </header>
               <div className="p-4 space-y-3">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <Label className="text-xs">钉钉机器人</Label>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">发布至钉钉群聊，群成员 @ 即可触发</p>
-                  </div>
-                  <Switch checked={dingEnabled} onCheckedChange={setDingEnabled} />
+                <div>
+                  <Label className="text-xs">Client ID（AppKey） <span className="text-destructive">*</span></Label>
+                  <Input
+                    className="mt-1.5 h-8 text-xs font-mono"
+                    placeholder="企业应用 AppKey"
+                    value={fsAppKey}
+                    onChange={(e) => setFsAppKey(e.target.value)}
+                  />
                 </div>
-                {dingEnabled && (
-                  <div>
-                    <Label className="text-xs">Webhook 地址</Label>
-                    <Input value={dingWebhook} onChange={(e) => setDingWebhook(e.target.value)}
-                      placeholder="https://oapi.dingtalk.com/robot/send?access_token=..."
-                      className="mt-1.5 h-8 text-xs font-mono" />
+                <div>
+                  <Label className="text-xs">Client Secret（AppSecret） <span className="text-destructive">*</span></Label>
+                  <div className="relative mt-1.5">
+                    <Input
+                      className="h-8 text-xs font-mono pr-9"
+                      type={fsSecretVisible ? "text" : "password"}
+                      placeholder="企业应用 AppSecret"
+                      value={fsAppSecret}
+                      onChange={(e) => setFsAppSecret(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setFsSecretVisible(!fsSecretVisible)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {fsSecretVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
                   </div>
-                )}
+                </div>
+                <div>
+                  <Label className="text-xs">Robot Code <span className="text-destructive">*</span></Label>
+                  <Input
+                    className="mt-1.5 h-8 text-xs font-mono"
+                    placeholder="机器人编码"
+                    value={fsRobotCode}
+                    onChange={(e) => setFsRobotCode(e.target.value)}
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-1.5">在丰声 NEXT 开发者后台「机器人管理」中获取，凭据将通过「凭据金库」加密存储</p>
+                </div>
               </div>
             </section>
           </div>
