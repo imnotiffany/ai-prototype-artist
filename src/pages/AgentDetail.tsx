@@ -503,23 +503,10 @@ const AgentDetail = () => {
           </div>
 
           <div className="space-y-4">
-            {/* 1. 基本信息 */}
-            <section className="border border-border rounded-lg bg-card">
-              <header className="px-4 py-2.5 border-b border-border">
-                <h3 className="text-sm font-semibold">基本信息</h3>
-                <p className="text-[11px] text-muted-foreground mt-0.5">智能体的名称与简介，会展示给所有使用者</p>
-              </header>
-              <div className="p-4 space-y-3">
-                <div>
-                  <Label className="text-xs">名称</Label>
-                  <Input value={name} onChange={(e) => setName(e.target.value)} className="mt-1.5 h-8 text-xs" />
-                </div>
-                <div>
-                  <Label className="text-xs">描述</Label>
-                  <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} className="mt-1.5 text-xs" />
-                </div>
-              </div>
-            </section>
+            <p className="text-[11px] text-muted-foreground px-1">
+              名称、描述等基本信息请通过页面右上角的「编辑基本信息」修改，不会产生新版本。以下配置变更会生成新版本。
+            </p>
+
 
             {/* 2. 模型与提示词 */}
             <section className="border border-border rounded-lg bg-card">
