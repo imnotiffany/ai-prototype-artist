@@ -87,19 +87,6 @@ export const AgentInfoPanel = ({ agent, suggestions, onSuggestionClick }: Props)
           </Section>
         )}
 
-        {/* Skills */}
-        {agent.skills.length > 0 && (
-          <Section icon={Wrench} title={`Skill · ${agent.skills.length}`}>
-            <div className="space-y-1">
-              {agent.skills.map((s) => (
-                <div key={s} className="text-[11px] text-foreground/80 px-2 py-1 rounded bg-secondary/60">
-                  {s}
-                </div>
-              ))}
-            </div>
-          </Section>
-        )}
-
         {/* MCP */}
         {agent.mcpServers.length > 0 && (
           <Section icon={Server} title={`MCP · ${agent.mcpServers.length}`}>
@@ -107,6 +94,19 @@ export const AgentInfoPanel = ({ agent, suggestions, onSuggestionClick }: Props)
               {agent.mcpServers.map((m) => (
                 <div key={m} className="text-[11px] text-foreground/80 px-2 py-1 rounded bg-secondary/60">
                   {m}
+                </div>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {/* Skills */}
+        {agent.skills.length > 0 && (
+          <Section icon={Wrench} title={`Skill · ${agent.skills.length}`}>
+            <div className="space-y-1">
+              {agent.skills.map((s) => (
+                <div key={s} className="text-[11px] text-foreground/80 px-2 py-1 rounded bg-secondary/60">
+                  {s}
                 </div>
               ))}
             </div>
