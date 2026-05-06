@@ -427,6 +427,8 @@ const CreateAgentPage = () => {
   const [rightTab, setRightTab] = useState<"config" | "preview" | "logs">("config");
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
+  const [thinkingStartedAt, setThinkingStartedAt] = useState<number | null>(null);
+  const [thinkingStage, setThinkingStage] = useState(0);
   const [previewInput, setPreviewInput] = useState("");
   const [isAgentRunning, setIsAgentRunning] = useState(false);
   const [agentConfig, setAgentConfig] = useState<AgentConfig>(defaultConfig);
