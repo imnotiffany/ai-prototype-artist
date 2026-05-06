@@ -122,6 +122,7 @@ export const RunTranscriptView = ({
             </div>
           );
         })}
+        {footer && <div className="pt-1">{footer}</div>}
       </div>
     </div>
   );
