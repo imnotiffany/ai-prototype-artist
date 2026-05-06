@@ -372,7 +372,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
           <TabsList className="grid grid-cols-4 h-9">
             <TabsTrigger value="capability" className="text-xs">能力配置</TabsTrigger>
             <TabsTrigger value="prompt" className="text-xs">系统提示词</TabsTrigger>
-            <TabsTrigger value="fengsheng" className="text-xs">丰声 NEXT</TabsTrigger>
+            <TabsTrigger value="fengsheng" className="text-xs gap-1.5">丰声 NEXT<span className="text-[9px] px-1 h-3.5 leading-[14px] rounded bg-muted text-muted-foreground font-normal">可选</span></TabsTrigger>
             <TabsTrigger value="debug" className="text-xs">调试</TabsTrigger>
           </TabsList>
 
@@ -521,12 +521,17 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
 
           {/* FengSheng NEXT Bot */}
           <TabsContent value="fengsheng" className="mt-4 space-y-4">
-            <div className="border border-border rounded-lg px-4 py-3 bg-gradient-to-r from-primary/10 to-primary/5 flex items-center gap-2.5">
-              <MessageSquare className="w-4 h-4 text-primary shrink-0" />
-              <p className="text-xs">
-                <span className="font-medium">发布为丰声 NEXT 群聊机器人</span>
-                <span className="text-muted-foreground"> · 群成员 @ 即可触发对话</span>
-              </p>
+            <div className="border border-dashed border-amber-300 rounded-lg px-4 py-3 bg-amber-50/50 dark:bg-amber-950/20 flex items-start gap-2.5">
+              <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs font-medium">丰声 NEXT 群聊机器人接入</span>
+                  <span className="text-[10px] px-1.5 h-4 leading-4 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">可选项</span>
+                </div>
+                <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+                  仅在需要把智能体发布为群聊机器人（成员 @ 即可触发）时配置。不需要的话可直接跳过此栏目，智能体仍可正常使用。
+                </p>
+              </div>
             </div>
 
             <div className="border border-border rounded-lg p-5 bg-card space-y-4">
