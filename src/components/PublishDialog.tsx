@@ -33,6 +33,7 @@ export const PublishDialog = ({ open, onOpenChange, defaultName = "", defaultDes
   const [fsAppSecret, setFsAppSecret] = useState("");
   const [fsRobotCode, setFsRobotCode] = useState("");
   const [fsSecretVisible, setFsSecretVisible] = useState(false);
+  const [allowCopy, setAllowCopy] = useState(true);
 
   const reset = () => { setStep(1); };
   const close = () => { onOpenChange(false); setTimeout(reset, 300); };
