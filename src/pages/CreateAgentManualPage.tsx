@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, Rocket, Plus, X, Settings2, Cpu, Server, Zap, Shield, KeyRound, Bot, MessageSquare, Eye, EyeOff, Link2, CheckCircle2, Sparkles, Loader2, ExternalLink, Play, Send, AlertCircle, Wand2, Bug, FolderKanban, Store, ArrowRight } from "lucide-react";
+import { ArrowLeft, Save, Rocket, Plus, X, Settings2, Cpu, Server, Zap, Shield, KeyRound, Bot, MessageSquare, Eye, EyeOff, Link2, CheckCircle2, Sparkles, Loader2, ExternalLink, Play, Send, AlertCircle, Wand2, Bug, FolderKanban, Store, ArrowRight, Mic, MicOff, HelpCircle, FileEdit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -59,57 +59,98 @@ const CreateAgentManualPage = () => {
   const [fsConnected, setFsConnected] = useState(false);
 
   // Debug
-  type DebugMsg = { role: "user" | "assistant" | "system"; content: string; status?: "ok" | "error"; tool?: string };
+  type DebugSuggestion = { kind: "prompt"; updatedPrompt: string; summary: string } | { kind: "clarify"; questions: string[] };
+  type DebugMsg = {
+    role: "user" | "assistant" | "system";
+    content: string;
+    status?: "ok" | "error";
+    tool?: string;
+    suggestion?: DebugSuggestion;
+  };
   const [debugInput, setDebugInput] = useState("");
   const [debugMessages, setDebugMessages] = useState<DebugMsg[]>([]);
   const [debugRunning, setDebugRunning] = useState(false);
-  const [debugFixing, setDebugFixing] = useState(false);
-  const [debugIssues, setDebugIssues] = useState<string[]>([]);
+  const [voiceRecording, setVoiceRecording] = useState(false);
 
   // Publish flow
   const [publishStage, setPublishStage] = useState<"project" | "marketplace" | "done">("project");
   const [publishingToMarket, setPublishingToMarket] = useState(false);
 
-  const runDebug = () => {
-    if (!debugInput.trim()) return;
-    const userMsg: DebugMsg = { role: "user", content: debugInput.trim() };
+  const buildOptimizationSuggestion = (userInput: string): DebugSuggestion => {
+    // If user has bound capabilities but their purpose isn't documented in the prompt, ask for clarification
+    const undocumented = [
+      ...selMCPs.filter((m) => !systemPrompt.includes(m)),
+      ...selSkills.filter((s) => !systemPrompt.includes(s)),
+    ];
+    if (undocumented.length > 0) {
+      return {
+        kind: "clarify",
+        questions: undocumented.slice(0, 3).map(
+          (n) => `你绑定了「${n}」，但系统提示词里没有说明它的用途。请用一句话告诉我：在什么场景下应该调用它？`
+        ),
+      };
+    }
+    // Otherwise propose a refined system prompt grounded in the test input
+    const refined = `${systemPrompt.trim()}\n\n# 来自调试的补充指引\n- 用户曾以「${userInput}」类问题进行测试，遇到该类问题时应优先：\n  1. 拆解任务目标，明确需要哪些 MCP / Skill\n  2. 引用工具返回的数据并标注来源\n  3. 输出结构化结果，避免冗余寒暄`;
+    return {
+      kind: "prompt",
+      updatedPrompt: refined,
+      summary: "基于本轮调试反馈，建议在系统提示词中补充任务拆解、来源标注与输出结构化的工作流。",
+    };
+  };
+
+  const runDebug = (overrideInput?: string) => {
+    const text = (overrideInput ?? debugInput).trim();
+    if (!text) return;
+    const userMsg: DebugMsg = { role: "user", content: text };
     setDebugMessages((m) => [...m, userMsg]);
     setDebugInput("");
     setDebugRunning(true);
     setTimeout(() => {
-      const issues: string[] = [];
-      if (selMCPs.length === 0 && selSkills.length === 0) issues.push("尚未绑定任何 MCP 或 Skill，智能体无法执行实际任务");
-      if (!systemPrompt.trim()) issues.push("系统提示词为空");
-      const missingCred = selMCPs.filter((m) => mockCredentials.filter((c) => c.mcpServer === m).length === 0);
-      if (missingCred.length) issues.push(`MCP 缺少凭据：${missingCred.join("、")}`);
-
-      if (issues.length) {
-        setDebugIssues(issues);
-        setDebugMessages((m) => [...m, { role: "assistant", status: "error", content: `执行失败：\n${issues.map((i) => `· ${i}`).join("\n")}` }]);
-      } else {
-        setDebugIssues([]);
-        const tool = selMCPs[0] || selSkills[0] || "内置推理";
-        setDebugMessages((m) => [...m, { role: "assistant", status: "ok", tool, content: `已通过 ${tool} 完成响应：根据你的输入「${userMsg.content}」生成结果（模拟输出）。` }]);
-      }
+      const tool = selMCPs[0] || selSkills[0] || "内置推理";
+      const ok: DebugMsg = {
+        role: "assistant",
+        status: "ok",
+        tool,
+        content: `已通过 ${tool} 完成响应：根据你的输入「${text}」生成结果（模拟输出）。`,
+      };
+      const suggestionMsg: DebugMsg = {
+        role: "system",
+        content: "",
+        suggestion: buildOptimizationSuggestion(text),
+      };
+      setDebugMessages((m) => [...m, ok, suggestionMsg]);
       setDebugRunning(false);
     }, 700);
   };
 
-  const autoFix = () => {
-    if (!debugIssues.length) return;
-    setDebugFixing(true);
-    setTimeout(() => {
-      const fixes: string[] = [];
-      if (debugIssues.some((i) => i.includes("未绑定"))) {
-        if (mcps[0]) { setSelMCPs((s) => Array.from(new Set([...s, mcps[0].name]))); fixes.push(`自动绑定 MCP「${mcps[0].name}」`); }
-        if (skills[0]) { setSelSkills((s) => Array.from(new Set([...s, skills[0].name]))); fixes.push(`自动绑定 Skill「${skills[0].name}」`); }
-      }
-      if (debugIssues.some((i) => i.includes("提示词"))) { handleAutoGeneratePrompt(); fixes.push("已重新生成系统提示词"); }
-      if (debugIssues.some((i) => i.includes("凭据"))) fixes.push("建议前往「凭据金库」补全缺失凭据");
-      setDebugMessages((m) => [...m, { role: "system", content: `AI 自动修复完成：\n${fixes.map((f) => `· ${f}`).join("\n")}\n请重新运行调试验证。` }]);
-      setDebugIssues([]);
-      setDebugFixing(false);
-    }, 900);
+  const applyPromptSuggestion = (newPrompt: string, msgIndex: number) => {
+    setSystemPrompt(newPrompt);
+    setDebugMessages((m) =>
+      m.map((msg, i) =>
+        i === msgIndex ? { ...msg, suggestion: undefined, content: "✓ 已采纳建议并更新系统提示词" } : msg
+      )
+    );
+    toast({ title: "系统提示词已更新" });
+  };
+
+  const dismissSuggestion = (msgIndex: number) => {
+    setDebugMessages((m) =>
+      m.map((msg, i) => (i === msgIndex ? { ...msg, suggestion: undefined, content: "已忽略本次建议" } : msg))
+    );
+  };
+
+  const toggleVoice = () => {
+    if (voiceRecording) {
+      setVoiceRecording(false);
+      // Mock transcription
+      const mockText = "帮我查询昨天的快递订单状态";
+      setDebugInput((prev) => (prev ? `${prev} ${mockText}` : mockText));
+      toast({ title: "语音已转写", description: mockText });
+    } else {
+      setVoiceRecording(true);
+      toast({ title: "开始语音输入", description: "再次点击结束录音" });
+    }
   };
 
   const handleAutoGenerateMeta = () => {
@@ -656,7 +697,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                     {model} · {selMCPs.length} MCP · {selSkills.length} Skill
                   </Badge>
                 </div>
-                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => { setDebugMessages([]); setDebugIssues([]); }}>清空</Button>
+                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setDebugMessages([])}>清空</Button>
               </div>
 
               <div className="flex-1 overflow-auto p-4 space-y-3">
@@ -667,28 +708,67 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                     <p className="text-[10px]">例如：「帮我查询昨天的快递订单状态」</p>
                   </div>
                 )}
-                {debugMessages.map((msg, i) => (
-                  <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[80%] rounded-lg px-3 py-2 text-xs whitespace-pre-wrap leading-relaxed ${
-                      msg.role === "user" ? "bg-primary text-primary-foreground" :
-                      msg.role === "system" ? "bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400" :
-                      msg.status === "error" ? "bg-destructive/10 border border-destructive/30 text-destructive" :
-                      "bg-muted"
-                    }`}>
-                      {msg.role === "assistant" && msg.tool && (
-                        <div className="flex items-center gap-1 mb-1 text-[10px] opacity-70">
-                          <Zap className="w-2.5 h-2.5" /> 调用：{msg.tool}
+                {debugMessages.map((msg, i) => {
+                  if (msg.role === "system" && msg.suggestion) {
+                    const s = msg.suggestion;
+                    return (
+                      <div key={i} className="flex justify-start">
+                        <div className="max-w-[90%] rounded-lg border border-primary/30 bg-primary/5 p-3 text-xs space-y-2">
+                          <div className="flex items-center gap-1.5 font-medium text-primary">
+                            <Sparkles className="w-3.5 h-3.5" />
+                            AI 优化建议
+                          </div>
+                          {s.kind === "clarify" ? (
+                            <>
+                              <p className="text-muted-foreground leading-relaxed">
+                                为了让智能体更准确地选择工具，需要你澄清以下能力的实际用途：
+                              </p>
+                              <ul className="space-y-1.5">
+                                {s.questions.map((q, qi) => (
+                                  <li key={qi} className="flex gap-1.5">
+                                    <HelpCircle className="w-3 h-3 mt-0.5 text-primary shrink-0" />
+                                    <span>{q}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                              <div className="flex justify-end gap-2 pt-1">
+                                <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => dismissSuggestion(i)}>忽略</Button>
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <p className="text-muted-foreground leading-relaxed">{s.summary}</p>
+                              <div className="flex justify-end gap-2 pt-1">
+                                <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => dismissSuggestion(i)}>忽略</Button>
+                                <Button size="sm" className="h-7 text-xs gap-1.5" onClick={() => applyPromptSuggestion(s.updatedPrompt, i)}>
+                                  <FileEdit className="w-3 h-3" />
+                                  采纳并更新提示词
+                                </Button>
+                              </div>
+                            </>
+                          )}
                         </div>
-                      )}
-                      {msg.role === "assistant" && msg.status === "error" && (
-                        <div className="flex items-center gap-1 mb-1 text-[10px] font-semibold">
-                          <AlertCircle className="w-3 h-3" /> 调试失败
-                        </div>
-                      )}
-                      {msg.content}
+                      </div>
+                    );
+                  }
+                  return (
+                    <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                      <div className={`max-w-[80%] rounded-lg px-3 py-2 text-xs whitespace-pre-wrap leading-relaxed ${
+                        msg.role === "user" ? "bg-primary text-primary-foreground" :
+                        msg.role === "system" ? "bg-muted text-muted-foreground italic" :
+                        msg.status === "error" ? "bg-destructive/10 border border-destructive/30 text-destructive" :
+                        "bg-muted"
+                      }`}>
+                        {msg.role === "assistant" && msg.tool && (
+                          <div className="flex items-center gap-1 mb-1 text-[10px] opacity-70">
+                            <Zap className="w-2.5 h-2.5" /> 调用：{msg.tool}
+                          </div>
+                        )}
+                        {msg.content}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
                 {debugRunning && (
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Loader2 className="w-3 h-3 animate-spin" /> 智能体执行中…
@@ -696,28 +776,25 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                 )}
               </div>
 
-              {debugIssues.length > 0 && (
-                <div className="border-t border-border bg-amber-500/5 px-4 py-2.5 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-1.5 text-[11px] text-amber-700 dark:text-amber-400">
-                    <AlertCircle className="w-3.5 h-3.5" />
-                    检测到 {debugIssues.length} 个问题，AI 可尝试自动修复
-                  </div>
-                  <Button size="sm" className="h-7 text-xs gap-1.5" onClick={autoFix} disabled={debugFixing}>
-                    {debugFixing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
-                    AI 自动修复
-                  </Button>
-                </div>
-              )}
-
               <div className="border-t border-border p-3 flex items-center gap-2">
+                <Button
+                  type="button"
+                  size="icon"
+                  variant={voiceRecording ? "default" : "outline"}
+                  className={`h-8 w-8 shrink-0 ${voiceRecording ? "animate-pulse" : ""}`}
+                  onClick={toggleVoice}
+                  title={voiceRecording ? "结束语音输入" : "语音输入"}
+                >
+                  {voiceRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                </Button>
                 <Input
                   className="h-8 text-xs"
-                  placeholder="输入测试任务，回车发送"
+                  placeholder={voiceRecording ? "正在录音…再次点击麦克风结束" : "输入测试任务，回车发送"}
                   value={debugInput}
                   onChange={(e) => setDebugInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); runDebug(); } }}
                 />
-                <Button size="sm" className="h-8 text-xs gap-1.5" onClick={runDebug} disabled={debugRunning || !debugInput.trim()}>
+                <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => runDebug()} disabled={debugRunning || !debugInput.trim()}>
                   <Send className="w-3 h-3" /> 发送
                 </Button>
               </div>
