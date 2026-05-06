@@ -106,7 +106,7 @@ const CreateAgentManualPage = () => {
   const [publishStage, setPublishStage] = useState<"project" | "marketplace" | "done">("project");
   const [publishingToMarket, setPublishingToMarket] = useState(false);
 
-  // After each run, AI auto-optimizes (silently apply + announce in left chat)
+  // After each run, AI proposes optimization (user must adopt to apply)
   const autoOptimizeAfterRun = (userInput: string) => {
     setTimeout(() => {
       const undocumented = [
@@ -114,7 +114,6 @@ const CreateAgentManualPage = () => {
         ...selSkills.filter((s) => !systemPrompt.includes(s)),
       ];
       if (undocumented.length > 0) {
-        // Need clarification — ask in left chat
         const target = undocumented[0];
         setAssistantMessages((m) => [
           ...m,
@@ -125,20 +124,42 @@ const CreateAgentManualPage = () => {
         ]);
         return;
       }
-      // Otherwise auto-apply optimization and tell user what was changed
+      if (systemPrompt.includes("# 来自调试的补充指引")) return;
       const addition = `\n\n# 来自调试的补充指引\n- 用户曾以「${userInput}」类问题进行测试，遇到该类问题时应优先：\n  1. 拆解任务目标，明确需要哪些 MCP / Skill\n  2. 引用工具返回的数据并标注来源\n  3. 输出结构化结果，避免冗余寒暄`;
-      if (!systemPrompt.includes("# 来自调试的补充指引")) {
-        setSystemPrompt((p) => p.trim() + addition);
-        recordChange("prompt", `补充提示词：基于「${userInput}」类任务，新增"任务拆解 / 来源标注 / 结构化输出"工作流`);
-        setAssistantMessages((m) => [
-          ...m,
-          {
-            role: "assistant",
-            content: `我已根据本轮调试自动优化了系统提示词：\n\n· 补充了「任务拆解 → 工具选择 → 来源标注 → 结构化输出」的工作流\n· 加入了与「${userInput}」类任务的对齐指引\n\n你可以继续测试其他场景，或在保存时一次性确认所有调试期改动。`,
-          },
-        ]);
-      }
+      const suggestion: PromptSuggestion = {
+        id: `s-${Date.now()}`,
+        addition,
+        summaryNote: `补充提示词：基于「${userInput}」类任务，新增"任务拆解 / 来源标注 / 结构化输出"工作流`,
+        status: "pending",
+      };
+      setAssistantMessages((m) => [
+        ...m,
+        {
+          role: "assistant",
+          content: `根据本轮调试，我建议在系统提示词中补充「任务拆解 → 工具选择 → 来源标注 → 结构化输出」的工作流，以更好地匹配「${userInput}」类任务。`,
+          suggestion,
+        },
+      ]);
     }, 900);
+  };
+
+  const updateSuggestionStatus = (id: string, status: "adopted" | "rejected") => {
+    setAssistantMessages((msgs) =>
+      msgs.map((m) => (m.suggestion?.id === id ? { ...m, suggestion: { ...m.suggestion, status } } : m))
+    );
+  };
+
+  const adoptSuggestion = (s: PromptSuggestion) => {
+    if (s.status !== "pending") return;
+    setSystemPrompt((p) => p.trim() + s.addition);
+    recordChange("prompt", s.summaryNote);
+    updateSuggestionStatus(s.id, "adopted");
+    toast({ title: "已采纳建议", description: "系统提示词已更新" });
+  };
+
+  const rejectSuggestion = (s: PromptSuggestion) => {
+    if (s.status !== "pending") return;
+    updateSuggestionStatus(s.id, "rejected");
   };
 
   const runDebug = (overrideInput?: string) => {
