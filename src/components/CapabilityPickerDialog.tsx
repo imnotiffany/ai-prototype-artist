@@ -3,11 +3,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogT
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, ExternalLink, Plus } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CheckCircle2, ExternalLink, Plus, KeyRound } from "lucide-react";
 
 export interface PickerItem {
   name: string;
   description: string;
+  /** MCP 专用：服务商分组，"lh" 领慧 / "dd" 钉钉 */
+  provider?: "lh" | "dd";
+  /** MCP 专用：是否需要凭据 */
+  requiresCredential?: boolean;
 }
 
 interface Props {
