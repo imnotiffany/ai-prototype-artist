@@ -697,7 +697,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                     {model} · {selMCPs.length} MCP · {selSkills.length} Skill
                   </Badge>
                 </div>
-                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => { setDebugMessages([]); setDebugIssues([]); }}>清空</Button>
+                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setDebugMessages([])}>清空</Button>
               </div>
 
               <div className="flex-1 overflow-auto p-4 space-y-3">
@@ -708,28 +708,67 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                     <p className="text-[10px]">例如：「帮我查询昨天的快递订单状态」</p>
                   </div>
                 )}
-                {debugMessages.map((msg, i) => (
-                  <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[80%] rounded-lg px-3 py-2 text-xs whitespace-pre-wrap leading-relaxed ${
-                      msg.role === "user" ? "bg-primary text-primary-foreground" :
-                      msg.role === "system" ? "bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400" :
-                      msg.status === "error" ? "bg-destructive/10 border border-destructive/30 text-destructive" :
-                      "bg-muted"
-                    }`}>
-                      {msg.role === "assistant" && msg.tool && (
-                        <div className="flex items-center gap-1 mb-1 text-[10px] opacity-70">
-                          <Zap className="w-2.5 h-2.5" /> 调用：{msg.tool}
+                {debugMessages.map((msg, i) => {
+                  if (msg.role === "system" && msg.suggestion) {
+                    const s = msg.suggestion;
+                    return (
+                      <div key={i} className="flex justify-start">
+                        <div className="max-w-[90%] rounded-lg border border-primary/30 bg-primary/5 p-3 text-xs space-y-2">
+                          <div className="flex items-center gap-1.5 font-medium text-primary">
+                            <Sparkles className="w-3.5 h-3.5" />
+                            AI 优化建议
+                          </div>
+                          {s.kind === "clarify" ? (
+                            <>
+                              <p className="text-muted-foreground leading-relaxed">
+                                为了让智能体更准确地选择工具，需要你澄清以下能力的实际用途：
+                              </p>
+                              <ul className="space-y-1.5">
+                                {s.questions.map((q, qi) => (
+                                  <li key={qi} className="flex gap-1.5">
+                                    <HelpCircle className="w-3 h-3 mt-0.5 text-primary shrink-0" />
+                                    <span>{q}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                              <div className="flex justify-end gap-2 pt-1">
+                                <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => dismissSuggestion(i)}>忽略</Button>
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <p className="text-muted-foreground leading-relaxed">{s.summary}</p>
+                              <div className="flex justify-end gap-2 pt-1">
+                                <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => dismissSuggestion(i)}>忽略</Button>
+                                <Button size="sm" className="h-7 text-xs gap-1.5" onClick={() => applyPromptSuggestion(s.updatedPrompt, i)}>
+                                  <FileEdit className="w-3 h-3" />
+                                  采纳并更新提示词
+                                </Button>
+                              </div>
+                            </>
+                          )}
                         </div>
-                      )}
-                      {msg.role === "assistant" && msg.status === "error" && (
-                        <div className="flex items-center gap-1 mb-1 text-[10px] font-semibold">
-                          <AlertCircle className="w-3 h-3" /> 调试失败
-                        </div>
-                      )}
-                      {msg.content}
+                      </div>
+                    );
+                  }
+                  return (
+                    <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                      <div className={`max-w-[80%] rounded-lg px-3 py-2 text-xs whitespace-pre-wrap leading-relaxed ${
+                        msg.role === "user" ? "bg-primary text-primary-foreground" :
+                        msg.role === "system" ? "bg-muted text-muted-foreground italic" :
+                        msg.status === "error" ? "bg-destructive/10 border border-destructive/30 text-destructive" :
+                        "bg-muted"
+                      }`}>
+                        {msg.role === "assistant" && msg.tool && (
+                          <div className="flex items-center gap-1 mb-1 text-[10px] opacity-70">
+                            <Zap className="w-2.5 h-2.5" /> 调用：{msg.tool}
+                          </div>
+                        )}
+                        {msg.content}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
                 {debugRunning && (
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Loader2 className="w-3 h-3 animate-spin" /> 智能体执行中…
@@ -737,28 +776,25 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                 )}
               </div>
 
-              {debugIssues.length > 0 && (
-                <div className="border-t border-border bg-amber-500/5 px-4 py-2.5 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-1.5 text-[11px] text-amber-700 dark:text-amber-400">
-                    <AlertCircle className="w-3.5 h-3.5" />
-                    检测到 {debugIssues.length} 个问题，AI 可尝试自动修复
-                  </div>
-                  <Button size="sm" className="h-7 text-xs gap-1.5" onClick={autoFix} disabled={debugFixing}>
-                    {debugFixing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
-                    AI 自动修复
-                  </Button>
-                </div>
-              )}
-
               <div className="border-t border-border p-3 flex items-center gap-2">
+                <Button
+                  type="button"
+                  size="icon"
+                  variant={voiceRecording ? "default" : "outline"}
+                  className={`h-8 w-8 shrink-0 ${voiceRecording ? "animate-pulse" : ""}`}
+                  onClick={toggleVoice}
+                  title={voiceRecording ? "结束语音输入" : "语音输入"}
+                >
+                  {voiceRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                </Button>
                 <Input
                   className="h-8 text-xs"
-                  placeholder="输入测试任务，回车发送"
+                  placeholder={voiceRecording ? "正在录音…再次点击麦克风结束" : "输入测试任务，回车发送"}
                   value={debugInput}
                   onChange={(e) => setDebugInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); runDebug(); } }}
                 />
-                <Button size="sm" className="h-8 text-xs gap-1.5" onClick={runDebug} disabled={debugRunning || !debugInput.trim()}>
+                <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => runDebug()} disabled={debugRunning || !debugInput.trim()}>
                   <Send className="w-3 h-3" /> 发送
                 </Button>
               </div>
