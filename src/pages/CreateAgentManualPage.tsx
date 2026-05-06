@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, Rocket, Plus, X, Settings2, Cpu, Server, Zap, Shield, KeyRound, Bot, MessageSquare, Eye, EyeOff, Link2, CheckCircle2, Sparkles, Loader2, ExternalLink, Play, Send, AlertCircle, Wand2, Bug, FolderKanban, Store, ArrowRight, Mic, MicOff, HelpCircle, FileEdit } from "lucide-react";
+import { ArrowLeft, Save, Rocket, Plus, X, Settings2, Cpu, Server, Zap, Shield, KeyRound, Bot, MessageSquare, Eye, EyeOff, Link2, CheckCircle2, Sparkles, Loader2, ExternalLink, Play, Send, AlertCircle, Wand2, Bug, FolderKanban, Store, ArrowRight, Mic, MicOff, HelpCircle, FileEdit, Terminal, ChevronDown, ChevronUp, Copy, Brain, Wrench, Info, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -72,6 +72,20 @@ const CreateAgentManualPage = () => {
   const [debugRunning, setDebugRunning] = useState(false);
   const [voiceRecording, setVoiceRecording] = useState(false);
 
+  // Runtime logs (Cloud Code style)
+  type LogLevel = "info" | "tool" | "thought" | "warn" | "error" | "result";
+  type LogEntry = { id: number; ts: string; level: LogLevel; message: string; meta?: string };
+  const [debugLogs, setDebugLogs] = useState<LogEntry[]>([]);
+  const [logsOpen, setLogsOpen] = useState(false);
+  const [logFilter, setLogFilter] = useState<"all" | LogLevel>("all");
+  const logIdRef = (globalThis as any).__logIdRef ?? { current: 0 };
+  (globalThis as any).__logIdRef = logIdRef;
+
+  const pushLog = (level: LogLevel, message: string, meta?: string) => {
+    const ts = new Date().toLocaleTimeString("zh-CN", { hour12: false }) + "." + String(Date.now() % 1000).padStart(3, "0");
+    setDebugLogs((l) => [...l, { id: ++logIdRef.current, ts, level, message, meta }]);
+  };
+
   // Publish flow
   const [publishStage, setPublishStage] = useState<"project" | "marketplace" | "done">("project");
   const [publishingToMarket, setPublishingToMarket] = useState(false);
@@ -106,8 +120,20 @@ const CreateAgentManualPage = () => {
     setDebugMessages((m) => [...m, userMsg]);
     setDebugInput("");
     setDebugRunning(true);
+
+    // Simulated Cloud Code runtime trace
+    const tool = selMCPs[0] || selSkills[0] || "内置推理";
+    pushLog("info", `[session] 接收用户输入`, `text="${text}"`);
+    pushLog("info", `[runtime] 启动容器 sandbox-${Math.random().toString(36).slice(2, 6)}`, `image=cloud-code:1.4.2 · workspace=/workspace`);
+    pushLog("info", `[model] ${model} · stream=true · context=${4096 + text.length}`);
+
+    setTimeout(() => pushLog("thought", `[reasoning] 解析用户意图：识别到任务类型，准备调用 ${tool}`), 120);
+    setTimeout(() => pushLog("tool", `[tool_use] 调用 ${tool}`, `args={"query":"${text.slice(0, 40)}"} · timeout=30s`), 280);
+    setTimeout(() => pushLog("info", `[mcp] ↔ ${tool} HTTP 200 · 142ms`), 460);
+    setTimeout(() => pushLog("tool", `[tool_result] ${tool} 返回 1 条结果`, `bytes=312`), 520);
+    setTimeout(() => pushLog("thought", `[reasoning] 整合工具返回，生成结构化回复`), 600);
+
     setTimeout(() => {
-      const tool = selMCPs[0] || selSkills[0] || "内置推理";
       const ok: DebugMsg = {
         role: "assistant",
         status: "ok",
@@ -120,6 +146,7 @@ const CreateAgentManualPage = () => {
         suggestion: buildOptimizationSuggestion(text),
       };
       setDebugMessages((m) => [...m, ok, suggestionMsg]);
+      pushLog("result", `[done] 推理完成 · 用时 698ms · tokens in=312 out=128`);
       setDebugRunning(false);
     }, 700);
   };
@@ -689,7 +716,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
               </p>
             </div>
 
-            <div className="border border-border rounded-lg bg-card flex flex-col h-[480px]">
+            <div className={`border border-border rounded-lg bg-card flex flex-col ${logsOpen ? "h-[640px]" : "h-[480px]"}`}>
               <div className="px-4 py-2 border-b border-border flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-semibold">对话调试</span>
@@ -697,7 +724,22 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                     {model} · {selMCPs.length} MCP · {selSkills.length} Skill
                   </Badge>
                 </div>
-                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setDebugMessages([])}>清空</Button>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant={logsOpen ? "secondary" : "ghost"}
+                    size="sm"
+                    className="h-7 text-xs gap-1.5"
+                    onClick={() => setLogsOpen((v) => !v)}
+                  >
+                    <Terminal className="w-3 h-3" />
+                    运行日志
+                    {debugLogs.length > 0 && (
+                      <Badge variant="outline" className="text-[9px] h-4 px-1 ml-0.5">{debugLogs.length}</Badge>
+                    )}
+                    {logsOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                  </Button>
+                  <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => { setDebugMessages([]); setDebugLogs([]); }}>清空</Button>
+                </div>
               </div>
 
               <div className="flex-1 overflow-auto p-4 space-y-3">
@@ -775,6 +817,86 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                   </div>
                 )}
               </div>
+
+              {logsOpen && (
+                <div className="border-t border-border bg-zinc-950 text-zinc-100 dark:bg-black flex flex-col max-h-[260px]">
+                  <div className="px-3 py-1.5 border-b border-zinc-800 flex items-center justify-between text-[11px]">
+                    <div className="flex items-center gap-1.5 text-zinc-300">
+                      <Terminal className="w-3 h-3" />
+                      <span className="font-mono">runtime.log</span>
+                      <span className="text-zinc-500">· Cloud Code Sandbox</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {(["all", "info", "thought", "tool", "warn", "error"] as const).map((f) => (
+                        <button
+                          key={f}
+                          onClick={() => setLogFilter(f)}
+                          className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${
+                            logFilter === f ? "bg-zinc-700 text-white" : "text-zinc-400 hover:text-zinc-200"
+                          }`}
+                        >
+                          {f}
+                        </button>
+                      ))}
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(debugLogs.map((l) => `[${l.ts}] ${l.level.toUpperCase()} ${l.message}${l.meta ? ` | ${l.meta}` : ""}`).join("\n"));
+                          toast({ title: "日志已复制到剪贴板" });
+                        }}
+                        className="ml-1 px-1.5 py-0.5 rounded text-[10px] text-zinc-400 hover:text-zinc-200 flex items-center gap-1"
+                        title="复制全部日志"
+                      >
+                        <Copy className="w-2.5 h-2.5" /> 复制
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex-1 overflow-auto px-3 py-2 font-mono text-[11px] leading-relaxed">
+                    {debugLogs.length === 0 ? (
+                      <p className="text-zinc-500 text-center py-4">暂无运行日志，发送一条调试消息即可查看</p>
+                    ) : (
+                      debugLogs
+                        .filter((l) => logFilter === "all" || l.level === logFilter)
+                        .map((l) => {
+                          const colorMap: Record<LogLevel, string> = {
+                            info: "text-sky-300",
+                            thought: "text-violet-300",
+                            tool: "text-emerald-300",
+                            warn: "text-amber-300",
+                            error: "text-red-400",
+                            result: "text-cyan-300",
+                          };
+                          const iconMap: Record<LogLevel, JSX.Element> = {
+                            info: <Info className="w-2.5 h-2.5" />,
+                            thought: <Brain className="w-2.5 h-2.5" />,
+                            tool: <Wrench className="w-2.5 h-2.5" />,
+                            warn: <AlertTriangle className="w-2.5 h-2.5" />,
+                            error: <AlertCircle className="w-2.5 h-2.5" />,
+                            result: <CheckCircle2 className="w-2.5 h-2.5" />,
+                          };
+                          return (
+                            <div key={l.id} className="flex gap-2 py-0.5">
+                              <span className="text-zinc-500 shrink-0">{l.ts}</span>
+                              <span className={`shrink-0 flex items-center gap-1 ${colorMap[l.level]}`}>
+                                {iconMap[l.level]}
+                                {l.level.padEnd(7)}
+                              </span>
+                              <span className="text-zinc-200 break-all">
+                                {l.message}
+                                {l.meta && <span className="text-zinc-500 ml-2">{l.meta}</span>}
+                              </span>
+                            </div>
+                          );
+                        })
+                    )}
+                    {debugRunning && (
+                      <div className="flex items-center gap-2 text-zinc-500 mt-1">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        <span className="animate-pulse">streaming…</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               <div className="border-t border-border p-3 flex items-center gap-2">
                 <Button
