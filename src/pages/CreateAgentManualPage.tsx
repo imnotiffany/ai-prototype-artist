@@ -454,20 +454,12 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
 
           {/* FengSheng NEXT Bot */}
           <TabsContent value="fengsheng" className="mt-4 space-y-4">
-            <div className="border border-border rounded-lg p-5 bg-card">
-              <div className="flex items-start justify-between mb-1">
-                <div className="flex items-start gap-2">
-                  <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-                    <MessageSquare className="w-4 h-4 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold">丰声 NEXT 机器人接入</h3>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
-                      配置企业应用凭证，将该智能体发布为丰声 NEXT 群聊机器人，群成员 @ 即可触发对话
-                    </p>
-                  </div>
-                </div>
-              </div>
+            <div className="border border-border rounded-lg px-4 py-3 bg-gradient-to-r from-primary/10 to-primary/5 flex items-center gap-2.5">
+              <MessageSquare className="w-4 h-4 text-primary shrink-0" />
+              <p className="text-xs">
+                <span className="font-medium">发布为丰声 NEXT 群聊机器人</span>
+                <span className="text-muted-foreground"> · 群成员 @ 即可触发对话</span>
+              </p>
             </div>
 
             <div className="border border-border rounded-lg p-5 bg-card space-y-4">
