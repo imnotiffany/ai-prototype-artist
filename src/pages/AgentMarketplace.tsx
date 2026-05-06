@@ -162,15 +162,20 @@ const AgentMarketplace = () => {
                   }`}
                 >
                   {isApp ? <Globe className="w-3 h-3" /> : <MessageSquare className="w-3 h-3" />}
-                  {isApp ? "应用" : "Agent"}
+                  {isApp ? "应用" : "智能体"}
                 </div>
 
-                <div className="flex items-start gap-2.5 mb-2 pr-12">
+                <div className="flex items-start gap-2.5 mb-2 pr-14">
                   <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-lg shrink-0">
                     {agent.avatar}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-xs font-medium text-foreground truncate">{agent.name}</h3>
+                    <div className="flex items-center gap-1.5">
+                      <h3 className="text-xs font-medium text-foreground truncate">{agent.name}</h3>
+                      {agent.versions[0]?.version && (
+                        <span className="text-[10px] font-mono text-muted-foreground shrink-0">{agent.versions[0].version}</span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-1 mt-0.5">
                       {agent.tags.slice(0, 1).map((tag, i) => (
                         <Badge
@@ -213,17 +218,17 @@ const AgentMarketplace = () => {
                     variant="outline"
                     className="h-7 text-[11px] flex-1"
                     disabled={!allowCopy}
-                    title={allowCopy ? "复制到我的项目" : "创建者未开放复制"}
+                    title={allowCopy ? `复制${isApp ? "应用" : "智能体"}到我的项目` : "创建者未开放复制"}
                     onClick={(e) => {
                       e.stopPropagation();
                       if (!allowCopy) return;
                       toast({
-                        title: "已复制到项目内",
+                        title: `已复制${isApp ? "应用" : "智能体"}`,
                         description: `${agent.name} 已添加到「我的项目」，可在项目中继续编辑`,
                       });
                     }}
                   >
-                    {allowCopy ? "复制到项目内" : "不允许复制"}
+                    {allowCopy ? `复制${isApp ? "应用" : "智能体"}` : "不允许复制"}
                   </Button>
                 </div>
               </div>
