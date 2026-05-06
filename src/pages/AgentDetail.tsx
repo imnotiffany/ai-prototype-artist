@@ -624,7 +624,7 @@ const AgentDetail = () => {
                         <div key={b.name} className={`border rounded-md p-3 space-y-2 ${credMissing ? "border-amber-300 bg-amber-50/40" : "border-border"}`}>
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-medium flex items-center gap-1.5">
-                              <Server className="w-3 h-3 text-primary" />{b.name}
+                              {b.name}
                               {!needsCred && (
                                 <Badge variant="outline" className="border-emerald-300 text-emerald-700 bg-emerald-50/60 text-[9px] h-4 px-1.5">免凭据</Badge>
                               )}
