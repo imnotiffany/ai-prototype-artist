@@ -60,7 +60,7 @@ const ChatPage = () => {
       {/* Left: chat column */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border px-4 py-3 shrink-0">
+        <div className="h-12 flex items-center justify-between border-b border-border px-4 shrink-0">
           <div className="flex items-center gap-3 min-w-0">
             <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground" aria-label="返回">
               <ArrowLeft className="w-4 h-4" />
