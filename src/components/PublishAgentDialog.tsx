@@ -103,13 +103,13 @@ export const PublishAgentDialog = ({ open, onOpenChange, agentName, versions, de
 
           {/* Description */}
           <div>
-            <RequiredLabel>应用描述</RequiredLabel>
+            <RequiredLabel>{noun}描述</RequiredLabel>
             <div className="relative">
               <Textarea
                 value={desc}
                 onChange={(e) => setDesc(e.target.value.slice(0, 100))}
                 className="text-sm resize-none min-h-[110px]"
-                placeholder="简要描述应用用途"
+                placeholder={`简要描述${noun}用途`}
               />
               <span className="absolute bottom-2 right-3 text-xs text-muted-foreground">
                 {desc.length} / 100
