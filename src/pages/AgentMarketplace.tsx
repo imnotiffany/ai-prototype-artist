@@ -64,7 +64,7 @@ const AgentMarketplace = () => {
         <div className="relative w-full max-w-md">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="搜索应用 / Agent"
+            placeholder="搜索应用或智能体"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="h-9 text-xs pr-9"
@@ -76,7 +76,7 @@ const AgentMarketplace = () => {
           className="h-9 text-xs px-4 shrink-0"
           onClick={() => navigate("/project-agents")}
         >
-          我的应用
+          我创建的
         </Button>
       </div>
 

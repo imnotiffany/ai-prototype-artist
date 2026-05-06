@@ -22,6 +22,7 @@ interface Props {
   agentName: string;
   versions: AgentVersion[];
   defaultScope?: "marketplace" | "project";
+  kind?: "app" | "agent";
 }
 
 const categories = ["效率办公", "研发工程", "数据分析", "客户服务", "市场营销", "人力资源"];
@@ -33,7 +34,8 @@ const RequiredLabel = ({ children }: { children: React.ReactNode }) => (
   </label>
 );
 
-export const PublishAgentDialog = ({ open, onOpenChange, agentName, versions, defaultScope = "marketplace" }: Props) => {
+export const PublishAgentDialog = ({ open, onOpenChange, agentName, versions, defaultScope = "marketplace", kind = "agent" }: Props) => {
+  const noun = kind === "app" ? "应用" : "智能体";
   const [name, setName] = useState(agentName);
   const [desc, setDesc] = useState("");
   const [category, setCategory] = useState<string>("");
@@ -75,7 +77,7 @@ export const PublishAgentDialog = ({ open, onOpenChange, agentName, versions, de
     }
     toast({
       title: "已提交发布",
-      description: `${name} ${versionV} 将发布到「${scope === "marketplace" ? "应用广场" : "项目内"}」`,
+      description: `${noun}「${name}」${versionV} 将发布到「${scope === "marketplace" ? "智能广场" : "项目内"}」`,
     });
     onOpenChange(false);
   };
@@ -84,30 +86,30 @@ export const PublishAgentDialog = ({ open, onOpenChange, agentName, versions, de
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[560px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold">发布应用</DialogTitle>
+          <DialogTitle className="text-lg font-semibold">发布{noun}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-5 py-2">
           {/* Name */}
           <div>
-            <RequiredLabel>应用名称</RequiredLabel>
+            <RequiredLabel>{noun}名称</RequiredLabel>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="h-10 text-sm"
-              placeholder="请输入应用名称"
+              placeholder={`请输入${noun}名称`}
             />
           </div>
 
           {/* Description */}
           <div>
-            <RequiredLabel>应用描述</RequiredLabel>
+            <RequiredLabel>{noun}描述</RequiredLabel>
             <div className="relative">
               <Textarea
                 value={desc}
                 onChange={(e) => setDesc(e.target.value.slice(0, 100))}
                 className="text-sm resize-none min-h-[110px]"
-                placeholder="简要描述应用用途"
+                placeholder={`简要描述${noun}用途`}
               />
               <span className="absolute bottom-2 right-3 text-xs text-muted-foreground">
                 {desc.length} / 100
@@ -177,13 +179,13 @@ export const PublishAgentDialog = ({ open, onOpenChange, agentName, versions, de
               disabled={scope !== "marketplace"}
             />
             <p className="text-xs text-muted-foreground mt-2">
-              开启后，其他用户可以将此应用复制到自己的项目中
+              开启后，其他用户可以将此{noun}复制到自己的项目中
             </p>
           </div>
 
           {/* App Icon */}
           <div>
-            <RequiredLabel>应用图标</RequiredLabel>
+            <RequiredLabel>{noun}图标</RequiredLabel>
             <div className="flex items-center gap-3">
               <input
                 ref={fileInputRef}

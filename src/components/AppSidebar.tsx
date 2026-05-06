@@ -7,7 +7,7 @@ const menuSections = [
     label: "工作台",
     items: [
       { name: "新建项目", path: "/create", icon: Plus },
-      { name: "应用广场", path: "/", icon: Compass },
+      { name: "智能广场", path: "/", icon: Compass },
     ],
   },
   {
