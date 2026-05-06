@@ -215,6 +215,25 @@ const AgentDetail = () => {
   const [mcpPopOpen, setMcpPopOpen] = useState(false);
   const [skillPopOpen, setSkillPopOpen] = useState(false);
 
+  /* ── Header actions: edit basic info & publish ── */
+  const [publishOpen, setPublishOpen] = useState(false);
+  const [editInfoOpen, setEditInfoOpen] = useState(false);
+  const [draftName, setDraftName] = useState(name);
+  const [draftDesc, setDraftDesc] = useState(description);
+
+  const openEditInfo = () => {
+    setDraftName(name);
+    setDraftDesc(description);
+    setEditInfoOpen(true);
+  };
+  const saveBasicInfo = () => {
+    setName(draftName);
+    setDescription(draftDesc);
+    setSavedSnapshot((s) => ({ ...s, name: draftName, description: draftDesc }));
+    setEditInfoOpen(false);
+    toast({ title: "基本信息已更新", description: "名称与描述的修改不会产生新版本" });
+  };
+
   return (
     <div className="p-6 max-w-[1280px] mx-auto animate-fade-in">
       {/* Breadcrumb */}
