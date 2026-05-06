@@ -175,7 +175,7 @@ const AgentDetail = () => {
       { v: next, at: new Date().toISOString().slice(0, 16).replace("T", " "), by: "廖奕通", note: "更新配置", current: true },
       ...versions.map((v) => ({ ...v, current: false })),
     ]);
-    setSavedSnapshot({ name, description, model, systemPrompt, skills: selSkills, mcpBindings, dingEnabled, dingWebhook });
+    setSavedSnapshot({ name, description, model, systemPrompt, skills: selSkills, mcpBindings, fsAppKey, fsAppSecret, fsRobotCode });
     toast({ title: "已保存", description: `生成新版本 ${next}` });
   };
 
@@ -186,8 +186,9 @@ const AgentDetail = () => {
     setSystemPrompt(savedSnapshot.systemPrompt);
     setSelSkills(savedSnapshot.skills);
     setMcpBindings(savedSnapshot.mcpBindings);
-    setDingEnabled(savedSnapshot.dingEnabled);
-    setDingWebhook(savedSnapshot.dingWebhook);
+    setFsAppKey(savedSnapshot.fsAppKey);
+    setFsAppSecret(savedSnapshot.fsAppSecret);
+    setFsRobotCode(savedSnapshot.fsRobotCode);
     toast({ title: "已撤销修改" });
   };
 
