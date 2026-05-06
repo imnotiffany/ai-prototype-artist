@@ -124,7 +124,7 @@ const assembleAgent = (
 
   return {
     name: description.slice(0, 20).replace(/[，。！？]/g, ""),
-    version: "v1",
+    version: "v0.0.1",
     model,
     systemPrompt,
     tools: [
