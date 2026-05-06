@@ -180,6 +180,7 @@ export const PublishDialog = ({ open, onOpenChange, defaultName = "", defaultDes
                   })}
                 </div>
               </div>
+              <div className="flex justify-between text-xs"><span className="text-muted-foreground">允许复制</span><span className={allowCopy ? "text-primary font-medium" : "text-muted-foreground"}>{allowCopy ? "已开启" : "已关闭"}</span></div>
             </div>
             <div className="flex items-start gap-2 text-[11px] text-muted-foreground border border-border rounded-lg p-2.5 bg-muted/20">
               <ShieldCheck className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
