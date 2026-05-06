@@ -477,6 +477,7 @@ const AgentDetail = () => {
                     type: `log.${l.level}`,
                     data: { message: l.message, ...(l.meta ? { meta: l.meta } : {}) },
                   }))}
+                  showTranscriptSearch={false}
                 />
               </div>
               <div className="border-t border-border p-3 flex items-center gap-2 shrink-0">
