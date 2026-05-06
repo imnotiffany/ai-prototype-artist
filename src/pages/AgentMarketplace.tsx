@@ -52,7 +52,7 @@ const AgentMarketplace = () => {
       <div className="pt-12 pb-6 text-center">
         <h1 className="text-2xl font-semibold text-foreground tracking-tight">
           数字同事就位，
-          <span className="text-primary font-bold">样样都慧</span>
+          <span className="text-primary font-bold">组建你的专属团队</span>
         </h1>
         <p className="mt-2 text-xs text-muted-foreground">
           精选全场景应用及智能体，汇聚实战力量，让业务化繁为简
