@@ -724,7 +724,22 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                     {model} · {selMCPs.length} MCP · {selSkills.length} Skill
                   </Badge>
                 </div>
-                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setDebugMessages([])}>清空</Button>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant={logsOpen ? "secondary" : "ghost"}
+                    size="sm"
+                    className="h-7 text-xs gap-1.5"
+                    onClick={() => setLogsOpen((v) => !v)}
+                  >
+                    <Terminal className="w-3 h-3" />
+                    运行日志
+                    {debugLogs.length > 0 && (
+                      <Badge variant="outline" className="text-[9px] h-4 px-1 ml-0.5">{debugLogs.length}</Badge>
+                    )}
+                    {logsOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                  </Button>
+                  <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => { setDebugMessages([]); setDebugLogs([]); }}>清空</Button>
+                </div>
               </div>
 
               <div className="flex-1 overflow-auto p-4 space-y-3">
