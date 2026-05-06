@@ -509,65 +509,6 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
             </div>
           </TabsContent>
 
-          {/* Credentials */}
-          <TabsContent value="env" className="mt-4 space-y-4">
-            <div className="border border-border rounded-lg p-5 bg-card">
-              <div className="mb-3">
-                <Label className="text-xs flex items-center gap-1.5"><KeyRound className="w-3.5 h-3.5" /> MCP 凭据绑定</Label>
-                <p className="text-[10px] text-muted-foreground mt-0.5">为每个已绑定的 MCP 选择运行时使用的凭据；单凭据 MCP 将自动选中</p>
-              </div>
-              {selMCPs.length === 0 ? (
-                <p className="text-xs text-muted-foreground py-2">尚未绑定 MCP，请先到「能力配置」中添加</p>
-              ) : (
-                <div className="space-y-2">
-                  {selMCPs.map((mcpName) => {
-                    const creds = mockCredentials.filter((c) => c.mcpServer === mcpName);
-                    const current = mcpCredentialMap[mcpName] ?? (creds.length === 1 ? creds[0].id : "");
-                    return (
-                      <div key={mcpName} className="border border-border rounded-lg p-3 flex items-center gap-3">
-                        <Server className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <span className="text-xs font-medium min-w-[120px]">{mcpName}</span>
-                        {creds.length === 0 ? (
-                          <div className="flex items-center gap-2 ml-auto">
-                            <span className="text-[10px] text-amber-600 dark:text-amber-500">尚无可用凭据</span>
-                            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => navigate("/vault")}>前往金库添加</Button>
-                          </div>
-                        ) : creds.length === 1 ? (
-                          <div className="flex items-center gap-1.5 ml-auto">
-                            <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                            <span className="text-xs">{creds[0].name}</span>
-                            <Badge variant="outline" className="text-[9px] h-4 ml-1">自动选中</Badge>
-                          </div>
-                        ) : (
-                          <div className="ml-auto w-56">
-                            <Select value={current} onValueChange={(v) => setMcpCredentialMap({ ...mcpCredentialMap, [mcpName]: v })}>
-                              <SelectTrigger className="h-7 text-xs"><SelectValue placeholder="选择凭据" /></SelectTrigger>
-                              <SelectContent>
-                                {creds.map((c) => (
-                                  <SelectItem key={c.id} value={c.id} className="text-xs">{c.name}（{c.type}）</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            <div className="border border-border rounded-lg p-5 bg-card">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="text-xs flex items-center gap-1.5"><Settings2 className="w-3.5 h-3.5" /> 持久化文件系统</Label>
-                  <p className="text-[10px] text-muted-foreground">容器重启后保留 /workspace 数据</p>
-                </div>
-                <Switch checked={persistentFs} onCheckedChange={setPersistentFs} />
-              </div>
-            </div>
-          </TabsContent>
-
           {/* FengSheng NEXT Bot */}
           <TabsContent value="fengsheng" className="mt-4 space-y-4">
             <div className="border border-border rounded-lg px-4 py-3 bg-gradient-to-r from-primary/10 to-primary/5 flex items-center gap-2.5">
