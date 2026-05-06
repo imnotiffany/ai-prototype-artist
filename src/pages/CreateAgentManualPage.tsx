@@ -465,7 +465,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
             返回
           </button>
           <div>
-            <h1 className="text-sm font-semibold">手动组装智能体</h1>
+            <h1 className="text-base font-semibold leading-tight">手动组装智能体</h1>
             <p className="text-[11px] text-muted-foreground">面向开发者的精确配置模式</p>
           </div>
         </div>
