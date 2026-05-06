@@ -244,7 +244,7 @@ export const mockAgents: Agent[] = [
     platform: "AI技术平台", author: "廖奕通", authorId: "01441970",
     updatedAt: "2026-04-01", downloads: 0,
     skills: ["Content Generation"], mcpServers: [],
-    sessionCount: 0, creationType: "ai", status: "draft", kind: "app",
+    sessionCount: 0, creationType: "ai", status: "project", kind: "app",
     versions: [],
   },
   {
@@ -278,7 +278,7 @@ export const mockAgents: Agent[] = [
     platform: "AI技术平台", author: "廖奕通", authorId: "01441970",
     updatedAt: "2026-03-31", downloads: 0,
     skills: ["Content Generation"], mcpServers: [],
-    sessionCount: 0, creationType: "ai", status: "draft", kind: "app",
+    sessionCount: 0, creationType: "ai", status: "project", kind: "app",
     versions: [],
   },
   {
