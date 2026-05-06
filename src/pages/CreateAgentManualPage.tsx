@@ -238,59 +238,14 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
       </div>
 
       <div className="max-w-4xl mx-auto px-6 py-5">
-        <Tabs defaultValue="basic">
-          <TabsList className="grid grid-cols-6 h-9">
-            <TabsTrigger value="basic" className="text-xs">基础信息</TabsTrigger>
+        <Tabs defaultValue="model">
+          <TabsList className="grid grid-cols-5 h-9">
             <TabsTrigger value="model" className="text-xs">模型配置</TabsTrigger>
             <TabsTrigger value="bindings" className="text-xs">原子能力</TabsTrigger>
             <TabsTrigger value="prompt" className="text-xs">系统提示词</TabsTrigger>
             <TabsTrigger value="env" className="text-xs">凭据配置</TabsTrigger>
             <TabsTrigger value="fengsheng" className="text-xs">丰声 NEXT</TabsTrigger>
           </TabsList>
-
-          {/* Basic */}
-          <TabsContent value="basic" className="mt-4 space-y-4">
-            <div className="border border-border rounded-lg p-5 space-y-4 bg-card">
-              <div>
-                <Label className="text-xs">智能体名称 <span className="text-destructive">*</span></Label>
-                <Input className="mt-1.5 h-8 text-xs" value={name} onChange={(e) => setName(e.target.value)} placeholder="例如：财务月报助手" />
-              </div>
-              <div>
-                <Label className="text-xs">描述</Label>
-                <Textarea className="mt-1.5 text-xs" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="一句话描述智能体能力，不超过 60 字" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-xs">分类</Label>
-                  <Select value={category} onValueChange={setCategory}>
-                    <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {categories.map((c) => <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="text-xs">标签</Label>
-                  <div className="flex gap-1.5 mt-1.5">
-                    <Input className="h-8 text-xs flex-1" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addTag()} placeholder="回车添加" />
-                    <Button size="sm" variant="outline" className="h-8 text-xs" onClick={addTag}>添加</Button>
-                  </div>
-                  {tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {tags.map((t) => (
-                        <Badge key={t} variant="secondary" className="text-[10px] gap-1">
-                          {t}
-                          <button onClick={() => setTags(tags.filter((x) => x !== t))} className="hover:text-destructive">
-                            <X className="w-2.5 h-2.5" />
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </TabsContent>
 
           {/* Model */}
           <TabsContent value="model" className="mt-4 space-y-4">
