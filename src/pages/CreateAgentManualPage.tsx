@@ -928,7 +928,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                 {debugChanges.length > 0 && (
                   <div className="border border-primary/30 bg-primary/5 rounded-lg p-3 space-y-1.5">
                     <div className="flex items-center gap-1.5 text-xs font-medium text-primary">
-                      <Sparkles className="w-3.5 h-3.5" />
+                      <CheckCircle2 className="w-3.5 h-3.5" />
                       调试期间已为你优化 {debugChanges.length} 项配置
                     </div>
                     <ul className="text-[11px] text-muted-foreground space-y-1 pl-5 list-disc leading-relaxed">
