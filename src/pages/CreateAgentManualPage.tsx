@@ -131,8 +131,6 @@ const CreateAgentManualPage = () => {
   type LogLevel = "info" | "tool" | "thought" | "warn" | "error" | "result";
   type LogEntry = { id: number; ts: string; level: LogLevel; message: string; meta?: string };
   const [debugLogs, setDebugLogs] = useState<LogEntry[]>([]);
-  const [runView, setRunView] = useState<"chat" | "logs">("chat");
-  const [logFilter, setLogFilter] = useState<"all" | LogLevel>("all");
   const logIdRef = (globalThis as any).__logIdRef ?? { current: 0 };
   (globalThis as any).__logIdRef = logIdRef;
 
