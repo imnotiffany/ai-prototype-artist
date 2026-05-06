@@ -116,9 +116,20 @@ export const CapabilityPickerDialog = ({
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-semibold truncate">{it.name}</p>
-                    <div className="flex items-center gap-1 mt-0.5">
+                    <div className="flex items-center gap-1 mt-0.5 flex-wrap">
                       {deployBadge && (
                         <Badge variant="outline" className="text-[9px] h-4 px-1.5">{deployBadge(it.name)}</Badge>
+                      )}
+                      {isMcp && (
+                        it.requiresCredential ? (
+                          <Badge variant="outline" className="text-[9px] h-4 px-1.5 gap-0.5 border-amber-300 text-amber-700 bg-amber-50/60 dark:bg-amber-950/30">
+                            <KeyRound className="w-2.5 h-2.5" />需凭据
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-[9px] h-4 px-1.5 border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30">
+                            免凭据
+                          </Badge>
+                        )
                       )}
                     </div>
                   </div>
