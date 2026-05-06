@@ -649,7 +649,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
 
             <div className="grid grid-cols-2 gap-4">
               {/* Left: Debug Assistant */}
-              <div className="border border-border rounded-lg bg-card flex flex-col h-[640px]">
+              <div className="border border-border rounded-lg bg-card flex flex-col h-[clamp(380px,calc(100vh-260px),560px)]">
                 <div className="px-3 h-10 shrink-0 border-b border-border flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-primary" />
                   <span className="text-xs font-semibold">调试助手</span>
@@ -693,7 +693,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
               </div>
 
               {/* Right: Agent Run with tabbed Chat / Logs view */}
-              <div className="border border-border rounded-lg bg-card flex flex-col h-[640px]">
+              <div className="border border-border rounded-lg bg-card flex flex-col h-[clamp(380px,calc(100vh-260px),560px)]">
                 <Tabs value={runView} onValueChange={(v) => setRunView(v as "chat" | "logs")} className="flex flex-col flex-1 min-h-0">
                   <div className="px-3 h-10 shrink-0 border-b border-border flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1.5 min-w-0">
