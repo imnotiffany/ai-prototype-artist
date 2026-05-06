@@ -79,26 +79,7 @@ const ChatPage = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-1">
-          <Button
-            size="icon"
-            variant="ghost"
-            className="h-8 w-8 text-muted-foreground hover:text-foreground"
-            title="智能体详情"
-            onClick={() => setDetailOpen(true)}
-          >
-            <Info className="w-4 h-4" />
-          </Button>
-          <Button
-            size="icon"
-            variant="ghost"
-            className="h-8 w-8 text-muted-foreground hover:text-foreground"
-            title="版本管理"
-            onClick={() => setVersionsOpen(true)}
-          >
-            <History className="w-4 h-4" />
-          </Button>
-        </div>
+        <div className="flex items-center gap-1" />
       </div>
 
       {/* Messages */}
