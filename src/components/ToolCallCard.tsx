@@ -129,24 +129,15 @@ const Card = ({ call }: { call: ToolCall }) => {
 
       {open && canExpand && (
         <div className="px-3 pb-3 pt-2 space-y-3 border-t border-border/60 text-[11px]">
-          {/* 1. 资源 / 端点 */}
-          <section className="space-y-1">
-            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">调用资源</p>
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[10px]">
-                <Icon className="w-3 h-3" />
-                {kindLabel(call.kind)}
-              </span>
-              {call.provider && (
-                <span className="text-foreground">{call.provider}</span>
-              )}
-              {call.endpoint && (
-                <code className="font-mono text-[10px] text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">
-                  {call.endpoint}
-                </code>
-              )}
+          {/* endpoint 单独一行（如果有），不再单独搞"调用资源"区块 */}
+          {call.endpoint && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] text-muted-foreground">端点</span>
+              <code className="font-mono text-[10px] text-foreground/80 bg-muted/60 px-1.5 py-0.5 rounded">
+                {call.endpoint}
+              </code>
             </div>
-          </section>
+          )}
 
           {/* 2. 请求参数 */}
           {(call.params && call.params.length > 0) ? (
