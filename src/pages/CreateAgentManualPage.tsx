@@ -426,7 +426,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
             {/* Skill 绑定 */}
             <div className="border border-border rounded-lg p-5 bg-card">
               <div className="flex items-center justify-between mb-3">
-                <Label className="text-xs flex items-center gap-1.5"><Zap className="w-3.5 h-3.5" /> Skill 绑定</Label>
+                <Label className="text-xs">Skill 绑定</Label>
                 <PickerDialog items={skills} selected={selSkills} onToggle={(n) => toggle(selSkills, setSelSkills, n)} icon={<Zap className="w-3.5 h-3.5" />} label="Skill" marketLink="/" />
               </div>
               {selSkills.length === 0 ? (
