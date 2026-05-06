@@ -313,7 +313,7 @@ const AgentDetail = () => {
           <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center text-xl shrink-0">{agent.avatar}</div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-base font-semibold text-foreground truncate">{name}</h1>
+              <h1 className="text-lg font-semibold text-foreground truncate">{name}</h1>
               {(() => {
                 const latest = mockRuns[0];
                 const map: Record<RunStatus, AgentRuntimeStatus> = { success: "done", failed: "failed", running: "running" };

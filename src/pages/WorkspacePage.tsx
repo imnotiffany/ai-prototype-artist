@@ -9,7 +9,7 @@ const WorkspacePage = () => {
 
   return (
     <div className="p-6 max-w-[1200px] mx-auto animate-fade-in">
-      <h1 className="text-lg font-semibold mb-6">工作台</h1>
+      <h1 className="text-lg font-semibold mb-5">工作台</h1>
 
       <h2 className="text-sm font-medium text-muted-foreground mb-3">我创建的智能体</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
