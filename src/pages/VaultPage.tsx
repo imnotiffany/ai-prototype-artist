@@ -3,14 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Plus, Pencil, Trash2, KeyRound, ShieldCheck, Lock, Check, ChevronsUpDown } from "lucide-react";
-import { mockCredentials, sharedResources } from "@/data/mockData";
+import { Plus, Pencil, Trash2, KeyRound, ShieldCheck, Lock, Check, ChevronsUpDown, AlertTriangle, Bot } from "lucide-react";
+import { mockCredentials, sharedResources, mockAgents } from "@/data/mockData";
 import { toast } from "@/hooks/use-toast";
 
 type CredType = "Bearer Token" | "OAuth 2.0";
@@ -36,6 +37,26 @@ const VaultPage = () => {
   };
 
   const [mcpPickerOpen, setMcpPickerOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<typeof mockCredentials[number] | null>(null);
+
+  const linkedAgents = (mcpName: string) =>
+    mockAgents.filter((a) => a.mcpServers?.includes(mcpName)).map((a) => a.name);
+
+  const openCreate = () => {
+    reset();
+    setEditingId(null);
+    setCreateOpen(true);
+  };
+
+  const openEdit = (cred: typeof mockCredentials[number]) => {
+    reset();
+    setEditingId(cred.id);
+    setCredName(cred.name);
+    setMcpServer(cred.mcpServer);
+    setCredType(cred.type as CredType);
+    setCreateOpen(true);
+  };
 
   const handleSave = () => {
     if (!mcpServer) {
@@ -47,11 +68,18 @@ const VaultPage = () => {
       return;
     }
     toast({
-      title: "凭据已保存",
-      description: `${credName}（${credType}）已加密存入凭据库`,
+      title: editingId ? "凭据已更新" : "凭据已保存",
+      description: `${credName}（${credType}）${editingId ? "已更新并同步到使用中的智能体" : "已加密存入凭据库"}`,
     });
     setCreateOpen(false);
+    setEditingId(null);
     reset();
+  };
+
+  const confirmDelete = () => {
+    if (!deleteTarget) return;
+    toast({ title: "凭据已删除", description: `${deleteTarget.name} 已从凭据金库移除` });
+    setDeleteTarget(null);
   };
 
   return (
@@ -100,31 +128,49 @@ const VaultPage = () => {
             <TableRow>
               <TableHead>凭据名称</TableHead>
               <TableHead>凭据类型</TableHead>
-              <TableHead>关联 MCP 服务器</TableHead>
+              <TableHead>关联 MCP</TableHead>
+              <TableHead>使用情况</TableHead>
               <TableHead>创建时间</TableHead>
               <TableHead className="w-24">操作</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {mockCredentials.map((cred) => (
-              <TableRow key={cred.id}>
-                <TableCell className="font-medium text-xs">{cred.name}</TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="text-[10px] gap-1">
-                    {cred.type === "OAuth 2.0" ? <Lock className="w-3 h-3" /> : <KeyRound className="w-3 h-3" />}
-                    {cred.type}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-xs">{cred.mcpServer}</TableCell>
-                <TableCell className="text-xs text-muted-foreground">{cred.createdAt}</TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-1">
-                    <Button size="icon" variant="ghost" className="h-7 w-7"><Pencil className="w-3.5 h-3.5" /></Button>
-                    <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive"><Trash2 className="w-3.5 h-3.5" /></Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+            {mockCredentials.map((cred) => {
+              const agents = linkedAgents(cred.mcpServer);
+              return (
+                <TableRow key={cred.id}>
+                  <TableCell className="font-medium text-xs">{cred.name}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="text-[10px] gap-1">
+                      {cred.type === "OAuth 2.0" ? <Lock className="w-3 h-3" /> : <KeyRound className="w-3 h-3" />}
+                      {cred.type}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-xs">{cred.mcpServer}</TableCell>
+                  <TableCell>
+                    {agents.length > 0 ? (
+                      <Badge variant="secondary" className="text-[10px] gap-1">
+                        <Bot className="w-3 h-3" />
+                        {agents.length} 个智能体
+                      </Badge>
+                    ) : (
+                      <span className="text-[11px] text-muted-foreground">未使用</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{cred.createdAt}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEdit(cred)} title="编辑">
+                        <Pencil className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeleteTarget(cred)} title="删除">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>
@@ -132,8 +178,12 @@ const VaultPage = () => {
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>新增凭据</DialogTitle>
-            <DialogDescription className="text-xs">凭据将以加密形式存储，仅在 Agent 运行时由系统注入</DialogDescription>
+            <DialogTitle>{editingId ? "编辑凭据" : "新增凭据"}</DialogTitle>
+            <DialogDescription className="text-xs">
+              {editingId
+                ? "可修改名称与凭据值；保存后将自动同步到使用该凭据的所有智能体"
+                : "凭据将以加密形式存储，仅在 Agent 运行时由系统注入"}
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div>
@@ -239,6 +289,53 @@ const VaultPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-base">
+              <AlertTriangle className="w-4 h-4 text-destructive" />
+              确认删除凭据
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3 text-xs">
+                <p>
+                  即将删除凭据「<span className="font-medium text-foreground">{deleteTarget?.name}</span>」（{deleteTarget?.type}）。
+                  删除后无法恢复，且会立即从所有正在使用的智能体中移除。
+                </p>
+                {deleteTarget && (() => {
+                  const agents = linkedAgents(deleteTarget.mcpServer);
+                  if (agents.length === 0) {
+                    return <p className="text-muted-foreground">该凭据当前未被任何智能体使用，可以安全删除。</p>;
+                  }
+                  return (
+                    <div className="border border-destructive/30 bg-destructive/5 rounded-md p-3">
+                      <div className="flex items-center gap-1.5 text-destructive font-medium mb-2">
+                        <Bot className="w-3.5 h-3.5" />
+                        以下 {agents.length} 个智能体正在使用，删除后将无法调用对应 MCP：
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {agents.map((n) => (
+                          <Badge key={n} variant="outline" className="text-[10px]">{n}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              确认删除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
