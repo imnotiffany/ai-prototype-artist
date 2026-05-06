@@ -338,9 +338,17 @@ const VaultPage = () => {
               </div>
             )}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateOpen(false)}>取消</Button>
-            <Button onClick={handleSave}>保存</Button>
+          <DialogFooter className="sm:justify-between">
+            <Button variant="outline" size="sm" onClick={runFormTest} disabled={formTesting} className="gap-1.5">
+              {formTesting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plug className="w-3.5 h-3.5" />}
+              测试连接
+              {formTestResult === "ok" && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />}
+              {formTestResult === "fail" && <XCircle className="w-3.5 h-3.5 text-destructive" />}
+            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setCreateOpen(false)}>取消</Button>
+              <Button onClick={handleSave}>保存</Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
