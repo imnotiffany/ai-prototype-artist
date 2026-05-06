@@ -90,6 +90,8 @@ export const sharedResources: Resource[] = [
   { id: "s11", name: "Alert Manager", type: "skill", description: "告警管理与通知分发", status: "active", addedAt: "2026-04-08", usageCount: 3 },
   { id: "s12", name: "SEO Optimizer", type: "skill", description: "SEO 优化建议与关键词分析", status: "active", addedAt: "2026-04-07", usageCount: 5 },
   { id: "s13", name: "Schema Analyzer", type: "skill", description: "数据库 Schema 分析与优化", status: "active", addedAt: "2026-04-06", usageCount: 3 },
+  { id: "s14", name: "灵慧 Skill", type: "skill", description: "公司内部灵慧平台技能集，覆盖知识检索、流程自动化、智能问答等通用能力", status: "active", addedAt: "2026-04-15", usageCount: 22 },
+  { id: "s15", name: "钉钉 Skill", type: "skill", description: "钉钉工作流技能集，支持发送消息、创建日程、审批发起、待办通知等钉钉原生操作", status: "active", addedAt: "2026-04-15", usageCount: 18 },
   // ── 领慧 MCP（公司内部业务 MCP，多数无需凭据，使用 SSO/内部鉴权）──
   { id: "lh1", name: "测试管理-MCP", type: "mcp", provider: "lh", deployment: "云端", requiresCredential: false, description: "测试用例查询：通过用例ID查询用例详情。版本缺陷查询：通过缺陷ID查询缺陷详情及变更记录。其它功能持续增加中", status: "active", addedAt: "2026-04-29", usageCount: 12 },
   { id: "lh2", name: "丰景台", type: "mcp", provider: "lh", deployment: "云端", requiresCredential: false, description: "丰景台MCP全家桶，支持按个人权限查数", status: "active", addedAt: "2026-04-24", usageCount: 18 },

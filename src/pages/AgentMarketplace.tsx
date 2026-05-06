@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Clock, MessageSquare, Globe, Zap } from "lucide-react";
+import { Search, Clock, MessageSquare, Globe, Zap, Plus } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
@@ -73,10 +73,11 @@ const AgentMarketplace = () => {
         <Button
           size="sm"
           variant="default"
-          className="h-9 text-xs px-4 shrink-0"
-          onClick={() => navigate("/project-agents")}
+          className="h-9 text-xs px-4 shrink-0 gap-1.5"
+          onClick={() => navigate("/create")}
         >
-          我创建的
+          <Plus className="w-3.5 h-3.5" />
+          新建项目
         </Button>
       </div>
 
