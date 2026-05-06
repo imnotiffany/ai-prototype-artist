@@ -344,29 +344,15 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
 
   const openPublish = () => {
     handleAutoGenerateMeta();
-    setPublishStage("project");
     setPublishOpen(true);
   };
 
-  const handleSaveToProject = () => {
+  const handleSave = () => {
     if (!name.trim()) {
       toast({ title: "请填写智能体名称", variant: "destructive" });
       return;
     }
-    toast({ title: "已保存到项目管理", description: `${name} · ${category}` });
-    setPublishStage("marketplace");
-  };
-
-  const handlePublishToMarket = () => {
-    setPublishingToMarket(true);
-    setTimeout(() => {
-      setPublishingToMarket(false);
-      setPublishStage("done");
-      toast({ title: "已发布到应用广场", description: name });
-    }, 700);
-  };
-
-  const handleSkipMarket = () => {
+    toast({ title: "已保存到项目管理", description: `${name} · ${category}（如需发布，请前往项目管理或详情页发布）` });
     setPublishOpen(false);
     navigate("/project-agents");
   };
