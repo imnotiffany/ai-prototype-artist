@@ -92,12 +92,12 @@ export const PublishAgentDialog = ({ open, onOpenChange, agentName, versions, de
         <div className="space-y-5 py-2">
           {/* Name */}
           <div>
-            <RequiredLabel>应用名称</RequiredLabel>
+            <RequiredLabel>{noun}名称</RequiredLabel>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="h-10 text-sm"
-              placeholder="请输入应用名称"
+              placeholder={`请输入${noun}名称`}
             />
           </div>
 
