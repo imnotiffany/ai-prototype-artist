@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, Rocket, Plus, X, Settings2, Cpu, Server, Zap, Shield, KeyRound, Bot, MessageSquare, Eye, EyeOff, Link2, CheckCircle2, Sparkles, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Rocket, Plus, X, Settings2, Cpu, Server, Zap, Shield, KeyRound, Bot, MessageSquare, Eye, EyeOff, Link2, CheckCircle2, Sparkles, Loader2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +12,7 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { categories, getActiveSkills, getActiveMCPs, mockAgents, mockCredentials } from "@/data/mockData";
 
@@ -32,9 +32,6 @@ const CreateAgentManualPage = () => {
 
   // Model
   const [model, setModel] = useState("claude-sonnet-4-6");
-  const [temperature, setTemperature] = useState(0.7);
-  const [maxTokens, setMaxTokens] = useState(8000);
-  const [stream, setStream] = useState(true);
 
   // Prompt
   const [systemPrompt, setSystemPrompt] = useState("你是一个专业的 AI 助手，请根据用户需求提供准确、结构化的回答。");
@@ -172,52 +169,113 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
     navigate("/project-agents");
   };
 
-  const PickerPopover = ({
+  const PickerDialog = ({
     items,
     selected,
     onToggle,
     icon,
     label,
+    marketLink,
+    deployBadge,
   }: {
     items: { name: string; description: string }[];
     selected: string[];
     onToggle: (n: string) => void;
     icon: React.ReactNode;
     label: string;
-  }) => (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
-          <Plus className="w-3 h-3" />
-          添加 {label}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-72 p-2" align="start">
-        <p className="text-[11px] text-muted-foreground px-2 py-1">从{label === "Skill" ? "Skill 市场" : "MCP 广场"}选择</p>
-        <div className="max-h-64 overflow-auto">
-          {items.map((it) => {
-            const sel = selected.includes(it.name);
-            return (
-              <button
-                key={it.name}
-                onClick={() => onToggle(it.name)}
-                className={`w-full text-left px-2 py-1.5 rounded text-xs flex items-start gap-2 ${
-                  sel ? "bg-primary/10 text-primary" : "hover:bg-muted"
-                }`}
-              >
-                <div className="mt-0.5">{icon}</div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium truncate">{it.name}</p>
-                  <p className="text-[10px] text-muted-foreground truncate">{it.description}</p>
+    marketLink: string;
+    deployBadge?: (name: string) => string;
+  }) => {
+    const [open, setOpen] = useState(false);
+    const [search, setSearch] = useState("");
+    const filtered = items.filter(
+      (it) => it.name.toLowerCase().includes(search.toLowerCase()) ||
+              it.description.toLowerCase().includes(search.toLowerCase())
+    );
+    return (
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
+            <Plus className="w-3 h-3" />
+            添加 {label}
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="max-w-3xl max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="text-sm flex items-center gap-2">
+              选择 {label}
+              <Badge variant="secondary" className="text-[10px] font-normal">已选 {selected.length}</Badge>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex items-center gap-2">
+            <Input
+              className="h-8 text-xs"
+              placeholder={`搜索 ${label} 名称或功能描述`}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <Button variant="ghost" size="sm" className="h-8 text-xs gap-1 shrink-0" onClick={() => window.open(marketLink, "_blank")}>
+              前往{label === "Skill" ? "Skill 广场" : label === "MCP" ? "MCP 广场" : "智能体广场"}
+              <ExternalLink className="w-3 h-3" />
+            </Button>
+          </div>
+          <div className="overflow-auto -mx-1 px-1 grid grid-cols-2 gap-2.5">
+            {filtered.map((it) => {
+              const sel = selected.includes(it.name);
+              return (
+                <div
+                  key={it.name}
+                  className={`border rounded-lg p-3 transition-colors ${
+                    sel ? "border-primary bg-primary/5 ring-1 ring-primary/30" : "border-border hover:border-primary/40 bg-card"
+                  }`}
+                >
+                  <div className="flex items-start gap-2 mb-1.5">
+                    <div className={`w-7 h-7 rounded flex items-center justify-center shrink-0 ${sel ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
+                      {icon}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold truncate">{it.name}</p>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        {deployBadge && (
+                          <Badge variant="outline" className="text-[9px] h-4 px-1.5">{deployBadge(it.name)}</Badge>
+                        )}
+                      </div>
+                    </div>
+                    {sel && <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed mb-2.5 min-h-[32px]">
+                    {it.description}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <button
+                      className="text-[10px] text-primary hover:underline flex items-center gap-0.5"
+                      onClick={() => window.open(`${marketLink}#${encodeURIComponent(it.name)}`, "_blank")}
+                    >
+                      查看详情 <ExternalLink className="w-2.5 h-2.5" />
+                    </button>
+                    <Button
+                      size="sm"
+                      variant={sel ? "outline" : "default"}
+                      className="h-6 text-[10px] px-2"
+                      onClick={() => onToggle(it.name)}
+                    >
+                      {sel ? "移除" : "添加"}
+                    </Button>
+                  </div>
                 </div>
-                {sel && <X className="w-3 h-3 shrink-0 mt-0.5" />}
-              </button>
-            );
-          })}
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
+              );
+            })}
+            {filtered.length === 0 && (
+              <p className="col-span-2 text-center text-xs text-muted-foreground py-8">未找到匹配的 {label}</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setOpen(false)}>完成</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  };
 
   return (
     <div className="flex-1 overflow-auto animate-fade-in">
@@ -275,32 +333,13 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label className="text-xs">Temperature</Label>
-                  <span className="text-xs font-mono text-muted-foreground">{temperature.toFixed(2)}</span>
-                </div>
-                <Slider value={[temperature]} onValueChange={([v]) => setTemperature(v)} min={0} max={1} step={0.05} />
-                <p className="text-[10px] text-muted-foreground mt-1.5">较低值更确定性，较高值更具创造性</p>
-              </div>
-              <div>
-                <Label className="text-xs">Max Tokens</Label>
-                <Input type="number" className="mt-1.5 h-8 text-xs w-40" value={maxTokens} onChange={(e) => setMaxTokens(Number(e.target.value))} />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="text-xs">流式输出</Label>
-                  <p className="text-[10px] text-muted-foreground">启用 SSE 流式推送，长任务建议开启</p>
-                </div>
-                <Switch checked={stream} onCheckedChange={setStream} />
-              </div>
             </div>
 
             {/* MCP 绑定 */}
             <div className="border border-border rounded-lg p-5 bg-card">
               <div className="flex items-center justify-between mb-3">
                 <Label className="text-xs flex items-center gap-1.5"><Server className="w-3.5 h-3.5" /> MCP 服务绑定</Label>
-                <PickerPopover items={mcps} selected={selMCPs} onToggle={(n) => toggle(selMCPs, setSelMCPs, n)} icon={<Server className="w-3 h-3" />} label="MCP" />
+                <PickerDialog items={mcps} selected={selMCPs} onToggle={(n) => toggle(selMCPs, setSelMCPs, n)} icon={<Server className="w-3.5 h-3.5" />} label="MCP" marketLink="/" deployBadge={() => "云端"} />
               </div>
               {selMCPs.length === 0 ? (
                 <p className="text-xs text-muted-foreground py-2">未绑定任何 MCP 服务</p>
@@ -324,7 +363,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
             <div className="border border-border rounded-lg p-5 bg-card">
               <div className="flex items-center justify-between mb-3">
                 <Label className="text-xs flex items-center gap-1.5"><Zap className="w-3.5 h-3.5" /> Skill 绑定</Label>
-                <PickerPopover items={skills} selected={selSkills} onToggle={(n) => toggle(selSkills, setSelSkills, n)} icon={<Zap className="w-3 h-3" />} label="Skill" />
+                <PickerDialog items={skills} selected={selSkills} onToggle={(n) => toggle(selSkills, setSelSkills, n)} icon={<Zap className="w-3.5 h-3.5" />} label="Skill" marketLink="/" />
               </div>
               {selSkills.length === 0 ? (
                 <p className="text-xs text-muted-foreground py-2">未绑定任何 Skill</p>
@@ -347,7 +386,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                   <Label className="text-xs flex items-center gap-1.5"><Bot className="w-3.5 h-3.5" /> Subagent 绑定</Label>
                   <p className="text-[10px] text-muted-foreground mt-0.5">允许当前智能体调用其他智能体作为子任务执行者</p>
                 </div>
-                <PickerPopover items={subagents.map((a) => ({ name: a.name, description: a.description }))} selected={selSubagents} onToggle={(n) => toggle(selSubagents, setSelSubagents, n)} icon={<Bot className="w-3 h-3" />} label="Subagent" />
+                <PickerDialog items={subagents.map((a) => ({ name: a.name, description: a.description }))} selected={selSubagents} onToggle={(n) => toggle(selSubagents, setSelSubagents, n)} icon={<Bot className="w-3.5 h-3.5" />} label="Subagent" marketLink="/" />
               </div>
               {selSubagents.length === 0 ? (
                 <p className="text-xs text-muted-foreground py-2">未绑定任何 Subagent</p>
@@ -454,20 +493,12 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
 
           {/* FengSheng NEXT Bot */}
           <TabsContent value="fengsheng" className="mt-4 space-y-4">
-            <div className="border border-border rounded-lg p-5 bg-card">
-              <div className="flex items-start justify-between mb-1">
-                <div className="flex items-start gap-2">
-                  <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-                    <MessageSquare className="w-4 h-4 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold">丰声 NEXT 机器人接入</h3>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
-                      配置企业应用凭证，将该智能体发布为丰声 NEXT 群聊机器人，群成员 @ 即可触发对话
-                    </p>
-                  </div>
-                </div>
-              </div>
+            <div className="border border-border rounded-lg px-4 py-3 bg-gradient-to-r from-primary/10 to-primary/5 flex items-center gap-2.5">
+              <MessageSquare className="w-4 h-4 text-primary shrink-0" />
+              <p className="text-xs">
+                <span className="font-medium">发布为丰声 NEXT 群聊机器人</span>
+                <span className="text-muted-foreground"> · 群成员 @ 即可触发对话</span>
+              </p>
             </div>
 
             <div className="border border-border rounded-lg p-5 bg-card space-y-4">
