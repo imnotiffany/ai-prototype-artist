@@ -198,6 +198,7 @@ const ProjectAgents = () => {
         onOpenChange={(o) => !o && setPublishTarget(null)}
         agentName={publishTarget?.name ?? ""}
         versions={publishTarget ? mockVersionsFor(publishTarget) : []}
+        kind={publishTarget?.kind}
       />
     </div>
   );
