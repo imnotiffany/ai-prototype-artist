@@ -32,9 +32,11 @@ const matches = (q: string, ...fields: (string | undefined)[]) => {
 export const RunTranscriptView = ({
   events,
   emptyText = "暂无对话内容",
+  showSearch = true,
 }: {
   events: TranscriptEvent[];
   emptyText?: string;
+  showSearch?: boolean;
 }) => {
   const [q, setQ] = useState("");
 
