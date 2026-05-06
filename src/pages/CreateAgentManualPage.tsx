@@ -441,13 +441,6 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                     </p>
                   </div>
                 </div>
-                <Badge
-                  variant="outline"
-                  className={`text-[10px] gap-1 ${fsConnected ? "text-emerald-600 border-emerald-600/40 bg-emerald-500/10" : "text-muted-foreground"}`}
-                >
-                  <span className={`w-1.5 h-1.5 rounded-full ${fsConnected ? "bg-emerald-500" : "bg-muted-foreground/50"}`} />
-                  {fsConnected ? "已连接" : "未连接"}
-                </Badge>
               </div>
             </div>
 
@@ -457,22 +450,13 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                   <KeyRound className="w-3.5 h-3.5" />
                   应用凭证
                 </h4>
-                <Button
-                  size="sm"
-                  variant={fsConnected ? "outline" : "default"}
-                  className="h-7 text-xs gap-1.5"
-                  onClick={() => {
-                    if (!fsAppKey || !fsAppSecret || !fsRobotCode) {
-                      toast({ title: "请先填写完整的应用凭证", variant: "destructive" });
-                      return;
-                    }
-                    setFsConnected(true);
-                    toast({ title: "丰声 NEXT 机器人已连接", description: `Robot ${fsRobotCode}` });
-                  }}
+                <Badge
+                  variant="outline"
+                  className={`text-[10px] gap-1 ${fsConnected ? "text-emerald-600 border-emerald-600/40 bg-emerald-500/10" : "text-muted-foreground"}`}
                 >
-                  {fsConnected ? <CheckCircle2 className="w-3 h-3" /> : <Link2 className="w-3 h-3" />}
-                  {fsConnected ? "已连接" : "连接"}
-                </Button>
+                  <span className={`w-1.5 h-1.5 rounded-full ${fsConnected ? "bg-emerald-500" : "bg-muted-foreground/50"}`} />
+                  {fsConnected ? "已连接" : "未连接"}
+                </Badge>
               </div>
 
               <div>
@@ -522,6 +506,25 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                 <p className="text-[10px] text-muted-foreground mt-1.5">
                   在丰声 NEXT 开发者后台「机器人管理」中获取，凭据将通过「凭据金库」加密存储
                 </p>
+              </div>
+
+              <div className="flex justify-end pt-1">
+                <Button
+                  size="sm"
+                  variant={fsConnected ? "outline" : "default"}
+                  className="h-8 text-xs gap-1.5"
+                  onClick={() => {
+                    if (!fsAppKey || !fsAppSecret || !fsRobotCode) {
+                      toast({ title: "请先填写完整的应用凭证", variant: "destructive" });
+                      return;
+                    }
+                    setFsConnected(true);
+                    toast({ title: "丰声 NEXT 机器人已连接", description: `Robot ${fsRobotCode}` });
+                  }}
+                >
+                  {fsConnected ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Link2 className="w-3.5 h-3.5" />}
+                  {fsConnected ? "已连接" : "连接"}
+                </Button>
               </div>
             </div>
 
