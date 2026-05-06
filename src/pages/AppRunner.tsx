@@ -39,24 +39,6 @@ const AppRunner = () => {
             size="icon"
             variant="ghost"
             className="h-8 w-8 text-muted-foreground hover:text-foreground"
-            title="智能体详情"
-            onClick={() => navigate(`/agent/${app.id}`)}
-          >
-            <Info className="w-4 h-4" />
-          </Button>
-          <Button
-            size="icon"
-            variant="ghost"
-            className="h-8 w-8 text-muted-foreground hover:text-foreground"
-            title="版本管理"
-            onClick={() => navigate(`/agent/${app.id}?tab=versions`)}
-          >
-            <History className="w-4 h-4" />
-          </Button>
-          <Button
-            size="icon"
-            variant="ghost"
-            className="h-8 w-8 text-muted-foreground hover:text-foreground"
             title="分享"
           >
             <Share2 className="w-4 h-4" />
