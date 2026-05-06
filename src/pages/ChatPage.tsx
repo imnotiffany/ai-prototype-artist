@@ -74,7 +74,7 @@ const ChatPage = () => {
           <div className="min-w-0 flex items-center gap-2">
             <span className="font-medium text-sm truncate">{agent.name}</span>
             <Badge variant="outline" className="text-[10px] h-5 px-1.5 text-primary border-primary/30 shrink-0">
-              Agent
+              智能体
             </Badge>
           </div>
         </div>
