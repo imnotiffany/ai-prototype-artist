@@ -172,14 +172,16 @@ const AgentDetail = () => {
   const credentialsByMcp = (mcp: string) => mockCredentials.filter((c) => c.mcpServer === mcp);
 
   /* ── Config actions ── */
+  const bumpPatch = (v: string) => {
+    const m = v.replace(/^v/, "").split(".").map((n) => parseInt(n, 10) || 0);
+    while (m.length < 3) m.push(0);
+    m[2] += 1;
+    return "v" + m.join(".");
+  };
+  const nextVersion = useMemo(() => bumpPatch(versions[0]?.v ?? "v0.0.0"), [versions]);
+
   const handleSave = () => {
-    const bumpPatch = (v: string) => {
-      const m = v.replace(/^v/, "").split(".").map((n) => parseInt(n, 10) || 0);
-      while (m.length < 3) m.push(0);
-      m[2] += 1;
-      return "v" + m.join(".");
-    };
-    const next = bumpPatch(versions[0]?.v ?? "v0.0.0");
+    const next = nextVersion;
     setVersions([
       { v: next, at: new Date().toISOString().slice(0, 16).replace("T", " "), by: "廖奕通", note: "更新配置", current: true },
       ...versions.map((v) => ({ ...v, current: false })),
@@ -309,10 +311,10 @@ const AgentDetail = () => {
 
         {/* ───────── 调试 ───────── */}
         <TabsContent value="debug" className="mt-4">
-          <div className="border border-border rounded-lg px-4 py-3 bg-gradient-to-r from-primary/10 to-primary/5 mb-4">
+          <div className="border border-border rounded-lg px-3 py-2 bg-gradient-to-r from-primary/10 to-primary/5 mb-4">
             <p className="text-xs">
               <span className="font-medium">调试模式</span>
-              <span className="text-muted-foreground"> · 左侧与调试 AI 沟通配置调整，右侧直接与智能体对话验证效果。调试期间的修改不会影响线上，需要先「保存」生成新版本，再点右上角「发布」推送上线。</span>
+              <span className="text-muted-foreground"> · 左侧调整配置，右侧验证效果，修改不会影响线上。</span>
             </p>
           </div>
 
@@ -340,6 +342,22 @@ const AgentDetail = () => {
                   </div>
                 ))}
               </div>
+              {isDirty && (
+                <div className="border-t border-amber-300/60 bg-amber-50/80 dark:bg-amber-950/30 px-3 py-2 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 text-[11px] text-amber-900 dark:text-amber-200 min-w-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                    <span className="truncate">本轮调整尚未保存</span>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Button size="sm" variant="ghost" className="h-6 text-[11px] gap-1 text-amber-900 hover:text-amber-900 hover:bg-amber-100/60 dark:text-amber-200" onClick={handleRevert}>
+                      <RotateCcw className="w-3 h-3" />撤销
+                    </Button>
+                    <Button size="sm" className="h-6 text-[11px] gap-1" onClick={handleSave}>
+                      <Save className="w-3 h-3" />保存为 {nextVersion}
+                    </Button>
+                  </div>
+                </div>
+              )}
               <div className="border-t border-border p-3 flex items-center gap-2">
                 <Input
                   className="h-8 text-xs"
@@ -499,24 +517,6 @@ const AgentDetail = () => {
             </div>
           </div>
 
-          {/* Sticky bottom action bar (debug) */}
-          {isDirty && (
-            <div className="sticky bottom-4 mt-4 mx-auto max-w-3xl z-10 border border-amber-300 bg-amber-50/95 dark:bg-amber-950/40 backdrop-blur rounded-lg shadow-lg px-4 py-2.5 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2 text-xs min-w-0">
-                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
-                <span className="font-medium text-amber-900 dark:text-amber-200">调试期间的修改尚未保存，不会影响线上</span>
-                <span className="text-amber-700/80 dark:text-amber-300/80 truncate">· 保存后将生成新版本，需到右上角「发布」才能上线</span>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <Button size="sm" variant="ghost" className="h-7 text-xs gap-1.5" onClick={handleRevert}>
-                  <RotateCcw className="w-3 h-3" />撤销
-                </Button>
-                <Button size="sm" className="h-7 text-xs gap-1.5" onClick={handleSave}>
-                  <Save className="w-3 h-3" />保存
-                </Button>
-              </div>
-            </div>
-          )}
         </TabsContent>
 
         {/* ───────── 配置 ───────── */}
@@ -834,7 +834,7 @@ const AgentDetail = () => {
         <TabsContent value="versions" className="mt-4">
           <div className="border border-border rounded-lg px-4 py-3 bg-muted/40 mb-4">
             <p className="text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">关于版本</span> · 每次在「配置」中点击保存，都会自动生成一个新版本。可在此查看任意历史版本快照，或选择某个版本重新发布上线。
+              <span className="font-medium text-foreground">关于版本</span> · 每次点击保存，都会自动生成一个新版本。可在此查看任意历史版本快照，或选择某个版本重新发布上线。
             </p>
           </div>
           <div className="border border-border rounded-lg bg-card overflow-hidden">
