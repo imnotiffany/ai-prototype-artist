@@ -37,6 +37,26 @@ const VaultPage = () => {
   };
 
   const [mcpPickerOpen, setMcpPickerOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<typeof mockCredentials[number] | null>(null);
+
+  const linkedAgents = (mcpName: string) =>
+    mockAgents.filter((a) => a.mcpServers?.includes(mcpName)).map((a) => a.name);
+
+  const openCreate = () => {
+    reset();
+    setEditingId(null);
+    setCreateOpen(true);
+  };
+
+  const openEdit = (cred: typeof mockCredentials[number]) => {
+    reset();
+    setEditingId(cred.id);
+    setCredName(cred.name);
+    setMcpServer(cred.mcpServer);
+    setCredType(cred.type as CredType);
+    setCreateOpen(true);
+  };
 
   const handleSave = () => {
     if (!mcpServer) {
@@ -48,11 +68,18 @@ const VaultPage = () => {
       return;
     }
     toast({
-      title: "凭据已保存",
-      description: `${credName}（${credType}）已加密存入凭据库`,
+      title: editingId ? "凭据已更新" : "凭据已保存",
+      description: `${credName}（${credType}）${editingId ? "已更新并同步到使用中的智能体" : "已加密存入凭据库"}`,
     });
     setCreateOpen(false);
+    setEditingId(null);
     reset();
+  };
+
+  const confirmDelete = () => {
+    if (!deleteTarget) return;
+    toast({ title: "凭据已删除", description: `${deleteTarget.name} 已从凭据金库移除` });
+    setDeleteTarget(null);
   };
 
   return (
