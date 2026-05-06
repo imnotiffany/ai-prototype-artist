@@ -30,7 +30,7 @@ const WorkspacePage = () => {
                     <Badge key={i} variant="outline" className="text-xs">{tag}</Badge>
                   ))}
                   <Badge variant="outline" className="text-[10px]">
-                    {agent.status === "published" ? "已发布" : agent.status === "draft" ? "草稿" : "项目"}
+                    {agent.status === "published" ? (agent.publishScope === "marketplace" ? "已发布到广场" : "已发布到项目") : "未发布"}
                   </Badge>
                 </div>
               </div>

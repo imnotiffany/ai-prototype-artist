@@ -161,7 +161,7 @@ const CreatePage = () => {
                   </p>
                   <div className="flex items-center gap-1.5 mt-2">
                     <Badge variant="outline" className="text-[9px] h-4 px-1.5">
-                      {agent.status === "published" ? "已发布" : agent.status === "draft" ? "草稿" : "项目"}
+                      {agent.status === "published" ? (agent.publishScope === "marketplace" ? "已发布到广场" : "已发布到项目") : "未发布"}
                     </Badge>
                     <span className="text-[10px] text-muted-foreground">{agent.updatedAt}</span>
                   </div>

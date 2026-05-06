@@ -2,6 +2,9 @@
 
 export type McpProvider = "lh" | "dd";
 
+/** MCP 评级：official=平台官方收录 / verified=企业认证 / community=社区贡献 */
+export type McpTrustLevel = "official" | "verified" | "community";
+
 export interface Resource {
   id: string;
   name: string;
@@ -16,6 +19,8 @@ export interface Resource {
   requiresCredential?: boolean;
   /** MCP only: 部署形态徽标，如 "云端" / "本地" / "Remote" */
   deployment?: string;
+  /** MCP only: 评级 */
+  trustLevel?: McpTrustLevel;
 }
 
 export interface Agent {
@@ -35,9 +40,11 @@ export interface Agent {
   sessionCount: number;
   versions: Version[];
   creationType: "ai" | "upload";
-  status: "published" | "draft" | "project";
+  status: "published" | "project";
   /** "agent" = 对话型智能体（点击进入对话），"app" = 网页应用（点击直接运行） */
   kind: "agent" | "app";
+  /** 仅当 status==="published" 时有意义：marketplace=已发布到广场，project=已发布到项目内 */
+  publishScope?: "marketplace" | "project";
   featured?: boolean;
   /** 是否允许其他用户复制到自己项目内（由创建者发布时设置，默认 true） */
   allowCopy?: boolean;
@@ -237,7 +244,7 @@ export const mockAgents: Agent[] = [
     platform: "AI技术平台", author: "廖奕通", authorId: "01441970",
     updatedAt: "2026-04-01", downloads: 0,
     skills: ["Content Generation"], mcpServers: [],
-    sessionCount: 0, creationType: "ai", status: "draft", kind: "app",
+    sessionCount: 0, creationType: "ai", status: "project", kind: "app",
     versions: [],
   },
   {
@@ -271,7 +278,7 @@ export const mockAgents: Agent[] = [
     platform: "AI技术平台", author: "廖奕通", authorId: "01441970",
     updatedAt: "2026-03-31", downloads: 0,
     skills: ["Content Generation"], mcpServers: [],
-    sessionCount: 0, creationType: "ai", status: "draft", kind: "app",
+    sessionCount: 0, creationType: "ai", status: "project", kind: "app",
     versions: [],
   },
   {
@@ -310,8 +317,14 @@ export const mockAgents: Agent[] = [
   },
 ];
 
+/* 给历史已发布数据补默认 publishScope（mock 兜底） */
+mockAgents.forEach((a) => {
+  if (a.status === "published" && !a.publishScope) a.publishScope = "marketplace";
+});
+
 /* ── Helper: filter agents by context ── */
-export const getMarketplaceAgents = () => mockAgents.filter((a) => a.status === "published");
+export const getMarketplaceAgents = () =>
+  mockAgents.filter((a) => a.status === "published" && a.publishScope === "marketplace");
 export const getMyAgents = () => mockAgents.filter((a) => ["01441970", "01422596", "01419965"].includes(a.authorId));
 export const getRecentAgents = () => [...mockAgents].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 6);
 

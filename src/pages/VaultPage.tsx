@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Plus, Pencil, Trash2, KeyRound, ShieldCheck, Lock, Check, ChevronsUpDown, AlertTriangle, Bot } from "lucide-react";
+import { Plus, Pencil, Trash2, KeyRound, ShieldCheck, Lock, Check, ChevronsUpDown, AlertTriangle, Bot, Plug, Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { mockCredentials, sharedResources, mockAgents } from "@/data/mockData";
 import { toast } from "@/hooks/use-toast";
 
@@ -34,11 +34,52 @@ const VaultPage = () => {
     setCredName(""); setMcpServer(""); setTokenValue("");
     setOauthClientId(""); setOauthClientSecret(""); setOauthAuthUrl(""); setOauthTokenUrl(""); setOauthScopes("");
     setCredType("Bearer Token");
+    setFormTestResult(null); setFormTesting(false);
   };
 
   const [mcpPickerOpen, setMcpPickerOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<typeof mockCredentials[number] | null>(null);
+  const [testingId, setTestingId] = useState<string | null>(null);
+  const [testResult, setTestResult] = useState<Record<string, "ok" | "fail">>({});
+  const [formTesting, setFormTesting] = useState(false);
+  const [formTestResult, setFormTestResult] = useState<"ok" | "fail" | null>(null);
+
+  const runTest = (id: string, label: string) => {
+    setTestingId(id);
+    setTimeout(() => {
+      const ok = Math.random() > 0.2;
+      setTestResult((r) => ({ ...r, [id]: ok ? "ok" : "fail" }));
+      setTestingId(null);
+      toast({
+        title: ok ? "连接成功" : "连接失败",
+        description: ok ? `${label} 已与目标 MCP 完成握手` : `${label} 无法连接，请检查凭据值或 MCP 服务可达性`,
+        variant: ok ? "default" : "destructive",
+      });
+    }, 900);
+  };
+
+  const runFormTest = () => {
+    if (!mcpServer) {
+      toast({ title: "请先选择关联 MCP", variant: "destructive" });
+      return;
+    }
+    if (credType === "Bearer Token" && !tokenValue) {
+      toast({ title: "请输入 Token 值", variant: "destructive" });
+      return;
+    }
+    if (credType === "OAuth 2.0" && (!oauthClientId || !oauthClientSecret)) {
+      toast({ title: "请填写 OAuth Client ID/Secret", variant: "destructive" });
+      return;
+    }
+    setFormTesting(true);
+    setFormTestResult(null);
+    setTimeout(() => {
+      const ok = Math.random() > 0.2;
+      setFormTesting(false);
+      setFormTestResult(ok ? "ok" : "fail");
+    }, 900);
+  };
 
   const linkedAgents = (mcpName: string) =>
     mockAgents.filter((a) => a.mcpServers?.includes(mcpName)).map((a) => a.name);
@@ -131,7 +172,8 @@ const VaultPage = () => {
               <TableHead className="text-sm">关联 MCP</TableHead>
               <TableHead className="text-sm">使用情况</TableHead>
               <TableHead className="text-sm">创建时间</TableHead>
-              <TableHead className="w-24 text-sm">操作</TableHead>
+              <TableHead className="text-sm w-28">连接状态</TableHead>
+              <TableHead className="w-32 text-sm">操作</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -159,7 +201,21 @@ const VaultPage = () => {
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">{cred.createdAt}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-1">
+                    {testingId === cred.id ? (
+                      <Badge variant="outline" className="text-[10px] gap-1 font-normal"><Loader2 className="w-3 h-3 animate-spin" />测试中</Badge>
+                    ) : testResult[cred.id] === "ok" ? (
+                      <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0 text-[10px] gap-1"><CheckCircle2 className="w-3 h-3" />已连通</Badge>
+                    ) : testResult[cred.id] === "fail" ? (
+                      <Badge className="bg-red-100 text-red-700 hover:bg-red-100 border-0 text-[10px] gap-1"><XCircle className="w-3 h-3" />失败</Badge>
+                    ) : (
+                      <span className="text-[11px] text-muted-foreground">未测试</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-0.5">
+                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => runTest(cred.id, cred.name)} title="测试连接" disabled={testingId === cred.id}>
+                        <Plug className="w-3.5 h-3.5" />
+                      </Button>
                       <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEdit(cred)} title="编辑">
                         <Pencil className="w-3.5 h-3.5" />
                       </Button>
@@ -283,9 +339,17 @@ const VaultPage = () => {
               </div>
             )}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateOpen(false)}>取消</Button>
-            <Button onClick={handleSave}>保存</Button>
+          <DialogFooter className="sm:justify-between">
+            <Button variant="outline" size="sm" onClick={runFormTest} disabled={formTesting} className="gap-1.5">
+              {formTesting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plug className="w-3.5 h-3.5" />}
+              测试连接
+              {formTestResult === "ok" && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />}
+              {formTestResult === "fail" && <XCircle className="w-3.5 h-3.5 text-destructive" />}
+            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setCreateOpen(false)}>取消</Button>
+              <Button onClick={handleSave}>保存</Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>

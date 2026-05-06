@@ -13,9 +13,9 @@ const MY_AUTHOR_ID = "01441970";
 
 const statusOptions = [
   { value: "all", label: "全部" },
-  { value: "published", label: "已发布" },
-  { value: "draft", label: "草稿" },
-  { value: "project", label: "项目" },
+  { value: "marketplace", label: "已发布到广场" },
+  { value: "project", label: "已发布到项目" },
+  { value: "unpublished", label: "未发布" },
 ];
 
 const ProjectAgents = () => {
@@ -37,7 +37,11 @@ const ProjectAgents = () => {
   const filtered = mockAgents.filter((app) => {
     if (searchName && !app.name.toLowerCase().includes(searchName.toLowerCase())) return false;
     if (categoryFilter !== "all" && app.category !== categoryFilter) return false;
-    if (statusFilter !== "all" && app.status !== statusFilter) return false;
+    if (statusFilter !== "all") {
+      if (statusFilter === "marketplace" && !(app.status === "published" && app.publishScope === "marketplace")) return false;
+      if (statusFilter === "project" && !(app.status === "published" && app.publishScope === "project")) return false;
+      if (statusFilter === "unpublished" && app.status !== "project") return false;
+    }
     if (kindFilter !== "all" && app.kind !== kindFilter) return false;
     if (onlyMine && app.authorId !== MY_AUTHOR_ID) return false;
     return true;
@@ -52,19 +56,13 @@ const ProjectAgents = () => {
   };
 
   const getStatusBadge = (app: Agent) => {
-    const badges: React.ReactNode[] = [];
-
-
-    if (app.status === "published") {
-      badges.push(<Badge key="pub" className="bg-green-100 text-green-700 hover:bg-green-100 border-0 text-[10px] px-1.5 h-5">已发布</Badge>);
+    if (app.status === "published" && app.publishScope === "marketplace") {
+      return <Badge key="mkt" className="bg-green-100 text-green-700 hover:bg-green-100 border-0 text-[10px] px-1.5 h-5">已发布到广场</Badge>;
     }
-    if (app.status === "draft") {
-      badges.push(<Badge key="draft" className="bg-gray-100 text-gray-600 hover:bg-gray-100 border-0 text-[10px] px-1.5 h-5">草稿</Badge>);
+    if (app.status === "published" && app.publishScope === "project") {
+      return <Badge key="proj" className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-0 text-[10px] px-1.5 h-5">已发布到项目</Badge>;
     }
-    if (app.status === "project") {
-      badges.push(<Badge key="proj" className="bg-orange-100 text-orange-700 hover:bg-orange-100 border-0 text-[10px] px-1.5 h-5">项目</Badge>);
-    }
-    return badges;
+    return <Badge key="unp" className="bg-gray-100 text-gray-600 hover:bg-gray-100 border-0 text-[10px] px-1.5 h-5">未发布</Badge>;
   };
 
   const usedCategories = [...new Set(mockAgents.map((a) => a.category))];

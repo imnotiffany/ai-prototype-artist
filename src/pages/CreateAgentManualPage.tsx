@@ -57,11 +57,6 @@ const CreateAgentManualPage = () => {
   const [persistentFs, setPersistentFs] = useState(true);
   const [mcpCredentialMap, setMcpCredentialMap] = useState<Record<string, string>>({});
 
-  // Network
-  const [networkPolicy, setNetworkPolicy] = useState<"intranet" | "whitelist" | "open">("whitelist");
-  const [whitelistInput, setWhitelistInput] = useState("");
-  const [whitelist, setWhitelist] = useState<string[]>(["api.sf-express.com"]);
-
   // FengSheng NEXT bot
   const [fsAppKey, setFsAppKey] = useState("");
   const [fsAppSecret, setFsAppSecret] = useState("");
@@ -273,11 +268,7 @@ const CreateAgentManualPage = () => {
   const toggle = (list: string[], setList: (v: string[]) => void, name: string) =>
     setList(list.includes(name) ? list.filter((x) => x !== name) : [...list, name]);
 
-  const addWhitelist = () => {
-    const w = whitelistInput.trim();
-    if (w && !whitelist.includes(w)) setWhitelist([...whitelist, w]);
-    setWhitelistInput("");
-  };
+
 
   const handleAutoGeneratePrompt = () => {
     setGeneratingPrompt(true);
@@ -332,13 +323,6 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
       setGeneratingPrompt(false);
       toast({ title: "已根据当前能力生成系统提示词", description: `MCP ${selMCPs.length} · Skill ${selSkills.length} · 子智能体 ${selSubagents.length}` });
     }, 800);
-  };
-
-  const handleSaveDraft = () => {
-    toast({
-      title: "草稿已保存",
-      description: `${selMCPs.length} MCP / ${selSkills.length} Skill / ${selSubagents.length} 子智能体`,
-    });
   };
 
   const openPublish = () => {

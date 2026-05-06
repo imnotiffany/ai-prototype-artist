@@ -102,7 +102,8 @@ const AgentDetail = () => {
   }) !== JSON.stringify(savedSnapshot), [name, description, model, systemPrompt, selSkills, mcpBindings, fsAppKey, fsAppSecret, fsRobotCode, savedSnapshot]);
 
   /* ── Debug state ── */
-  type ChatMsg = { role: "user" | "assistant"; content: string };
+  type PromptSuggestion = { id: string; addition: string; summaryNote: string; status: "pending" | "adopted" | "rejected" };
+  type ChatMsg = { role: "user" | "assistant"; content: string; suggestion?: PromptSuggestion };
   type RunMsg = { role: "user" | "assistant"; content: string; tool?: string; status?: "ok" | "error" };
   const [assistantInput, setAssistantInput] = useState("");
   const [assistantMessages, setAssistantMessages] = useState<ChatMsg[]>([]);
@@ -120,13 +121,45 @@ const AgentDetail = () => {
     setDebugLogs((l) => [...l, { id: ++logIdRef.current, ts, level, message, meta }]);
   };
 
+  const updateSuggestionStatus = (id: string, status: "adopted" | "rejected") => {
+    setAssistantMessages((msgs) =>
+      msgs.map((m) => (m.suggestion?.id === id ? { ...m, suggestion: { ...m.suggestion, status } } : m))
+    );
+  };
+
+  const adoptSuggestion = (s: PromptSuggestion) => {
+    if (s.status !== "pending") return;
+    setSystemPrompt((p) => p.trim() + s.addition);
+    updateSuggestionStatus(s.id, "adopted");
+    toast({ title: "已采纳建议", description: "系统提示词已更新，可在下方保存为新版本" });
+  };
+
+  const rejectSuggestion = (s: PromptSuggestion) => {
+    if (s.status !== "pending") return;
+    updateSuggestionStatus(s.id, "rejected");
+  };
+
   const sendAssistantMessage = () => {
     if (!assistantInput.trim()) return;
     const text = assistantInput.trim();
     setAssistantMessages((m) => [...m, { role: "user", content: text }]);
     setAssistantInput("");
     setTimeout(() => {
-      setAssistantMessages((m) => [...m, { role: "assistant", content: `已记录你的调整建议："${text}"。我会在右侧下一轮调试中应用。` }]);
+      const addition = `\n\n# 用户调试反馈\n- ${text}`;
+      const suggestion: PromptSuggestion = {
+        id: `s-${Date.now()}`,
+        addition,
+        summaryNote: text.slice(0, 40),
+        status: "pending",
+      };
+      setAssistantMessages((m) => [
+        ...m,
+        {
+          role: "assistant",
+          content: `根据你的反馈，建议在系统提示词中追加这段说明。点击「采纳」即可应用，应用后可在下方一键保存为新版本或同时发布上线。`,
+          suggestion,
+        },
+      ]);
     }, 600);
   };
 
@@ -338,7 +371,31 @@ const AgentDetail = () => {
                   <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                     <div className={`max-w-[85%] rounded-lg px-3 py-2 text-xs whitespace-pre-wrap leading-relaxed ${
                       msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
-                    }`}>{msg.content}</div>
+                    }`}>
+                      {msg.content}
+                      {msg.suggestion && (
+                        <div className="mt-2 pt-2 border-t border-border/60 flex items-center gap-2">
+                          {msg.suggestion.status === "pending" && (
+                            <>
+                              <Button size="sm" className="h-6 text-[11px] px-2 gap-1" onClick={() => adoptSuggestion(msg.suggestion!)}>
+                                <CheckCircle2 className="w-3 h-3" />采纳
+                              </Button>
+                              <Button size="sm" variant="ghost" className="h-6 text-[11px] px-2" onClick={() => rejectSuggestion(msg.suggestion!)}>
+                                忽略
+                              </Button>
+                            </>
+                          )}
+                          {msg.suggestion.status === "adopted" && (
+                            <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600">
+                              <CheckCircle2 className="w-3 h-3" />已采纳
+                            </span>
+                          )}
+                          {msg.suggestion.status === "rejected" && (
+                            <span className="text-[11px] text-muted-foreground">已忽略</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -352,8 +409,11 @@ const AgentDetail = () => {
                     <Button size="sm" variant="ghost" className="h-6 text-[11px] gap-1 text-amber-900 hover:text-amber-900 hover:bg-amber-100/60 dark:text-amber-200" onClick={handleRevert}>
                       <RotateCcw className="w-3 h-3" />撤销
                     </Button>
-                    <Button size="sm" className="h-6 text-[11px] gap-1" onClick={handleSave}>
+                    <Button size="sm" variant="outline" className="h-6 text-[11px] gap-1" onClick={handleSave}>
                       <Save className="w-3 h-3" />保存为 {nextVersion}
+                    </Button>
+                    <Button size="sm" className="h-6 text-[11px] gap-1" onClick={() => { handleSave(); setPublishOpen(true); }}>
+                      <Rocket className="w-3 h-3" />保存并发布
                     </Button>
                   </div>
                 </div>
