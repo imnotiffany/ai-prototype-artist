@@ -2,6 +2,9 @@
 
 export type McpProvider = "lh" | "dd";
 
+/** MCP 评级：official=平台官方收录 / verified=企业认证 / community=社区贡献 */
+export type McpTrustLevel = "official" | "verified" | "community";
+
 export interface Resource {
   id: string;
   name: string;
@@ -16,6 +19,8 @@ export interface Resource {
   requiresCredential?: boolean;
   /** MCP only: 部署形态徽标，如 "云端" / "本地" / "Remote" */
   deployment?: string;
+  /** MCP only: 评级 */
+  trustLevel?: McpTrustLevel;
 }
 
 export interface Agent {
@@ -35,9 +40,11 @@ export interface Agent {
   sessionCount: number;
   versions: Version[];
   creationType: "ai" | "upload";
-  status: "published" | "draft" | "project";
+  status: "published" | "project";
   /** "agent" = 对话型智能体（点击进入对话），"app" = 网页应用（点击直接运行） */
   kind: "agent" | "app";
+  /** 仅当 status==="published" 时有意义：marketplace=已发布到广场，project=已发布到项目内 */
+  publishScope?: "marketplace" | "project";
   featured?: boolean;
   /** 是否允许其他用户复制到自己项目内（由创建者发布时设置，默认 true） */
   allowCopy?: boolean;
