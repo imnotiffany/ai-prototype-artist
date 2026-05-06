@@ -637,39 +637,178 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
               </ol>
             </div>
           </TabsContent>
+
+          {/* Debug */}
+          <TabsContent value="debug" className="mt-4 space-y-4">
+            <div className="border border-border rounded-lg px-4 py-3 bg-gradient-to-r from-primary/10 to-primary/5 flex items-center gap-2.5">
+              <Bug className="w-4 h-4 text-primary shrink-0" />
+              <p className="text-xs">
+                <span className="font-medium">调试智能体</span>
+                <span className="text-muted-foreground"> · 输入示例任务，验证当前配置能否正常运行</span>
+              </p>
+            </div>
+
+            <div className="border border-border rounded-lg bg-card flex flex-col h-[480px]">
+              <div className="px-4 py-2 border-b border-border flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold">对话调试</span>
+                  <Badge variant="outline" className="text-[10px] h-4">
+                    {model} · {selMCPs.length} MCP · {selSkills.length} Skill
+                  </Badge>
+                </div>
+                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => { setDebugMessages([]); setDebugIssues([]); }}>清空</Button>
+              </div>
+
+              <div className="flex-1 overflow-auto p-4 space-y-3">
+                {debugMessages.length === 0 && (
+                  <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground gap-2">
+                    <Play className="w-8 h-8 opacity-30" />
+                    <p className="text-xs">输入一个示例任务开始调试</p>
+                    <p className="text-[10px]">例如：「帮我查询昨天的快递订单状态」</p>
+                  </div>
+                )}
+                {debugMessages.map((msg, i) => (
+                  <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                    <div className={`max-w-[80%] rounded-lg px-3 py-2 text-xs whitespace-pre-wrap leading-relaxed ${
+                      msg.role === "user" ? "bg-primary text-primary-foreground" :
+                      msg.role === "system" ? "bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400" :
+                      msg.status === "error" ? "bg-destructive/10 border border-destructive/30 text-destructive" :
+                      "bg-muted"
+                    }`}>
+                      {msg.role === "assistant" && msg.tool && (
+                        <div className="flex items-center gap-1 mb-1 text-[10px] opacity-70">
+                          <Zap className="w-2.5 h-2.5" /> 调用：{msg.tool}
+                        </div>
+                      )}
+                      {msg.role === "assistant" && msg.status === "error" && (
+                        <div className="flex items-center gap-1 mb-1 text-[10px] font-semibold">
+                          <AlertCircle className="w-3 h-3" /> 调试失败
+                        </div>
+                      )}
+                      {msg.content}
+                    </div>
+                  </div>
+                ))}
+                {debugRunning && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Loader2 className="w-3 h-3 animate-spin" /> 智能体执行中…
+                  </div>
+                )}
+              </div>
+
+              {debugIssues.length > 0 && (
+                <div className="border-t border-border bg-amber-500/5 px-4 py-2.5 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-1.5 text-[11px] text-amber-700 dark:text-amber-400">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    检测到 {debugIssues.length} 个问题，AI 可尝试自动修复
+                  </div>
+                  <Button size="sm" className="h-7 text-xs gap-1.5" onClick={autoFix} disabled={debugFixing}>
+                    {debugFixing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
+                    AI 自动修复
+                  </Button>
+                </div>
+              )}
+
+              <div className="border-t border-border p-3 flex items-center gap-2">
+                <Input
+                  className="h-8 text-xs"
+                  placeholder="输入测试任务，回车发送"
+                  value={debugInput}
+                  onChange={(e) => setDebugInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); runDebug(); } }}
+                />
+                <Button size="sm" className="h-8 text-xs gap-1.5" onClick={runDebug} disabled={debugRunning || !debugInput.trim()}>
+                  <Send className="w-3 h-3" /> 发送
+                </Button>
+              </div>
+            </div>
+          </TabsContent>
         </Tabs>
       </div>
 
       <Dialog open={publishOpen} onOpenChange={setPublishOpen}>
         <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-sm">保存并发布</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 py-1">
-            <div>
-              <Label className="text-xs">名称 <span className="text-destructive">*</span></Label>
-              <Input className="mt-1.5 h-8 text-xs" value={name} onChange={(e) => setName(e.target.value)} placeholder="例如：财务月报助手" />
-            </div>
-            <div>
-              <Label className="text-xs">描述</Label>
-              <Textarea className="mt-1.5 text-xs" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="一句话描述智能体能力" />
-            </div>
-            <div>
-              <Label className="text-xs">分类</Label>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {categories.map((c) => <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setPublishOpen(false)}>取消</Button>
-            <Button size="sm" className="h-8 text-xs" onClick={handlePublish}>
-              确认发布
-            </Button>
-          </DialogFooter>
+          {publishStage === "project" && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-sm flex items-center gap-1.5">
+                  <FolderKanban className="w-4 h-4 text-primary" />
+                  第 1 步 · 保存到项目管理
+                </DialogTitle>
+                <DialogDescription className="text-[11px]">
+                  确认基础信息后保存到项目管理；保存成功后可继续发布到应用广场
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-3 py-1">
+                <div>
+                  <Label className="text-xs">名称 <span className="text-destructive">*</span></Label>
+                  <Input className="mt-1.5 h-8 text-xs" value={name} onChange={(e) => setName(e.target.value)} placeholder="例如：财务月报助手" />
+                </div>
+                <div>
+                  <Label className="text-xs">描述</Label>
+                  <Textarea className="mt-1.5 text-xs" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="一句话描述智能体能力" />
+                </div>
+                <div>
+                  <Label className="text-xs">分类</Label>
+                  <Select value={category} onValueChange={setCategory}>
+                    <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {categories.map((c) => <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setPublishOpen(false)}>取消</Button>
+                <Button size="sm" className="h-8 text-xs gap-1.5" onClick={handleSaveToProject}>
+                  保存并继续 <ArrowRight className="w-3 h-3" />
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+
+          {publishStage === "marketplace" && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-sm flex items-center gap-1.5">
+                  <Store className="w-4 h-4 text-primary" />
+                  第 2 步 · 发布到应用广场
+                </DialogTitle>
+                <DialogDescription className="text-[11px]">
+                  发布后，团队成员可在应用广场发现并使用该智能体；也可暂不发布，仅保留在项目内部使用
+                </DialogDescription>
+              </DialogHeader>
+              <div className="border border-border rounded-lg p-3 bg-muted/40 my-1 space-y-1">
+                <div className="flex items-center gap-1.5 text-xs"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> 已保存到项目管理</div>
+                <p className="text-[11px] text-muted-foreground pl-5">{name} · {category}</p>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" size="sm" className="h-8 text-xs" onClick={handleSkipMarket}>暂不发布</Button>
+                <Button size="sm" className="h-8 text-xs gap-1.5" onClick={handlePublishToMarket} disabled={publishingToMarket}>
+                  {publishingToMarket ? <Loader2 className="w-3 h-3 animate-spin" /> : <Rocket className="w-3 h-3" />}
+                  发布到应用广场
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+
+          {publishStage === "done" && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-sm flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                  发布成功
+                </DialogTitle>
+                <DialogDescription className="text-[11px]">
+                  「{name}」已发布到应用广场，团队成员现在即可使用
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => { setPublishOpen(false); navigate("/project-agents"); }}>前往项目管理</Button>
+                <Button size="sm" className="h-8 text-xs" onClick={() => { setPublishOpen(false); navigate("/"); }}>查看应用广场</Button>
+              </DialogFooter>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </div>
