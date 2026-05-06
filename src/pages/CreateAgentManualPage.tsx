@@ -22,12 +22,12 @@ const subagents = mockAgents.filter((a) => a.kind === "agent").slice(0, 8);
 const CreateAgentManualPage = () => {
   const navigate = useNavigate();
 
-  // Basic
+  // Basic (filled at publish time)
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState(categories[0]);
-  const [tagInput, setTagInput] = useState("");
-  const [tags, setTags] = useState<string[]>([]);
+  const [publishOpen, setPublishOpen] = useState(false);
+  const [generatingMeta, setGeneratingMeta] = useState(false);
 
   // Model
   const [model, setModel] = useState("claude-sonnet-4-6");
@@ -60,10 +60,29 @@ const CreateAgentManualPage = () => {
   const [fsSecretVisible, setFsSecretVisible] = useState(false);
   const [fsConnected, setFsConnected] = useState(false);
 
-  const addTag = () => {
-    const t = tagInput.trim();
-    if (t && !tags.includes(t)) setTags([...tags, t]);
-    setTagInput("");
+  const handleAutoGenerateMeta = () => {
+    setGeneratingMeta(true);
+    setTimeout(() => {
+      const skillNames = selSkills.slice(0, 2).join("、");
+      const mcpNames = selMCPs.slice(0, 2).join("、");
+      const capSummary = [skillNames, mcpNames].filter(Boolean).join(" + ") || "通用对话";
+      const guessedName = selMCPs[0]
+        ? `${selMCPs[0]} 助手`
+        : selSkills[0]
+        ? `${selSkills[0]} 智能体`
+        : "通用 AI 助手";
+      const guessedDesc = `基于 ${capSummary} 的智能体，可根据用户输入自动调用对应能力完成任务。`;
+      const guessedCategory =
+        selMCPs.some((m) => /邮件|mail/i.test(m)) ? "办公协作" :
+        selMCPs.some((m) => /数据|db|sql/i.test(m)) ? "数据分析" :
+        selSkills.some((s) => /代码|code/i.test(s)) ? "研发提效" :
+        categories[0];
+      if (!name) setName(guessedName);
+      if (!description) setDescription(guessedDesc);
+      setCategory(guessedCategory);
+      setGeneratingMeta(false);
+      toast({ title: "已根据当前配置生成基础信息" });
+    }, 600);
   };
 
   const toggle = (list: string[], setList: (v: string[]) => void, name: string) =>
