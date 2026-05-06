@@ -1,5 +1,7 @@
 /* ── Shared Types ── */
 
+export type McpProvider = "lh" | "dd";
+
 export interface Resource {
   id: string;
   name: string;
@@ -8,6 +10,12 @@ export interface Resource {
   status: "active" | "inactive";
   addedAt: string;
   usageCount: number;
+  /** MCP only: 所属服务商 — lh=领慧, dd=钉钉 */
+  provider?: McpProvider;
+  /** MCP only: 是否需要绑定凭据（默认 false） */
+  requiresCredential?: boolean;
+  /** MCP only: 部署形态徽标，如 "云端" / "本地" / "Remote" */
+  deployment?: string;
 }
 
 export interface Agent {
