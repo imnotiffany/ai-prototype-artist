@@ -12,6 +12,7 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { categories, getActiveSkills, getActiveMCPs, mockAgents } from "@/data/mockData";
 
@@ -524,6 +525,55 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
           </TabsContent>
         </Tabs>
       </div>
+
+      <Dialog open={publishOpen} onOpenChange={setPublishOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-sm">保存并发布</DialogTitle>
+            <DialogDescription className="text-xs">
+              确认智能体的基础信息，AI 已根据系统提示词与原子能力自动生成一版，可直接修改。
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-1">
+            <div className="flex items-center justify-end">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs gap-1.5 text-primary"
+                onClick={handleAutoGenerateMeta}
+                disabled={generatingMeta}
+              >
+                {generatingMeta ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                重新生成
+              </Button>
+            </div>
+            <div>
+              <Label className="text-xs">名称 <span className="text-destructive">*</span></Label>
+              <Input className="mt-1.5 h-8 text-xs" value={name} onChange={(e) => setName(e.target.value)} placeholder="例如：财务月报助手" />
+            </div>
+            <div>
+              <Label className="text-xs">描述</Label>
+              <Textarea className="mt-1.5 text-xs" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="一句话描述智能体能力" />
+            </div>
+            <div>
+              <Label className="text-xs">分类</Label>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {categories.map((c) => <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setPublishOpen(false)}>取消</Button>
+            <Button size="sm" className="h-8 text-xs gap-1.5" onClick={handlePublish}>
+              <Rocket className="w-3.5 h-3.5" />
+              确认发布
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
