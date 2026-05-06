@@ -20,6 +20,7 @@ import {
 import { mockAgents, getActiveMCPs, getActiveSkills, mockCredentials } from "@/data/mockData";
 import { toast } from "@/hooks/use-toast";
 import { PublishAgentDialog } from "@/components/PublishAgentDialog";
+import { AgentRuntimeBadge, type AgentRuntimeStatus } from "@/components/AgentRuntimeBadge";
 import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
@@ -253,9 +254,8 @@ const AgentDetail = () => {
     setSelSkills(selSkills.includes(s) ? selSkills.filter((x) => x !== s) : [...selSkills, s]);
 
   const statusBadge = (s: RunStatus) => {
-    if (s === "success") return <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-0 text-[10px] gap-1"><CheckCircle2 className="w-3 h-3" />成功</Badge>;
-    if (s === "failed") return <Badge className="bg-red-100 text-red-700 hover:bg-red-100 border-0 text-[10px] gap-1"><XCircle className="w-3 h-3" />失败</Badge>;
-    return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-0 text-[10px] gap-1"><Clock className="w-3 h-3" />运行中</Badge>;
+    const map: Record<RunStatus, AgentRuntimeStatus> = { success: "done", failed: "failed", running: "running" };
+    return <AgentRuntimeBadge status={map[s]} />;
   };
 
   /* ── Searchable add poppers ── */
