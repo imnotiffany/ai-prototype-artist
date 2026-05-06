@@ -33,10 +33,12 @@ export const RunTranscriptView = ({
   events,
   emptyText = "暂无对话内容",
   showSearch = true,
+  footer,
 }: {
   events: TranscriptEvent[];
   emptyText?: string;
   showSearch?: boolean;
+  footer?: React.ReactNode;
 }) => {
   const [q, setQ] = useState("");
 
@@ -120,6 +122,7 @@ export const RunTranscriptView = ({
             </div>
           );
         })}
+        {footer && <div className="pt-1">{footer}</div>}
       </div>
     </div>
   );
