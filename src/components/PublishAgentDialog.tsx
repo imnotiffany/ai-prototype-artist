@@ -86,7 +86,7 @@ export const PublishAgentDialog = ({ open, onOpenChange, agentName, versions, de
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[560px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold">发布应用</DialogTitle>
+          <DialogTitle className="text-lg font-semibold">发布{noun}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-5 py-2">
