@@ -515,7 +515,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                   onClick={handleAutoGeneratePrompt}
                   disabled={generatingPrompt}
                 >
-                  {generatingPrompt ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                  {generatingPrompt ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand className="w-3 h-3" />}
                   AI 自动生成
                 </Button>
               </div>
