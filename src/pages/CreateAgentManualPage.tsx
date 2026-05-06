@@ -852,6 +852,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 </div>
                 <div className="flex-1 min-h-0">
                   <RunDualView
+                    showTranscriptSearch={false}
                     transcriptEvents={(() => {
                       const evs: TranscriptEvent[] = [];
                       runMessages.forEach((m, i) => {
