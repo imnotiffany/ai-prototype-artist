@@ -42,6 +42,7 @@ const scopes = [
 export const PublishAgentDialog = ({ open, onOpenChange, agentName, versions, defaultScope = "marketplace" }: Props) => {
   const [scope, setScope] = useState<"marketplace" | "project">(defaultScope);
   const [versionV, setVersionV] = useState<string>(versions.find((v) => v.current)?.v ?? versions[0]?.v ?? "");
+  const [allowCopy, setAllowCopy] = useState(true);
 
   useEffect(() => {
     if (open) {
