@@ -371,7 +371,31 @@ const AgentDetail = () => {
                   <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                     <div className={`max-w-[85%] rounded-lg px-3 py-2 text-xs whitespace-pre-wrap leading-relaxed ${
                       msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
-                    }`}>{msg.content}</div>
+                    }`}>
+                      {msg.content}
+                      {msg.suggestion && (
+                        <div className="mt-2 pt-2 border-t border-border/60 flex items-center gap-2">
+                          {msg.suggestion.status === "pending" && (
+                            <>
+                              <Button size="sm" className="h-6 text-[11px] px-2 gap-1" onClick={() => adoptSuggestion(msg.suggestion!)}>
+                                <CheckCircle2 className="w-3 h-3" />采纳
+                              </Button>
+                              <Button size="sm" variant="ghost" className="h-6 text-[11px] px-2" onClick={() => rejectSuggestion(msg.suggestion!)}>
+                                忽略
+                              </Button>
+                            </>
+                          )}
+                          {msg.suggestion.status === "adopted" && (
+                            <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600">
+                              <CheckCircle2 className="w-3 h-3" />已采纳
+                            </span>
+                          )}
+                          {msg.suggestion.status === "rejected" && (
+                            <span className="text-[11px] text-muted-foreground">已忽略</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -385,8 +409,11 @@ const AgentDetail = () => {
                     <Button size="sm" variant="ghost" className="h-6 text-[11px] gap-1 text-amber-900 hover:text-amber-900 hover:bg-amber-100/60 dark:text-amber-200" onClick={handleRevert}>
                       <RotateCcw className="w-3 h-3" />撤销
                     </Button>
-                    <Button size="sm" className="h-6 text-[11px] gap-1" onClick={handleSave}>
+                    <Button size="sm" variant="outline" className="h-6 text-[11px] gap-1" onClick={handleSave}>
                       <Save className="w-3 h-3" />保存为 {nextVersion}
+                    </Button>
+                    <Button size="sm" className="h-6 text-[11px] gap-1" onClick={() => { handleSave(); setPublishOpen(true); }}>
+                      <Rocket className="w-3 h-3" />保存并发布
                     </Button>
                   </div>
                 </div>
