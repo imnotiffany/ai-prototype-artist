@@ -75,7 +75,7 @@ export const PublishAgentDialog = ({ open, onOpenChange, agentName, versions, de
     }
     toast({
       title: "已提交发布",
-      description: `${name} ${versionV} 将发布到「${scope === "marketplace" ? "应用广场" : "项目内"}」`,
+      description: `${name} ${versionV} 将发布到「${scope === "marketplace" ? "智能广场" : "项目内"}」`,
     });
     onOpenChange(false);
   };
