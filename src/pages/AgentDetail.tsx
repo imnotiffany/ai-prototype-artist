@@ -20,6 +20,7 @@ import {
 import { mockAgents, getActiveMCPs, getActiveSkills, mockCredentials } from "@/data/mockData";
 import { toast } from "@/hooks/use-toast";
 import { PublishAgentDialog } from "@/components/PublishAgentDialog";
+import { AgentRuntimeBadge, type AgentRuntimeStatus } from "@/components/AgentRuntimeBadge";
 import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
@@ -253,9 +254,8 @@ const AgentDetail = () => {
     setSelSkills(selSkills.includes(s) ? selSkills.filter((x) => x !== s) : [...selSkills, s]);
 
   const statusBadge = (s: RunStatus) => {
-    if (s === "success") return <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-0 text-[10px] gap-1"><CheckCircle2 className="w-3 h-3" />成功</Badge>;
-    if (s === "failed") return <Badge className="bg-red-100 text-red-700 hover:bg-red-100 border-0 text-[10px] gap-1"><XCircle className="w-3 h-3" />失败</Badge>;
-    return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-0 text-[10px] gap-1"><Clock className="w-3 h-3" />运行中</Badge>;
+    const map: Record<RunStatus, AgentRuntimeStatus> = { success: "done", failed: "failed", running: "running" };
+    return <AgentRuntimeBadge status={map[s]} />;
   };
 
   /* ── Searchable add poppers ── */
@@ -301,6 +301,11 @@ const AgentDetail = () => {
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-base font-semibold text-foreground truncate">{name}</h1>
+              {(() => {
+                const latest = mockRuns[0];
+                const map: Record<RunStatus, AgentRuntimeStatus> = { success: "done", failed: "failed", running: "running" };
+                return <AgentRuntimeBadge status={map[latest.status]} />;
+              })()}
               {agent.status === "published" ? (
                 <span className="inline-flex items-center gap-1.5 text-[11px]">
                   <Badge variant="outline" className="text-[10px] h-5 px-1.5 border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30">已发布</Badge>

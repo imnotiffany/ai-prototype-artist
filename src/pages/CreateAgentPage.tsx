@@ -15,14 +15,17 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "@/hooks/use-toast";
+import { AIStatusPill } from "@/components/AIStatusPill";
+import { ToolCallGroup, type ToolCall } from "@/components/ToolCallCard";
 
 /* ── Types ── */
 interface Message {
   id: string;
   role: "user" | "assistant" | "system";
   content: string;
-  type?: "question" | "confirm" | "api-call" | "text" | "assembly";
+  type?: "question" | "confirm" | "api-call" | "text" | "assembly" | "tool-calls";
   attachments?: { type: "skill" | "mcp"; name: string }[];
+  toolCalls?: ToolCall[];
   isStreaming?: boolean;
 }
 
@@ -424,6 +427,8 @@ const CreateAgentPage = () => {
   const [rightTab, setRightTab] = useState<"config" | "preview" | "logs">("config");
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
+  const [thinkingStartedAt, setThinkingStartedAt] = useState<number | null>(null);
+  const [thinkingStage, setThinkingStage] = useState(0);
   const [previewInput, setPreviewInput] = useState("");
   const [isAgentRunning, setIsAgentRunning] = useState(false);
   const [agentConfig, setAgentConfig] = useState<AgentConfig>(defaultConfig);
@@ -475,6 +480,8 @@ const CreateAgentPage = () => {
 
     setMessages((prev) => [...prev, { id: uid(), role: "user", content: userMsg, attachments: attachments.length > 0 ? attachments : undefined }]);
     setIsThinking(true);
+    setThinkingStartedAt(Date.now());
+    setThinkingStage(0);
 
     const streamDelay = 800 + Math.random() * 600;
     setTimeout(() => {
@@ -486,33 +493,63 @@ const CreateAgentPage = () => {
         setSelectedSkills([]);
         setSelectedMCPs([]);
 
-        // Step 1: 需求解析
-        setMessages((prev) => [...prev, { id: uid(), role: "system", content: "🔎 解析需求中…", type: "assembly" }]);
+        // Stage 1: 分析需求
+        setThinkingStage(0);
 
-        // Step 2: 匹配 MCP / Skill 可视化卡片
+        // Stage 2: 匹配 MCP / Skill — 以工具调用卡片树展示
         setTimeout(() => {
-          const matchedAttachments = [
-            ...newConfig.skills.map((s) => ({ type: "skill" as const, name: s })),
-            ...newConfig.mcpServers.map((s) => ({ type: "mcp" as const, name: s })),
+          setThinkingStage(1);
+          const toolCalls: ToolCall[] = [
+            {
+              id: uid(),
+              kind: "search",
+              name: "需求解析",
+              summary: `提取关键词：${userMsg.slice(0, 30)}`,
+              status: "success",
+              input: userMsg,
+              output: `intents: [agent_assembly]\nkeywords detected`,
+            },
+            ...newConfig.mcpServers.map<ToolCall>((m) => ({
+              id: uid(),
+              kind: "mcp",
+              name: "匹配 MCP",
+              summary: `命中：${m}`,
+              status: "success",
+              input: `query: ${userMsg.slice(0, 40)}`,
+              output: `matched mcp: ${m}`,
+            })),
+            ...newConfig.skills.map<ToolCall>((s) => ({
+              id: uid(),
+              kind: "skill",
+              name: "匹配 Skill",
+              summary: `命中：${s}`,
+              status: "success",
+              input: `query: ${userMsg.slice(0, 40)}`,
+              output: `matched skill: ${s}`,
+            })),
           ];
           setMessages((prev) => [
             ...prev,
-            {
-              id: uid(),
-              role: "system",
-              content: matchedAttachments.length > 0
-                ? `🎯 已从 MCP 广场 / Skill 市场匹配到 ${newConfig.mcpServers.length} 个 MCP / ${newConfig.skills.length} 个 Skill`
-                : "ℹ️ 本次未匹配到额外资源，将使用内置工具",
-              type: "text",
-              attachments: matchedAttachments.length > 0 ? matchedAttachments : undefined,
-            },
+            { id: uid(), role: "system", content: "", type: "tool-calls", toolCalls },
           ]);
-        }, 400);
+        }, 600);
 
-        // Step 3: 组装通知
+        // Stage 3: 生成配置
         setTimeout(() => {
-          setMessages((prev) => [...prev, { id: uid(), role: "system", content: "⚙️ 正在生成 System Prompt 和草稿配置…", type: "assembly" }]);
-        }, 900);
+          setThinkingStage(2);
+          const genCall: ToolCall = {
+            id: uid(),
+            kind: "skill",
+            name: "生成配置",
+            summary: `model=${newConfig.model} · ${newConfig.skills.length} skills · ${newConfig.mcpServers.length} mcps`,
+            status: "success",
+            output: `system prompt generated\nmodel: ${newConfig.model}`,
+          };
+          setMessages((prev) => [
+            ...prev,
+            { id: uid(), role: "system", content: "", type: "tool-calls", toolCalls: [genCall] },
+          ]);
+        }, 1300);
 
         setTimeout(() => {
           setMessages((prev) => [...prev, { id: uid(), role: "system", content: "✅ 智能体草稿已生成，可在右侧微调", type: "confirm" }]);
@@ -531,6 +568,7 @@ const CreateAgentPage = () => {
                 prev.map((m) => m.id === responseId ? { ...m, content: fullText, isStreaming: false } : m)
               );
               setIsThinking(false);
+              setThinkingStartedAt(null);
             } else {
               setMessages((prev) =>
                 prev.map((m) => m.id === responseId ? { ...m, content: fullText.slice(0, charIndex) } : m)
@@ -546,7 +584,7 @@ const CreateAgentPage = () => {
             { id: uid(), type: "config", detail: `技能: [${newConfig.skills.join(", ")}]`, timestamp: new Date() },
             { id: uid(), type: "config", detail: `MCP: [${newConfig.mcpServers.join(", ")}]`, timestamp: new Date() },
           ]);
-        }, 1800);
+        }, 2000);
       } else {
         // Subsequent messages: refine the agent
         const lower = userMsg.toLowerCase();
@@ -579,6 +617,7 @@ const CreateAgentPage = () => {
               prev.map((m) => m.id === responseId ? { ...m, content: fullText, isStreaming: false } : m)
             );
             setIsThinking(false);
+            setThinkingStartedAt(null);
           } else {
             setMessages((prev) =>
               prev.map((m) => m.id === responseId ? { ...m, content: fullText.slice(0, charIndex) } : m)
@@ -677,6 +716,8 @@ const CreateAgentPage = () => {
                     <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0" />
                     {msg.content}
                   </div>
+                ) : msg.type === "tool-calls" && msg.toolCalls ? (
+                  <ToolCallGroup calls={msg.toolCalls} />
                 ) : msg.type === "assembly" ? (
                   <div className="flex items-center gap-2 text-xs text-muted-foreground py-1">
                     <Loader2 className="w-3.5 h-3.5 animate-spin text-primary shrink-0" />
@@ -723,10 +764,7 @@ const CreateAgentPage = () => {
               </div>
             ))}
             {isThinking && !messages.some((m) => m.isStreaming) && (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                正在思考…
-              </div>
+              <AIStatusPill stageIndex={thinkingStage} startedAt={thinkingStartedAt ?? undefined} />
             )}
           </div>
 
