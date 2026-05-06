@@ -144,18 +144,19 @@ const AgentMarketplace = () => {
 
       {/* Agent grid */}
       <div className="px-6 pb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((agent) => {
             const isApp = agent.kind === "app";
             const allowCopy = agent.allowCopy !== false;
             return (
               <div
                 key={agent.id}
-                className="relative border border-border rounded-lg p-4 hover:shadow-sm hover:border-primary/40 transition-all bg-card flex flex-col"
+                onClick={() => openAgent(agent, navigate)}
+                className="group relative border border-border rounded-xl p-5 bg-card hover:shadow-md hover:border-primary/40 transition-all cursor-pointer flex flex-col"
               >
-                {/* Kind corner badge */}
+                {/* Kind badge */}
                 <div
-                  className={`absolute top-2 right-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                  className={`absolute top-3 right-3 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium ${
                     isApp
                       ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
                       : "bg-purple-500/10 text-purple-600 dark:text-purple-400"
@@ -165,71 +166,61 @@ const AgentMarketplace = () => {
                   {isApp ? "应用" : "智能体"}
                 </div>
 
-                <div className="flex items-start gap-2.5 mb-2 pr-14">
-                  <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-lg shrink-0">
+                {/* Header: icon + title */}
+                <div className="flex items-start gap-3 mb-3 pr-14">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/10 to-secondary flex items-center justify-center text-2xl shrink-0 shadow-sm">
                     {agent.avatar}
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
-                      <h3 className="text-xs font-medium text-foreground truncate">{agent.name}</h3>
-                      {agent.versions[0]?.version && (
-                        <span className="text-[10px] font-mono text-muted-foreground shrink-0">{agent.versions[0].version}</span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1 mt-0.5">
+                  <div className="min-w-0 flex-1 pt-0.5">
+                    <h3 className="text-[15px] font-semibold text-foreground truncate leading-tight">
+                      {agent.name}
+                    </h3>
+                    <div className="mt-2 flex items-center gap-1.5 flex-wrap">
                       {agent.tags.slice(0, 1).map((tag, i) => (
-                        <Badge
+                        <span
                           key={i}
-                          variant="outline"
-                          className="text-[10px] px-1.5 py-0 text-primary border-primary/30"
+                          className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-normal bg-primary/10 text-primary"
                         >
                           {tag}
-                        </Badge>
+                        </span>
                       ))}
                     </div>
                   </div>
                 </div>
-                <p className="text-[11px] text-muted-foreground line-clamp-2 mb-2 leading-relaxed">
+
+                {/* Description */}
+                <p className="text-[13px] text-muted-foreground line-clamp-2 leading-relaxed mb-4">
                   {agent.description}
                 </p>
-                <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-3">
-                  <span className="truncate">{agent.platform} · {agent.author}</span>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <Clock className="w-3 h-3" />
-                    {agent.updatedAt}
-                  </div>
+
+                {/* Author chips */}
+                <div className="flex items-center gap-1.5 flex-wrap mb-3">
+                  <span className="inline-flex items-center px-2 py-1 rounded-md text-[11px] bg-muted text-muted-foreground">
+                    {agent.platform}
+                  </span>
+                  <span className="inline-flex items-center px-2 py-1 rounded-md text-[11px] bg-muted text-muted-foreground">
+                    {agent.author}
+                    {agent.authorId ? `（${agent.authorId}）` : ""}
+                  </span>
                 </div>
 
-                {/* Actions */}
-                <div className="mt-auto flex items-center gap-1.5">
-                  <Button
-                    size="sm"
-                    variant="default"
-                    className="h-7 text-[11px] flex-1"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openAgent(agent, navigate);
-                    }}
-                  >
-                    在线体验
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-7 text-[11px] flex-1"
-                    disabled={!allowCopy}
-                    title={allowCopy ? `复制${isApp ? "应用" : "智能体"}到我的项目` : "创建者未开放复制"}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (!allowCopy) return;
-                      toast({
-                        title: `已复制${isApp ? "应用" : "智能体"}`,
-                        description: `${agent.name} 已添加到「我的项目」，可在项目中继续编辑`,
-                      });
-                    }}
-                  >
-                    {allowCopy ? `复制${isApp ? "应用" : "智能体"}` : "不允许复制"}
-                  </Button>
+                {/* Footer: updated time */}
+                <div className="mt-auto pt-2 border-t border-border/60 flex items-center justify-between">
+                  <span className="text-[11px] text-muted-foreground">{agent.updatedAt}更新</span>
+                  {allowCopy && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toast({
+                          title: `已复制${isApp ? "应用" : "智能体"}`,
+                          description: `${agent.name} 已添加到「我的项目」，可在项目中继续编辑`,
+                        });
+                      }}
+                      className="text-[11px] text-primary hover:underline opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      复制到我的项目
+                    </button>
+                  )}
                 </div>
               </div>
             );
