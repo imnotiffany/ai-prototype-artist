@@ -401,7 +401,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
             <div className="border border-border rounded-lg p-5 bg-card">
               <div className="flex items-center justify-between mb-3">
                 <Label className="text-xs">MCP 绑定</Label>
-                <PickerDialog items={mcps} selected={selMCPs} onToggle={(n) => toggle(selMCPs, setSelMCPs, n)} icon={<Server className="w-3.5 h-3.5" />} label="MCP" marketLink="/" deployBadge={() => "云端"} />
+                <CapabilityPickerDialog items={mcps} selected={selMCPs} onToggle={(n) => toggle(selMCPs, setSelMCPs, n)} icon={<Server className="w-3.5 h-3.5" />} label="MCP" marketLink="/" deployBadge={() => "云端"} />
               </div>
               {selMCPs.length === 0 ? (
                 <p className="text-xs text-muted-foreground py-2">未绑定任何 MCP 服务</p>
@@ -425,7 +425,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
             <div className="border border-border rounded-lg p-5 bg-card">
               <div className="flex items-center justify-between mb-3">
                 <Label className="text-xs">Skill 绑定</Label>
-                <PickerDialog items={skills} selected={selSkills} onToggle={(n) => toggle(selSkills, setSelSkills, n)} icon={<Zap className="w-3.5 h-3.5" />} label="Skill" marketLink="/" />
+                <CapabilityPickerDialog items={skills} selected={selSkills} onToggle={(n) => toggle(selSkills, setSelSkills, n)} icon={<Zap className="w-3.5 h-3.5" />} label="Skill" marketLink="/" />
               </div>
               {selSkills.length === 0 ? (
                 <p className="text-xs text-muted-foreground py-2">未绑定任何 Skill</p>
