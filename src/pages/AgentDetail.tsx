@@ -210,8 +210,6 @@ const AgentDetail = () => {
 
   /* ── Run history ── */
   const [activeRun, setActiveRun] = useState<RunRecord | null>(null);
-  const [runDetailView, setRunDetailView] = useState<"transcript" | "debug">("transcript");
-  const [expandedTools, setExpandedTools] = useState<Record<number, boolean>>({});
 
   /* ── Version detail dialog ── */
   const [viewingVersion, setViewingVersion] = useState<typeof versions[0] | null>(null);
