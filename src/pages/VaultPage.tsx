@@ -292,5 +292,56 @@ const VaultPage = () => {
     </div>
   );
 };
+      </Dialog>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-base">
+              <AlertTriangle className="w-4 h-4 text-destructive" />
+              确认删除凭据
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3 text-xs">
+                <p>
+                  即将删除凭据「<span className="font-medium text-foreground">{deleteTarget?.name}</span>」（{deleteTarget?.type}）。
+                  删除后无法恢复，且会立即从所有正在使用的智能体中移除。
+                </p>
+                {deleteTarget && (() => {
+                  const agents = linkedAgents(deleteTarget.mcpServer);
+                  if (agents.length === 0) {
+                    return <p className="text-muted-foreground">该凭据当前未被任何智能体使用，可以安全删除。</p>;
+                  }
+                  return (
+                    <div className="border border-destructive/30 bg-destructive/5 rounded-md p-3">
+                      <div className="flex items-center gap-1.5 text-destructive font-medium mb-2">
+                        <Bot className="w-3.5 h-3.5" />
+                        以下 {agents.length} 个智能体正在使用，删除后将无法调用对应 MCP：
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {agents.map((n) => (
+                          <Badge key={n} variant="outline" className="text-[10px]">{n}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              确认删除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+};
 
 export default VaultPage;
