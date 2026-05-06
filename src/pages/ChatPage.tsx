@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { mockAgents } from "@/data/mockData";
 import { AgentInfoPanel } from "@/components/AgentInfoPanel";
-import { ToolCallGroup, type ToolCall } from "@/components/ToolCallCard";
+import { type ToolCall } from "@/components/ToolCallCard";
 import { AIStatusPill } from "@/components/AIStatusPill";
+import { RunTranscriptView, type TranscriptEvent } from "@/components/RunViews";
 
 type Message =
   | { role: "user"; content: string }
@@ -151,34 +152,18 @@ const ChatPage = () => {
           </div>
         </div>
 
-        {/* Messages */}
-        <div className="flex-1 overflow-auto p-4 space-y-4">
-          {messages.map((msg, i) => {
-            if (msg.role === "tools") {
-              return (
-                <div key={i} className="max-w-[85%]">
-                  <ToolCallGroup calls={msg.calls} />
-                </div>
-              );
-            }
-            return (
-              <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div
-                  className={`max-w-[70%] rounded-lg px-4 py-2.5 text-sm whitespace-pre-wrap leading-relaxed ${
-                    msg.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-secondary-foreground"
-                  }`}
-                >
-                  {msg.content}
-                </div>
-              </div>
-            );
-          })}
-
-          {/* Inline status pill while running (Claude Code style) */}
+        {/* Messages — 与对话视图保持一致 */}
+        <div className="flex-1 min-h-0 flex flex-col">
+          <RunTranscriptView
+            showSearch={false}
+            events={messages.map<TranscriptEvent>((m, i) => {
+              if (m.role === "tools") return { id: `t${i}`, type: "tools", calls: m.calls };
+              if (m.role === "user") return { id: `u${i}`, type: "user", content: m.content };
+              return { id: `a${i}`, type: "agent", content: m.content };
+            })}
+          />
           {isRunning && (
-            <div className="pl-1">
+            <div className="px-4 pb-2 shrink-0">
               <AIStatusPill stages={stages} stageIndex={stageIndex} />
             </div>
           )}
