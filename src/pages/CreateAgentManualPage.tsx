@@ -816,8 +816,8 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                     </div>
                   ))}
                   {assistantThinking && (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Loader2 className="w-3 h-3 animate-spin" /> 思考中…
+                    <div className="flex justify-start">
+                      <AIStatusPill stages={["分析你的反馈", "调整提示词", "生成回复"]} />
                     </div>
                   )}
                 </div>
