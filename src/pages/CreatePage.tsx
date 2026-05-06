@@ -91,7 +91,7 @@ const CreatePage = () => {
               <div className="grid grid-cols-2 gap-2.5">
                 <div className="relative text-left rounded-lg border border-dashed border-border bg-muted/30 p-3 opacity-70 cursor-not-allowed">
                   <div className="flex items-center gap-1.5 mb-1">
-                    <Sparkles className="w-3.5 h-3.5 text-muted-foreground" />
+                    <Wand className="w-3.5 h-3.5 text-muted-foreground" />
                     <span className="text-xs font-medium text-muted-foreground">自动组装</span>
                     <Badge variant="secondary" className="text-[9px] h-4 px-1.5 ml-auto">即将上线</Badge>
                   </div>
