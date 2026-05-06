@@ -286,11 +286,11 @@ const CreateAgentManualPage = () => {
 ${roleLine}${descLine}
 
 # 你拥有的能力
-## Skills（原子能力）
-${skillLines}
-
 ## MCP 服务（外部工具）
 ${mcpLines}
+
+## Skills（原子能力）
+${skillLines}
 ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
 # 工作流程
 1. 仔细理解用户意图，必要时主动澄清关键信息。
