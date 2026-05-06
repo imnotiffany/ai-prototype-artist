@@ -74,8 +74,9 @@ const AgentDetail = () => {
     systemPrompt: "你是一名严谨的业务助理。请根据用户问题，调用合适的工具完成任务，并以结构化方式输出结果。",
     skills: [] as string[],
     mcpBindings: ((agent?.mcpServers ?? []) as string[]).map((m) => ({ name: m, credential: "" })),
-    dingEnabled: false,
-    dingWebhook: "",
+    fsAppKey: "",
+    fsAppSecret: "",
+    fsRobotCode: "",
   }), [agent]);
 
   const [name, setName] = useState(initialSnapshot.name);
@@ -84,8 +85,10 @@ const AgentDetail = () => {
   const [systemPrompt, setSystemPrompt] = useState(initialSnapshot.systemPrompt);
   const [selSkills, setSelSkills] = useState<string[]>(initialSnapshot.skills);
   const [mcpBindings, setMcpBindings] = useState<{ name: string; credential: string }[]>(initialSnapshot.mcpBindings);
-  const [dingEnabled, setDingEnabled] = useState(initialSnapshot.dingEnabled);
-  const [dingWebhook, setDingWebhook] = useState(initialSnapshot.dingWebhook);
+  const [fsAppKey, setFsAppKey] = useState(initialSnapshot.fsAppKey);
+  const [fsAppSecret, setFsAppSecret] = useState(initialSnapshot.fsAppSecret);
+  const [fsRobotCode, setFsRobotCode] = useState(initialSnapshot.fsRobotCode);
+  const [fsSecretVisible, setFsSecretVisible] = useState(false);
   const [savedSnapshot, setSavedSnapshot] = useState(initialSnapshot);
 
   const [versions, setVersions] = useState([
@@ -95,8 +98,8 @@ const AgentDetail = () => {
   ]);
 
   const isDirty = useMemo(() => JSON.stringify({
-    name, description, model, systemPrompt, skills: selSkills, mcpBindings, dingEnabled, dingWebhook,
-  }) !== JSON.stringify(savedSnapshot), [name, description, model, systemPrompt, selSkills, mcpBindings, dingEnabled, dingWebhook, savedSnapshot]);
+    name, description, model, systemPrompt, skills: selSkills, mcpBindings, fsAppKey, fsAppSecret, fsRobotCode,
+  }) !== JSON.stringify(savedSnapshot), [name, description, model, systemPrompt, selSkills, mcpBindings, fsAppKey, fsAppSecret, fsRobotCode, savedSnapshot]);
 
   /* ── Debug state ── */
   type ChatMsg = { role: "user" | "assistant"; content: string };
