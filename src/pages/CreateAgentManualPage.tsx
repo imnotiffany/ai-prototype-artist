@@ -58,6 +58,60 @@ const CreateAgentManualPage = () => {
   const [fsSecretVisible, setFsSecretVisible] = useState(false);
   const [fsConnected, setFsConnected] = useState(false);
 
+  // Debug
+  type DebugMsg = { role: "user" | "assistant" | "system"; content: string; status?: "ok" | "error"; tool?: string };
+  const [debugInput, setDebugInput] = useState("");
+  const [debugMessages, setDebugMessages] = useState<DebugMsg[]>([]);
+  const [debugRunning, setDebugRunning] = useState(false);
+  const [debugFixing, setDebugFixing] = useState(false);
+  const [debugIssues, setDebugIssues] = useState<string[]>([]);
+
+  // Publish flow
+  const [publishStage, setPublishStage] = useState<"project" | "marketplace" | "done">("project");
+  const [publishingToMarket, setPublishingToMarket] = useState(false);
+
+  const runDebug = () => {
+    if (!debugInput.trim()) return;
+    const userMsg: DebugMsg = { role: "user", content: debugInput.trim() };
+    setDebugMessages((m) => [...m, userMsg]);
+    setDebugInput("");
+    setDebugRunning(true);
+    setTimeout(() => {
+      const issues: string[] = [];
+      if (selMCPs.length === 0 && selSkills.length === 0) issues.push("尚未绑定任何 MCP 或 Skill，智能体无法执行实际任务");
+      if (!systemPrompt.trim()) issues.push("系统提示词为空");
+      const missingCred = selMCPs.filter((m) => mockCredentials.filter((c) => c.mcpServer === m).length === 0);
+      if (missingCred.length) issues.push(`MCP 缺少凭据：${missingCred.join("、")}`);
+
+      if (issues.length) {
+        setDebugIssues(issues);
+        setDebugMessages((m) => [...m, { role: "assistant", status: "error", content: `执行失败：\n${issues.map((i) => `· ${i}`).join("\n")}` }]);
+      } else {
+        setDebugIssues([]);
+        const tool = selMCPs[0] || selSkills[0] || "内置推理";
+        setDebugMessages((m) => [...m, { role: "assistant", status: "ok", tool, content: `已通过 ${tool} 完成响应：根据你的输入「${userMsg.content}」生成结果（模拟输出）。` }]);
+      }
+      setDebugRunning(false);
+    }, 700);
+  };
+
+  const autoFix = () => {
+    if (!debugIssues.length) return;
+    setDebugFixing(true);
+    setTimeout(() => {
+      const fixes: string[] = [];
+      if (debugIssues.some((i) => i.includes("未绑定"))) {
+        if (mcps[0]) { setSelMCPs((s) => Array.from(new Set([...s, mcps[0].name]))); fixes.push(`自动绑定 MCP「${mcps[0].name}」`); }
+        if (skills[0]) { setSelSkills((s) => Array.from(new Set([...s, skills[0].name]))); fixes.push(`自动绑定 Skill「${skills[0].name}」`); }
+      }
+      if (debugIssues.some((i) => i.includes("提示词"))) { handleAutoGeneratePrompt(); fixes.push("已重新生成系统提示词"); }
+      if (debugIssues.some((i) => i.includes("凭据"))) fixes.push("建议前往「凭据金库」补全缺失凭据");
+      setDebugMessages((m) => [...m, { role: "system", content: `AI 自动修复完成：\n${fixes.map((f) => `· ${f}`).join("\n")}\n请重新运行调试验证。` }]);
+      setDebugIssues([]);
+      setDebugFixing(false);
+    }, 900);
+  };
+
   const handleAutoGenerateMeta = () => {
     setGeneratingMeta(true);
     setTimeout(() => {
