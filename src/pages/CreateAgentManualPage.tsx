@@ -402,7 +402,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
             {/* MCP 绑定 */}
             <div className="border border-border rounded-lg p-5 bg-card">
               <div className="flex items-center justify-between mb-3">
-                <Label className="text-xs flex items-center gap-1.5"><Server className="w-3.5 h-3.5" /> MCP 绑定</Label>
+                <Label className="text-xs">MCP 绑定</Label>
                 <PickerDialog items={mcps} selected={selMCPs} onToggle={(n) => toggle(selMCPs, setSelMCPs, n)} icon={<Server className="w-3.5 h-3.5" />} label="MCP" marketLink="/" deployBadge={() => "云端"} />
               </div>
               {selMCPs.length === 0 ? (
