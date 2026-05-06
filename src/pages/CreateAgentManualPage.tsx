@@ -470,7 +470,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-6 py-5">
+      <div className="max-w-6xl mx-auto px-6 py-5">
         <Tabs defaultValue="capability">
           <TabsList className="grid grid-cols-5 h-9">
             <TabsTrigger value="capability" className="text-xs">能力配置</TabsTrigger>
