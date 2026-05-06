@@ -342,6 +342,22 @@ const AgentDetail = () => {
                   </div>
                 ))}
               </div>
+              {isDirty && (
+                <div className="border-t border-amber-300/60 bg-amber-50/80 dark:bg-amber-950/30 px-3 py-2 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 text-[11px] text-amber-900 dark:text-amber-200 min-w-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                    <span className="truncate">本轮调整尚未保存</span>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Button size="sm" variant="ghost" className="h-6 text-[11px] gap-1 text-amber-900 hover:text-amber-900 hover:bg-amber-100/60 dark:text-amber-200" onClick={handleRevert}>
+                      <RotateCcw className="w-3 h-3" />撤销
+                    </Button>
+                    <Button size="sm" className="h-6 text-[11px] gap-1" onClick={handleSave}>
+                      <Save className="w-3 h-3" />保存为 {nextVersion}
+                    </Button>
+                  </div>
+                </div>
+              )}
               <div className="border-t border-border p-3 flex items-center gap-2">
                 <Input
                   className="h-8 text-xs"
