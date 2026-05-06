@@ -70,7 +70,8 @@ const CreateAgentManualPage = () => {
   const [fsConnected, setFsConnected] = useState(false);
 
   // Debug — three streams: assistant chat (left), agent run (right), runtime logs (right bottom)
-  type ChatMsg = { role: "user" | "assistant"; content: string };
+  type PromptSuggestion = { id: string; addition: string; summaryNote: string; status: "pending" | "adopted" | "rejected" };
+  type ChatMsg = { role: "user" | "assistant"; content: string; suggestion?: PromptSuggestion };
   type RunMsg = { role: "user" | "assistant"; content: string; tool?: string; status?: "ok" | "error" };
   const [assistantInput, setAssistantInput] = useState("");
   const [assistantMessages, setAssistantMessages] = useState<ChatMsg[]>([]);
@@ -101,11 +102,10 @@ const CreateAgentManualPage = () => {
     setDebugLogs((l) => [...l, { id: ++logIdRef.current, ts, level, message, meta }]);
   };
 
-  // Publish flow
-  const [publishStage, setPublishStage] = useState<"project" | "marketplace" | "done">("project");
-  const [publishingToMarket, setPublishingToMarket] = useState(false);
+  // Publish flow (single-step save)
 
-  // After each run, AI auto-optimizes (silently apply + announce in left chat)
+
+  // After each run, AI proposes optimization (user must adopt to apply)
   const autoOptimizeAfterRun = (userInput: string) => {
     setTimeout(() => {
       const undocumented = [
@@ -113,7 +113,6 @@ const CreateAgentManualPage = () => {
         ...selSkills.filter((s) => !systemPrompt.includes(s)),
       ];
       if (undocumented.length > 0) {
-        // Need clarification — ask in left chat
         const target = undocumented[0];
         setAssistantMessages((m) => [
           ...m,
@@ -124,20 +123,42 @@ const CreateAgentManualPage = () => {
         ]);
         return;
       }
-      // Otherwise auto-apply optimization and tell user what was changed
+      if (systemPrompt.includes("# 来自调试的补充指引")) return;
       const addition = `\n\n# 来自调试的补充指引\n- 用户曾以「${userInput}」类问题进行测试，遇到该类问题时应优先：\n  1. 拆解任务目标，明确需要哪些 MCP / Skill\n  2. 引用工具返回的数据并标注来源\n  3. 输出结构化结果，避免冗余寒暄`;
-      if (!systemPrompt.includes("# 来自调试的补充指引")) {
-        setSystemPrompt((p) => p.trim() + addition);
-        recordChange("prompt", `补充提示词：基于「${userInput}」类任务，新增"任务拆解 / 来源标注 / 结构化输出"工作流`);
-        setAssistantMessages((m) => [
-          ...m,
-          {
-            role: "assistant",
-            content: `我已根据本轮调试自动优化了系统提示词：\n\n· 补充了「任务拆解 → 工具选择 → 来源标注 → 结构化输出」的工作流\n· 加入了与「${userInput}」类任务的对齐指引\n\n你可以继续测试其他场景，或在保存时一次性确认所有调试期改动。`,
-          },
-        ]);
-      }
+      const suggestion: PromptSuggestion = {
+        id: `s-${Date.now()}`,
+        addition,
+        summaryNote: `补充提示词：基于「${userInput}」类任务，新增"任务拆解 / 来源标注 / 结构化输出"工作流`,
+        status: "pending",
+      };
+      setAssistantMessages((m) => [
+        ...m,
+        {
+          role: "assistant",
+          content: `根据本轮调试，我建议在系统提示词中补充「任务拆解 → 工具选择 → 来源标注 → 结构化输出」的工作流，以更好地匹配「${userInput}」类任务。`,
+          suggestion,
+        },
+      ]);
     }, 900);
+  };
+
+  const updateSuggestionStatus = (id: string, status: "adopted" | "rejected") => {
+    setAssistantMessages((msgs) =>
+      msgs.map((m) => (m.suggestion?.id === id ? { ...m, suggestion: { ...m.suggestion, status } } : m))
+    );
+  };
+
+  const adoptSuggestion = (s: PromptSuggestion) => {
+    if (s.status !== "pending") return;
+    setSystemPrompt((p) => p.trim() + s.addition);
+    recordChange("prompt", s.summaryNote);
+    updateSuggestionStatus(s.id, "adopted");
+    toast({ title: "已采纳建议", description: "系统提示词已更新" });
+  };
+
+  const rejectSuggestion = (s: PromptSuggestion) => {
+    if (s.status !== "pending") return;
+    updateSuggestionStatus(s.id, "rejected");
   };
 
   const runDebug = (overrideInput?: string) => {
@@ -322,29 +343,15 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
 
   const openPublish = () => {
     handleAutoGenerateMeta();
-    setPublishStage("project");
     setPublishOpen(true);
   };
 
-  const handleSaveToProject = () => {
+  const handleSave = () => {
     if (!name.trim()) {
       toast({ title: "请填写智能体名称", variant: "destructive" });
       return;
     }
-    toast({ title: "已保存到项目管理", description: `${name} · ${category}` });
-    setPublishStage("marketplace");
-  };
-
-  const handlePublishToMarket = () => {
-    setPublishingToMarket(true);
-    setTimeout(() => {
-      setPublishingToMarket(false);
-      setPublishStage("done");
-      toast({ title: "已发布到应用广场", description: name });
-    }, 700);
-  };
-
-  const handleSkipMarket = () => {
+    toast({ title: "已保存到项目管理", description: `${name} · ${category}（如需发布，请前往项目管理或详情页发布）` });
     setPublishOpen(false);
     navigate("/project-agents");
   };
@@ -679,6 +686,28 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                         msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
                       }`}>
                         {msg.content}
+                        {msg.suggestion && (
+                          <div className="mt-2 pt-2 border-t border-border/60 flex items-center gap-2">
+                            {msg.suggestion.status === "pending" && (
+                              <>
+                                <Button size="sm" className="h-6 text-[11px] px-2 gap-1" onClick={() => adoptSuggestion(msg.suggestion!)}>
+                                  <CheckCircle2 className="w-3 h-3" /> 采纳
+                                </Button>
+                                <Button size="sm" variant="ghost" className="h-6 text-[11px] px-2" onClick={() => rejectSuggestion(msg.suggestion!)}>
+                                  忽略
+                                </Button>
+                              </>
+                            )}
+                            {msg.suggestion.status === "adopted" && (
+                              <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600">
+                                <CheckCircle2 className="w-3 h-3" /> 已采纳
+                              </span>
+                            )}
+                            {msg.suggestion.status === "rejected" && (
+                              <span className="text-[11px] text-muted-foreground">已忽略</span>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -875,124 +904,71 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
 
       <Dialog open={publishOpen} onOpenChange={setPublishOpen}>
         <DialogContent className="max-w-md">
-          {publishStage === "project" && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="text-sm flex items-center gap-1.5">
-                  <FolderKanban className="w-4 h-4 text-primary" />
-                  保存到项目管理
-                </DialogTitle>
-                <DialogDescription className="text-[11px]">
-                  确认基础信息后保存到项目管理；保存成功后可继续发布到应用广场
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-3 py-1">
-                <div>
-                  <Label className="text-xs">头像</Label>
-                  <div className="mt-1.5 flex items-center gap-3">
-                    <div className="w-14 h-14 rounded-lg border border-border bg-muted/40 overflow-hidden flex items-center justify-center shrink-0">
-                      {generatingAvatar ? (
-                        <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                      ) : (
-                        <img src={avatarUrl} alt="智能体头像" className="w-full h-full object-cover" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={regenerateAvatar} disabled={generatingAvatar}>
-                        <RefreshCw className={`w-3 h-3 ${generatingAvatar ? "animate-spin" : ""}`} />
-                        {generatingAvatar ? "生成中…" : "AI 重新生成"}
-                      </Button>
-                      <p className="text-[10px] text-muted-foreground mt-1 leading-relaxed">
-                        头像将随智能体一起发布到应用广场
-                      </p>
-                    </div>
-                  </div>
+          <DialogHeader>
+            <DialogTitle className="text-sm flex items-center gap-1.5">
+              <FolderKanban className="w-4 h-4 text-primary" />
+              保存到项目管理
+            </DialogTitle>
+            <DialogDescription className="text-[11px]">
+              确认基础信息后保存为新版本。如需发布，请在项目管理卡片或详情页右上角的「发布」按钮中操作。
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-1">
+            <div>
+              <Label className="text-xs">头像</Label>
+              <div className="mt-1.5 flex items-center gap-3">
+                <div className="w-14 h-14 rounded-lg border border-border bg-muted/40 overflow-hidden flex items-center justify-center shrink-0">
+                  {generatingAvatar ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                  ) : (
+                    <img src={avatarUrl} alt="智能体头像" className="w-full h-full object-cover" />
+                  )}
                 </div>
-                <div>
-                  <Label className="text-xs">名称 <span className="text-destructive">*</span></Label>
-                  <Input className="mt-1.5 h-8 text-xs" value={name} onChange={(e) => setName(e.target.value)} placeholder="例如：财务月报助手" />
-                </div>
-                <div>
-                  <Label className="text-xs">描述</Label>
-                  <Textarea className="mt-1.5 text-xs" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="一句话描述智能体能力" />
-                </div>
-                <div>
-                  <Label className="text-xs">分类</Label>
-                  <Select value={category} onValueChange={setCategory}>
-                    <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {categories.map((c) => <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                {debugChanges.length > 0 && (
-                  <div className="border border-primary/30 bg-primary/5 rounded-lg p-3 space-y-1.5">
-                    <div className="flex items-center gap-1.5 text-xs font-medium text-primary">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      调试期间已为你优化 {debugChanges.length} 项配置
-                    </div>
-                    <ul className="text-[11px] text-muted-foreground space-y-1 pl-5 list-disc leading-relaxed">
-                      {debugChanges.map((c, i) => (
-                        <li key={i}>{c.summary}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-              <DialogFooter>
-                <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setPublishOpen(false)}>取消</Button>
-                <Button size="sm" className="h-8 text-xs gap-1.5" onClick={handleSaveToProject}>
-                  保存并继续 <ArrowRight className="w-3 h-3" />
-                </Button>
-              </DialogFooter>
-            </>
-          )}
-
-          {publishStage === "marketplace" && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="text-sm flex items-center gap-1.5">
-                  <Store className="w-4 h-4 text-primary" />
-                  发布到应用广场
-                </DialogTitle>
-                <DialogDescription className="text-[11px]">
-                  发布后，团队成员可在应用广场发现并使用该智能体；也可暂不发布，仅保留在项目内部使用
-                </DialogDescription>
-              </DialogHeader>
-              <div className="border border-border rounded-lg p-3 bg-muted/40 my-1 flex items-center gap-3">
-                <img src={avatarUrl} alt="智能体头像" className="w-10 h-10 rounded-md border border-border bg-background shrink-0" />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 text-xs"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> 已保存到项目管理</div>
-                  <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{name} · {category}</p>
+                <div className="flex-1 min-w-0">
+                  <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={regenerateAvatar} disabled={generatingAvatar}>
+                    <RefreshCw className={`w-3 h-3 ${generatingAvatar ? "animate-spin" : ""}`} />
+                    {generatingAvatar ? "生成中…" : "AI 重新生成"}
+                  </Button>
                 </div>
               </div>
-              <DialogFooter>
-                <Button variant="outline" size="sm" className="h-8 text-xs" onClick={handleSkipMarket}>暂不发布</Button>
-                <Button size="sm" className="h-8 text-xs gap-1.5" onClick={handlePublishToMarket} disabled={publishingToMarket}>
-                  {publishingToMarket ? <Loader2 className="w-3 h-3 animate-spin" /> : <Rocket className="w-3 h-3" />}
-                  发布到应用广场
-                </Button>
-              </DialogFooter>
-            </>
-          )}
-
-          {publishStage === "done" && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="text-sm flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                  发布成功
-                </DialogTitle>
-                <DialogDescription className="text-[11px]">
-                  「{name}」已发布到应用广场，团队成员现在即可使用
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => { setPublishOpen(false); navigate("/project-agents"); }}>前往项目管理</Button>
-                <Button size="sm" className="h-8 text-xs" onClick={() => { setPublishOpen(false); navigate("/"); }}>查看应用广场</Button>
-              </DialogFooter>
-            </>
-          )}
+            </div>
+            <div>
+              <Label className="text-xs">名称 <span className="text-destructive">*</span></Label>
+              <Input className="mt-1.5 h-8 text-xs" value={name} onChange={(e) => setName(e.target.value)} placeholder="例如：财务月报助手" />
+            </div>
+            <div>
+              <Label className="text-xs">描述</Label>
+              <Textarea className="mt-1.5 text-xs" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="一句话描述智能体能力" />
+            </div>
+            <div>
+              <Label className="text-xs">分类</Label>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {categories.map((c) => <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            {debugChanges.length > 0 && (
+              <div className="border border-primary/30 bg-primary/5 rounded-lg p-3 space-y-1.5">
+                <div className="flex items-center gap-1.5 text-xs font-medium text-primary">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  本次保存将包含 {debugChanges.length} 项调试期改动
+                </div>
+                <ul className="text-[11px] text-muted-foreground space-y-1 pl-5 list-disc leading-relaxed">
+                  {debugChanges.map((c, i) => (
+                    <li key={i}>{c.summary}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setPublishOpen(false)}>取消</Button>
+            <Button size="sm" className="h-8 text-xs gap-1.5" onClick={handleSave}>
+              <Save className="w-3 h-3" /> 保存
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
