@@ -827,8 +827,8 @@ const AgentDetail = () => {
           </div>
 
           <Sheet open={!!activeRun} onOpenChange={(o) => !o && setActiveRun(null)}>
-            <SheetContent className="w-[640px] sm:max-w-[640px] p-0 flex flex-col">
-              <SheetHeader className="px-5 py-3 border-b border-border">
+            <SheetContent className="w-[680px] sm:max-w-[680px] p-0 flex flex-col">
+              <SheetHeader className="px-5 py-3 border-b border-border space-y-1.5">
                 <SheetTitle className="text-sm flex items-center gap-2">
                   <span>运行详情</span>
                   {activeRun && <span className="text-xs font-mono text-muted-foreground">{activeRun.id}</span>}
@@ -843,66 +843,19 @@ const AgentDetail = () => {
                     </>
                   )}
                 </div>
-                <div className="inline-flex items-center bg-muted rounded-md p-0.5 w-fit mt-2">
-                  <button
-                    onClick={() => setRunDetailView("transcript")}
-                    className={`px-3 py-1 text-xs rounded transition-colors ${
-                      runDetailView === "transcript" ? "bg-background text-foreground shadow-sm font-medium" : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >对话视图</button>
-                  <button
-                    onClick={() => setRunDetailView("debug")}
-                    className={`px-3 py-1 text-xs rounded transition-colors ${
-                      runDetailView === "debug" ? "bg-background text-foreground shadow-sm font-medium" : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >调试视图</button>
-                </div>
               </SheetHeader>
-
-              <div className="flex-1 overflow-auto p-5">
-                {runDetailView === "transcript" ? (
-                  <div className="space-y-3">
-                    <div className="flex justify-end">
-                      <div className="max-w-[80%] rounded-2xl px-3 py-2 text-xs bg-primary text-primary-foreground whitespace-pre-wrap">
-                        {activeRun?.prompt}
-                      </div>
-                    </div>
-                    {mockTranscript.slice(1).map((m, i) => (
-                      <div key={i} className="flex justify-start">
-                        <div className="max-w-[80%] rounded-2xl px-3 py-2 text-xs bg-secondary text-foreground whitespace-pre-wrap">
-                          {m.tools && m.tools.length > 0 && (
-                            <button
-                              onClick={() => setExpandedTools({ ...expandedTools, [i]: !expandedTools[i] })}
-                              className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground mb-1.5"
-                            >
-                              {expandedTools[i] ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-                              {m.tools.map((t) => `调用了 ${t.name} ×${t.count}`).join(" · ")}
-                            </button>
-                          )}
-                          {expandedTools[i] && m.tools && (
-                            <div className="border border-border rounded bg-background p-2 mb-1.5 space-y-1 font-mono text-[10px] text-muted-foreground">
-                              {m.tools.map((t, j) => (
-                                <div key={j}>→ {t.name}() · 调用 {t.count} 次 · 平均 1.2s</div>
-                              ))}
-                            </div>
-                          )}
-                          {m.content}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="font-mono text-[11px] space-y-1.5">
-                    {mockDebugEvents.map((e, i) => (
-                      <div key={i} className="border border-border rounded p-2 bg-muted/20">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-muted-foreground">{e.t}</span>
-                          <Badge variant="outline" className="text-[9px] h-4 font-mono">{e.type}</Badge>
-                        </div>
-                        <pre className="text-[10px] text-foreground/80 whitespace-pre-wrap break-all">{JSON.stringify(e.data, null, 2)}</pre>
-                      </div>
-                    ))}
-                  </div>
+              <div className="flex-1 min-h-0">
+                {activeRun && (
+                  <RunDualView
+                    transcriptEvents={buildMockTranscript(activeRun.prompt)}
+                    debugEvents={mockDebugEvents}
+                    debugMeta={[
+                      { label: "Session", value: "sess-9f2c" },
+                      { label: "模型", value: "claude-sonnet-4-6" },
+                      { label: "总耗时", value: activeRun.duration },
+                      { label: "总 tokens", value: "1552" },
+                    ]}
+                  />
                 )}
               </div>
             </SheetContent>
