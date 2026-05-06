@@ -635,7 +635,7 @@ const AgentDetail = () => {
                                 ))}
                               </SelectContent>
                             </Select>
-                            <Button size="sm" variant="ghost" className="h-7 text-[10px]" onClick={() => navigate("/vault")}>管理凭据</Button>
+                            <Button size="sm" variant="ghost" className="h-7 text-[10px]" onClick={() => navigate("/vault")}>前往凭据管理</Button>
                           </div>
                         </div>
                       );
@@ -690,7 +690,7 @@ const AgentDetail = () => {
                     value={fsRobotCode}
                     onChange={(e) => setFsRobotCode(e.target.value)}
                   />
-                  <p className="text-[10px] text-muted-foreground mt-1.5">在丰声 NEXT 开发者后台「机器人管理」中获取，凭据将通过「凭据金库」加密存储</p>
+                  <p className="text-[10px] text-muted-foreground mt-1.5">在丰声 NEXT 开发者后台「机器人管理」中获取，凭据将通过「凭据管理」加密存储</p>
                 </div>
               </div>
             </section>

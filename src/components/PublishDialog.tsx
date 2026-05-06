@@ -149,7 +149,7 @@ export const PublishDialog = ({ open, onOpenChange, defaultName = "", defaultDes
                   <Input className="mt-1 h-8 text-xs font-mono" placeholder="机器人编码" value={fsRobotCode} onChange={(e) => setFsRobotCode(e.target.value)} />
                 </div>
                 <p className="text-[10px] text-muted-foreground leading-relaxed">
-                  在丰声 NEXT 开发者后台「机器人管理」获取，凭据将通过「凭据金库」加密存储
+                  在丰声 NEXT 开发者后台「机器人管理」获取，凭据将通过「凭据管理」加密存储
                 </p>
               </div>
             )}
