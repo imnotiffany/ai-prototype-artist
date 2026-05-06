@@ -480,6 +480,8 @@ const CreateAgentPage = () => {
 
     setMessages((prev) => [...prev, { id: uid(), role: "user", content: userMsg, attachments: attachments.length > 0 ? attachments : undefined }]);
     setIsThinking(true);
+    setThinkingStartedAt(Date.now());
+    setThinkingStage(0);
 
     const streamDelay = 800 + Math.random() * 600;
     setTimeout(() => {
