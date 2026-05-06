@@ -344,6 +344,73 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
 
   // PickerDialog moved to shared component: CapabilityPickerDialog
 
+  // Build spec for YAML / JSON viewer
+  const specObject = {
+    name: name || "未命名智能体",
+    description: description || "",
+    category,
+    model: { id: model, speed: "standard" },
+    system_prompt: systemPrompt,
+    skills: selSkills,
+    mcp_servers: selMCPs.map((m) => ({
+      name: m,
+      credential: mcpCredentialMap[m] || null,
+    })),
+    subagents: selSubagents,
+    fengsheng_next: {
+      enabled: fsConnected,
+      app_key: fsAppKey || null,
+      robot_code: fsRobotCode || null,
+      persistent: persistentFs,
+    },
+  };
+  const specJson = JSON.stringify(specObject, null, 2);
+  const toYaml = (obj: unknown, indent = 0): string => {
+    const pad = "  ".repeat(indent);
+    if (obj === null || obj === undefined) return "null";
+    if (typeof obj === "string") {
+      if (obj.includes("\n")) return `|-\n${obj.split("\n").map((l) => pad + "  " + l).join("\n")}`;
+      return /[:#&*!|>'"%@`]/.test(obj) ? JSON.stringify(obj) : obj;
+    }
+    if (typeof obj === "number" || typeof obj === "boolean") return String(obj);
+    if (Array.isArray(obj)) {
+      if (obj.length === 0) return "[]";
+      return "\n" + obj.map((item) => {
+        if (typeof item === "object" && item !== null) {
+          const inner = toYaml(item, indent + 1).trimStart();
+          return `${pad}- ${inner}`;
+        }
+        return `${pad}- ${toYaml(item, indent + 1)}`;
+      }).join("\n");
+    }
+    if (typeof obj === "object") {
+      const entries = Object.entries(obj as Record<string, unknown>);
+      if (entries.length === 0) return "{}";
+      return entries.map(([k, v]) => {
+        const val = toYaml(v, indent + 1);
+        if (val.startsWith("\n")) return `${pad}${k}:${val}`;
+        return `${pad}${k}: ${val}`;
+      }).join("\n");
+    }
+    return String(obj);
+  };
+  const specYaml = toYaml(specObject).replace(/^\n/, "");
+  const specContent = specFormat === "yaml" ? specYaml : specJson;
+
+  const copySpec = async () => {
+    await navigator.clipboard.writeText(specContent);
+    toast({ title: "已复制到剪贴板" });
+  };
+  const downloadSpec = () => {
+    const blob = new Blob([specContent], { type: specFormat === "yaml" ? "text/yaml" : "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${(name || "agent").replace(/\s+/g, "-")}.${specFormat}`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <div className="flex-1 overflow-auto animate-fade-in">
@@ -959,6 +1026,51 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               <Save className="w-3 h-3" /> 保存
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 配置文档查看 */}
+      <Dialog open={specOpen} onOpenChange={setSpecOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-sm">智能体配置文档</DialogTitle>
+            <DialogDescription className="text-xs">
+              当前组装结果的结构化描述，可用于版本管理或外部导入
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center justify-between border-b border-border pb-2">
+            <div className="flex gap-1">
+              {(["yaml", "json"] as const).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setSpecFormat(f)}
+                  className={`px-2.5 py-1 rounded text-xs transition-colors ${
+                    specFormat === f ? "bg-secondary text-foreground font-medium" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {f.toUpperCase()}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={copySpec}>
+                <Copy className="w-3 h-3" />复制
+              </Button>
+              <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={downloadSpec}>
+                <ArrowRight className="w-3 h-3 rotate-90" />下载
+              </Button>
+            </div>
+          </div>
+          <div className="max-h-[60vh] overflow-auto bg-muted/30 rounded border border-border">
+            <div className="flex min-h-full">
+              <div className="select-none text-right pr-3 pl-3 py-3 text-[10px] font-mono text-muted-foreground/50 leading-relaxed shrink-0">
+                {specContent.split("\n").map((_, i) => <div key={i}>{i + 1}</div>)}
+              </div>
+              <pre className="flex-1 py-3 pr-4 text-[11px] font-mono leading-relaxed text-foreground whitespace-pre-wrap break-all">
+                {specContent}
+              </pre>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
