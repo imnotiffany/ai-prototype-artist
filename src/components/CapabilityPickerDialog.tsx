@@ -38,13 +38,18 @@ export const CapabilityPickerDialog = ({
   deployBadge,
   trigger,
 }: Props) => {
+  const isMcp = label === "MCP";
+  const hasProviders = isMcp && items.some((i) => i.provider);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const filtered = items.filter(
-    (it) =>
-      it.name.toLowerCase().includes(search.toLowerCase()) ||
-      it.description.toLowerCase().includes(search.toLowerCase()),
-  );
+  const [provider, setProvider] = useState<"lh" | "dd">("lh");
+  const filtered = items.filter((it) => {
+    if (hasProviders && it.provider && it.provider !== provider) return false;
+    const q = search.toLowerCase();
+    return it.name.toLowerCase().includes(q) || it.description.toLowerCase().includes(q);
+  });
+  const lhCount = items.filter((i) => i.provider === "lh").length;
+  const ddCount = items.filter((i) => i.provider === "dd").length;
 
   const marketName = label === "Skill" ? "Skill 广场" : label === "MCP" ? "MCP 广场" : "智能体广场";
 
