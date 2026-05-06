@@ -441,7 +441,7 @@ const CreateAgentPage = () => {
     {
       id: uid(),
       role: "system",
-      content: "👋 描述你想要创建的智能体，可以附带选择需要的 Skill 和 MCP 服务。系统会自动组装并生成配置。",
+      content: "👋 描述你想要创建的智能体，可以附带选择需要的 MCP 和 Skill 服务。系统会自动组装并生成配置。",
       type: "text",
     },
   ]);
@@ -501,7 +501,7 @@ const CreateAgentPage = () => {
               id: uid(),
               role: "system",
               content: matchedAttachments.length > 0
-                ? `🎯 已从 Skill 市场 / MCP 广场匹配到 ${newConfig.skills.length} 个 Skill / ${newConfig.mcpServers.length} 个 MCP`
+                ? `🎯 已从 MCP 广场 / Skill 市场匹配到 ${newConfig.mcpServers.length} 个 MCP / ${newConfig.skills.length} 个 Skill`
                 : "ℹ️ 本次未匹配到额外资源，将使用内置工具",
               type: "text",
               attachments: matchedAttachments.length > 0 ? matchedAttachments : undefined,
