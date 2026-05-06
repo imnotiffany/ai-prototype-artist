@@ -578,7 +578,6 @@ const AgentDetail = () => {
                   <div className="flex flex-wrap gap-2">
                     {selSkills.map((s) => (
                       <Badge key={s} variant="secondary" className="text-xs gap-1 pl-2.5 pr-1 py-1">
-                        <Sparkles className="w-3 h-3 text-primary" />
                         {s}
                         <button onClick={() => toggleSkill(s)} className="ml-1 p-0.5 rounded hover:bg-muted-foreground/20">
                           <X className="w-3 h-3" />
