@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Globe, FolderKanban, Check, Rocket, AlertCircle } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Globe, FolderKanban, Check, Rocket, AlertCircle, Copy } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 export interface AgentVersion {
