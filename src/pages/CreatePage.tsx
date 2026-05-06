@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Monitor, Bot, Zap, ArrowRight, Clock, Flame, Sparkles, SlidersHorizontal } from "lucide-react";
+import { Monitor, Bot, ArrowRight, Clock, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getRecentAgents, getMyAgents } from "@/data/mockData";
@@ -8,7 +8,6 @@ import { getRecentAgents, getMyAgents } from "@/data/mockData";
 const tabs = [
   { key: "web", label: "网页应用", icon: Monitor },
   { key: "agent", label: "智能体", icon: Bot },
-  { key: "skill", label: "技能", icon: Zap },
 ] as const;
 
 type TabKey = (typeof tabs)[number]["key"];
@@ -16,13 +15,11 @@ type TabKey = (typeof tabs)[number]["key"];
 const placeholders: Record<TabKey, string> = {
   web: "描述你想要创建的网页应用，例如：一个任务管理看板",
   agent: "描述你想要创建的智能体，例如：一个小红书爬虫助手",
-  skill: "描述你想要创建的技能，例如：一个将 Markdown 转 PDF 的技能",
 };
 
 const CreatePage = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabKey>("agent");
-  const [agentMode, setAgentMode] = useState<"auto" | "manual">("auto");
   const [description, setDescription] = useState("");
 
   const myAgents = getMyAgents().slice(0, 3);
@@ -30,11 +27,9 @@ const CreatePage = () => {
 
   const handleCreate = () => {
     if (activeTab === "agent") {
-      navigate(agentMode === "manual" ? "/create-agent-manual" : "/create-agent");
+      navigate("/create-agent-manual");
     } else if (activeTab === "web") {
       navigate("/create-web");
-    } else if (activeTab === "skill") {
-      navigate("/create-skill");
     }
   };
 
@@ -46,7 +41,7 @@ const CreatePage = () => {
           万千功能，<span className="text-primary">一语慧聚</span>
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          描述你的想法，一键快速构建功能完整的强大应用、智能体或技能
+          描述你的想法，一键快速构建功能完整的强大应用或智能体
         </p>
       </div>
 
@@ -78,48 +73,8 @@ const CreatePage = () => {
             })}
           </div>
 
-          {/* Agent: mode selector */}
-          {activeTab === "agent" && (
-            <div className="px-4 pt-4 grid grid-cols-2 gap-2.5">
-              <button
-                onClick={() => setAgentMode("auto")}
-                className={`text-left rounded-lg border p-3 transition-all ${
-                  agentMode === "auto"
-                    ? "border-primary bg-primary/5 ring-1 ring-primary/30"
-                    : "border-border bg-background hover:border-primary/40"
-                }`}
-              >
-                <div className="flex items-center gap-1.5 mb-1">
-                  <Sparkles className={`w-3.5 h-3.5 ${agentMode === "auto" ? "text-primary" : "text-muted-foreground"}`} />
-                  <span className="text-xs font-medium text-foreground">自动组装</span>
-                  <Badge variant="secondary" className="text-[9px] h-4 px-1.5 ml-auto">推荐</Badge>
-                </div>
-                <p className="text-[11px] text-muted-foreground leading-relaxed">
-                  描述需求，AI 自动匹配 Skill / MCP 并生成草稿
-                </p>
-              </button>
-              <button
-                onClick={() => setAgentMode("manual")}
-                className={`text-left rounded-lg border p-3 transition-all ${
-                  agentMode === "manual"
-                    ? "border-primary bg-primary/5 ring-1 ring-primary/30"
-                    : "border-border bg-background hover:border-primary/40"
-                }`}
-              >
-                <div className="flex items-center gap-1.5 mb-1">
-                  <SlidersHorizontal className={`w-3.5 h-3.5 ${agentMode === "manual" ? "text-primary" : "text-muted-foreground"}`} />
-                  <span className="text-xs font-medium text-foreground">手动组装</span>
-                  <Badge variant="outline" className="text-[9px] h-4 px-1.5 ml-auto">高级</Badge>
-                </div>
-                <p className="text-[11px] text-muted-foreground leading-relaxed">
-                  自行配置模型、提示词、Skill / MCP、子智能体
-                </p>
-              </button>
-            </div>
-          )}
-
           {/* Textarea */}
-          {!(activeTab === "agent" && agentMode === "manual") && (
+          {activeTab !== "agent" && (
             <div className="p-4">
               <textarea
                 value={description}
@@ -131,15 +86,23 @@ const CreatePage = () => {
             </div>
           )}
 
+          {activeTab === "agent" && (
+            <div className="px-4 py-6 text-center">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                自行配置模型、提示词、Skill / MCP、子智能体
+              </p>
+            </div>
+          )}
+
           {/* Footer */}
           <div className="flex items-center justify-end px-4 py-3">
             <Button
               size="sm"
               className="gap-1.5 text-xs h-8 px-4"
               onClick={handleCreate}
-              disabled={activeTab === "agent" && agentMode === "manual" ? false : !description.trim()}
+              disabled={activeTab === "agent" ? false : !description.trim()}
             >
-              {activeTab === "agent" && agentMode === "manual" ? "进入手动组装" : "立即创建"}
+              {activeTab === "agent" ? "进入手动组装" : "立即创建"}
               <ArrowRight className="w-3.5 h-3.5" />
             </Button>
           </div>
