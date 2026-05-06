@@ -86,11 +86,11 @@ const VaultPage = () => {
     <div className="p-6 max-w-[1100px] mx-auto animate-fade-in">
       <div className="flex items-start justify-between mb-2">
         <div>
-          <h1 className="text-lg font-semibold flex items-center gap-2">
+          <h1 className="text-xl font-semibold flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-primary" />
             凭据管理
           </h1>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-sm text-muted-foreground mt-1.5">
             集中管理外部 MCP Server 与第三方 API 的认证信息，支持在多个智能体中复用
           </p>
         </div>
@@ -102,22 +102,22 @@ const VaultPage = () => {
 
       {/* Type info */}
       <div className="grid grid-cols-2 gap-3 my-5">
-        <div className="border border-border rounded-lg p-3 bg-card flex items-start gap-2.5">
-          <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center shrink-0">
+        <div className="border border-border rounded-lg p-3.5 bg-card flex items-start gap-3">
+          <div className="w-9 h-9 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
             <KeyRound className="w-4 h-4 text-primary" />
           </div>
           <div>
-            <div className="text-xs font-medium">Bearer Token</div>
-            <div className="text-[11px] text-muted-foreground mt-0.5">静态 API 密钥，简单直接，适合内部服务</div>
+            <div className="text-sm font-medium">Bearer Token</div>
+            <div className="text-xs text-muted-foreground mt-1">静态 API 密钥，简单直接，适合内部服务</div>
           </div>
         </div>
-        <div className="border border-border rounded-lg p-3 bg-card flex items-start gap-2.5">
-          <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center shrink-0">
+        <div className="border border-border rounded-lg p-3.5 bg-card flex items-start gap-3">
+          <div className="w-9 h-9 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
             <Lock className="w-4 h-4 text-primary" />
           </div>
           <div>
-            <div className="text-xs font-medium">OAuth 2.0</div>
-            <div className="text-[11px] text-muted-foreground mt-0.5">委托授权流，支持自动刷新 Token，适合 SaaS 接入</div>
+            <div className="text-sm font-medium">OAuth 2.0</div>
+            <div className="text-xs text-muted-foreground mt-1">委托授权流，支持自动刷新 Token，适合 SaaS 接入</div>
           </div>
         </div>
       </div>
@@ -126,12 +126,12 @@ const VaultPage = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>凭据名称</TableHead>
-              <TableHead>凭据类型</TableHead>
-              <TableHead>关联 MCP</TableHead>
-              <TableHead>使用情况</TableHead>
-              <TableHead>创建时间</TableHead>
-              <TableHead className="w-24">操作</TableHead>
+              <TableHead className="text-sm">凭据名称</TableHead>
+              <TableHead className="text-sm">凭据类型</TableHead>
+              <TableHead className="text-sm">关联 MCP</TableHead>
+              <TableHead className="text-sm">使用情况</TableHead>
+              <TableHead className="text-sm">创建时间</TableHead>
+              <TableHead className="w-24 text-sm">操作</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -139,25 +139,25 @@ const VaultPage = () => {
               const agents = linkedAgents(cred.mcpServer);
               return (
                 <TableRow key={cred.id}>
-                  <TableCell className="font-medium text-xs">{cred.name}</TableCell>
+                  <TableCell className="font-medium text-sm">{cred.name}</TableCell>
                   <TableCell>
-                    <Badge variant="outline" className="text-[10px] gap-1">
+                    <Badge variant="outline" className="text-xs gap-1 font-normal">
                       {cred.type === "OAuth 2.0" ? <Lock className="w-3 h-3" /> : <KeyRound className="w-3 h-3" />}
                       {cred.type}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-xs">{cred.mcpServer}</TableCell>
+                  <TableCell className="text-sm">{cred.mcpServer}</TableCell>
                   <TableCell>
                     {agents.length > 0 ? (
-                      <Badge variant="secondary" className="text-[10px] gap-1">
+                      <Badge variant="secondary" className="text-xs gap-1 font-normal">
                         <Bot className="w-3 h-3" />
                         {agents.length} 个智能体
                       </Badge>
                     ) : (
-                      <span className="text-[11px] text-muted-foreground">未使用</span>
+                      <span className="text-sm text-muted-foreground">未使用</span>
                     )}
                   </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">{cred.createdAt}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{cred.createdAt}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
                       <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEdit(cred)} title="编辑">
