@@ -517,24 +517,6 @@ const AgentDetail = () => {
             </div>
           </div>
 
-          {/* Sticky bottom action bar (debug) */}
-          {isDirty && (
-            <div className="sticky bottom-4 mt-4 mx-auto max-w-3xl z-10 border border-amber-300 bg-amber-50/95 dark:bg-amber-950/40 backdrop-blur rounded-lg shadow-lg px-4 py-2.5 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2 text-xs min-w-0">
-                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
-                <span className="font-medium text-amber-900 dark:text-amber-200">调试期间的修改尚未保存，不会影响线上</span>
-                <span className="text-amber-700/80 dark:text-amber-300/80 truncate">· 保存后将生成新版本，需到右上角「发布」才能上线</span>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <Button size="sm" variant="ghost" className="h-7 text-xs gap-1.5" onClick={handleRevert}>
-                  <RotateCcw className="w-3 h-3" />撤销
-                </Button>
-                <Button size="sm" className="h-7 text-xs gap-1.5" onClick={handleSave}>
-                  <Save className="w-3 h-3" />保存
-                </Button>
-              </div>
-            </div>
-          )}
         </TabsContent>
 
         {/* ───────── 配置 ───────── */}
