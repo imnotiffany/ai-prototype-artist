@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
-import { Globe, FolderKanban, Check, Rocket, AlertCircle, Copy } from "lucide-react";
+import { Upload, Sparkles } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 export interface AgentVersion {
@@ -20,98 +21,125 @@ interface Props {
   onOpenChange: (v: boolean) => void;
   agentName: string;
   versions: AgentVersion[];
-  /** Pre-selected scope when opening from a specific entry. */
   defaultScope?: "marketplace" | "project";
 }
 
-const scopes = [
-  {
-    id: "marketplace" as const,
-    name: "发布到应用广场",
-    desc: "面向公司内全体员工，可在广场被发现、订阅与使用",
-    icon: Globe,
-  },
-  {
-    id: "project" as const,
-    name: "仅在项目内发布",
-    desc: "只对当前项目成员可见，适合内部试用与小范围灰度",
-    icon: FolderKanban,
-  },
-];
+const categories = ["效率办公", "研发工程", "数据分析", "客户服务", "市场营销", "人力资源"];
+
+const RequiredLabel = ({ children }: { children: React.ReactNode }) => (
+  <label className="block text-sm text-foreground mb-2">
+    <span className="text-destructive mr-1">*</span>
+    {children}
+  </label>
+);
 
 export const PublishAgentDialog = ({ open, onOpenChange, agentName, versions, defaultScope = "marketplace" }: Props) => {
+  const [name, setName] = useState(agentName);
+  const [desc, setDesc] = useState("");
+  const [category, setCategory] = useState<string>("");
   const [scope, setScope] = useState<"marketplace" | "project">(defaultScope);
   const [versionV, setVersionV] = useState<string>(versions.find((v) => v.current)?.v ?? versions[0]?.v ?? "");
-  const [allowCopy, setAllowCopy] = useState(true);
+  const [allowCopy, setAllowCopy] = useState(false);
+  const [iconFile, setIconFile] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open) {
+      setName(agentName);
+      setDesc("");
+      setCategory("");
       setScope(defaultScope);
       setVersionV(versions.find((v) => v.current)?.v ?? versions[0]?.v ?? "");
+      setAllowCopy(false);
+      setIconFile(null);
     }
-  }, [open, defaultScope, versions]);
+  }, [open, agentName, defaultScope, versions]);
 
-  const selectedVersion = versions.find((v) => v.v === versionV);
+  const handleIconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => setIconFile(ev.target?.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAIGenerate = () => {
+    toast({ title: "AI 生成图标", description: "正在为你生成专属图标..." });
+  };
 
   const submit = () => {
+    if (!name.trim() || !desc.trim() || !category) {
+      toast({ title: "请填写完整信息", variant: "destructive" });
+      return;
+    }
     toast({
       title: "已提交发布",
-      description: `${agentName} ${versionV} 将发布到「${scope === "marketplace" ? "应用广场" : "项目内"}」`,
+      description: `${name} ${versionV} 将发布到「${scope === "marketplace" ? "应用广场" : "项目内"}」`,
     });
     onOpenChange(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-[560px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-base flex items-center gap-2">
-            <Rocket className="w-4 h-4 text-primary" />
-            发布智能体
-          </DialogTitle>
+          <DialogTitle className="text-lg font-semibold">发布应用</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-1">
-          {/* Scope */}
-          <div className="space-y-1.5">
-            <Label className="text-xs">发布范围</Label>
-            <div className="space-y-2">
-              {scopes.map((s) => {
-                const Icon = s.icon;
-                const sel = scope === s.id;
-                return (
-                  <button
-                    type="button"
-                    key={s.id}
-                    onClick={() => setScope(s.id)}
-                    className={`w-full text-left flex items-start gap-2.5 border rounded-lg p-3 transition-colors ${
-                      sel ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
-                    }`}
-                  >
-                    <Icon className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <p className="text-xs font-medium">{s.name}</p>
-                        {sel && <Check className="w-3 h-3 text-primary" />}
-                      </div>
-                      <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">{s.desc}</p>
-                    </div>
-                  </button>
-                );
-              })}
+        <div className="space-y-5 py-2">
+          {/* Name */}
+          <div>
+            <RequiredLabel>应用名称</RequiredLabel>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="h-10 text-sm"
+              placeholder="请输入应用名称"
+            />
+          </div>
+
+          {/* Description */}
+          <div>
+            <RequiredLabel>应用描述</RequiredLabel>
+            <div className="relative">
+              <Textarea
+                value={desc}
+                onChange={(e) => setDesc(e.target.value.slice(0, 100))}
+                className="text-sm resize-none min-h-[110px]"
+                placeholder="简要描述应用用途"
+              />
+              <span className="absolute bottom-2 right-3 text-xs text-muted-foreground">
+                {desc.length} / 100
+              </span>
             </div>
           </div>
 
+          {/* Category */}
+          <div>
+            <RequiredLabel>分类</RequiredLabel>
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger className="h-10 text-sm">
+                <SelectValue placeholder="选择分类" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((c) => (
+                  <SelectItem key={c} value={c} className="text-sm">{c}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Version */}
-          <div className="space-y-1.5">
-            <Label className="text-xs">选择发布版本</Label>
+          <div>
+            <RequiredLabel>发布版本</RequiredLabel>
             <Select value={versionV} onValueChange={setVersionV}>
-              <SelectTrigger className="h-9 text-xs">
+              <SelectTrigger className="h-10 text-sm">
                 <SelectValue placeholder="选择版本" />
               </SelectTrigger>
               <SelectContent>
                 {versions.map((v) => (
-                  <SelectItem key={v.v} value={v.v} className="text-xs">
+                  <SelectItem key={v.v} value={v.v} className="text-sm">
                     <span className="font-mono mr-2">{v.v}</span>
                     <span className="text-muted-foreground">{v.note}</span>
                     {v.current && <span className="ml-2 text-primary">· 当前</span>}
@@ -119,70 +147,82 @@ export const PublishAgentDialog = ({ open, onOpenChange, agentName, versions, de
                 ))}
               </SelectContent>
             </Select>
-            {selectedVersion && (
-              <p className="text-[10px] text-muted-foreground">
-                {selectedVersion.at} · {selectedVersion.note}
-              </p>
-            )}
           </div>
 
-          {/* Allow copy (only when publishing to marketplace) */}
-          {scope === "marketplace" && (
-            <div className="flex items-start gap-2.5 border border-border rounded-lg p-3">
-              <Copy className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-xs font-medium">允许其他用户复制到项目内</p>
-                  <Switch checked={allowCopy} onCheckedChange={setAllowCopy} />
-                </div>
-                <p className="text-[10px] text-muted-foreground mt-1 leading-relaxed">
-                  开启后，他人可在广场卡片点击「复制到项目内」获得独立可编辑副本；关闭则仅支持在线体验
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Summary */}
-          <div className="border border-border rounded-lg p-3 bg-muted/30 space-y-1.5">
-            <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">智能体</span>
-              <span className="font-medium truncate max-w-[60%]">{agentName}</span>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">范围</span>
-              <Badge variant="outline" className="text-[10px]">
-                {scope === "marketplace" ? "应用广场" : "项目内"}
-              </Badge>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">版本</span>
-              <span className="font-mono">{versionV}</span>
-            </div>
-            {scope === "marketplace" && (
-              <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">允许复制</span>
-                <span className={allowCopy ? "text-primary font-medium" : "text-muted-foreground"}>
-                  {allowCopy ? "已开启" : "已关闭"}
-                </span>
-              </div>
-            )}
+          {/* Scope */}
+          <div>
+            <RequiredLabel>发布范围</RequiredLabel>
+            <RadioGroup
+              value={scope}
+              onValueChange={(v) => setScope(v as "marketplace" | "project")}
+              className="flex items-center gap-8"
+            >
+              <label className="flex items-center gap-2 cursor-pointer">
+                <RadioGroupItem value="marketplace" id="scope-public" />
+                <span className="text-sm">公开（所有人可见）</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <RadioGroupItem value="project" id="scope-project" />
+                <span className="text-sm">仅项目内可见</span>
+              </label>
+            </RadioGroup>
           </div>
 
-          <div className="flex items-start gap-2 text-[11px] text-muted-foreground">
-            <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-            <p>
-              发布后该版本会立即生效；项目管理中的草稿不会被自动发布，每次修改后都需手动发布以更新线上版本。
+          {/* Allow copy */}
+          <div>
+            <label className="block text-sm text-foreground mb-2">允许他人复制</label>
+            <Switch
+              checked={allowCopy}
+              onCheckedChange={setAllowCopy}
+              disabled={scope !== "marketplace"}
+            />
+            <p className="text-xs text-muted-foreground mt-2">
+              开启后，其他用户可以将此应用复制到自己的项目中
             </p>
+          </div>
+
+          {/* App Icon */}
+          <div>
+            <RequiredLabel>应用图标</RequiredLabel>
+            <div className="flex items-center gap-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleIconUpload}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-9 text-sm gap-1.5"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className="w-3.5 h-3.5" />
+                选择图标
+              </Button>
+              <button
+                type="button"
+                onClick={handleAIGenerate}
+                className="text-sm text-primary hover:underline inline-flex items-center gap-1"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                AI 生成图标
+              </button>
+              {iconFile && (
+                <img src={iconFile} alt="icon preview" className="w-9 h-9 rounded-md object-cover border border-border" />
+              )}
+            </div>
           </div>
         </div>
 
         <DialogFooter>
-          <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" size="sm" className="h-9 px-5 text-sm" onClick={() => onOpenChange(false)}>
             取消
           </Button>
-          <Button size="sm" className="h-8 text-xs gap-1.5" onClick={submit} disabled={!versionV}>
-            <Rocket className="w-3.5 h-3.5" />
-            确认发布
+          <Button size="sm" className="h-9 px-5 text-sm" onClick={submit}>
+            发布
           </Button>
         </DialogFooter>
       </DialogContent>
