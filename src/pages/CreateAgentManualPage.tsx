@@ -295,13 +295,9 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={handleSaveDraft}>
-            <Save className="w-3.5 h-3.5" />
-            保存草稿
-          </Button>
           <Button size="sm" className="h-8 text-xs gap-1.5" onClick={openPublish}>
-            <Rocket className="w-3.5 h-3.5" />
-            保存并发布
+            <Save className="w-3.5 h-3.5" />
+            保存
           </Button>
         </div>
       </div>
