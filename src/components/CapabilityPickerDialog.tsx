@@ -51,7 +51,13 @@ export const CapabilityPickerDialog = ({
   const lhCount = items.filter((i) => i.provider === "lh").length;
   const ddCount = items.filter((i) => i.provider === "dd").length;
 
-  const marketName = label === "Skill" ? "Skill 广场" : label === "MCP" ? "MCP 广场" : "智能体广场";
+  const mcpMarketUrl = provider === "dd"
+    ? "https://aihub.dingtalk.com/#/mcp"
+    : "https://ai.sf-express.com/project/enter/llm/mcp-square";
+  const marketLabel = isMcp
+    ? (provider === "dd" ? "前往钉钉 MCP 广场" : "前往领慧 MCP 广场")
+    : `前往${label === "Skill" ? "Skill 广场" : "智能体广场"}`;
+  const effectiveMarketLink = isMcp ? mcpMarketUrl : marketLink;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -87,11 +93,10 @@ export const CapabilityPickerDialog = ({
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 text-xs gap-1 shrink-0"
-            onClick={() => window.open(marketLink, "_blank")}
+            className="h-8 text-xs shrink-0"
+            onClick={() => window.open(effectiveMarketLink, "_blank")}
           >
-            前往{marketName}
-            <ExternalLink className="w-3 h-3" />
+            {marketLabel}
           </Button>
         </div>
         <div className="overflow-auto -mx-1 px-1 grid grid-cols-2 gap-2.5">
