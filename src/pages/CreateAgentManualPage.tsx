@@ -612,7 +612,30 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 <p className="text-[10px] text-muted-foreground">
                   {systemPrompt.length} 字符 · 将根据已绑定的 {selSkills.length} 个 Skill 与 {selMCPs.length} 个 MCP 生成
                 </p>
-                <Button size="sm" variant="ghost" className="h-7 text-xs">从模板导入</Button>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button size="sm" variant="ghost" className="h-7 text-xs">从模板导入</Button>
+                  </PopoverTrigger>
+                  <PopoverContent align="end" className="w-72 p-1.5">
+                    <div className="px-2 py-1.5 text-[10px] text-muted-foreground">选择模板覆盖当前提示词</div>
+                    <div className="space-y-0.5">
+                      {promptTemplates.map((tpl) => (
+                        <button
+                          key={tpl.name}
+                          type="button"
+                          onClick={() => {
+                            setSystemPrompt(tpl.content);
+                            toast({ title: `已导入模板：${tpl.name}` });
+                          }}
+                          className="w-full text-left rounded-md px-2 py-1.5 hover:bg-muted transition-colors"
+                        >
+                          <div className="text-xs font-medium text-foreground">{tpl.name}</div>
+                          <div className="text-[10px] text-muted-foreground mt-0.5">{tpl.description}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
           </TabsContent>
