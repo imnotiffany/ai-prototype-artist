@@ -29,18 +29,25 @@ const ChatPage = () => {
 
   if (!agent) return <div className="p-6">智能体不存在</div>;
 
-  // Mutate the last tools-message in place to update a single tool call status.
-  const updateLastToolCall = (id: string, patch: Partial<ToolCall>) => {
+  // 更新指定 id 的工具调用（不限定哪条消息）
+  const patchToolCall = (id: string, patch: Partial<ToolCall>) => {
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.role === "tools"
+          ? { ...m, calls: m.calls.map((c) => (c.id === id ? { ...c, ...patch } : c)) }
+          : m,
+      ),
+    );
+  };
+
+  const appendToolCall = (call: ToolCall) => {
     setMessages((prev) => {
-      const next = [...prev];
-      for (let i = next.length - 1; i >= 0; i--) {
-        const m = next[i];
-        if (m.role === "tools") {
-          next[i] = { ...m, calls: m.calls.map((c) => (c.id === id ? { ...c, ...patch } : c)) };
-          break;
-        }
+      // 追加到最后一条 tools 消息；若末尾不是 tools，则新建一条
+      const last = prev[prev.length - 1];
+      if (last && last.role === "tools") {
+        return [...prev.slice(0, -1), { ...last, calls: [...last.calls, call] }];
       }
-      return next;
+      return [...prev, { role: "tools", calls: [call] }];
     });
   };
 
@@ -52,59 +59,113 @@ const ChatPage = () => {
     setIsRunning(true);
     setStageIndex(0);
 
-    const firstSkill = agent.skills[0] ?? "内置推理";
-    const callId = `c-${Date.now()}`;
+    const mcpName = agent.mcpServers[0] ?? "智水-MCP服务";
+    const skillName = agent.skills[0] ?? "Log Analyzer";
+    const mcpId = `mcp-${Date.now()}`;
+    const skillId = `skill-${Date.now()}`;
 
-    // stage: choose tool
-    setTimeout(() => setStageIndex(1), 350);
+    // ─ 阶段 1：选择 MCP 工具
+    setTimeout(() => setStageIndex(1), 300);
 
-    // stage: tool running
+    // ─ 阶段 2：调用 MCP（running）
     setTimeout(() => {
       setStageIndex(2);
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "tools",
-          calls: [
-            {
-              id: callId,
-              kind: "skill",
-              name: firstSkill,
-              summary: `query: "${value.slice(0, 40)}"`,
-              status: "running",
-              input: JSON.stringify({ query: value }, null, 2),
-            },
-          ],
-        },
-      ]);
+      appendToolCall({
+        id: mcpId,
+        kind: "mcp",
+        name: "query_logs",
+        provider: `${mcpName}（领慧 MCP）`,
+        endpoint: "mcp.smartwater.query_logs",
+        summary: `查询最近 1h 的相关日志`,
+        status: "running",
+        params: [
+          { key: "query", value: value },
+          { key: "time_range", value: "last_1h" },
+          { key: "limit", value: "20" },
+        ],
+        steps: [
+          { label: "路由决策", detail: `LLM 判定需调用 ${mcpName}`, ms: 86, status: "done" },
+          { label: "建立 MCP 连接", detail: "Streamable HTTP · TLS 已就绪", ms: 124, status: "done" },
+          { label: "执行 query_logs", status: "running" },
+        ],
+      });
     }, 700);
 
-    // stage: tool success
+    // ─ 阶段 3：MCP 完成
     setTimeout(() => {
-      updateLastToolCall(callId, {
+      patchToolCall(mcpId, {
         status: "success",
-        summary: `返回 3 条结果 · 412ms`,
-        output: JSON.stringify(
-          { results: [{ title: "示例结果 1" }, { title: "示例结果 2" }, { title: "示例结果 3" }] },
-          null,
-          2,
-        ),
+        summary: `返回 3 条日志 · 412ms`,
+        steps: [
+          { label: "路由决策", detail: `LLM 判定需调用 ${mcpName}`, ms: 86, status: "done" },
+          { label: "建立 MCP 连接", detail: "Streamable HTTP · TLS 已就绪", ms: 124, status: "done" },
+          { label: "执行 query_logs", detail: "命中索引 logs_idx_1h", ms: 412, status: "done" },
+          { label: "解析返回", detail: "JSON-RPC 200 OK · 3 条结果", ms: 18, status: "done" },
+        ],
+        resultSummary: "3 条结果 · 412ms",
+        resultItems: [
+          { title: "[ERROR] connection refused @ node-3", meta: "10:24:18" },
+          { title: "[WARN] cpu usage 92% @ node-1", meta: "10:24:16" },
+          { title: "[INFO] alert escalated to ops-team", meta: "10:24:15" },
+        ],
       });
-      setStageIndex(3);
     }, 1500);
 
-    // stage: agent reply
+    // ─ 阶段 4：调用 Skill 处理 MCP 返回
+    setTimeout(() => {
+      appendToolCall({
+        id: skillId,
+        kind: "skill",
+        name: skillName,
+        provider: "内置 Skill",
+        endpoint: "skill.log_analyzer.summarize",
+        summary: "对日志做根因分析",
+        status: "running",
+        params: [
+          { key: "logs", value: "← 来自 query_logs 的 3 条记录" },
+          { key: "mode", value: "root_cause" },
+        ],
+        steps: [
+          { label: "加载 Skill", ms: 32, status: "done" },
+          { label: "推理中", status: "running" },
+        ],
+      });
+    }, 1900);
+
+    // ─ 阶段 5：Skill 完成 + Agent 回复
+    setTimeout(() => {
+      patchToolCall(skillId, {
+        status: "success",
+        summary: "已生成根因分析",
+        steps: [
+          { label: "加载 Skill", ms: 32, status: "done" },
+          { label: "推理中", detail: "LLM 调用 · 1240 tokens", ms: 980, status: "done" },
+          { label: "生成报告", ms: 40, status: "done" },
+        ],
+        resultSummary: "1 份报告",
+        resultItems: [
+          { title: "根因：node-3 网络抖动导致连接被拒" },
+          { title: "影响范围：3 个上游服务" },
+          { title: "建议：重启 node-3 网卡，并检查交换机端口" },
+        ],
+      });
+      setStageIndex(3);
+    }, 2900);
+
     setTimeout(() => {
       setMessages((prev) => [
         ...prev,
         {
           role: "agent",
           content:
-            "根据搜索结果，我已经找到了相关信息。以下是我的分析：\n\n1. **关键发现**：数据显示近期趋势明显\n2. **建议操作**：建议进一步深入分析\n3. **参考来源**：已附上相关文档链接",
+            `根据 ${mcpName} 拉取的日志和 ${skillName} 的分析，定位结果如下：\n\n` +
+            "1. **根因**：node-3 网络抖动，导致 connection refused\n" +
+            "2. **影响**：3 个上游服务受影响\n" +
+            "3. **建议**：重启 node-3 网卡，并联系网络组检查交换机端口",
         },
       ]);
       setIsRunning(false);
-    }, 2200);
+    }, 3300);
   };
 
   const stop = () => {
