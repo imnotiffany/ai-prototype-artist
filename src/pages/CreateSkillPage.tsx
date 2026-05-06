@@ -296,7 +296,7 @@ const CreateSkillPage = () => {
               </div>
               <div>
                 <div className="text-xs font-medium text-foreground">发布为智能体</div>
-                <div className="text-[10px] text-muted-foreground mt-0.5">直接发布到智能广场，他人可直接调用</div>
+                <div className="text-[10px] text-muted-foreground mt-0.5">直接发布到数字同事，他人可直接调用</div>
               </div>
             </button>
           </div>
