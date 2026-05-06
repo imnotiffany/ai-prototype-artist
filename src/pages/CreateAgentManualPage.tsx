@@ -760,13 +760,10 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
             <div className="grid grid-cols-2 gap-4">
               {/* Left: Debug Assistant */}
               <div className="border border-border rounded-lg bg-card flex flex-col h-[640px]">
-                <div className="px-4 py-2 border-b border-border flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-primary" />
-                    <span className="text-xs font-semibold">调试助手</span>
-                    <Badge variant="outline" className="text-[10px] h-4">AI</Badge>
-                  </div>
-                  <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setAssistantMessages([])}>清空</Button>
+                <div className="px-3 h-10 shrink-0 border-b border-border flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-primary" />
+                  <span className="text-xs font-semibold">调试助手</span>
+                  <Badge variant="outline" className="text-[10px] h-4">AI</Badge>
                 </div>
                 <div className="flex-1 overflow-auto p-4 space-y-3">
                   {assistantMessages.length === 0 && (
