@@ -86,6 +86,15 @@ export const PublishDialog = ({ open, onOpenChange, defaultName = "", defaultDes
               <Label className="text-xs">版本号</Label>
               <Input className="mt-1.5 h-8 text-xs w-32 font-mono" value={version} onChange={(e) => setVersion(e.target.value)} />
             </div>
+            <label className="flex items-start gap-2.5 border border-border rounded-lg p-3 cursor-pointer hover:border-primary/40 transition-colors">
+              <Checkbox checked={allowCopy} onCheckedChange={(v) => setAllowCopy(!!v)} className="mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium">允许其他用户复制到自己的项目</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">
+                  开启后，他人可在广场卡片点击「复制到项目内」，获得一份独立可编辑的副本；关闭则仅支持在线体验
+                </p>
+              </div>
+            </label>
           </div>
         )}
 
