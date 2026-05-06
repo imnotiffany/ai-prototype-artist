@@ -72,6 +72,20 @@ const CreateAgentManualPage = () => {
   const [debugRunning, setDebugRunning] = useState(false);
   const [voiceRecording, setVoiceRecording] = useState(false);
 
+  // Runtime logs (Cloud Code style)
+  type LogLevel = "info" | "tool" | "thought" | "warn" | "error" | "result";
+  type LogEntry = { id: number; ts: string; level: LogLevel; message: string; meta?: string };
+  const [debugLogs, setDebugLogs] = useState<LogEntry[]>([]);
+  const [logsOpen, setLogsOpen] = useState(false);
+  const [logFilter, setLogFilter] = useState<"all" | LogLevel>("all");
+  const logIdRef = (globalThis as any).__logIdRef ?? { current: 0 };
+  (globalThis as any).__logIdRef = logIdRef;
+
+  const pushLog = (level: LogLevel, message: string, meta?: string) => {
+    const ts = new Date().toLocaleTimeString("zh-CN", { hour12: false }) + "." + String(Date.now() % 1000).padStart(3, "0");
+    setDebugLogs((l) => [...l, { id: ++logIdRef.current, ts, level, message, meta }]);
+  };
+
   // Publish flow
   const [publishStage, setPublishStage] = useState<"project" | "marketplace" | "done">("project");
   const [publishingToMarket, setPublishingToMarket] = useState(false);
