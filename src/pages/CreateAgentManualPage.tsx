@@ -14,7 +14,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
-import { categories, getActiveSkills, getActiveMCPs, mockAgents } from "@/data/mockData";
+import { categories, getActiveSkills, getActiveMCPs, mockAgents, mockCredentials } from "@/data/mockData";
 
 const skills = getActiveSkills();
 const mcps = getActiveMCPs();
@@ -47,7 +47,7 @@ const CreateAgentManualPage = () => {
 
   // Env
   const [persistentFs, setPersistentFs] = useState(true);
-  const [envVars, setEnvVars] = useState<{ k: string; v: string }[]>([{ k: "WORKSPACE", v: "/workspace" }]);
+  const [mcpCredentialMap, setMcpCredentialMap] = useState<Record<string, string>>({});
 
   // Network
   const [networkPolicy, setNetworkPolicy] = useState<"intranet" | "whitelist" | "open">("whitelist");
