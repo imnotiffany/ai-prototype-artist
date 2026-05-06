@@ -266,6 +266,14 @@ const AgentDetail = () => {
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-base font-semibold text-foreground truncate">{name}</h1>
+              {agent.status === "published" ? (
+                <span className="inline-flex items-center gap-1.5 text-[11px]">
+                  <Badge variant="outline" className="text-[10px] h-5 px-1.5 border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30">已发布</Badge>
+                  <span className="font-mono text-foreground">{versions.find((v) => v.current)?.v}</span>
+                </span>
+              ) : (
+                <Badge variant="outline" className="text-[10px] h-5 px-1.5 text-muted-foreground">未发布</Badge>
+              )}
             </div>
             <p className="text-xs text-muted-foreground mt-1 line-clamp-2 max-w-2xl">{description}</p>
             <div className="flex items-center gap-1.5 mt-2 flex-wrap">
@@ -287,43 +295,6 @@ const AgentDetail = () => {
             title={isDirty ? "请先保存当前修改后再发布" : "发布"}
           >
             <Rocket className="w-3.5 h-3.5" />发布
-          </Button>
-        </div>
-      </div>
-
-      {/* Status bar: 线上版本 / 当前调试版本 / 未保存提示 */}
-      <div className="mb-5 border border-border rounded-lg bg-card px-3 py-2 flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-3 text-xs flex-wrap">
-          <div className="flex items-center gap-1.5">
-            <span className={`w-1.5 h-1.5 rounded-full ${agent.status === "published" ? "bg-emerald-500" : "bg-muted-foreground/50"}`} />
-            <span className="text-muted-foreground">线上</span>
-            {agent.status === "published" ? (
-              <>
-                <Badge variant="outline" className="text-[10px] h-5 px-1.5 border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30">已发布</Badge>
-                <span className="font-mono text-[11px] text-foreground">{versions.find((v) => v.current)?.v}</span>
-              </>
-            ) : (
-              <span className="text-muted-foreground">未发布</span>
-            )}
-          </div>
-          <span className="w-px h-3.5 bg-border" />
-          <div className="flex items-center gap-1.5">
-            <span className="text-muted-foreground">当前调试</span>
-            <span className="font-mono text-[11px] text-foreground">{versions.find((v) => v.current)?.v}</span>
-            {isDirty && (
-              <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-0 text-[10px] h-5 px-1.5 gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                有未保存的修改
-              </Badge>
-            )}
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button size="sm" variant="ghost" className="h-7 text-xs gap-1.5" onClick={handleRevert} disabled={!isDirty}>
-            <RotateCcw className="w-3 h-3" />撤销
-          </Button>
-          <Button size="sm" variant={isDirty ? "default" : "outline"} className="h-7 text-xs gap-1.5" onClick={handleSave} disabled={!isDirty}>
-            <Save className="w-3 h-3" />保存
           </Button>
         </div>
       </div>
@@ -863,7 +834,7 @@ const AgentDetail = () => {
         <TabsContent value="versions" className="mt-4">
           <div className="border border-border rounded-lg px-4 py-3 bg-muted/40 mb-4">
             <p className="text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">关于版本</span> · 每次在「配置」中点击保存，都会自动生成一个新版本。你可以随时查看历史变更内容，或将当前线上版本回滚到任意历史版本。
+              <span className="font-medium text-foreground">关于版本</span> · 每次在「配置」中点击保存，都会自动生成一个新版本。可在此查看任意历史版本快照，或选择某个版本重新发布上线。
             </p>
           </div>
           <div className="border border-border rounded-lg bg-card overflow-hidden">
@@ -879,17 +850,19 @@ const AgentDetail = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {versions.map((v) => (
+                {versions.map((v) => {
+                  const isPublished = v.current && agent.status === "published";
+                  return (
                   <TableRow key={v.v} className="hover:bg-muted/30">
                     <TableCell className="font-mono text-xs">{v.v}</TableCell>
                     <TableCell className="text-xs">{v.note}</TableCell>
                     <TableCell className="text-xs">{v.by}</TableCell>
                     <TableCell className="text-xs font-mono text-muted-foreground">{v.at}</TableCell>
                     <TableCell>
-                      {v.current ? (
-                        <Badge className="bg-primary/10 text-primary hover:bg-primary/10 border-0 text-[10px] h-5">当前线上</Badge>
+                      {isPublished ? (
+                        <Badge variant="outline" className="text-[10px] h-5 px-1.5 border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30">已发布</Badge>
                       ) : (
-                        <span className="text-[10px] text-muted-foreground">历史</span>
+                        <span className="text-[10px] text-muted-foreground">未发布</span>
                       )}
                     </TableCell>
                     <TableCell className="text-right">
@@ -897,29 +870,16 @@ const AgentDetail = () => {
                         <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1" onClick={() => setViewingVersion(v)}>
                           <Eye className="w-3 h-3" />查看
                         </Button>
-                        {!v.current && (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1"><RotateCcw className="w-3 h-3" />回滚</Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>回滚到 {v.v}？</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  将把当前线上版本切换到 <span className="font-mono">{v.v}</span>（{v.note}）。已发布的接入端会立即使用该版本。
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>取消</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleRollback(v)}>确认回滚</AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                        {!isPublished && (
+                          <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1" onClick={() => { handleRollback(v); setPublishOpen(true); }}>
+                            <Rocket className="w-3 h-3" />发布
+                          </Button>
                         )}
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                  );
+                })}
               </TableBody>
             </Table>
           </div>
@@ -931,8 +891,8 @@ const AgentDetail = () => {
                 <DialogTitle className="text-sm flex items-center gap-2">
                   版本快照
                   <span className="font-mono text-xs">{viewingVersion?.v}</span>
-                  {viewingVersion?.current && (
-                    <Badge className="bg-primary/10 text-primary hover:bg-primary/10 border-0 text-[10px] h-5">当前线上</Badge>
+                  {viewingVersion?.current && agent.status === "published" && (
+                    <Badge variant="outline" className="text-[10px] h-5 px-1.5 border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30">已发布</Badge>
                   )}
                 </DialogTitle>
               </DialogHeader>
@@ -965,9 +925,9 @@ const AgentDetail = () => {
               )}
               <DialogFooter>
                 <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setViewingVersion(null)}>关闭</Button>
-                {viewingVersion && !viewingVersion.current && (
-                  <Button size="sm" className="h-8 text-xs gap-1" onClick={() => { handleRollback(viewingVersion); setViewingVersion(null); }}>
-                    <RotateCcw className="w-3 h-3" />回滚到此版本
+                {viewingVersion && !(viewingVersion.current && agent.status === "published") && (
+                  <Button size="sm" className="h-8 text-xs gap-1" onClick={() => { handleRollback(viewingVersion); setViewingVersion(null); setPublishOpen(true); }}>
+                    <Rocket className="w-3 h-3" />发布此版本
                   </Button>
                 )}
               </DialogFooter>
