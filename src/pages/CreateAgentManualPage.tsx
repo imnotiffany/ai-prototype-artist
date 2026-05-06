@@ -313,10 +313,10 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
 
           {/* Capability: 基座模型 + MCP + Skill + Subagent */}
           <TabsContent value="capability" className="mt-4 space-y-4">
-            {/* 基座模型 */}
+            {/* 模型配置 */}
             <div className="border border-border rounded-lg p-5 space-y-5 bg-card">
               <div>
-                <Label className="text-xs flex items-center gap-1.5"><Cpu className="w-3.5 h-3.5" /> 基座模型</Label>
+                <Label className="text-xs flex items-center gap-1.5"><Cpu className="w-3.5 h-3.5" /> 模型配置</Label>
                 <Select value={model} onValueChange={setModel}>
                   <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
                   <SelectContent>
