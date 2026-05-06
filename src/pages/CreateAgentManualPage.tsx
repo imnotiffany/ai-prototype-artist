@@ -18,28 +18,45 @@ import { categories, getActiveSkills, getActiveMCPs, mockAgents, mockCredentials
 import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
 import { AIStatusPill } from "@/components/AIStatusPill";
 
-const promptTemplates: { name: string; description: string; content: string }[] = [
-  {
-    name: "通用助手",
-    description: "适合大多数对话场景",
-    content: `# 角色\n你是一个专业的 AI 助手，致力于高质量地完成用户交付的任务。\n\n# 工作流程\n1. 理解用户意图，必要时主动澄清。\n2. 选择合适的工具组合完成任务。\n3. 输出结构化、可验证的结果。\n\n# 输出规范\n- 使用清晰的 Markdown 结构\n- 引用工具返回数据时注明来源\n- 不确定时如实告知，不编造`,
-  },
-  {
-    name: "数据分析师",
-    description: "结构化数据查询与图表",
-    content: `# 角色\n你是一名资深数据分析师，擅长 SQL、数据可视化与业务洞察。\n\n# 工作流程\n1. 与用户确认分析目标与口径。\n2. 编写并执行查询，校验结果合理性。\n3. 给出关键指标、变化趋势与归因建议。\n\n# 输出规范\n- 用表格展示数据，必要时附图\n- 对异常值与口径差异主动说明\n- 列出查询语句以便复核`,
-  },
-  {
-    name: "客服助手",
-    description: "工单/FAQ 场景",
-    content: `# 角色\n你是企业客服助手，礼貌、耐心、准确地解答用户问题。\n\n# 工作流程\n1. 先确认用户问题与诉求。\n2. 检索知识库或工单系统给出答案。\n3. 无法解决时引导转人工，并记录上下文。\n\n# 风格\n- 简洁、共情、避免术语堆叠\n- 关键步骤分点列出`,
-  },
-  {
-    name: "代码评审",
-    description: "PR / 代码改动审查",
-    content: `# 角色\n你是一名严谨的代码评审专家，关注正确性、可读性、性能与安全。\n\n# 工作流程\n1. 概述本次改动目的与范围。\n2. 按文件指出问题并给出可执行建议。\n3. 总结整体风险等级与是否可合并。\n\n# 输出规范\n- 用 \`文件:行号\` 定位问题\n- 区分 Must / Should / Nit 三档严重度`,
-  },
-];
+// 基于 Anthropic 对 Claude 的 prompting 最佳实践，提供一份"脚手架"模板，
+// 帮助用户按结构补全自己的提示词，而不是套用某个具体行业的成品。
+const promptScaffold = `# 角色与目标
+你是 <在这里写明角色，例如：资深的 XX 专家>，主要服务对象是 <用户画像>。
+你的核心目标是 <用一句话写清交付什么结果，例如：在 5 分钟内输出可执行的 XX 报告>。
+
+# 背景与上下文
+- 业务场景：<这个 Agent 会被在什么场景下调用>
+- 关键术语：<列出 3~5 个领域内必须正确使用的术语及其含义>
+- 已知约束：<时间、数据范围、合规要求等>
+
+# 你拥有的能力
+- MCP / Skill 列表会在运行时由系统注入，请优先使用工具而非凭记忆作答。
+- 调用工具前，先用一句话说明"为什么调用、期望得到什么"。
+- 工具失败或返回为空时，主动说明并尝试备选方案，不要伪造数据。
+
+# 思考方式（重要）
+在回答复杂问题前，请先在 <thinking> 标签内完成以下步骤，再给出最终答复：
+1. 拆解用户意图，识别隐含前提
+2. 列出可选方案并比较权衡
+3. 选择方案并规划工具调用顺序
+
+# 输出规范
+- 使用 Markdown 组织结构，关键信息加粗
+- 引用工具返回的数据时，注明来源（MCP / Skill 名称）
+- 数字、日期、专有名词与原始数据保持一致
+- 默认使用与用户相同的语言
+
+# 边界与拒答
+- 涉及 <敏感操作 / 写库 / 外发> 时，必须先与用户二次确认
+- 不在回复中暴露密钥、Token、内部链接
+- 超出能力范围时，明确告知并推荐替代方案
+
+# 示例（可选但强烈推荐）
+<example>
+用户：<典型问题>
+助手：<期望的回答样式，包含工具调用与最终输出>
+</example>`;
+
 
 const skills = getActiveSkills();
 const mcps = getActiveMCPs();
@@ -612,30 +629,22 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 <p className="text-[10px] text-muted-foreground">
                   {systemPrompt.length} 字符 · 将根据已绑定的 {selSkills.length} 个 Skill 与 {selMCPs.length} 个 MCP 生成
                 </p>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button size="sm" variant="ghost" className="h-7 text-xs">从模板导入</Button>
-                  </PopoverTrigger>
-                  <PopoverContent align="end" className="w-72 p-1.5">
-                    <div className="px-2 py-1.5 text-[10px] text-muted-foreground">选择模板覆盖当前提示词</div>
-                    <div className="space-y-0.5">
-                      {promptTemplates.map((tpl) => (
-                        <button
-                          key={tpl.name}
-                          type="button"
-                          onClick={() => {
-                            setSystemPrompt(tpl.content);
-                            toast({ title: `已导入模板：${tpl.name}` });
-                          }}
-                          className="w-full text-left rounded-md px-2 py-1.5 hover:bg-muted transition-colors"
-                        >
-                          <div className="text-xs font-medium text-foreground">{tpl.name}</div>
-                          <div className="text-[10px] text-muted-foreground mt-0.5">{tpl.description}</div>
-                        </button>
-                      ))}
-                    </div>
-                  </PopoverContent>
-                </Popover>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 text-xs gap-1"
+                  onClick={() => {
+                    if (systemPrompt.trim() && !window.confirm("将用提示词脚手架覆盖当前内容，是否继续？")) return;
+                    setSystemPrompt(promptScaffold);
+                    toast({
+                      title: "已导入提示词脚手架",
+                      description: "按段落把 < > 占位符替换为你 Agent 的实际信息",
+                    });
+                  }}
+                >
+                  <FileEdit className="w-3 h-3" />
+                  使用提示词脚手架
+                </Button>
               </div>
             </div>
           </TabsContent>
