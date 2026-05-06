@@ -118,18 +118,24 @@ const Card = ({ call }: { call: ToolCall }) => {
           )}
         />
         <Icon className="w-3.5 h-3.5 text-primary shrink-0" />
-        <span className="text-[11px] font-semibold text-foreground shrink-0">{call.name}</span>
-        {call.provider && (
-          <span className="text-[10px] text-muted-foreground shrink-0 hidden sm:inline">· {call.provider}</span>
-        )}
-        <span className="text-[11px] font-mono text-muted-foreground truncate flex-1 text-right">
-          {truncate(call.summary)}
+        <span className="text-[11px] font-mono text-foreground truncate flex-1">
+          {call.endpoint || call.name}
         </span>
-        <span className="shrink-0">
-          {call.status === "running" && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />}
-          {call.status === "success" && <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />}
+        <span className="shrink-0 flex items-center gap-2">
+          {call.status === "running" && (
+            <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              调用中
+            </span>
+          )}
+          {call.status === "success" && (
+            <>
+              {ms != null && <span className="text-[10px] text-muted-foreground tabular-nums">{ms}ms</span>}
+              <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
+            </>
+          )}
           {call.status === "failed" && (
-            <span className="flex items-center gap-1 text-[10px] text-destructive max-w-[140px] truncate">
+            <span className="flex items-center gap-1 text-[10px] text-destructive max-w-[160px] truncate">
               <AlertCircle className="w-3 h-3 shrink-0" />
               {(call.error ?? "调用失败").split("\n")[0]}
             </span>
@@ -139,15 +145,6 @@ const Card = ({ call }: { call: ToolCall }) => {
 
       {open && canExpand && (
         <div className="px-3 pb-3 pt-2 space-y-3 border-t border-border/60 text-[11px]">
-          {/* endpoint 单独一行（如果有），不再单独搞"调用资源"区块 */}
-          {call.endpoint && (
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-muted-foreground">端点</span>
-              <code className="font-mono text-[10px] text-foreground/80 bg-muted/60 px-1.5 py-0.5 rounded">
-                {call.endpoint}
-              </code>
-            </div>
-          )}
 
           {/* 2. 请求参数 */}
           {(call.params && call.params.length > 0) ? (
