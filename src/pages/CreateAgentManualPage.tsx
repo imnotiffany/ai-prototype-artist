@@ -818,6 +818,86 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                 )}
               </div>
 
+              {logsOpen && (
+                <div className="border-t border-border bg-zinc-950 text-zinc-100 dark:bg-black flex flex-col max-h-[260px]">
+                  <div className="px-3 py-1.5 border-b border-zinc-800 flex items-center justify-between text-[11px]">
+                    <div className="flex items-center gap-1.5 text-zinc-300">
+                      <Terminal className="w-3 h-3" />
+                      <span className="font-mono">runtime.log</span>
+                      <span className="text-zinc-500">· Cloud Code Sandbox</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {(["all", "info", "thought", "tool", "warn", "error"] as const).map((f) => (
+                        <button
+                          key={f}
+                          onClick={() => setLogFilter(f)}
+                          className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${
+                            logFilter === f ? "bg-zinc-700 text-white" : "text-zinc-400 hover:text-zinc-200"
+                          }`}
+                        >
+                          {f}
+                        </button>
+                      ))}
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(debugLogs.map((l) => `[${l.ts}] ${l.level.toUpperCase()} ${l.message}${l.meta ? ` | ${l.meta}` : ""}`).join("\n"));
+                          toast({ title: "日志已复制到剪贴板" });
+                        }}
+                        className="ml-1 px-1.5 py-0.5 rounded text-[10px] text-zinc-400 hover:text-zinc-200 flex items-center gap-1"
+                        title="复制全部日志"
+                      >
+                        <Copy className="w-2.5 h-2.5" /> 复制
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex-1 overflow-auto px-3 py-2 font-mono text-[11px] leading-relaxed">
+                    {debugLogs.length === 0 ? (
+                      <p className="text-zinc-500 text-center py-4">暂无运行日志，发送一条调试消息即可查看</p>
+                    ) : (
+                      debugLogs
+                        .filter((l) => logFilter === "all" || l.level === logFilter)
+                        .map((l) => {
+                          const colorMap: Record<LogLevel, string> = {
+                            info: "text-sky-300",
+                            thought: "text-violet-300",
+                            tool: "text-emerald-300",
+                            warn: "text-amber-300",
+                            error: "text-red-400",
+                            result: "text-cyan-300",
+                          };
+                          const iconMap: Record<LogLevel, JSX.Element> = {
+                            info: <Info className="w-2.5 h-2.5" />,
+                            thought: <Brain className="w-2.5 h-2.5" />,
+                            tool: <Wrench className="w-2.5 h-2.5" />,
+                            warn: <AlertTriangle className="w-2.5 h-2.5" />,
+                            error: <AlertCircle className="w-2.5 h-2.5" />,
+                            result: <CheckCircle2 className="w-2.5 h-2.5" />,
+                          };
+                          return (
+                            <div key={l.id} className="flex gap-2 py-0.5">
+                              <span className="text-zinc-500 shrink-0">{l.ts}</span>
+                              <span className={`shrink-0 flex items-center gap-1 ${colorMap[l.level]}`}>
+                                {iconMap[l.level]}
+                                {l.level.padEnd(7)}
+                              </span>
+                              <span className="text-zinc-200 break-all">
+                                {l.message}
+                                {l.meta && <span className="text-zinc-500 ml-2">{l.meta}</span>}
+                              </span>
+                            </div>
+                          );
+                        })
+                    )}
+                    {debugRunning && (
+                      <div className="flex items-center gap-2 text-zinc-500 mt-1">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        <span className="animate-pulse">streaming…</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="border-t border-border p-3 flex items-center gap-2">
                 <Button
                   type="button"
