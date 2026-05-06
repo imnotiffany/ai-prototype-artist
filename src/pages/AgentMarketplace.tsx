@@ -194,21 +194,6 @@ const AgentMarketplace = () => {
                     {agent.updatedAt}
                   </div>
                 </div>
-                <Button
-                  size="sm"
-                  className="w-full h-7 text-xs gap-1"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toast({
-                      title: "已复制到「我的项目」",
-                      description: `${agent.name} 配置已克隆，可立即体验`,
-                    });
-                    navigate("/project-agents");
-                  }}
-                >
-                  <Zap className="w-3 h-3" />
-                  快速体验
-                </Button>
               </div>
             );
           })}
