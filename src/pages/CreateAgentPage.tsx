@@ -15,14 +15,17 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "@/hooks/use-toast";
+import { AIStatusPill } from "@/components/AIStatusPill";
+import { ToolCallGroup, type ToolCall } from "@/components/ToolCallCard";
 
 /* ── Types ── */
 interface Message {
   id: string;
   role: "user" | "assistant" | "system";
   content: string;
-  type?: "question" | "confirm" | "api-call" | "text" | "assembly";
+  type?: "question" | "confirm" | "api-call" | "text" | "assembly" | "tool-calls";
   attachments?: { type: "skill" | "mcp"; name: string }[];
+  toolCalls?: ToolCall[];
   isStreaming?: boolean;
 }
 
