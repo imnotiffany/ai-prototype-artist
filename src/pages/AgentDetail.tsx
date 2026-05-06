@@ -299,43 +299,6 @@ const AgentDetail = () => {
         </div>
       </div>
 
-      {/* Status bar: 线上版本 / 当前调试版本 / 未保存提示 */}
-      <div className="mb-5 border border-border rounded-lg bg-card px-3 py-2 flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-3 text-xs flex-wrap">
-          <div className="flex items-center gap-1.5">
-            <span className={`w-1.5 h-1.5 rounded-full ${agent.status === "published" ? "bg-emerald-500" : "bg-muted-foreground/50"}`} />
-            <span className="text-muted-foreground">线上</span>
-            {agent.status === "published" ? (
-              <>
-                <Badge variant="outline" className="text-[10px] h-5 px-1.5 border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30">已发布</Badge>
-                <span className="font-mono text-[11px] text-foreground">{versions.find((v) => v.current)?.v}</span>
-              </>
-            ) : (
-              <span className="text-muted-foreground">未发布</span>
-            )}
-          </div>
-          <span className="w-px h-3.5 bg-border" />
-          <div className="flex items-center gap-1.5">
-            <span className="text-muted-foreground">当前调试</span>
-            <span className="font-mono text-[11px] text-foreground">{versions.find((v) => v.current)?.v}</span>
-            {isDirty && (
-              <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-0 text-[10px] h-5 px-1.5 gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                有未保存的修改
-              </Badge>
-            )}
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button size="sm" variant="ghost" className="h-7 text-xs gap-1.5" onClick={handleRevert} disabled={!isDirty}>
-            <RotateCcw className="w-3 h-3" />撤销
-          </Button>
-          <Button size="sm" variant={isDirty ? "default" : "outline"} className="h-7 text-xs gap-1.5" onClick={handleSave} disabled={!isDirty}>
-            <Save className="w-3 h-3" />保存
-          </Button>
-        </div>
-      </div>
-
       <Tabs defaultValue={initialTab}>
         <TabsList className="h-9 bg-transparent border-b border-border w-full justify-start rounded-none p-0 gap-1">
           <TabsTrigger value="debug" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><Bug className="w-3.5 h-3.5" />调试</TabsTrigger>
