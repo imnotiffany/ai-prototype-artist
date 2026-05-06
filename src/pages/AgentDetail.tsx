@@ -596,7 +596,7 @@ const AgentDetail = () => {
                   icon={<Server className="w-3.5 h-3.5" />}
                   label="MCP"
                   marketLink="/"
-                  deployBadge={() => "云端"}
+                  deployBadge={(n) => getActiveMCPs().find((m) => m.name === n)?.deployment ?? "云端"}
                   trigger={<Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0"><Plus className="w-3 h-3" />添加 MCP</Button>}
                 />
               </header>
