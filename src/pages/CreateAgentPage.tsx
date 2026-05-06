@@ -64,7 +64,7 @@ interface AgentConfig {
 
 const defaultConfig: AgentConfig = {
   name: "",
-  version: "v1",
+  version: "v0.0.1",
   model: "claude-sonnet-4-6",
   systemPrompt: "",
   tools: [
