@@ -124,11 +124,11 @@ export const CapabilityPickerDialog = ({
                     <div className="flex items-center gap-1 mt-0.5 flex-wrap">
                       {isMcp && (
                         it.requiresCredential ? (
-                          <Badge variant="outline" className="text-[9px] h-4 px-1.5 gap-0.5 border-amber-300 text-amber-700 bg-amber-50/60 dark:bg-amber-950/30">
+                          <Badge variant="outline" className="text-[10px] h-4 px-1.5 gap-0.5 border-amber-300 text-amber-700 bg-amber-50/60 dark:bg-amber-950/30">
                             <KeyRound className="w-2.5 h-2.5" />需凭据
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-[9px] h-4 px-1.5 border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30">
+                          <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30">
                             免凭据
                           </Badge>
                         )

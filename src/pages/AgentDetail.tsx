@@ -313,7 +313,7 @@ const AgentDetail = () => {
           <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center text-xl shrink-0">{agent.avatar}</div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-base font-semibold text-foreground truncate">{name}</h1>
+              <h1 className="text-lg font-semibold text-foreground truncate">{name}</h1>
               {(() => {
                 const latest = mockRuns[0];
                 const map: Record<RunStatus, AgentRuntimeStatus> = { success: "done", failed: "failed", running: "running" };
@@ -581,10 +581,10 @@ const AgentDetail = () => {
                             <span className="text-xs font-medium flex items-center gap-1.5">
                               {b.name}
                               {!needsCred && (
-                                <Badge variant="outline" className="border-emerald-300 text-emerald-700 bg-emerald-50/60 text-[9px] h-4 px-1.5">免凭据</Badge>
+                                <Badge variant="outline" className="border-emerald-300 text-emerald-700 bg-emerald-50/60 text-[10px] h-4 px-1.5">免凭据</Badge>
                               )}
                               {credMissing && (
-                                <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-0 text-[9px] h-4 gap-1">
+                                <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-0 text-[10px] h-4 gap-1">
                                   <AlertTriangle className="w-2.5 h-2.5" />未绑定凭据
                                 </Badge>
                               )}

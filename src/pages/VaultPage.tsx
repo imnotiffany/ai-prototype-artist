@@ -127,11 +127,11 @@ const VaultPage = () => {
     <div className="p-6 max-w-[1100px] mx-auto animate-fade-in">
       <div className="flex items-start justify-between mb-2">
         <div>
-          <h1 className="text-xl font-semibold flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-primary" />
+          <h1 className="text-lg font-semibold flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-primary" />
             凭据管理
           </h1>
-          <p className="text-sm text-muted-foreground mt-1.5">
+          <p className="text-xs text-muted-foreground mt-1">
             集中管理外部 MCP Server 与第三方 API 的认证信息，支持在多个智能体中复用
           </p>
         </div>

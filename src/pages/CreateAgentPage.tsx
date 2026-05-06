@@ -157,7 +157,7 @@ const AttachmentPicker = ({
         {type === "skill" ? <Zap className="w-3 h-3" /> : <Server className="w-3 h-3" />}
         {type === "skill" ? "Skill" : "MCP"}
         {selected.length > 0 && (
-          <Badge variant="secondary" className="h-4 px-1 text-[9px] ml-0.5">{selected.length}</Badge>
+          <Badge variant="secondary" className="h-4 px-1 text-[10px] ml-0.5">{selected.length}</Badge>
         )}
       </Button>
     </PopoverTrigger>
@@ -948,7 +948,7 @@ const CreateAgentPage = () => {
                   {debugEvents.map((evt) => (
                     <div key={evt.id} className="flex items-start gap-2 p-2 rounded bg-muted/50 text-[10px] font-mono">
                       <span className="text-muted-foreground shrink-0">{formatTime(evt.timestamp)}</span>
-                      <Badge variant="outline" className="text-[9px] shrink-0">{evt.type}</Badge>
+                      <Badge variant="outline" className="text-[10px] shrink-0">{evt.type}</Badge>
                       <span className="text-foreground">{evt.detail}</span>
                     </div>
                   ))}

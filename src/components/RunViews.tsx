@@ -199,7 +199,7 @@ export const RunDebugView = ({
                   <ChevronRight className="w-3 h-3 text-muted-foreground shrink-0" />
                 )}
                 <span className="text-muted-foreground shrink-0">{e.ts}</span>
-                <Badge variant="outline" className={cn("text-[9px] h-4 px-1.5 font-mono shrink-0", typeColor(e.type))}>
+                <Badge variant="outline" className={cn("text-[10px] h-4 px-1.5 font-mono shrink-0", typeColor(e.type))}>
                   {e.type}
                 </Badge>
                 <span className="text-foreground/60 truncate flex-1 text-[10px]">
@@ -263,7 +263,7 @@ export const RunDualView = ({
             <Terminal className="w-3 h-3" />
             调试视图
             {debugEvents.length > 0 && (
-              <span className="ml-0.5 px-1 rounded bg-muted text-muted-foreground text-[9px] leading-tight">
+              <span className="ml-0.5 px-1 rounded bg-muted text-muted-foreground text-[10px] leading-tight">
                 {debugEvents.length}
               </span>
             )}

@@ -465,7 +465,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
             返回
           </button>
           <div>
-            <h1 className="text-sm font-semibold">手动组装智能体</h1>
+            <h1 className="text-base font-semibold leading-tight">手动组装智能体</h1>
             <p className="text-[11px] text-muted-foreground">面向开发者的精确配置模式</p>
           </div>
         </div>
@@ -486,7 +486,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
           <TabsList className="grid grid-cols-4 h-9">
             <TabsTrigger value="capability" className="text-xs">能力配置</TabsTrigger>
             <TabsTrigger value="prompt" className="text-xs">系统提示词</TabsTrigger>
-            <TabsTrigger value="fengsheng" className="text-xs gap-1.5">丰声 NEXT<span className="text-[9px] px-1 h-3.5 leading-[14px] rounded bg-muted text-muted-foreground font-normal">可选</span></TabsTrigger>
+            <TabsTrigger value="fengsheng" className="text-xs gap-1.5">丰声 NEXT<span className="text-[10px] px-1 h-3.5 leading-[14px] rounded bg-muted text-muted-foreground font-normal">可选</span></TabsTrigger>
             <TabsTrigger value="debug" className="text-xs">调试</TabsTrigger>
           </TabsList>
 
@@ -535,10 +535,10 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                           <span className="text-xs font-medium flex items-center gap-1.5">
                             <Server className="w-3 h-3 text-primary" />{mcpName}
                             {!needsCred && (
-                              <Badge variant="outline" className="border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30 text-[9px] h-4 px-1.5">免凭据</Badge>
+                              <Badge variant="outline" className="border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30 text-[10px] h-4 px-1.5">免凭据</Badge>
                             )}
                             {credMissing && (
-                              <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-0 text-[9px] h-4 gap-1">
+                              <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-0 text-[10px] h-4 gap-1">
                                 <AlertTriangle className="w-2.5 h-2.5" />未绑定凭据
                               </Badge>
                             )}
