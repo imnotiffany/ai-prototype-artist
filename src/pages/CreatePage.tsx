@@ -106,7 +106,7 @@ const CreatePage = () => {
                     <Badge variant="outline" className="text-[9px] h-4 px-1.5 ml-auto">当前可用</Badge>
                   </div>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    自行配置模型、提示词、Skill / MCP、子智能体
+                    自行配置模型、提示词、Skill / MCP、子智能体，并对接至丰声 NEXT 机器人
                   </p>
                 </div>
               </div>
