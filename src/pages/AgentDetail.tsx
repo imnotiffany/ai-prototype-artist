@@ -44,7 +44,7 @@ const mockRuns: RunRecord[] = [
 
 const mockTranscript = [
   { role: "user", content: "帮我整理今天的销售周报，按区域汇总" },
-  { role: "agent", content: "好的，我先查询今天各区域的销售数据。", tools: [{ name: "web_search", count: 2 }, { name: "BigQuery MCP", count: 1 }] },
+  { role: "agent", content: "好的，我先查询今天各区域的销售数据。", tools: [{ name: "web_search", count: 2 }, { name: "丰景台数据查询v2", count: 1 }] },
   { role: "agent", content: "已汇总完成，华东区 ¥1.2M（环比 +8%）、华南区 ¥0.9M（+3%）、华北区 ¥0.7M（-2%）。\n\n报告已生成 → 销售周报_20260429.md" },
 ];
 const mockDebugEvents = [
@@ -92,7 +92,7 @@ const AgentDetail = () => {
   const [savedSnapshot, setSavedSnapshot] = useState(initialSnapshot);
 
   const [versions, setVersions] = useState([
-    { v: "v3", at: "2026-04-25 14:02", by: "廖奕通", note: "新增 BigQuery MCP", current: true },
+    { v: "v3", at: "2026-04-25 14:02", by: "廖奕通", note: "新增 丰景台数据查询v2", current: true },
     { v: "v2", at: "2026-04-18 09:30", by: "廖奕通", note: "调整 system prompt 风格", current: false },
     { v: "v1", at: "2026-04-10 16:45", by: "廖奕通", note: "初始版本", current: false },
   ]);
@@ -584,7 +584,7 @@ const AgentDetail = () => {
               <header className="px-4 py-2.5 border-b border-border flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <h3 className="text-sm font-semibold flex items-center gap-1.5"><Server className="w-3.5 h-3.5 text-primary" />MCP 绑定</h3>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">连接外部系统（数据库、SaaS、内部 API），每个服务需要绑定一个凭据</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">连接外部系统（数据库、SaaS、内部 API）；部分 MCP 需要绑定凭据后才能调用</p>
                 </div>
                 <CapabilityPickerDialog
                   items={getActiveMCPs()}
@@ -596,7 +596,7 @@ const AgentDetail = () => {
                   icon={<Server className="w-3.5 h-3.5" />}
                   label="MCP"
                   marketLink="/"
-                  deployBadge={() => "云端"}
+                  deployBadge={(n) => getActiveMCPs().find((m) => m.name === n)?.deployment ?? "云端"}
                   trigger={<Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0"><Plus className="w-3 h-3" />添加 MCP</Button>}
                 />
               </header>
@@ -606,13 +606,18 @@ const AgentDetail = () => {
                 ) : (
                   <div className="space-y-2">
                     {mcpBindings.map((b, i) => {
+                      const meta = getActiveMCPs().find((m) => m.name === b.name);
+                      const needsCred = !!meta?.requiresCredential;
                       const creds = credentialsByMcp(b.name);
-                      const credMissing = !b.credential;
+                      const credMissing = needsCred && !b.credential;
                       return (
                         <div key={b.name} className={`border rounded-md p-3 space-y-2 ${credMissing ? "border-amber-300 bg-amber-50/40" : "border-border"}`}>
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-medium flex items-center gap-1.5">
                               <Server className="w-3 h-3 text-primary" />{b.name}
+                              {!needsCred && (
+                                <Badge variant="outline" className="border-emerald-300 text-emerald-700 bg-emerald-50/60 text-[9px] h-4 px-1.5">免凭据</Badge>
+                              )}
                               {credMissing && (
                                 <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-0 text-[9px] h-4 gap-1">
                                   <AlertTriangle className="w-2.5 h-2.5" />未绑定凭据
@@ -623,20 +628,22 @@ const AgentDetail = () => {
                               <X className="w-3.5 h-3.5" />
                             </button>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Label className="text-[11px] text-muted-foreground shrink-0">凭据</Label>
-                            <Select value={b.credential} onValueChange={(v) => updateMcpCred(i, v)}>
-                              <SelectTrigger className="h-7 text-xs"><SelectValue placeholder={creds.length ? "选择凭据" : "凭据库无可用凭据"} /></SelectTrigger>
-                              <SelectContent>
-                                {creds.map((c) => (
-                                  <SelectItem key={c.id} value={c.name} className="text-xs">
-                                    {c.name} <span className="text-muted-foreground ml-1">({c.type})</span>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <Button size="sm" variant="ghost" className="h-7 text-[10px]" onClick={() => navigate("/vault")}>前往凭据管理</Button>
-                          </div>
+                          {needsCred && (
+                            <div className="flex items-center gap-2">
+                              <Label className="text-[11px] text-muted-foreground shrink-0">凭据</Label>
+                              <Select value={b.credential} onValueChange={(v) => updateMcpCred(i, v)}>
+                                <SelectTrigger className="h-7 text-xs"><SelectValue placeholder={creds.length ? "选择凭据" : "凭据库无可用凭据"} /></SelectTrigger>
+                                <SelectContent>
+                                  {creds.map((c) => (
+                                    <SelectItem key={c.id} value={c.name} className="text-xs">
+                                      {c.name} <span className="text-muted-foreground ml-1">({c.type})</span>
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <Button size="sm" variant="ghost" className="h-7 text-[10px]" onClick={() => navigate("/vault")}>前往凭据管理</Button>
+                            </div>
+                          )}
                         </div>
                       );
                     })}

@@ -3,11 +3,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogT
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, ExternalLink, Plus } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CheckCircle2, ExternalLink, Plus, KeyRound } from "lucide-react";
 
 export interface PickerItem {
   name: string;
   description: string;
+  /** MCP 专用：服务商分组，"lh" 领慧 / "dd" 钉钉 */
+  provider?: "lh" | "dd";
+  /** MCP 专用：是否需要凭据 */
+  requiresCredential?: boolean;
 }
 
 interface Props {
@@ -33,13 +38,18 @@ export const CapabilityPickerDialog = ({
   deployBadge,
   trigger,
 }: Props) => {
+  const isMcp = label === "MCP";
+  const hasProviders = isMcp && items.some((i) => i.provider);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const filtered = items.filter(
-    (it) =>
-      it.name.toLowerCase().includes(search.toLowerCase()) ||
-      it.description.toLowerCase().includes(search.toLowerCase()),
-  );
+  const [provider, setProvider] = useState<"lh" | "dd">("lh");
+  const filtered = items.filter((it) => {
+    if (hasProviders && it.provider && it.provider !== provider) return false;
+    const q = search.toLowerCase();
+    return it.name.toLowerCase().includes(q) || it.description.toLowerCase().includes(q);
+  });
+  const lhCount = items.filter((i) => i.provider === "lh").length;
+  const ddCount = items.filter((i) => i.provider === "dd").length;
 
   const marketName = label === "Skill" ? "Skill 广场" : label === "MCP" ? "MCP 广场" : "智能体广场";
 
@@ -59,6 +69,14 @@ export const CapabilityPickerDialog = ({
             <Badge variant="secondary" className="text-[10px] font-normal">已选 {selected.length}</Badge>
           </DialogTitle>
         </DialogHeader>
+        {hasProviders && (
+          <Tabs value={provider} onValueChange={(v) => setProvider(v as "lh" | "dd")}>
+            <TabsList className="h-8">
+              <TabsTrigger value="lh" className="text-xs h-6 px-3">领慧 MCP <span className="ml-1 text-muted-foreground">({lhCount})</span></TabsTrigger>
+              <TabsTrigger value="dd" className="text-xs h-6 px-3">钉钉 MCP <span className="ml-1 text-muted-foreground">({ddCount})</span></TabsTrigger>
+            </TabsList>
+          </Tabs>
+        )}
         <div className="flex items-center gap-2">
           <Input
             className="h-8 text-xs"
@@ -98,9 +116,20 @@ export const CapabilityPickerDialog = ({
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-semibold truncate">{it.name}</p>
-                    <div className="flex items-center gap-1 mt-0.5">
+                    <div className="flex items-center gap-1 mt-0.5 flex-wrap">
                       {deployBadge && (
                         <Badge variant="outline" className="text-[9px] h-4 px-1.5">{deployBadge(it.name)}</Badge>
+                      )}
+                      {isMcp && (
+                        it.requiresCredential ? (
+                          <Badge variant="outline" className="text-[9px] h-4 px-1.5 gap-0.5 border-amber-300 text-amber-700 bg-amber-50/60 dark:bg-amber-950/30">
+                            <KeyRound className="w-2.5 h-2.5" />需凭据
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-[9px] h-4 px-1.5 border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30">
+                            免凭据
+                          </Badge>
+                        )
                       )}
                     </div>
                   </div>

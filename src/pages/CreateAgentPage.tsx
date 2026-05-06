@@ -95,11 +95,11 @@ const detectFromText = (text: string): { detectedSkills: string[]; detectedMCPs:
   if ((lower.includes("邮件") || lower.includes("email")) && !detectedSkills.includes("Email Parser")) detectedSkills.push("Email Parser");
   if ((lower.includes("翻译") || lower.includes("translat")) && !detectedSkills.includes("Translation Engine")) detectedSkills.push("Translation Engine");
   if ((lower.includes("sql") || lower.includes("数据库")) && !detectedSkills.includes("SQL Generator")) detectedSkills.push("SQL Generator");
-  if ((lower.includes("github") || lower.includes("pr") || lower.includes("仓库")) && !detectedMCPs.includes("GitHub MCP")) detectedMCPs.push("GitHub MCP");
-  if ((lower.includes("gmail") || lower.includes("邮箱")) && !detectedMCPs.includes("Gmail MCP")) detectedMCPs.push("Gmail MCP");
-  if ((lower.includes("slack") || lower.includes("频道")) && !detectedMCPs.includes("Slack MCP")) detectedMCPs.push("Slack MCP");
-  if ((lower.includes("notion") || lower.includes("笔记")) && !detectedMCPs.includes("Notion MCP")) detectedMCPs.push("Notion MCP");
-  if ((lower.includes("jira") || lower.includes("任务管理")) && !detectedMCPs.includes("Jira MCP")) detectedMCPs.push("Jira MCP");
+  if ((lower.includes("api") || lower.includes("接口")) && !detectedMCPs.includes("yapi-mcp-server")) detectedMCPs.push("yapi-mcp-server");
+  if ((lower.includes("文档") || lower.includes("腾讯文档")) && !detectedMCPs.includes("sfdoc-mcp")) detectedMCPs.push("sfdoc-mcp");
+  if ((lower.includes("钉钉") || lower.includes("机器人")) && !detectedMCPs.includes("机器人消息")) detectedMCPs.push("机器人消息");
+  if ((lower.includes("数据") || lower.includes("丰景台")) && !detectedMCPs.includes("丰景台")) detectedMCPs.push("丰景台");
+  if ((lower.includes("缺陷") || lower.includes("测试")) && !detectedMCPs.includes("测试管理-MCP")) detectedMCPs.push("测试管理-MCP");
 
   return { detectedSkills, detectedMCPs };
 };

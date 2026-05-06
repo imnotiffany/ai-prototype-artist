@@ -1,5 +1,7 @@
 /* ── Shared Types ── */
 
+export type McpProvider = "lh" | "dd";
+
 export interface Resource {
   id: string;
   name: string;
@@ -8,6 +10,12 @@ export interface Resource {
   status: "active" | "inactive";
   addedAt: string;
   usageCount: number;
+  /** MCP only: 所属服务商 — lh=领慧, dd=钉钉 */
+  provider?: McpProvider;
+  /** MCP only: 是否需要绑定凭据（默认 false） */
+  requiresCredential?: boolean;
+  /** MCP only: 部署形态徽标，如 "云端" / "本地" / "Remote" */
+  deployment?: string;
 }
 
 export interface Agent {
@@ -80,20 +88,30 @@ export const sharedResources: Resource[] = [
   { id: "s11", name: "Alert Manager", type: "skill", description: "告警管理与通知分发", status: "active", addedAt: "2026-04-08", usageCount: 3 },
   { id: "s12", name: "SEO Optimizer", type: "skill", description: "SEO 优化建议与关键词分析", status: "active", addedAt: "2026-04-07", usageCount: 5 },
   { id: "s13", name: "Schema Analyzer", type: "skill", description: "数据库 Schema 分析与优化", status: "active", addedAt: "2026-04-06", usageCount: 3 },
-  { id: "m1", name: "GitHub MCP", type: "mcp", description: "GitHub 仓库、Issue、PR 管理", status: "active", addedAt: "2026-04-10", usageCount: 20 },
-  { id: "m2", name: "Gmail MCP", type: "mcp", description: "Gmail 邮件收发与管理", status: "active", addedAt: "2026-04-08", usageCount: 10 },
-  { id: "m3", name: "Slack MCP", type: "mcp", description: "Slack 消息与频道管理", status: "active", addedAt: "2026-04-05", usageCount: 6 },
-  { id: "m4", name: "Notion MCP", type: "mcp", description: "Notion 页面与数据库操作", status: "active", addedAt: "2026-04-01", usageCount: 9 },
-  { id: "m5", name: "Jira MCP", type: "mcp", description: "Jira 任务与项目管理", status: "inactive", addedAt: "2026-03-28", usageCount: 4 },
-  { id: "m6", name: "Google Drive MCP", type: "mcp", description: "Google Drive 文件管理", status: "active", addedAt: "2026-03-25", usageCount: 11 },
-  { id: "m7", name: "Confluence MCP", type: "mcp", description: "Confluence 文档协作", status: "inactive", addedAt: "2026-03-20", usageCount: 1 },
-  { id: "m8", name: "Linear MCP", type: "mcp", description: "Linear 项目与 Issue 管理", status: "active", addedAt: "2026-04-13", usageCount: 3 },
-  { id: "m9", name: "Outlook MCP", type: "mcp", description: "Outlook 邮件收发与日程管理", status: "active", addedAt: "2026-04-02", usageCount: 5 },
-  { id: "m10", name: "Google Translate MCP", type: "mcp", description: "Google 翻译 API 服务", status: "active", addedAt: "2026-04-01", usageCount: 8 },
-  { id: "m11", name: "Prometheus MCP", type: "mcp", description: "Prometheus 监控指标查询", status: "active", addedAt: "2026-04-05", usageCount: 3 },
-  { id: "m12", name: "Grafana MCP", type: "mcp", description: "Grafana 仪表板与告警", status: "active", addedAt: "2026-04-04", usageCount: 2 },
-  { id: "m13", name: "BigQuery MCP", type: "mcp", description: "BigQuery 数据查询与分析", status: "active", addedAt: "2026-04-03", usageCount: 6 },
-  { id: "m14", name: "Snowflake MCP", type: "mcp", description: "Snowflake 数据仓库操作", status: "active", addedAt: "2026-04-02", usageCount: 4 },
+  // ── 领慧 MCP（公司内部业务 MCP，多数无需凭据，使用 SSO/内部鉴权）──
+  { id: "lh1", name: "测试管理-MCP", type: "mcp", provider: "lh", deployment: "云端", requiresCredential: false, description: "测试用例查询：通过用例ID查询用例详情。版本缺陷查询：通过缺陷ID查询缺陷详情及变更记录。其它功能持续增加中", status: "active", addedAt: "2026-04-29", usageCount: 12 },
+  { id: "lh2", name: "丰景台", type: "mcp", provider: "lh", deployment: "云端", requiresCredential: false, description: "丰景台MCP全家桶，支持按个人权限查数", status: "active", addedAt: "2026-04-24", usageCount: 18 },
+  { id: "lh3", name: "知识运营平台(sf-knx)", type: "mcp", provider: "lh", deployment: "云端", requiresCredential: false, description: "基于知识运营平台，提供知识召回的mcp能力", status: "active", addedAt: "2026-04-10", usageCount: 9 },
+  { id: "lh4", name: "sfdoc-mcp", type: "mcp", provider: "lh", deployment: "本地", requiresCredential: true, description: "sfdoc-mcp是一个基于 Model Context Protocol (MCP) 的服务器，专门用于读取顺丰内部腾讯文档平台上的文档内容。", status: "active", addedAt: "2026-04-07", usageCount: 6 },
+  { id: "lh5", name: "城市名称转换城市代码工具", type: "mcp", provider: "lh", deployment: "云端", requiresCredential: false, description: "将中文城市名称 转换成 城市代码以及机场三字码，例如 深圳转换后 755、SZX，杭州转换后571、HGH", status: "active", addedAt: "2026-04-03", usageCount: 4 },
+  { id: "lh6", name: "根据网点名称查询网点信息", type: "mcp", provider: "lh", deployment: "云端", requiresCredential: false, description: "根据网点名称查询网点信息", status: "active", addedAt: "2026-04-01", usageCount: 3 },
+  { id: "lh7", name: "QMP-自动审核", type: "mcp", provider: "lh", deployment: "云端", requiresCredential: false, description: "QMP自动审核", status: "active", addedAt: "2026-04-01", usageCount: 2 },
+  { id: "lh8", name: "丰景台数据查询v2", type: "mcp", provider: "lh", deployment: "本地", requiresCredential: true, description: "通过mcp去查询丰景台的数据。使用扫码登录个人账号。", status: "active", addedAt: "2026-03-31", usageCount: 7 },
+  { id: "lh9", name: "智水-MCP服务", type: "mcp", provider: "lh", deployment: "云端", requiresCredential: false, description: "智水-MCP服务是面向研发团队的AI辅助工具集，通过MCP协议将研发流程中的关键环节暴露给AI助手，使开发人员能够通过自然语言与研发系统交互。", status: "active", addedAt: "2026-03-23", usageCount: 5 },
+  { id: "lh10", name: "豆包Seedance视频生成", type: "mcp", provider: "lh", deployment: "云端", requiresCredential: true, description: "豆包Seedance视频生成MCP服务，提供文生视频、图生视频、首尾帧生成视频等功能。", status: "active", addedAt: "2026-03-16", usageCount: 8 },
+  { id: "lh11", name: "yapi-mcp-server", type: "mcp", provider: "lh", deployment: "本地", requiresCredential: true, description: "一个基于Model Context Protocol (MCP)的YApi集成服务，用于在AI助手中访问YApi文档平台的API信息", status: "active", addedAt: "2026-03-13", usageCount: 4 },
+  { id: "lh12", name: "confluence-mcp", type: "mcp", provider: "lh", deployment: "本地", requiresCredential: true, description: "顺丰 Confluence MCP 客户端，为AI助手提供Confluence集成功能。", status: "active", addedAt: "2026-03-04", usageCount: 6 },
+
+  // ── 钉钉 MCP（钉钉官方平台 MCP，多数 Remote 接入需 OAuth 凭据）──
+  { id: "dd1", name: "机器人消息", type: "mcp", provider: "dd", deployment: "Remote", requiresCredential: true, description: "钉钉机器人消息MCP服务，支持创建企业机器人、根据关键词搜索群会话openConversationId、将企业机器人添加到群等", status: "active", addedAt: "2026-04-15", usageCount: 10 },
+  { id: "dd2", name: "钉钉日志", type: "mcp", provider: "dd", deployment: "Remote", requiresCredential: true, description: "钉钉日志MCP，包含获取日志模板、读取日志内容、写日志等功能", status: "active", addedAt: "2026-04-10", usageCount: 5 },
+  { id: "dd3", name: "钉钉 AI 表格", type: "mcp", provider: "dd", deployment: "Remote", requiresCredential: true, description: "钉钉 AI 表格 MCP 让 AI 直接操作表格数据与字段，快速打通查询、维护与自动化办公流程。", status: "active", addedAt: "2026-04-08", usageCount: 6 },
+  { id: "dd4", name: "钉钉文档", type: "mcp", provider: "dd", deployment: "Remote", requiresCredential: true, description: "钉钉文档MCP支持查找、创建文档，助力高效协同与内容管理。", status: "active", addedAt: "2026-04-05", usageCount: 7 },
+  { id: "dd5", name: "钉钉通讯录", type: "mcp", provider: "dd", deployment: "Remote", requiresCredential: true, description: "钉钉通讯录MCP支持搜索人员/部门、查询成员详情及部门结构，快速获取组织架构信息。", status: "active", addedAt: "2026-04-02", usageCount: 4 },
+  { id: "dd6", name: "钉钉日历", type: "mcp", provider: "dd", deployment: "Remote", requiresCredential: true, description: "支持创建日程、查询日程、约空闲会议室等能力", status: "active", addedAt: "2026-04-01", usageCount: 3 },
+  { id: "dd7", name: "钉钉待办", type: "mcp", provider: "dd", deployment: "Remote", requiresCredential: true, description: "钉钉待办MCP服务提供高效的任务管理能力，支持创建待办事项、更新任务状态（如完成/未完成）、以及按条件查询任务等。", status: "active", addedAt: "2026-03-28", usageCount: 4 },
+  { id: "dd8", name: "钉钉表格", type: "mcp", provider: "dd", deployment: "Remote", requiresCredential: true, description: "钉钉表格 MCP 支持新建、编辑等操作，助力高效协同与内容管理", status: "active", addedAt: "2026-03-25", usageCount: 3 },
+  { id: "dd9", name: "高德地图", type: "mcp", provider: "dd", deployment: "Remote", requiresCredential: true, description: "高德地图MCP服务，包含搜索周边服务、骑行、公交、驾车、步行路径规划，地理编码查询和天气查询功能", status: "active", addedAt: "2026-03-20", usageCount: 5 },
 ];
 
 /* ── Helper: get active resources as picker items ── */
@@ -101,7 +119,12 @@ export const getActiveSkills = () =>
   sharedResources.filter((r) => r.type === "skill" && r.status === "active").map((r) => ({ name: r.name, description: r.description }));
 
 export const getActiveMCPs = () =>
-  sharedResources.filter((r) => r.type === "mcp" && r.status === "active").map((r) => ({ name: r.name, description: r.description }));
+  sharedResources
+    .filter((r) => r.type === "mcp" && r.status === "active")
+    .map((r) => ({ name: r.name, description: r.description, provider: r.provider, deployment: r.deployment, requiresCredential: !!r.requiresCredential }));
+
+export const mcpRequiresCredential = (name: string): boolean =>
+  !!sharedResources.find((r) => r.type === "mcp" && r.name === name)?.requiresCredential;
 
 /* ── Unified Agents (marketplace + project) ── */
 export const mockAgents: Agent[] = [
@@ -112,7 +135,7 @@ export const mockAgents: Agent[] = [
     category: "数据分析", tags: ["数据分析", "高分智能体", "dataops"],
     platform: "AI技术平台", author: "张三", authorId: "01234567",
     updatedAt: "2026-04-04", downloads: 123,
-    skills: ["Web Search", "Email Parser"], mcpServers: ["Gmail MCP", "Outlook MCP"],
+    skills: ["Web Search", "Email Parser"], mcpServers: ["钉钉文档", "钉钉通讯录"],
     sessionCount: 89, creationType: "ai", status: "published", kind: "agent",
     versions: [
       { version: "v0.0.3", createdAt: "2026-04-04", fileSize: "12KB", downloads: 45, status: "published", creator: "张三" },
@@ -126,7 +149,7 @@ export const mockAgents: Agent[] = [
     category: "编程开发", tags: ["编程开发", "代码审查", "devops"],
     platform: "AI技术平台", author: "李四", authorId: "01234568",
     updatedAt: "2026-04-10", downloads: 256,
-    skills: ["Code Analysis", "Security Scanner"], mcpServers: ["GitHub MCP"],
+    skills: ["Code Analysis", "Security Scanner"], mcpServers: ["yapi-mcp-server"],
     sessionCount: 150, creationType: "ai", status: "published", kind: "agent",
     versions: [
       { version: "v0.1.0", createdAt: "2026-04-10", fileSize: "15KB", downloads: 120, status: "published", creator: "李四" },
@@ -138,7 +161,7 @@ export const mockAgents: Agent[] = [
     category: "文档处理", tags: ["文档处理", "翻译", "多语言"],
     platform: "AI技术平台", author: "王五", authorId: "01234569",
     updatedAt: "2026-04-08", downloads: 412,
-    skills: ["Translation Engine"], mcpServers: ["Google Translate MCP"],
+    skills: ["Translation Engine"], mcpServers: ["知识运营平台(sf-knx)"],
     sessionCount: 230, creationType: "ai", status: "published", kind: "agent",
     versions: [
       { version: "v1.0.0", createdAt: "2026-04-08", fileSize: "20KB", downloads: 412, status: "published", creator: "王五" },
@@ -150,7 +173,7 @@ export const mockAgents: Agent[] = [
     category: "自动运维", tags: ["自动运维", "监控", "告警"],
     platform: "基础架构部", author: "赵六", authorId: "01234570",
     updatedAt: "2026-04-12", downloads: 87,
-    skills: ["Log Analyzer", "Alert Manager"], mcpServers: ["Prometheus MCP", "Grafana MCP"],
+    skills: ["Log Analyzer", "Alert Manager"], mcpServers: ["智水-MCP服务", "丰景台"],
     sessionCount: 45, creationType: "ai", status: "published", kind: "agent",
     versions: [
       { version: "v0.2.0", createdAt: "2026-04-12", fileSize: "18KB", downloads: 87, status: "published", creator: "赵六" },
@@ -174,7 +197,7 @@ export const mockAgents: Agent[] = [
     category: "数据分析", tags: ["数据分析", "ETL", "数据工程"],
     platform: "数据中心", author: "孙八", authorId: "01234572",
     updatedAt: "2026-04-09", downloads: 156,
-    skills: ["SQL Generator", "Schema Analyzer"], mcpServers: ["BigQuery MCP", "Snowflake MCP"],
+    skills: ["SQL Generator", "Schema Analyzer"], mcpServers: ["丰景台数据查询v2", "丰景台"],
     sessionCount: 78, creationType: "ai", status: "published", kind: "agent",
     versions: [
       { version: "v0.1.2", createdAt: "2026-04-09", fileSize: "22KB", downloads: 156, status: "published", creator: "孙八" },
@@ -265,7 +288,7 @@ export const mockAgents: Agent[] = [
     category: "视觉设计", tags: ["视觉设计", "视频"],
     platform: "AI技术平台", author: "廖奕通", authorId: "01441970",
     updatedAt: "2026-03-25", downloads: 67,
-    skills: ["File Processor"], mcpServers: ["Google Drive MCP"],
+    skills: ["File Processor"], mcpServers: ["sfdoc-mcp"],
     sessionCount: 25, creationType: "upload", status: "published", kind: "app",
     versions: [
       { version: "v1.0.0", createdAt: "2026-03-25", fileSize: "30KB", downloads: 67, status: "published", creator: "廖奕通" },
@@ -299,9 +322,12 @@ export const mockSessions: Session[] = [
 
 /* ── Credentials (reference real MCP names) ── */
 export const mockCredentials: Credential[] = [
-  { id: "c1", name: "Gmail API Token", type: "Bearer Token", mcpServer: "Gmail MCP", createdAt: "2026-03-15" },
-  { id: "c2", name: "GitHub OAuth", type: "OAuth 2.0", mcpServer: "GitHub MCP", createdAt: "2026-03-20" },
-  { id: "c3", name: "Slack Bot Token", type: "Bearer Token", mcpServer: "Slack MCP", createdAt: "2026-04-01" },
-  { id: "c4", name: "Notion Integration", type: "Bearer Token", mcpServer: "Notion MCP", createdAt: "2026-04-05" },
-  { id: "c5", name: "Google Drive OAuth", type: "OAuth 2.0", mcpServer: "Google Drive MCP", createdAt: "2026-04-08" },
+  { id: "c1", name: "腾讯文档 Token (个人)", type: "Bearer Token", mcpServer: "sfdoc-mcp", createdAt: "2026-03-15" },
+  { id: "c2", name: "YApi 个人 Token", type: "Bearer Token", mcpServer: "yapi-mcp-server", createdAt: "2026-03-20" },
+  { id: "c3", name: "Confluence OAuth", type: "OAuth 2.0", mcpServer: "confluence-mcp", createdAt: "2026-04-01" },
+  { id: "c4", name: "丰景台扫码登录", type: "Bearer Token", mcpServer: "丰景台数据查询v2", createdAt: "2026-04-05" },
+  { id: "c5", name: "钉钉企业 OAuth", type: "OAuth 2.0", mcpServer: "机器人消息", createdAt: "2026-04-08" },
+  { id: "c6", name: "钉钉文档 OAuth", type: "OAuth 2.0", mcpServer: "钉钉文档", createdAt: "2026-04-08" },
+  { id: "c7", name: "钉钉通讯录 OAuth", type: "OAuth 2.0", mcpServer: "钉钉通讯录", createdAt: "2026-04-08" },
+  { id: "c8", name: "豆包 API Key", type: "Bearer Token", mcpServer: "豆包Seedance视频生成", createdAt: "2026-04-08" },
 ];
