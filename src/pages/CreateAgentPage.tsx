@@ -699,7 +699,7 @@ const CreateAgentPage = () => {
     ? [
         { key: "preview" as const, label: "在线体验", icon: MessageSquare },
         { key: "config" as const, label: "配置", icon: FormInput },
-        { key: "logs" as const, label: "运行记录", icon: History },
+        { key: "logs" as const, label: "会话记录", icon: History },
       ]
     : [{ key: "config" as const, label: "配置", icon: FormInput }];
 
