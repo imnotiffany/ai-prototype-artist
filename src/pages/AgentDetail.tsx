@@ -14,7 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import {
   ArrowLeft, MessageSquare, Send, Save, Bot, ChevronDown, ChevronRight, CheckCircle2, XCircle, Clock,
-  History, Server, Sparkles, Bug, Terminal, Loader2, Mic, MicOff, Zap, Plus, X, RotateCcw, Eye, EyeOff, Search, Settings2,
+  History, Server, Bot as BotIcon, Bug, Terminal, Loader2, Mic, MicOff, Zap, Plus, X, RotateCcw, Eye, EyeOff, Search, Settings2,
   Brain, Wrench, Info, AlertTriangle, AlertCircle, Copy, Pencil, Rocket, KeyRound,
 } from "lucide-react";
 import { mockAgents, getActiveMCPs, getActiveSkills, mockCredentials } from "@/data/mockData";
