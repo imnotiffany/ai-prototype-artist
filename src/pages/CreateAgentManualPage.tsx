@@ -291,7 +291,7 @@ ${skillLines}
 
 ## MCP 服务（外部工具）
 ${mcpLines}
-${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
+${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
 # 工作流程
 1. 仔细理解用户意图，必要时主动澄清关键信息。
 2. 根据任务类型，从上述能力中选择最合适的工具组合。
@@ -309,14 +309,14 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
 
       setSystemPrompt(generated);
       setGeneratingPrompt(false);
-      toast({ title: "已根据当前能力生成系统提示词", description: `Skill ${selSkills.length} · MCP ${selMCPs.length} · Subagent ${selSubagents.length}` });
+      toast({ title: "已根据当前能力生成系统提示词", description: `Skill ${selSkills.length} · MCP ${selMCPs.length} · 子智能体 ${selSubagents.length}` });
     }, 800);
   };
 
   const handleSaveDraft = () => {
     toast({
       title: "草稿已保存",
-      description: `${selSkills.length} Skill / ${selMCPs.length} MCP / ${selSubagents.length} Subagent`,
+      description: `${selSkills.length} Skill / ${selMCPs.length} MCP / ${selSubagents.length} 子智能体`,
     });
   };
 
