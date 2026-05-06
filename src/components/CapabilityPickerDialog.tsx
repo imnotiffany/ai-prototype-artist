@@ -69,6 +69,14 @@ export const CapabilityPickerDialog = ({
             <Badge variant="secondary" className="text-[10px] font-normal">已选 {selected.length}</Badge>
           </DialogTitle>
         </DialogHeader>
+        {hasProviders && (
+          <Tabs value={provider} onValueChange={(v) => setProvider(v as "lh" | "dd")}>
+            <TabsList className="h-8">
+              <TabsTrigger value="lh" className="text-xs h-6 px-3">领慧 MCP <span className="ml-1 text-muted-foreground">({lhCount})</span></TabsTrigger>
+              <TabsTrigger value="dd" className="text-xs h-6 px-3">钉钉 MCP <span className="ml-1 text-muted-foreground">({ddCount})</span></TabsTrigger>
+            </TabsList>
+          </Tabs>
+        )}
         <div className="flex items-center gap-2">
           <Input
             className="h-8 text-xs"
