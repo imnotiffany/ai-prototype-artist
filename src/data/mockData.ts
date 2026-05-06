@@ -135,7 +135,7 @@ export const mockAgents: Agent[] = [
     category: "数据分析", tags: ["数据分析", "高分智能体", "dataops"],
     platform: "AI技术平台", author: "张三", authorId: "01234567",
     updatedAt: "2026-04-04", downloads: 123,
-    skills: ["Web Search", "Email Parser"], mcpServers: ["Gmail MCP", "Outlook MCP"],
+    skills: ["Web Search", "Email Parser"], mcpServers: ["钉钉文档", "钉钉通讯录"],
     sessionCount: 89, creationType: "ai", status: "published", kind: "agent",
     versions: [
       { version: "v0.0.3", createdAt: "2026-04-04", fileSize: "12KB", downloads: 45, status: "published", creator: "张三" },
@@ -149,7 +149,7 @@ export const mockAgents: Agent[] = [
     category: "编程开发", tags: ["编程开发", "代码审查", "devops"],
     platform: "AI技术平台", author: "李四", authorId: "01234568",
     updatedAt: "2026-04-10", downloads: 256,
-    skills: ["Code Analysis", "Security Scanner"], mcpServers: ["GitHub MCP"],
+    skills: ["Code Analysis", "Security Scanner"], mcpServers: ["yapi-mcp-server"],
     sessionCount: 150, creationType: "ai", status: "published", kind: "agent",
     versions: [
       { version: "v0.1.0", createdAt: "2026-04-10", fileSize: "15KB", downloads: 120, status: "published", creator: "李四" },
@@ -161,7 +161,7 @@ export const mockAgents: Agent[] = [
     category: "文档处理", tags: ["文档处理", "翻译", "多语言"],
     platform: "AI技术平台", author: "王五", authorId: "01234569",
     updatedAt: "2026-04-08", downloads: 412,
-    skills: ["Translation Engine"], mcpServers: ["Google Translate MCP"],
+    skills: ["Translation Engine"], mcpServers: ["知识运营平台(sf-knx)"],
     sessionCount: 230, creationType: "ai", status: "published", kind: "agent",
     versions: [
       { version: "v1.0.0", createdAt: "2026-04-08", fileSize: "20KB", downloads: 412, status: "published", creator: "王五" },
@@ -173,7 +173,7 @@ export const mockAgents: Agent[] = [
     category: "自动运维", tags: ["自动运维", "监控", "告警"],
     platform: "基础架构部", author: "赵六", authorId: "01234570",
     updatedAt: "2026-04-12", downloads: 87,
-    skills: ["Log Analyzer", "Alert Manager"], mcpServers: ["Prometheus MCP", "Grafana MCP"],
+    skills: ["Log Analyzer", "Alert Manager"], mcpServers: ["智水-MCP服务", "丰景台"],
     sessionCount: 45, creationType: "ai", status: "published", kind: "agent",
     versions: [
       { version: "v0.2.0", createdAt: "2026-04-12", fileSize: "18KB", downloads: 87, status: "published", creator: "赵六" },
@@ -197,7 +197,7 @@ export const mockAgents: Agent[] = [
     category: "数据分析", tags: ["数据分析", "ETL", "数据工程"],
     platform: "数据中心", author: "孙八", authorId: "01234572",
     updatedAt: "2026-04-09", downloads: 156,
-    skills: ["SQL Generator", "Schema Analyzer"], mcpServers: ["BigQuery MCP", "Snowflake MCP"],
+    skills: ["SQL Generator", "Schema Analyzer"], mcpServers: ["丰景台数据查询v2", "丰景台"],
     sessionCount: 78, creationType: "ai", status: "published", kind: "agent",
     versions: [
       { version: "v0.1.2", createdAt: "2026-04-09", fileSize: "22KB", downloads: 156, status: "published", creator: "孙八" },
@@ -288,7 +288,7 @@ export const mockAgents: Agent[] = [
     category: "视觉设计", tags: ["视觉设计", "视频"],
     platform: "AI技术平台", author: "廖奕通", authorId: "01441970",
     updatedAt: "2026-03-25", downloads: 67,
-    skills: ["File Processor"], mcpServers: ["Google Drive MCP"],
+    skills: ["File Processor"], mcpServers: ["sfdoc-mcp"],
     sessionCount: 25, creationType: "upload", status: "published", kind: "app",
     versions: [
       { version: "v1.0.0", createdAt: "2026-03-25", fileSize: "30KB", downloads: 67, status: "published", creator: "廖奕通" },
@@ -323,8 +323,8 @@ export const mockSessions: Session[] = [
 /* ── Credentials (reference real MCP names) ── */
 export const mockCredentials: Credential[] = [
   { id: "c1", name: "Gmail API Token", type: "Bearer Token", mcpServer: "Gmail MCP", createdAt: "2026-03-15" },
-  { id: "c2", name: "GitHub OAuth", type: "OAuth 2.0", mcpServer: "GitHub MCP", createdAt: "2026-03-20" },
+  { id: "c2", name: "GitHub OAuth", type: "OAuth 2.0", mcpServer: "yapi-mcp-server", createdAt: "2026-03-20" },
   { id: "c3", name: "Slack Bot Token", type: "Bearer Token", mcpServer: "Slack MCP", createdAt: "2026-04-01" },
   { id: "c4", name: "Notion Integration", type: "Bearer Token", mcpServer: "Notion MCP", createdAt: "2026-04-05" },
-  { id: "c5", name: "Google Drive OAuth", type: "OAuth 2.0", mcpServer: "Google Drive MCP", createdAt: "2026-04-08" },
+  { id: "c5", name: "Google Drive OAuth", type: "OAuth 2.0", mcpServer: "sfdoc-mcp", createdAt: "2026-04-08" },
 ];

@@ -44,7 +44,7 @@ const mockRuns: RunRecord[] = [
 
 const mockTranscript = [
   { role: "user", content: "帮我整理今天的销售周报，按区域汇总" },
-  { role: "agent", content: "好的，我先查询今天各区域的销售数据。", tools: [{ name: "web_search", count: 2 }, { name: "BigQuery MCP", count: 1 }] },
+  { role: "agent", content: "好的，我先查询今天各区域的销售数据。", tools: [{ name: "web_search", count: 2 }, { name: "丰景台数据查询v2", count: 1 }] },
   { role: "agent", content: "已汇总完成，华东区 ¥1.2M（环比 +8%）、华南区 ¥0.9M（+3%）、华北区 ¥0.7M（-2%）。\n\n报告已生成 → 销售周报_20260429.md" },
 ];
 const mockDebugEvents = [
@@ -92,7 +92,7 @@ const AgentDetail = () => {
   const [savedSnapshot, setSavedSnapshot] = useState(initialSnapshot);
 
   const [versions, setVersions] = useState([
-    { v: "v3", at: "2026-04-25 14:02", by: "廖奕通", note: "新增 BigQuery MCP", current: true },
+    { v: "v3", at: "2026-04-25 14:02", by: "廖奕通", note: "新增 丰景台数据查询v2", current: true },
     { v: "v2", at: "2026-04-18 09:30", by: "廖奕通", note: "调整 system prompt 风格", current: false },
     { v: "v1", at: "2026-04-10 16:45", by: "廖奕通", note: "初始版本", current: false },
   ]);
