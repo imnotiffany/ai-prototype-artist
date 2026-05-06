@@ -35,7 +35,13 @@ const VaultPage = () => {
     setCredType("Bearer Token");
   };
 
+  const [mcpPickerOpen, setMcpPickerOpen] = useState(false);
+
   const handleSave = () => {
+    if (!mcpServer) {
+      toast({ title: "请选择关联 MCP", variant: "destructive" });
+      return;
+    }
     if (!credName.trim()) {
       toast({ title: "请填写凭据名称", variant: "destructive" });
       return;
