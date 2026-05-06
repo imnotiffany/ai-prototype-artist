@@ -15,10 +15,12 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import {
   ArrowLeft, MessageSquare, Send, Save, Bot, ChevronDown, ChevronRight, CheckCircle2, XCircle, Clock,
   History, Server, Sparkles, Bug, Terminal, Loader2, Mic, MicOff, Zap, Plus, X, RotateCcw, Eye, Search, Settings2,
-  Brain, Wrench, Info, AlertTriangle, AlertCircle, Copy,
+  Brain, Wrench, Info, AlertTriangle, AlertCircle, Copy, Pencil, Rocket,
 } from "lucide-react";
 import { mockAgents, getActiveMCPs, getActiveSkills, mockCredentials } from "@/data/mockData";
 import { toast } from "@/hooks/use-toast";
+import { PublishAgentDialog } from "@/components/PublishAgentDialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 /* ───────── Mock run history ───────── */
 type RunStatus = "success" | "failed" | "running";
@@ -213,6 +215,25 @@ const AgentDetail = () => {
   const [mcpPopOpen, setMcpPopOpen] = useState(false);
   const [skillPopOpen, setSkillPopOpen] = useState(false);
 
+  /* ── Header actions: edit basic info & publish ── */
+  const [publishOpen, setPublishOpen] = useState(false);
+  const [editInfoOpen, setEditInfoOpen] = useState(false);
+  const [draftName, setDraftName] = useState(name);
+  const [draftDesc, setDraftDesc] = useState(description);
+
+  const openEditInfo = () => {
+    setDraftName(name);
+    setDraftDesc(description);
+    setEditInfoOpen(true);
+  };
+  const saveBasicInfo = () => {
+    setName(draftName);
+    setDescription(draftDesc);
+    setSavedSnapshot((s) => ({ ...s, name: draftName, description: draftDesc }));
+    setEditInfoOpen(false);
+    toast({ title: "基本信息已更新", description: "名称与描述的修改不会产生新版本" });
+  };
+
   return (
     <div className="p-6 max-w-[1280px] mx-auto animate-fade-in">
       {/* Breadcrumb */}
@@ -229,8 +250,8 @@ const AgentDetail = () => {
         <div className="flex items-start gap-4 min-w-0">
           <div className="w-14 h-14 rounded-xl bg-secondary flex items-center justify-center text-2xl shrink-0">{agent.avatar}</div>
           <div className="min-w-0">
-            <h1 className="text-xl font-semibold text-foreground truncate">{agent.name}</h1>
-            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{agent.description}</p>
+            <h1 className="text-xl font-semibold text-foreground truncate">{name}</h1>
+            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{description}</p>
             <div className="flex items-center gap-2 mt-2 flex-wrap">
               {agent.tags.map((tag, i) => (
                 <Badge key={i} variant={i === 0 ? "default" : "outline"} className="text-xs">{tag}</Badge>
@@ -241,6 +262,14 @@ const AgentDetail = () => {
               <Badge variant="outline" className="text-[10px] font-mono">{versions.find((v) => v.current)?.v}</Badge>
             </div>
           </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={openEditInfo}>
+            <Pencil className="w-3.5 h-3.5" />编辑基本信息
+          </Button>
+          <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setPublishOpen(true)}>
+            <Rocket className="w-3.5 h-3.5" />发布
+          </Button>
         </div>
       </div>
 
@@ -474,23 +503,10 @@ const AgentDetail = () => {
           </div>
 
           <div className="space-y-4">
-            {/* 1. 基本信息 */}
-            <section className="border border-border rounded-lg bg-card">
-              <header className="px-4 py-2.5 border-b border-border">
-                <h3 className="text-sm font-semibold">基本信息</h3>
-                <p className="text-[11px] text-muted-foreground mt-0.5">智能体的名称与简介，会展示给所有使用者</p>
-              </header>
-              <div className="p-4 space-y-3">
-                <div>
-                  <Label className="text-xs">名称</Label>
-                  <Input value={name} onChange={(e) => setName(e.target.value)} className="mt-1.5 h-8 text-xs" />
-                </div>
-                <div>
-                  <Label className="text-xs">描述</Label>
-                  <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} className="mt-1.5 text-xs" />
-                </div>
-              </div>
-            </section>
+            <p className="text-[11px] text-muted-foreground px-1">
+              名称、描述等基本信息请通过页面右上角的「编辑基本信息」修改，不会产生新版本。以下配置变更会生成新版本。
+            </p>
+
 
             {/* 2. 模型与提示词 */}
             <section className="border border-border rounded-lg bg-card">
@@ -847,6 +863,42 @@ const AgentDetail = () => {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Edit basic info dialog */}
+      <Dialog open={editInfoOpen} onOpenChange={setEditInfoOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base flex items-center gap-2">
+              <Pencil className="w-4 h-4 text-primary" />编辑基本信息
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-1">
+            <p className="text-[11px] text-muted-foreground">
+              名称与描述是展示给使用者的「门面」，调整这些不会影响智能体行为，因此不会产生新版本。
+            </p>
+            <div>
+              <Label className="text-xs">名称</Label>
+              <Input value={draftName} onChange={(e) => setDraftName(e.target.value)} className="mt-1.5 h-9 text-xs" />
+            </div>
+            <div>
+              <Label className="text-xs">描述</Label>
+              <Textarea value={draftDesc} onChange={(e) => setDraftDesc(e.target.value)} rows={3} className="mt-1.5 text-xs" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => setEditInfoOpen(false)}>取消</Button>
+            <Button size="sm" className="h-8 text-xs" onClick={saveBasicInfo} disabled={!draftName.trim()}>保存</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Publish dialog */}
+      <PublishAgentDialog
+        open={publishOpen}
+        onOpenChange={setPublishOpen}
+        agentName={name}
+        versions={versions}
+      />
     </div>
   );
 };

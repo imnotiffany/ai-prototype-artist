@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, RotateCcw } from "lucide-react";
+import { Plus, RotateCcw, Rocket } from "lucide-react";
 import { mockAgents, type Agent } from "@/data/mockData";
+import { PublishAgentDialog } from "@/components/PublishAgentDialog";
 
 const MY_AUTHOR_ID = "01441970";
 
@@ -24,6 +25,14 @@ const ProjectAgents = () => {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [onlyMine, setOnlyMine] = useState(false);
+  const [publishTarget, setPublishTarget] = useState<Agent | null>(null);
+
+  // Mock versions per agent (in real app this comes from API)
+  const mockVersionsFor = (a: Agent) => [
+    { v: "v3", at: "2026-04-25 14:02", note: "新增 BigQuery MCP", current: true },
+    { v: "v2", at: "2026-04-18 09:30", note: "调整 system prompt 风格" },
+    { v: "v1", at: "2026-04-10 16:45", note: "初始版本" },
+  ];
 
   const filtered = mockAgents.filter((app) => {
     if (searchName && !app.name.toLowerCase().includes(searchName.toLowerCase())) return false;
@@ -156,13 +165,25 @@ const ProjectAgents = () => {
                 </div>
               </div>
               <p className="text-xs text-muted-foreground line-clamp-2 mb-3 leading-relaxed">{app.description}</p>
-              <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <span>{app.platform}</span>
-                  <span>{app.author}（{app.authorId}）</span>
+              <div className="flex items-end justify-between gap-2 text-[11px] text-muted-foreground">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 truncate">
+                    <span>{app.platform}</span>
+                    <span className="truncate">{app.author}（{app.authorId}）</span>
+                  </div>
+                  <p className="mt-1">{app.updatedAt}更新</p>
                 </div>
+                {app.kind !== "app" && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-[11px] gap-1 shrink-0"
+                    onClick={(e) => { e.stopPropagation(); setPublishTarget(app); }}
+                  >
+                    <Rocket className="w-3 h-3" />发布
+                  </Button>
+                )}
               </div>
-              <p className="text-[11px] text-muted-foreground mt-1">{app.updatedAt}更新</p>
             </div>
           ))}
         </div>
@@ -171,6 +192,13 @@ const ProjectAgents = () => {
           <div className="text-center py-16 text-sm text-muted-foreground">暂无匹配的应用</div>
         )}
       </div>
+
+      <PublishAgentDialog
+        open={!!publishTarget}
+        onOpenChange={(o) => !o && setPublishTarget(null)}
+        agentName={publishTarget?.name ?? ""}
+        versions={publishTarget ? mockVersionsFor(publishTarget) : []}
+      />
     </div>
   );
 };
