@@ -195,9 +195,8 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
     return (
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
-            <Plus className="w-3 h-3" />
-            添加 {label}
+          <Button variant="outline" size="icon" className="h-7 w-7" title={`添加 ${label}`}>
+            <Plus className="w-3.5 h-3.5" />
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-3xl max-h-[80vh] flex flex-col">
