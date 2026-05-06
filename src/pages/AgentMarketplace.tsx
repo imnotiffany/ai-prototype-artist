@@ -76,7 +76,7 @@ const AgentMarketplace = () => {
           className="h-9 text-xs px-4 shrink-0"
           onClick={() => navigate("/project-agents")}
         >
-          我的应用
+          我创建的
         </Button>
       </div>
 
