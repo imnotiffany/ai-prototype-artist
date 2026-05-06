@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, Rocket, Plus, X, Settings2, Cpu, Server, Zap, Shield, KeyRound, Bot, MessageSquare, Eye, EyeOff, Link2, CheckCircle2, Sparkles, Loader2, ExternalLink, Play, Send, AlertCircle, Wand2, Bug, FolderKanban, Store, ArrowRight, Mic, MicOff, HelpCircle, FileEdit, Terminal, ChevronDown, ChevronUp, Copy, Brain, Wrench, Info, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Save, Rocket, Plus, X, Settings2, Cpu, Server, Zap, Shield, KeyRound, Bot, MessageSquare, Eye, EyeOff, Link2, CheckCircle2, Sparkles, Loader2, ExternalLink, Play, Send, AlertCircle, Wand2, Bug, FolderKanban, Store, ArrowRight, Mic, MicOff, HelpCircle, FileEdit, Terminal, ChevronDown, ChevronUp, Copy, Brain, Wrench, Info, AlertTriangle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -808,34 +808,44 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
               {/* Right: Agent Run with tabbed Chat / Logs view */}
               <div className="border border-border rounded-lg bg-card flex flex-col h-[640px]">
                 <Tabs value={runView} onValueChange={(v) => setRunView(v as "chat" | "logs")} className="flex flex-col flex-1 min-h-0">
-                  <div className="px-4 py-2 border-b border-border flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <Bot className="w-3.5 h-3.5 text-primary shrink-0" />
-                      <span className="text-xs font-semibold shrink-0">智能体运行</span>
-                      <Badge variant="outline" className="text-[10px] h-4 truncate">
-                        {model} · {selMCPs.length} MCP · {selSkills.length} Skill
-                      </Badge>
-                      {debugRunning && (
-                        <span className="flex items-center gap-1 text-[10px] text-muted-foreground shrink-0">
-                          <Loader2 className="w-2.5 h-2.5 animate-spin" /> 运行中
-                        </span>
-                      )}
+                  <div className="border-b border-border">
+                    <div className="px-3 h-10 flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <Bot className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <span className="text-xs font-semibold shrink-0">智能体运行</span>
+                        {debugRunning && (
+                          <span className="flex items-center gap-1 text-[10px] text-muted-foreground shrink-0 ml-1">
+                            <Loader2 className="w-2.5 h-2.5 animate-spin" /> 运行中
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <TabsList className="h-7 p-0.5">
+                          <TabsTrigger value="chat" className="text-[11px] h-6 px-2 gap-1">
+                            <Bot className="w-3 h-3" /> 对话
+                          </TabsTrigger>
+                          <TabsTrigger value="logs" className="text-[11px] h-6 px-2 gap-1">
+                            <Terminal className="w-3 h-3" /> 日志
+                            {debugLogs.length > 0 && (
+                              <span className="ml-0.5 px-1 rounded bg-muted text-muted-foreground text-[9px] leading-tight">
+                                {debugLogs.length}
+                              </span>
+                            )}
+                          </TabsTrigger>
+                        </TabsList>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" title="清空" onClick={() => { setRunMessages([]); setDebugLogs([]); }}>
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <TabsList className="h-7 p-0.5">
-                        <TabsTrigger value="chat" className="text-[11px] h-6 px-2 gap-1">
-                          <Bot className="w-3 h-3" /> 对话
-                        </TabsTrigger>
-                        <TabsTrigger value="logs" className="text-[11px] h-6 px-2 gap-1">
-                          <Terminal className="w-3 h-3" /> 日志
-                          {debugLogs.length > 0 && (
-                            <span className="ml-0.5 px-1 rounded bg-muted text-muted-foreground text-[9px] leading-tight">
-                              {debugLogs.length}
-                            </span>
-                          )}
-                        </TabsTrigger>
-                      </TabsList>
-                      <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => { setRunMessages([]); setDebugLogs([]); }}>清空</Button>
+                    <div className="px-3 pb-2 flex items-center gap-1.5 flex-wrap">
+                      <Badge variant="secondary" className="text-[10px] h-4 px-1.5 font-mono">{model}</Badge>
+                      <Badge variant="outline" className="text-[10px] h-4 px-1.5 gap-1">
+                        <Zap className="w-2.5 h-2.5" /> {selMCPs.length} MCP
+                      </Badge>
+                      <Badge variant="outline" className="text-[10px] h-4 px-1.5 gap-1">
+                        <Sparkles className="w-2.5 h-2.5" /> {selSkills.length} Skill
+                      </Badge>
                     </div>
                   </div>
 
