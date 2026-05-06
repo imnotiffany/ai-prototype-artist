@@ -16,6 +16,30 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { toast } from "@/hooks/use-toast";
 import { categories, getActiveSkills, getActiveMCPs, mockAgents, mockCredentials } from "@/data/mockData";
 import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
+import { AIStatusPill } from "@/components/AIStatusPill";
+
+const promptTemplates: { name: string; description: string; content: string }[] = [
+  {
+    name: "通用助手",
+    description: "适合大多数对话场景",
+    content: `# 角色\n你是一个专业的 AI 助手，致力于高质量地完成用户交付的任务。\n\n# 工作流程\n1. 理解用户意图，必要时主动澄清。\n2. 选择合适的工具组合完成任务。\n3. 输出结构化、可验证的结果。\n\n# 输出规范\n- 使用清晰的 Markdown 结构\n- 引用工具返回数据时注明来源\n- 不确定时如实告知，不编造`,
+  },
+  {
+    name: "数据分析师",
+    description: "结构化数据查询与图表",
+    content: `# 角色\n你是一名资深数据分析师，擅长 SQL、数据可视化与业务洞察。\n\n# 工作流程\n1. 与用户确认分析目标与口径。\n2. 编写并执行查询，校验结果合理性。\n3. 给出关键指标、变化趋势与归因建议。\n\n# 输出规范\n- 用表格展示数据，必要时附图\n- 对异常值与口径差异主动说明\n- 列出查询语句以便复核`,
+  },
+  {
+    name: "客服助手",
+    description: "工单/FAQ 场景",
+    content: `# 角色\n你是企业客服助手，礼貌、耐心、准确地解答用户问题。\n\n# 工作流程\n1. 先确认用户问题与诉求。\n2. 检索知识库或工单系统给出答案。\n3. 无法解决时引导转人工，并记录上下文。\n\n# 风格\n- 简洁、共情、避免术语堆叠\n- 关键步骤分点列出`,
+  },
+  {
+    name: "代码评审",
+    description: "PR / 代码改动审查",
+    content: `# 角色\n你是一名严谨的代码评审专家，关注正确性、可读性、性能与安全。\n\n# 工作流程\n1. 概述本次改动目的与范围。\n2. 按文件指出问题并给出可执行建议。\n3. 总结整体风险等级与是否可合并。\n\n# 输出规范\n- 用 \`文件:行号\` 定位问题\n- 区分 Must / Should / Nit 三档严重度`,
+  },
+];
 
 const skills = getActiveSkills();
 const mcps = getActiveMCPs();
@@ -226,7 +250,7 @@ const CreateAgentManualPage = () => {
       }
       setAssistantMessages((m) => [...m, { role: "assistant", content: reply }]);
       setAssistantThinking(false);
-    }, 600);
+    }, 1600);
   };
 
   const toggleVoice = () => {
@@ -588,7 +612,30 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 <p className="text-[10px] text-muted-foreground">
                   {systemPrompt.length} 字符 · 将根据已绑定的 {selSkills.length} 个 Skill 与 {selMCPs.length} 个 MCP 生成
                 </p>
-                <Button size="sm" variant="ghost" className="h-7 text-xs">从模板导入</Button>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button size="sm" variant="ghost" className="h-7 text-xs">从模板导入</Button>
+                  </PopoverTrigger>
+                  <PopoverContent align="end" className="w-72 p-1.5">
+                    <div className="px-2 py-1.5 text-[10px] text-muted-foreground">选择模板覆盖当前提示词</div>
+                    <div className="space-y-0.5">
+                      {promptTemplates.map((tpl) => (
+                        <button
+                          key={tpl.name}
+                          type="button"
+                          onClick={() => {
+                            setSystemPrompt(tpl.content);
+                            toast({ title: `已导入模板：${tpl.name}` });
+                          }}
+                          className="w-full text-left rounded-md px-2 py-1.5 hover:bg-muted transition-colors"
+                        >
+                          <div className="text-xs font-medium text-foreground">{tpl.name}</div>
+                          <div className="text-[10px] text-muted-foreground mt-0.5">{tpl.description}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
           </TabsContent>
@@ -769,8 +816,8 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                     </div>
                   ))}
                   {assistantThinking && (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Loader2 className="w-3 h-3 animate-spin" /> 思考中…
+                    <div className="flex justify-start">
+                      <AIStatusPill stages={["分析你的反馈", "调整提示词", "生成回复"]} />
                     </div>
                   )}
                 </div>
