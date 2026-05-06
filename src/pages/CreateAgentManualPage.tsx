@@ -461,11 +461,14 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
             {/* Skill 绑定 */}
             <div className="border border-border rounded-lg p-5 bg-card">
               <div className="flex items-center justify-between mb-3">
-                <Label className="text-xs">Skill 绑定</Label>
+                <div>
+                  <Label className="text-xs">Skill 绑定</Label>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">预制能力包，让智能体掌握特定领域的工作流</p>
+                </div>
                 <CapabilityPickerDialog items={skills} selected={selSkills} onToggle={(n) => toggle(selSkills, setSelSkills, n)} icon={<Zap className="w-3.5 h-3.5" />} label="Skill" marketLink="/" trigger={<Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0"><Plus className="w-3 h-3" />添加 Skill</Button>} />
               </div>
               {selSkills.length === 0 ? (
-                <p className="text-xs text-muted-foreground py-2">未绑定任何 Skill</p>
+                <p className="text-xs text-muted-foreground text-center py-4">尚未绑定任何 Skill。点击右上角「添加 Skill」选择。</p>
               ) : (
                 <div className="space-y-1.5">
                   {selSkills.map((s) => (
