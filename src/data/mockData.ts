@@ -322,9 +322,12 @@ export const mockSessions: Session[] = [
 
 /* ── Credentials (reference real MCP names) ── */
 export const mockCredentials: Credential[] = [
-  { id: "c1", name: "Gmail API Token", type: "Bearer Token", mcpServer: "Gmail MCP", createdAt: "2026-03-15" },
-  { id: "c2", name: "GitHub OAuth", type: "OAuth 2.0", mcpServer: "yapi-mcp-server", createdAt: "2026-03-20" },
-  { id: "c3", name: "Slack Bot Token", type: "Bearer Token", mcpServer: "Slack MCP", createdAt: "2026-04-01" },
-  { id: "c4", name: "Notion Integration", type: "Bearer Token", mcpServer: "Notion MCP", createdAt: "2026-04-05" },
-  { id: "c5", name: "Google Drive OAuth", type: "OAuth 2.0", mcpServer: "sfdoc-mcp", createdAt: "2026-04-08" },
+  { id: "c1", name: "腾讯文档 Token (个人)", type: "Bearer Token", mcpServer: "sfdoc-mcp", createdAt: "2026-03-15" },
+  { id: "c2", name: "YApi 个人 Token", type: "Bearer Token", mcpServer: "yapi-mcp-server", createdAt: "2026-03-20" },
+  { id: "c3", name: "Confluence OAuth", type: "OAuth 2.0", mcpServer: "confluence-mcp", createdAt: "2026-04-01" },
+  { id: "c4", name: "丰景台扫码登录", type: "Bearer Token", mcpServer: "丰景台数据查询v2", createdAt: "2026-04-05" },
+  { id: "c5", name: "钉钉企业 OAuth", type: "OAuth 2.0", mcpServer: "机器人消息", createdAt: "2026-04-08" },
+  { id: "c6", name: "钉钉文档 OAuth", type: "OAuth 2.0", mcpServer: "钉钉文档", createdAt: "2026-04-08" },
+  { id: "c7", name: "钉钉通讯录 OAuth", type: "OAuth 2.0", mcpServer: "钉钉通讯录", createdAt: "2026-04-08" },
+  { id: "c8", name: "豆包 API Key", type: "Bearer Token", mcpServer: "豆包Seedance视频生成", createdAt: "2026-04-08" },
 ];
