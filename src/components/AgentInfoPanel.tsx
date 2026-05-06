@@ -113,22 +113,6 @@ export const AgentInfoPanel = ({ agent, suggestions, onSuggestionClick }: Props)
           </Section>
         )}
 
-        {/* Suggestions (chat agents) */}
-        {suggestions && suggestions.length > 0 && (
-          <Section icon={Sparkles} title="试试这样问">
-            <div className="space-y-1.5">
-              {suggestions.map((q) => (
-                <button
-                  key={q}
-                  onClick={() => onSuggestionClick?.(q)}
-                  className="w-full text-left text-[11px] text-foreground/80 px-2 py-1.5 rounded border border-border bg-card hover:border-primary/40 hover:bg-primary/5 transition-colors"
-                >
-                  {q}
-                </button>
-              ))}
-            </div>
-          </Section>
-        )}
 
         {/* Author / Updated */}
         <Section icon={User} title="发布者">
