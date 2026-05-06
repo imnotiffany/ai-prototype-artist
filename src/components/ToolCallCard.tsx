@@ -95,21 +95,14 @@ const Card = ({ call }: { call: ToolCall }) => {
   );
 };
 
-/** 多个连续工具调用以树形（左侧竖线）展示 */
+/** 多个连续工具调用，纵向堆叠 */
 export const ToolCallGroup = ({ calls }: { calls: ToolCall[] }) => {
   if (calls.length === 0) return null;
   return (
-    <div className="relative pl-4">
-      {/* tree trunk */}
-      <span className="absolute left-1.5 top-2 bottom-2 w-px bg-border" aria-hidden />
-      <div className="space-y-1.5">
-        {calls.map((c) => (
-          <div key={c.id} className="relative">
-            <span className="absolute -left-[10px] top-3 w-2 h-px bg-border" aria-hidden />
-            <Card call={c} />
-          </div>
-        ))}
-      </div>
+    <div className="space-y-1.5">
+      {calls.map((c) => (
+        <Card key={c.id} call={c} />
+      ))}
     </div>
   );
 };

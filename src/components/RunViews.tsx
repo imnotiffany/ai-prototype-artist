@@ -32,9 +32,11 @@ const matches = (q: string, ...fields: (string | undefined)[]) => {
 export const RunTranscriptView = ({
   events,
   emptyText = "暂无对话内容",
+  showSearch = true,
 }: {
   events: TranscriptEvent[];
   emptyText?: string;
+  showSearch?: boolean;
 }) => {
   const [q, setQ] = useState("");
 
@@ -56,17 +58,19 @@ export const RunTranscriptView = ({
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      <div className="px-3 py-2 border-b border-border shrink-0">
-        <div className="relative">
-          <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-2 top-1/2 -translate-y-1/2" />
-          <Input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="搜索对话内容、工具名…"
-            className="h-7 text-xs pl-7"
-          />
+      {showSearch && (
+        <div className="px-3 py-2 border-b border-border shrink-0">
+          <div className="relative">
+            <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-2 top-1/2 -translate-y-1/2" />
+            <Input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="搜索对话内容、工具名…"
+              className="h-7 text-xs pl-7"
+            />
+          </div>
         </div>
-      </div>
+      )}
       <div className="flex-1 overflow-auto p-4 space-y-3 min-h-0">
         {filtered.length === 0 && (
           <p className="text-xs text-muted-foreground text-center py-6">{q ? "没有匹配的内容" : emptyText}</p>
@@ -222,11 +226,13 @@ export const RunDualView = ({
   debugEvents,
   debugMeta,
   toolbarRight,
+  showTranscriptSearch = true,
 }: {
   transcriptEvents: TranscriptEvent[];
   debugEvents: DebugEvent[];
   debugMeta?: { label: string; value: string }[];
   toolbarRight?: React.ReactNode;
+  showTranscriptSearch?: boolean;
 }) => {
   const [view, setView] = useState<"transcript" | "debug">("transcript");
   return (
@@ -267,7 +273,7 @@ export const RunDualView = ({
       </div>
       <div className="flex-1 min-h-0">
         {view === "transcript" ? (
-          <RunTranscriptView events={transcriptEvents} />
+          <RunTranscriptView events={transcriptEvents} showSearch={showTranscriptSearch} />
         ) : (
           <RunDebugView events={debugEvents} meta={debugMeta} />
         )}
