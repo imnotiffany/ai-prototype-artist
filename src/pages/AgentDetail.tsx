@@ -23,6 +23,7 @@ import { PublishAgentDialog } from "@/components/PublishAgentDialog";
 import { AgentRuntimeBadge, type AgentRuntimeStatus } from "@/components/AgentRuntimeBadge";
 import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { RunDualView, RunningIndicator, type TranscriptEvent, type DebugEvent } from "@/components/RunViews";
 
 /* ───────── Mock run history ───────── */
 type RunStatus = "success" | "failed" | "running";
@@ -43,18 +44,34 @@ const mockRuns: RunRecord[] = [
   { id: "run-005", source: "Web 端", trigger: "李四",   startedAt: "2026-04-29 09:20:55", duration: "00:02:18", status: "running", prompt: "对比一下竞品最近 3 个月的更新" },
 ];
 
-const mockTranscript = [
-  { role: "user", content: "帮我整理今天的销售周报，按区域汇总" },
-  { role: "agent", content: "好的，我先查询今天各区域的销售数据。", tools: [{ name: "web_search", count: 2 }, { name: "丰景台数据查询v2", count: 1 }] },
-  { role: "agent", content: "已汇总完成，华东区 ¥1.2M（环比 +8%）、华南区 ¥0.9M（+3%）、华北区 ¥0.7M（-2%）。\n\n报告已生成 → 销售周报_20260429.md" },
+
+
+const buildMockTranscript = (userPrompt: string): TranscriptEvent[] => [
+  { id: "s0", type: "system", message: "会话开始 · claude-sonnet-4-6" },
+  { id: "u0", type: "user", content: userPrompt },
+  { id: "a0", type: "agent", content: "好的，我先查询今天各区域的销售数据。" },
+  {
+    id: "t0",
+    type: "tools",
+    calls: [
+      { id: "c1", kind: "search", name: "web_search", summary: 'q: "销售数据 2026-04-29"', status: "success",
+        input: '{"q":"销售数据 2026-04-29"}', output: '{"results":[{"title":"华东 Q2"},{"title":"华南 Q2"}]}' },
+      { id: "c2", kind: "mcp", name: "丰景台数据查询v2", summary: "region=ALL · 412ms", status: "success",
+        input: '{"region":"ALL"}', output: '{"east":1200000,"south":900000,"north":700000}' },
+    ],
+  },
+  { id: "a1", type: "agent",
+    content: "已汇总完成，华东区 ¥1.2M（环比 +8%）、华南区 ¥0.9M（+3%）、华北区 ¥0.7M（-2%）。\n\n报告已生成 → 销售周报_20260429.md" },
+  { id: "s1", type: "system", message: "会话结束 · 用时 6.5s · 1552 tokens" },
 ];
-const mockDebugEvents = [
-  { t: "10:24:18.102", type: "session.start", data: { session_id: "sess-9f2c", model: "claude-sonnet-4-6" } },
-  { t: "10:24:18.245", type: "llm.request",   data: { messages: 1, tokens_in: 1240 } },
-  { t: "10:24:19.812", type: "tool.call",     data: { name: "web_search", args: { q: "销售数据 2026-04-29" } } },
-  { t: "10:24:21.044", type: "tool.result",   data: { name: "web_search", bytes: 4821, latency_ms: 1232 } },
-  { t: "10:24:24.501", type: "llm.response",  data: { tokens_out: 312, finish_reason: "stop" } },
-  { t: "10:24:24.612", type: "session.end",   data: { status: "success", total_ms: 6510, total_tokens: 1552 } },
+
+const mockDebugEvents: DebugEvent[] = [
+  { id: "d1", ts: "10:24:18.102", type: "session.start", data: { session_id: "sess-9f2c", model: "claude-sonnet-4-6" } },
+  { id: "d2", ts: "10:24:18.245", type: "llm.request",   data: { messages: 1, tokens_in: 1240 } },
+  { id: "d3", ts: "10:24:19.812", type: "tool.call",     data: { name: "web_search", args: { q: "销售数据 2026-04-29" } } },
+  { id: "d4", ts: "10:24:21.044", type: "tool.result",   data: { name: "web_search", bytes: 4821, latency_ms: 1232 } },
+  { id: "d5", ts: "10:24:24.501", type: "llm.response",  data: { tokens_out: 312, finish_reason: "stop" } },
+  { id: "d6", ts: "10:24:24.612", type: "session.end",   data: { status: "success", total_ms: 6510, total_tokens: 1552 } },
 ];
 
 type LogLevel = "info" | "tool" | "thought" | "warn" | "error" | "result";
@@ -113,8 +130,6 @@ const AgentDetail = () => {
   const [debugRunning, setDebugRunning] = useState(false);
   const [voiceRecording, setVoiceRecording] = useState(false);
   const [debugLogs, setDebugLogs] = useState<LogEntry[]>([]);
-  const [runView, setRunView] = useState<"chat" | "logs">("chat");
-  const [logFilter, setLogFilter] = useState<"all" | LogLevel>("all");
   const logIdRef = useRef(0);
 
   const pushLog = (level: LogLevel, message: string, meta?: string) => {
@@ -193,8 +208,6 @@ const AgentDetail = () => {
 
   /* ── Run history ── */
   const [activeRun, setActiveRun] = useState<RunRecord | null>(null);
-  const [runDetailView, setRunDetailView] = useState<"transcript" | "debug">("transcript");
-  const [expandedTools, setExpandedTools] = useState<Record<number, boolean>>({});
 
   /* ── Version detail dialog ── */
   const [viewingVersion, setViewingVersion] = useState<typeof versions[0] | null>(null);
@@ -434,148 +447,60 @@ const AgentDetail = () => {
               </div>
             </div>
 
-            {/* Right: agent run with chat/logs tab */}
+            {/* Right: agent run with transcript/debug toggle */}
             <div className="border border-border rounded-lg bg-card flex flex-col h-[640px]">
-              <Tabs value={runView} onValueChange={(v) => setRunView(v as "chat" | "logs")} className="flex flex-col flex-1 min-h-0">
-                <div className="px-3 h-10 shrink-0 border-b border-border flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <Bot className="w-3.5 h-3.5 text-primary shrink-0" />
-                    <span className="text-xs font-semibold shrink-0">智能体运行</span>
-                    {debugRunning && (
-                      <span className="flex items-center gap-1 text-[10px] text-muted-foreground shrink-0 ml-1">
-                        <Loader2 className="w-2.5 h-2.5 animate-spin" />运行中
-                      </span>
-                    )}
-                  </div>
-                  <TabsList className="h-7 p-0.5 shrink-0">
-                    <TabsTrigger value="chat" className="text-[11px] h-6 px-2 gap-1">
-                      <Bot className="w-3 h-3" />对话
-                    </TabsTrigger>
-                    <TabsTrigger value="logs" className="text-[11px] h-6 px-2 gap-1">
-                      <Terminal className="w-3 h-3" />日志
-                      {debugLogs.length > 0 && (
-                        <span className="ml-0.5 px-1 rounded bg-muted text-muted-foreground text-[9px] leading-tight">{debugLogs.length}</span>
-                      )}
-                    </TabsTrigger>
-                  </TabsList>
-                </div>
-
-                <TabsContent value="chat" forceMount className="flex-1 flex flex-col min-h-0 mt-0 data-[state=inactive]:hidden">
-                  <div className="flex-1 overflow-auto p-4 space-y-3 min-h-0">
-                    {runMessages.length === 0 && (
-                      <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground gap-2">
-                        <MessageSquare className="w-7 h-7 opacity-30" />
-                        <p className="text-xs">输入测试任务，与智能体真实对话</p>
-                      </div>
-                    )}
-                    {runMessages.map((msg, i) => (
-                      <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                        <div className={`max-w-[85%] rounded-lg px-3 py-2 text-xs whitespace-pre-wrap leading-relaxed ${
-                          msg.role === "user" ? "bg-primary text-primary-foreground" :
-                          msg.status === "error" ? "bg-destructive/10 border border-destructive/30 text-destructive" :
-                          "bg-muted"
-                        }`}>
-                          {msg.role === "assistant" && msg.tool && (
-                            <div className="flex items-center gap-1 mb-1 text-[10px] opacity-70">
-                              <Zap className="w-2.5 h-2.5" />调用：{msg.tool}
-                            </div>
-                          )}
-                          {msg.content}
-                        </div>
-                      </div>
-                    ))}
-                    {debugRunning && (
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <Loader2 className="w-3 h-3 animate-spin" />智能体执行中…
-                        <button type="button" onClick={() => setRunView("logs")} className="text-primary hover:underline">查看运行日志 →</button>
-                      </div>
-                    )}
-                  </div>
-                  <div className="border-t border-border p-3 flex items-center gap-2">
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant={voiceRecording ? "default" : "outline"}
-                      className={`h-8 w-8 shrink-0 ${voiceRecording ? "animate-pulse" : ""}`}
-                      onClick={toggleVoice}
-                      title={voiceRecording ? "结束语音输入" : "语音输入"}
-                    >
-                      {voiceRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
-                    </Button>
-                    <Input
-                      className="h-8 text-xs"
-                      placeholder={voiceRecording ? "正在录音…再次点击麦克风结束" : "输入测试任务，回车发送"}
-                      value={debugInput}
-                      onChange={(e) => setDebugInput(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); runDebug(); } }}
-                    />
-                    <Button size="sm" className="h-8 text-xs gap-1.5" onClick={runDebug} disabled={debugRunning || !debugInput.trim()}>
-                      <Send className="w-3 h-3" />发送
-                    </Button>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="logs" forceMount className="flex-1 flex flex-col min-h-0 mt-0 bg-zinc-950 text-zinc-100 rounded-b-lg overflow-hidden data-[state=inactive]:hidden">
-                  <div className="px-3 h-9 shrink-0 border-b border-zinc-800 flex items-center justify-between gap-2 text-[11px]">
-                    <div className="flex items-center gap-1.5 text-zinc-300 min-w-0">
-                      <Terminal className="w-3 h-3 shrink-0" />
-                      <span className="font-mono truncate">runtime.log</span>
-                    </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <select
-                        value={logFilter}
-                        onChange={(e) => setLogFilter(e.target.value as typeof logFilter)}
-                        className="bg-zinc-900 border border-zinc-700 text-zinc-200 rounded px-1.5 py-0.5 text-[10px] font-mono focus:outline-none focus:border-zinc-500"
-                      >
-                        {(["all", "info", "thought", "tool", "warn", "error"] as const).map((f) => (
-                          <option key={f} value={f}>{f}</option>
-                        ))}
-                      </select>
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(debugLogs.map((l) => `[${l.ts}] ${l.level.toUpperCase()} ${l.message}${l.meta ? ` | ${l.meta}` : ""}`).join("\n"));
-                          toast({ title: "日志已复制到剪贴板" });
-                        }}
-                        className="p-1 rounded text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
-                        title="复制全部日志"
-                      >
-                        <Copy className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="flex-1 overflow-auto px-3 py-2 font-mono text-[11px] leading-relaxed">
-                    {debugLogs.length === 0 ? (
-                      <p className="text-zinc-500 text-center py-3">暂无运行日志，发送一条调试消息即可查看</p>
-                    ) : (
-                      debugLogs
-                        .filter((l) => logFilter === "all" || l.level === logFilter)
-                        .map((l) => {
-                          const colorMap: Record<LogLevel, string> = {
-                            info: "text-sky-300", thought: "text-violet-300", tool: "text-emerald-300",
-                            warn: "text-amber-300", error: "text-red-400", result: "text-cyan-300",
-                          };
-                          const iconMap: Record<LogLevel, JSX.Element> = {
-                            info: <Info className="w-2.5 h-2.5" />, thought: <Brain className="w-2.5 h-2.5" />,
-                            tool: <Wrench className="w-2.5 h-2.5" />, warn: <AlertTriangle className="w-2.5 h-2.5" />,
-                            error: <AlertCircle className="w-2.5 h-2.5" />, result: <CheckCircle2 className="w-2.5 h-2.5" />,
-                          };
-                          return (
-                            <div key={l.id} className="flex gap-2 py-0.5">
-                              <span className="text-zinc-500 shrink-0">{l.ts}</span>
-                              <span className={`shrink-0 flex items-center gap-1 ${colorMap[l.level]}`}>
-                                {iconMap[l.level]}{l.level.padEnd(7)}
-                              </span>
-                              <span className="text-zinc-200 break-all">
-                                {l.message}
-                                {l.meta && <span className="text-zinc-500 ml-2">{l.meta}</span>}
-                              </span>
-                            </div>
-                          );
-                        })
-                    )}
-                  </div>
-                </TabsContent>
-              </Tabs>
+              <div className="px-3 h-10 shrink-0 border-b border-border flex items-center gap-1.5">
+                <Bot className="w-3.5 h-3.5 text-primary shrink-0" />
+                <span className="text-xs font-semibold shrink-0">智能体运行</span>
+                {debugRunning && <RunningIndicator />}
+              </div>
+              <div className="flex-1 min-h-0">
+                <RunDualView
+                  transcriptEvents={(() => {
+                    const evs: TranscriptEvent[] = [];
+                    runMessages.forEach((m, i) => {
+                      if (m.role === "user") evs.push({ id: `u${i}`, type: "user", content: m.content });
+                      else if (m.status === "error") evs.push({ id: `e${i}`, type: "error", message: m.content });
+                      else {
+                        if (m.tool) evs.push({
+                          id: `t${i}`, type: "tools",
+                          calls: [{ id: `c${i}`, kind: "mcp", name: m.tool, summary: "调用成功", status: "success" }],
+                        });
+                        evs.push({ id: `a${i}`, type: "agent", content: m.content });
+                      }
+                    });
+                    return evs;
+                  })()}
+                  debugEvents={debugLogs.map((l) => ({
+                    id: String(l.id),
+                    ts: l.ts,
+                    type: `log.${l.level}`,
+                    data: { message: l.message, ...(l.meta ? { meta: l.meta } : {}) },
+                  }))}
+                />
+              </div>
+              <div className="border-t border-border p-3 flex items-center gap-2 shrink-0">
+                <Button
+                  type="button"
+                  size="icon"
+                  variant={voiceRecording ? "default" : "outline"}
+                  className={`h-8 w-8 shrink-0 ${voiceRecording ? "animate-pulse" : ""}`}
+                  onClick={toggleVoice}
+                  title={voiceRecording ? "结束语音输入" : "语音输入"}
+                >
+                  {voiceRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                </Button>
+                <Input
+                  className="h-8 text-xs"
+                  placeholder={voiceRecording ? "正在录音…再次点击麦克风结束" : "输入测试任务，回车发送"}
+                  value={debugInput}
+                  onChange={(e) => setDebugInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); runDebug(); } }}
+                />
+                <Button size="sm" className="h-8 text-xs gap-1.5" onClick={runDebug} disabled={debugRunning || !debugInput.trim()}>
+                  <Send className="w-3 h-3" />发送
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -796,7 +721,7 @@ const AgentDetail = () => {
               </TableHeader>
               <TableBody>
                 {mockRuns.map((r) => (
-                  <TableRow key={r.id} className="cursor-pointer" onClick={() => { setActiveRun(r); setRunDetailView("transcript"); setExpandedTools({}); }}>
+                  <TableRow key={r.id} className="cursor-pointer" onClick={() => setActiveRun(r)}>
                     <TableCell><Badge variant="outline" className="text-[10px] whitespace-nowrap">{r.source}</Badge></TableCell>
                     <TableCell className="text-xs">{r.trigger}</TableCell>
                     <TableCell className="text-xs text-muted-foreground truncate max-w-[280px]">{r.prompt}</TableCell>
@@ -810,8 +735,8 @@ const AgentDetail = () => {
           </div>
 
           <Sheet open={!!activeRun} onOpenChange={(o) => !o && setActiveRun(null)}>
-            <SheetContent className="w-[640px] sm:max-w-[640px] p-0 flex flex-col">
-              <SheetHeader className="px-5 py-3 border-b border-border">
+            <SheetContent className="w-[680px] sm:max-w-[680px] p-0 flex flex-col">
+              <SheetHeader className="px-5 py-3 border-b border-border space-y-1.5">
                 <SheetTitle className="text-sm flex items-center gap-2">
                   <span>运行详情</span>
                   {activeRun && <span className="text-xs font-mono text-muted-foreground">{activeRun.id}</span>}
@@ -826,66 +751,19 @@ const AgentDetail = () => {
                     </>
                   )}
                 </div>
-                <div className="inline-flex items-center bg-muted rounded-md p-0.5 w-fit mt-2">
-                  <button
-                    onClick={() => setRunDetailView("transcript")}
-                    className={`px-3 py-1 text-xs rounded transition-colors ${
-                      runDetailView === "transcript" ? "bg-background text-foreground shadow-sm font-medium" : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >对话视图</button>
-                  <button
-                    onClick={() => setRunDetailView("debug")}
-                    className={`px-3 py-1 text-xs rounded transition-colors ${
-                      runDetailView === "debug" ? "bg-background text-foreground shadow-sm font-medium" : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >调试视图</button>
-                </div>
               </SheetHeader>
-
-              <div className="flex-1 overflow-auto p-5">
-                {runDetailView === "transcript" ? (
-                  <div className="space-y-3">
-                    <div className="flex justify-end">
-                      <div className="max-w-[80%] rounded-2xl px-3 py-2 text-xs bg-primary text-primary-foreground whitespace-pre-wrap">
-                        {activeRun?.prompt}
-                      </div>
-                    </div>
-                    {mockTranscript.slice(1).map((m, i) => (
-                      <div key={i} className="flex justify-start">
-                        <div className="max-w-[80%] rounded-2xl px-3 py-2 text-xs bg-secondary text-foreground whitespace-pre-wrap">
-                          {m.tools && m.tools.length > 0 && (
-                            <button
-                              onClick={() => setExpandedTools({ ...expandedTools, [i]: !expandedTools[i] })}
-                              className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground mb-1.5"
-                            >
-                              {expandedTools[i] ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-                              {m.tools.map((t) => `调用了 ${t.name} ×${t.count}`).join(" · ")}
-                            </button>
-                          )}
-                          {expandedTools[i] && m.tools && (
-                            <div className="border border-border rounded bg-background p-2 mb-1.5 space-y-1 font-mono text-[10px] text-muted-foreground">
-                              {m.tools.map((t, j) => (
-                                <div key={j}>→ {t.name}() · 调用 {t.count} 次 · 平均 1.2s</div>
-                              ))}
-                            </div>
-                          )}
-                          {m.content}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="font-mono text-[11px] space-y-1.5">
-                    {mockDebugEvents.map((e, i) => (
-                      <div key={i} className="border border-border rounded p-2 bg-muted/20">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-muted-foreground">{e.t}</span>
-                          <Badge variant="outline" className="text-[9px] h-4 font-mono">{e.type}</Badge>
-                        </div>
-                        <pre className="text-[10px] text-foreground/80 whitespace-pre-wrap break-all">{JSON.stringify(e.data, null, 2)}</pre>
-                      </div>
-                    ))}
-                  </div>
+              <div className="flex-1 min-h-0">
+                {activeRun && (
+                  <RunDualView
+                    transcriptEvents={buildMockTranscript(activeRun.prompt)}
+                    debugEvents={mockDebugEvents}
+                    debugMeta={[
+                      { label: "Session", value: "sess-9f2c" },
+                      { label: "模型", value: "claude-sonnet-4-6" },
+                      { label: "总耗时", value: activeRun.duration },
+                      { label: "总 tokens", value: "1552" },
+                    ]}
+                  />
                 )}
               </div>
             </SheetContent>
