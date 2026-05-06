@@ -891,8 +891,8 @@ const AgentDetail = () => {
                 <DialogTitle className="text-sm flex items-center gap-2">
                   版本快照
                   <span className="font-mono text-xs">{viewingVersion?.v}</span>
-                  {viewingVersion?.current && (
-                    <Badge className="bg-primary/10 text-primary hover:bg-primary/10 border-0 text-[10px] h-5">当前线上</Badge>
+                  {viewingVersion?.current && agent.status === "published" && (
+                    <Badge variant="outline" className="text-[10px] h-5 px-1.5 border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30">已发布</Badge>
                   )}
                 </DialogTitle>
               </DialogHeader>
