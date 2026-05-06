@@ -15,11 +15,12 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import {
   ArrowLeft, MessageSquare, Send, Save, Bot, ChevronDown, ChevronRight, CheckCircle2, XCircle, Clock,
   History, Server, Sparkles, Bug, Terminal, Loader2, Mic, MicOff, Zap, Plus, X, RotateCcw, Eye, Search, Settings2,
-  Brain, Wrench, Info, AlertTriangle, AlertCircle, Copy, Pencil, Rocket,
+  Brain, Wrench, Info, AlertTriangle, AlertCircle, Copy, Pencil, Rocket, KeyRound,
 } from "lucide-react";
 import { mockAgents, getActiveMCPs, getActiveSkills, mockCredentials } from "@/data/mockData";
 import { toast } from "@/hooks/use-toast";
 import { PublishAgentDialog } from "@/components/PublishAgentDialog";
+import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 /* ───────── Mock run history ───────── */
