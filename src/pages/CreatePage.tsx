@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Monitor, Bot, ArrowRight, Clock, Flame } from "lucide-react";
+import { Monitor, Bot, ArrowRight, Clock, Flame, Sparkles, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getRecentAgents, getMyAgents } from "@/data/mockData";
@@ -87,9 +87,31 @@ const CreatePage = () => {
           )}
 
           {activeTab === "agent" && (
-            <div className="px-4 py-6 text-center">
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                自行配置模型、提示词、Skill / MCP、子智能体
+            <div className="p-4 space-y-3">
+              <div className="grid grid-cols-2 gap-2.5">
+                <div className="relative text-left rounded-lg border border-dashed border-border bg-muted/30 p-3 opacity-70 cursor-not-allowed">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Sparkles className="w-3.5 h-3.5 text-muted-foreground" />
+                    <span className="text-xs font-medium text-muted-foreground">自动组装</span>
+                    <Badge variant="secondary" className="text-[9px] h-4 px-1.5 ml-auto">即将上线</Badge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    输入需求一句话描述，AI 自动检索匹配 Skill / MCP / 子智能体并生成草稿
+                  </p>
+                </div>
+                <div className="text-left rounded-lg border border-primary bg-primary/5 ring-1 ring-primary/30 p-3">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <SlidersHorizontal className="w-3.5 h-3.5 text-primary" />
+                    <span className="text-xs font-medium text-foreground">手动组装</span>
+                    <Badge variant="outline" className="text-[9px] h-4 px-1.5 ml-auto">当前可用</Badge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    自行配置模型、提示词、Skill / MCP、子智能体
+                  </p>
+                </div>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed px-0.5">
+                💡 当前版本仅支持「手动组装」，下个版本将上线「自动组装」——你只需用一句话描述需求，AI 会自动从 Skill 市场、MCP 广场及子智能体中智能匹配并生成可运行的智能体草稿。
               </p>
             </div>
           )}
