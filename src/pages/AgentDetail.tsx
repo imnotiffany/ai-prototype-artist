@@ -130,8 +130,6 @@ const AgentDetail = () => {
   const [debugRunning, setDebugRunning] = useState(false);
   const [voiceRecording, setVoiceRecording] = useState(false);
   const [debugLogs, setDebugLogs] = useState<LogEntry[]>([]);
-  const [runView, setRunView] = useState<"chat" | "logs">("chat");
-  const [logFilter, setLogFilter] = useState<"all" | LogLevel>("all");
   const logIdRef = useRef(0);
 
   const pushLog = (level: LogLevel, message: string, meta?: string) => {
