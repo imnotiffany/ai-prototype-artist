@@ -558,7 +558,7 @@ const AgentDetail = () => {
             <section className="border border-border rounded-lg bg-card">
               <header className="px-4 py-2.5 border-b border-border flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <h3 className="text-sm font-semibold flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-primary" />Skill 绑定</h3>
+                  <h3 className="text-sm font-semibold">Skill 绑定</h3>
                   <p className="text-[11px] text-muted-foreground mt-0.5">预制的能力包，让智能体掌握特定领域的工作流</p>
                 </div>
                 <CapabilityPickerDialog
