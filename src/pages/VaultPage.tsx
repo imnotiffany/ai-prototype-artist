@@ -91,7 +91,7 @@ const VaultPage = () => {
             凭据管理
           </h1>
           <p className="text-xs text-muted-foreground mt-1">
-            集中管理外部 MCP Server 与第三方 API 的认证信息，支持在多个 Agent 中复用
+            集中管理外部 MCP Server 与第三方 API 的认证信息，支持在多个智能体中复用
           </p>
         </div>
         <Button onClick={() => { reset(); setCreateOpen(true); }} className="gap-1.5">
@@ -182,7 +182,7 @@ const VaultPage = () => {
             <DialogDescription className="text-xs">
               {editingId
                 ? "可修改名称与凭据值；保存后将自动同步到使用该凭据的所有智能体"
-                : "凭据将以加密形式存储，仅在 Agent 运行时由系统注入"}
+                : "凭据将以加密形式存储，仅在智能体运行时由系统注入"}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
