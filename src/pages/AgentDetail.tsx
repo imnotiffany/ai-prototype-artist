@@ -593,7 +593,7 @@ const AgentDetail = () => {
             <section className="border border-border rounded-lg bg-card">
               <header className="px-4 py-2.5 border-b border-border flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <h3 className="text-sm font-semibold flex items-center gap-1.5"><Server className="w-3.5 h-3.5 text-primary" />MCP 绑定</h3>
+                  <h3 className="text-sm font-semibold">MCP 绑定</h3>
                   <p className="text-[11px] text-muted-foreground mt-0.5">连接外部系统（数据库、SaaS、内部 API）；部分 MCP 需要绑定凭据后才能调用</p>
                 </div>
                 <CapabilityPickerDialog
