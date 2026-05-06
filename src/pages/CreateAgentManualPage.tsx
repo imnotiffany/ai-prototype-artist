@@ -32,9 +32,6 @@ const CreateAgentManualPage = () => {
 
   // Model
   const [model, setModel] = useState("claude-sonnet-4-6");
-  const [temperature, setTemperature] = useState(0.7);
-  const [maxTokens, setMaxTokens] = useState(8000);
-  const [stream, setStream] = useState(true);
 
   // Prompt
   const [systemPrompt, setSystemPrompt] = useState("你是一个专业的 AI 助手，请根据用户需求提供准确、结构化的回答。");
