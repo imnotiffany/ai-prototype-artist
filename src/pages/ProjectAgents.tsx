@@ -24,10 +24,10 @@ const ProjectAgents = () => {
   const [searchName, setSearchName] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [kindFilter, setKindFilter] = useState<"all" | "app" | "agent">("all");
   const [onlyMine, setOnlyMine] = useState(false);
   const [publishTarget, setPublishTarget] = useState<Agent | null>(null);
 
-  // Mock versions per agent (in real app this comes from API)
   const mockVersionsFor = (a: Agent) => [
     { v: "v0.0.3", at: "2026-04-25 14:02", note: "新增 丰景台数据查询v2", current: true },
     { v: "v0.0.2", at: "2026-04-18 09:30", note: "调整 system prompt 风格" },
@@ -38,6 +38,7 @@ const ProjectAgents = () => {
     if (searchName && !app.name.toLowerCase().includes(searchName.toLowerCase())) return false;
     if (categoryFilter !== "all" && app.category !== categoryFilter) return false;
     if (statusFilter !== "all" && app.status !== statusFilter) return false;
+    if (kindFilter !== "all" && app.kind !== kindFilter) return false;
     if (onlyMine && app.authorId !== MY_AUTHOR_ID) return false;
     return true;
   });
@@ -46,6 +47,7 @@ const ProjectAgents = () => {
     setSearchName("");
     setCategoryFilter("all");
     setStatusFilter("all");
+    setKindFilter("all");
     setOnlyMine(false);
   };
 
