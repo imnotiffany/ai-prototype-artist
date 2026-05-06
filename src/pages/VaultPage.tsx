@@ -3,14 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Plus, Pencil, Trash2, KeyRound, ShieldCheck, Lock, Check, ChevronsUpDown } from "lucide-react";
-import { mockCredentials, sharedResources } from "@/data/mockData";
+import { Plus, Pencil, Trash2, KeyRound, ShieldCheck, Lock, Check, ChevronsUpDown, AlertTriangle, Bot } from "lucide-react";
+import { mockCredentials, sharedResources, mockAgents } from "@/data/mockData";
 import { toast } from "@/hooks/use-toast";
 
 type CredType = "Bearer Token" | "OAuth 2.0";
