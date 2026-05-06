@@ -225,7 +225,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
             <TabsTrigger value="model" className="text-xs">模型配置</TabsTrigger>
             <TabsTrigger value="bindings" className="text-xs">原子能力</TabsTrigger>
             <TabsTrigger value="prompt" className="text-xs">系统提示词</TabsTrigger>
-            <TabsTrigger value="env" className="text-xs">环境凭证</TabsTrigger>
+            <TabsTrigger value="env" className="text-xs">凭据配置</TabsTrigger>
             <TabsTrigger value="network" className="text-xs">网络策略</TabsTrigger>
             <TabsTrigger value="fengsheng" className="text-xs">丰声 NEXT</TabsTrigger>
           </TabsList>
@@ -418,24 +418,6 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                   <p className="text-[10px] text-muted-foreground">容器重启后保留 /workspace 数据</p>
                 </div>
                 <Switch checked={persistentFs} onCheckedChange={setPersistentFs} />
-              </div>
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <Label className="text-xs">环境变量</Label>
-                  <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setEnvVars([...envVars, { k: "", v: "" }])}>
-                    <Plus className="w-3 h-3" /> 添加
-                  </Button>
-                </div>
-                <p className="text-[10px] text-muted-foreground mb-2">注入容器的非敏感运行时配置（如 workspace 路径、时区、日志级别等）。<span className="text-amber-600 dark:text-amber-500">API Key、Token 等敏感凭证请使用下方「凭据金库」</span></p>
-                <div className="space-y-1.5">
-                  {envVars.map((v, i) => (
-                    <div key={i} className="flex items-center gap-1.5">
-                      <Input className="h-7 text-xs flex-1 font-mono" placeholder="KEY" value={v.k} onChange={(e) => { const c = [...envVars]; c[i].k = e.target.value; setEnvVars(c); }} />
-                      <Input className="h-7 text-xs flex-1 font-mono" placeholder="VALUE" value={v.v} onChange={(e) => { const c = [...envVars]; c[i].v = e.target.value; setEnvVars(c); }} />
-                      <button onClick={() => setEnvVars(envVars.filter((_, j) => j !== i))} className="text-muted-foreground hover:text-destructive"><X className="w-3.5 h-3.5" /></button>
-                    </div>
-                  ))}
-                </div>
               </div>
               <div className="border-t border-border pt-3">
                 <Label className="text-xs flex items-center gap-1.5 mb-1.5"><KeyRound className="w-3.5 h-3.5" /> 凭据金库</Label>
