@@ -716,7 +716,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
               </p>
             </div>
 
-            <div className="border border-border rounded-lg bg-card flex flex-col h-[480px]">
+            <div className={`border border-border rounded-lg bg-card flex flex-col ${logsOpen ? "h-[640px]" : "h-[480px]"}`}>
               <div className="px-4 py-2 border-b border-border flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-semibold">对话调试</span>
