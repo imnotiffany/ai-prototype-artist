@@ -701,6 +701,28 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                         msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
                       }`}>
                         {msg.content}
+                        {msg.suggestion && (
+                          <div className="mt-2 pt-2 border-t border-border/60 flex items-center gap-2">
+                            {msg.suggestion.status === "pending" && (
+                              <>
+                                <Button size="sm" className="h-6 text-[11px] px-2 gap-1" onClick={() => adoptSuggestion(msg.suggestion!)}>
+                                  <CheckCircle2 className="w-3 h-3" /> 采纳
+                                </Button>
+                                <Button size="sm" variant="ghost" className="h-6 text-[11px] px-2" onClick={() => rejectSuggestion(msg.suggestion!)}>
+                                  忽略
+                                </Button>
+                              </>
+                            )}
+                            {msg.suggestion.status === "adopted" && (
+                              <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600">
+                                <CheckCircle2 className="w-3 h-3" /> 已采纳
+                              </span>
+                            )}
+                            {msg.suggestion.status === "rejected" && (
+                              <span className="text-[11px] text-muted-foreground">已忽略</span>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
