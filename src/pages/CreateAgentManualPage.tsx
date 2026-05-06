@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, Rocket, Plus, X, Settings2, Cpu, Server, Zap, Shield, KeyRound, Bot, MessageSquare, Eye, EyeOff, Link2, CheckCircle2, Sparkles, Loader2, ExternalLink, Play, Send, AlertCircle, Wand2, Bug, FolderKanban, Store, ArrowRight, Mic, MicOff, HelpCircle, FileEdit, Terminal, ChevronDown, ChevronUp, Copy, Brain, Wrench, Info, AlertTriangle, Trash2 } from "lucide-react";
+import { ArrowLeft, Save, Rocket, Plus, X, Settings2, Cpu, Server, Zap, Shield, KeyRound, Bot, MessageSquare, Eye, EyeOff, Link2, CheckCircle2, Wand, Loader2, ExternalLink, Play, Send, AlertCircle, Bug, FolderKanban, Store, ArrowRight, Mic, MicOff, HelpCircle, FileEdit, Terminal, ChevronDown, ChevronUp, Copy, Brain, Wrench, Info, AlertTriangle, Trash2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -515,7 +515,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                   onClick={handleAutoGeneratePrompt}
                   disabled={generatingPrompt}
                 >
-                  {generatingPrompt ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                  {generatingPrompt ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand className="w-3 h-3" />}
                   AI 自动生成
                 </Button>
               </div>
@@ -651,7 +651,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
               </div>
               {debugChanges.length > 0 && (
                 <Badge variant="secondary" className="text-[10px] gap-1">
-                  <Sparkles className="w-3 h-3" />
+                  <CheckCircle2 className="w-3 h-3" />
                   调试期已优化 {debugChanges.length} 项
                 </Badge>
               )}
@@ -661,14 +661,14 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
               {/* Left: Debug Assistant */}
               <div className="border border-border rounded-lg bg-card flex flex-col h-[clamp(380px,calc(100vh-260px),560px)]">
                 <div className="px-3 h-10 shrink-0 border-b border-border flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-primary" />
+                  <Bot className="w-3.5 h-3.5 text-primary" />
                   <span className="text-xs font-semibold">调试助手</span>
                   <Badge variant="outline" className="text-[10px] h-4">AI</Badge>
                 </div>
                 <div className="flex-1 overflow-auto p-4 space-y-3">
                   {assistantMessages.length === 0 && (
                     <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground gap-2 px-4">
-                      <Sparkles className="w-7 h-7 opacity-30" />
+                      <Bot className="w-7 h-7 opacity-30" />
                       <p className="text-xs">在右侧发起一轮调试后，我会主动告诉你做了哪些优化</p>
                       <p className="text-[10px] leading-relaxed">你也可以直接和我说："帮我修改提示词"、"补充某个能力的用途"</p>
                     </div>
@@ -899,7 +899,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                     </div>
                     <div className="flex-1 min-w-0">
                       <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={regenerateAvatar} disabled={generatingAvatar}>
-                        <Sparkles className="w-3 h-3" />
+                        <RefreshCw className={`w-3 h-3 ${generatingAvatar ? "animate-spin" : ""}`} />
                         {generatingAvatar ? "生成中…" : "AI 重新生成"}
                       </Button>
                       <p className="text-[10px] text-muted-foreground mt-1 leading-relaxed">
@@ -928,7 +928,7 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                 {debugChanges.length > 0 && (
                   <div className="border border-primary/30 bg-primary/5 rounded-lg p-3 space-y-1.5">
                     <div className="flex items-center gap-1.5 text-xs font-medium text-primary">
-                      <Sparkles className="w-3.5 h-3.5" />
+                      <CheckCircle2 className="w-3.5 h-3.5" />
                       调试期间已为你优化 {debugChanges.length} 项配置
                     </div>
                     <ul className="text-[11px] text-muted-foreground space-y-1 pl-5 list-disc leading-relaxed">

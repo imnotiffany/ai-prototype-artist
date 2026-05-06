@@ -14,7 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import {
   ArrowLeft, MessageSquare, Send, Save, Bot, ChevronDown, ChevronRight, CheckCircle2, XCircle, Clock,
-  History, Server, Sparkles, Bug, Terminal, Loader2, Mic, MicOff, Zap, Plus, X, RotateCcw, Eye, EyeOff, Search, Settings2,
+  History, Server, Bot as BotIcon, Bug, Terminal, Loader2, Mic, MicOff, Zap, Plus, X, RotateCcw, Eye, EyeOff, Search, Settings2,
   Brain, Wrench, Info, AlertTriangle, AlertCircle, Copy, Pencil, Rocket, KeyRound,
 } from "lucide-react";
 import { mockAgents, getActiveMCPs, getActiveSkills, mockCredentials } from "@/data/mockData";
@@ -310,14 +310,14 @@ const AgentDetail = () => {
             {/* Left: assistant */}
             <div className="border border-border rounded-lg bg-card flex flex-col h-[640px]">
               <div className="px-3 h-10 shrink-0 border-b border-border flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-primary" />
+                <BotIcon className="w-3.5 h-3.5 text-primary" />
                 <span className="text-xs font-semibold">调试助手</span>
                 <Badge variant="outline" className="text-[10px] h-4">AI</Badge>
               </div>
               <div className="flex-1 overflow-auto p-4 space-y-3">
                 {assistantMessages.length === 0 && (
                   <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground gap-2 px-4">
-                    <Sparkles className="w-7 h-7 opacity-30" />
+                    <BotIcon className="w-7 h-7 opacity-30" />
                     <p className="text-xs">告诉我你想怎么调整这个智能体</p>
                     <p className="text-[10px] leading-relaxed">例如："让回复更简洁"、"补充一下 BigQuery 的用途"</p>
                   </div>
