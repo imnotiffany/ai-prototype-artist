@@ -173,7 +173,13 @@ const AgentDetail = () => {
 
   /* ── Config actions ── */
   const handleSave = () => {
-    const next = `v${versions.length + 1}`;
+    const bumpPatch = (v: string) => {
+      const m = v.replace(/^v/, "").split(".").map((n) => parseInt(n, 10) || 0);
+      while (m.length < 3) m.push(0);
+      m[2] += 1;
+      return "v" + m.join(".");
+    };
+    const next = bumpPatch(versions[0]?.v ?? "v0.0.0");
     setVersions([
       { v: next, at: new Date().toISOString().slice(0, 16).replace("T", " "), by: "廖奕通", note: "更新配置", current: true },
       ...versions.map((v) => ({ ...v, current: false })),
