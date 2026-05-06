@@ -92,9 +92,9 @@ const AgentDetail = () => {
   const [savedSnapshot, setSavedSnapshot] = useState(initialSnapshot);
 
   const [versions, setVersions] = useState([
-    { v: "v3", at: "2026-04-25 14:02", by: "廖奕通", note: "新增 丰景台数据查询v2", current: true },
-    { v: "v2", at: "2026-04-18 09:30", by: "廖奕通", note: "调整 system prompt 风格", current: false },
-    { v: "v1", at: "2026-04-10 16:45", by: "廖奕通", note: "初始版本", current: false },
+    { v: "v0.0.3", at: "2026-04-25 14:02", by: "廖奕通", note: "新增 丰景台数据查询v2", current: true },
+    { v: "v0.0.2", at: "2026-04-18 09:30", by: "廖奕通", note: "调整 system prompt 风格", current: false },
+    { v: "v0.0.1", at: "2026-04-10 16:45", by: "廖奕通", note: "初始版本", current: false },
   ]);
 
   const isDirty = useMemo(() => JSON.stringify({
