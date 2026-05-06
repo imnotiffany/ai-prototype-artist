@@ -275,25 +275,6 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label className="text-xs">Temperature</Label>
-                  <span className="text-xs font-mono text-muted-foreground">{temperature.toFixed(2)}</span>
-                </div>
-                <Slider value={[temperature]} onValueChange={([v]) => setTemperature(v)} min={0} max={1} step={0.05} />
-                <p className="text-[10px] text-muted-foreground mt-1.5">较低值更确定性，较高值更具创造性</p>
-              </div>
-              <div>
-                <Label className="text-xs">Max Tokens</Label>
-                <Input type="number" className="mt-1.5 h-8 text-xs w-40" value={maxTokens} onChange={(e) => setMaxTokens(Number(e.target.value))} />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="text-xs">流式输出</Label>
-                  <p className="text-[10px] text-muted-foreground">启用 SSE 流式推送，长任务建议开启</p>
-                </div>
-                <Switch checked={stream} onCheckedChange={setStream} />
-              </div>
             </div>
 
             {/* MCP 绑定 */}
