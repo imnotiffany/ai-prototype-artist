@@ -563,42 +563,7 @@ const AgentDetail = () => {
               </div>
             </section>
 
-            {/* 3. Skill 绑定 */}
-            <section className="border border-border rounded-lg bg-card">
-              <header className="px-4 py-2.5 border-b border-border flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <h3 className="text-sm font-semibold">Skill 绑定</h3>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">预制的能力包，让智能体掌握特定领域的工作流</p>
-                </div>
-                <CapabilityPickerDialog
-                  items={getActiveSkills()}
-                  selected={selSkills}
-                  onToggle={toggleSkill}
-                  icon={<Zap className="w-3.5 h-3.5" />}
-                  label="Skill"
-                  marketLink="/"
-                  trigger={<Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0"><Plus className="w-3 h-3" />添加 Skill</Button>}
-                />
-              </header>
-              <div className="p-4">
-                {selSkills.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-4">尚未绑定任何 Skill。点击右上角「添加 Skill」选择。</p>
-                ) : (
-                  <div className="flex flex-wrap gap-2">
-                    {selSkills.map((s) => (
-                      <Badge key={s} variant="secondary" className="text-xs gap-1 pl-2.5 pr-1 py-1">
-                        {s}
-                        <button onClick={() => toggleSkill(s)} className="ml-1 p-0.5 rounded hover:bg-muted-foreground/20">
-                          <X className="w-3 h-3" />
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </section>
-
-            {/* 4. MCP 绑定 */}
+            {/* 3. MCP 绑定 */}
             <section className="border border-border rounded-lg bg-card">
               <header className="px-4 py-2.5 border-b border-border flex items-center justify-between gap-3">
                 <div className="min-w-0">
@@ -666,6 +631,41 @@ const AgentDetail = () => {
                         </div>
                       );
                     })}
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {/* 4. Skill 绑定 */}
+            <section className="border border-border rounded-lg bg-card">
+              <header className="px-4 py-2.5 border-b border-border flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <h3 className="text-sm font-semibold">Skill 绑定</h3>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">预制的能力包，让智能体掌握特定领域的工作流</p>
+                </div>
+                <CapabilityPickerDialog
+                  items={getActiveSkills()}
+                  selected={selSkills}
+                  onToggle={toggleSkill}
+                  icon={<Zap className="w-3.5 h-3.5" />}
+                  label="Skill"
+                  marketLink="/"
+                  trigger={<Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0"><Plus className="w-3 h-3" />添加 Skill</Button>}
+                />
+              </header>
+              <div className="p-4">
+                {selSkills.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-4">尚未绑定任何 Skill。点击右上角「添加 Skill」选择。</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {selSkills.map((s) => (
+                      <Badge key={s} variant="secondary" className="text-xs gap-1 pl-2.5 pr-1 py-1">
+                        {s}
+                        <button onClick={() => toggleSkill(s)} className="ml-1 p-0.5 rounded hover:bg-muted-foreground/20">
+                          <X className="w-3 h-3" />
+                        </button>
+                      </Badge>
+                    ))}
                   </div>
                 )}
               </div>
@@ -926,15 +926,15 @@ const AgentDetail = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <p className="text-[11px] text-muted-foreground mb-1.5">绑定 Skill</p>
-                      <div className="flex flex-wrap gap-1">
-                        {selSkills.length ? selSkills.map((s) => <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>) : <span className="text-[11px] text-muted-foreground">无</span>}
-                      </div>
-                    </div>
-                    <div>
                       <p className="text-[11px] text-muted-foreground mb-1.5">绑定 MCP</p>
                       <div className="flex flex-wrap gap-1">
                         {mcpBindings.length ? mcpBindings.map((b) => <Badge key={b.name} variant="secondary" className="text-[10px]">{b.name}</Badge>) : <span className="text-[11px] text-muted-foreground">无</span>}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-[11px] text-muted-foreground mb-1.5">绑定 Skill</p>
+                      <div className="flex flex-wrap gap-1">
+                        {selSkills.length ? selSkills.map((s) => <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>) : <span className="text-[11px] text-muted-foreground">无</span>}
                       </div>
                     </div>
                   </div>

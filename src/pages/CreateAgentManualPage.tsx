@@ -286,11 +286,11 @@ const CreateAgentManualPage = () => {
 ${roleLine}${descLine}
 
 # 你拥有的能力
-## Skills（原子能力）
-${skillLines}
-
 ## MCP 服务（外部工具）
 ${mcpLines}
+
+## Skills（原子能力）
+${skillLines}
 ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
 # 工作流程
 1. 仔细理解用户意图，必要时主动澄清关键信息。
@@ -300,7 +300,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
 
 # 输出规范
 - 使用清晰的 Markdown 结构组织回答。
-- 引用工具返回的数据时，注明来源（Skill / MCP 名称）。
+- 引用工具返回的数据时，注明来源（MCP / Skill 名称）。
 - 遇到不确定或工具不可用时，如实告知，不要编造结果。
 
 # 约束
@@ -309,14 +309,14 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
 
       setSystemPrompt(generated);
       setGeneratingPrompt(false);
-      toast({ title: "已根据当前能力生成系统提示词", description: `Skill ${selSkills.length} · MCP ${selMCPs.length} · 子智能体 ${selSubagents.length}` });
+      toast({ title: "已根据当前能力生成系统提示词", description: `MCP ${selMCPs.length} · Skill ${selSkills.length} · 子智能体 ${selSubagents.length}` });
     }, 800);
   };
 
   const handleSaveDraft = () => {
     toast({
       title: "草稿已保存",
-      description: `${selSkills.length} Skill / ${selMCPs.length} MCP / ${selSubagents.length} 子智能体`,
+      description: `${selMCPs.length} MCP / ${selSkills.length} Skill / ${selSubagents.length} 子智能体`,
     });
   };
 
