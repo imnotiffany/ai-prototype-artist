@@ -149,16 +149,26 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
     }, 800);
   };
 
-  const handleSave = (publish: boolean) => {
+  const handleSaveDraft = () => {
+    toast({
+      title: "草稿已保存",
+      description: `${selSkills.length} Skill / ${selMCPs.length} MCP / ${selSubagents.length} Subagent`,
+    });
+  };
+
+  const openPublish = () => {
+    handleAutoGenerateMeta();
+    setPublishOpen(true);
+  };
+
+  const handlePublish = () => {
     if (!name.trim()) {
       toast({ title: "请填写智能体名称", variant: "destructive" });
       return;
     }
-    toast({
-      title: publish ? "已发布智能体" : "草稿已保存",
-      description: `${name} · ${selSkills.length} Skill / ${selMCPs.length} MCP / ${selSubagents.length} Subagent`,
-    });
-    if (publish) navigate("/project-agents");
+    toast({ title: "已发布智能体", description: `${name} · ${category}` });
+    setPublishOpen(false);
+    navigate("/project-agents");
   };
 
   const PickerPopover = ({
@@ -226,11 +236,11 @@ ${subLines ? `\n## 可调度的 Subagent\n${subLines}\n` : ""}
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={() => handleSave(false)}>
+          <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={handleSaveDraft}>
             <Save className="w-3.5 h-3.5" />
             保存草稿
           </Button>
-          <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => handleSave(true)}>
+          <Button size="sm" className="h-8 text-xs gap-1.5" onClick={openPublish}>
             <Rocket className="w-3.5 h-3.5" />
             保存并发布
           </Button>
