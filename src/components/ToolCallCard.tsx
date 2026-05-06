@@ -174,34 +174,7 @@ const Card = ({ call }: { call: ToolCall }) => {
             </section>
           ) : null}
 
-          {/* 3. 调用过程时间线 */}
-          {call.steps && call.steps.length > 0 && (
-            <section className="space-y-1">
-              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">调用过程</p>
-              <ol className="relative ml-1 border-l border-border/60 pl-3 space-y-1.5">
-                {call.steps.map((s, i) => {
-                  const dotCls =
-                    s.status === "failed" ? "bg-destructive"
-                    : s.status === "running" ? "bg-amber-400 animate-pulse"
-                    : "bg-emerald-500";
-                  return (
-                    <li key={i} className="relative">
-                      <span className={cn("absolute -left-[15px] top-[5px] w-1.5 h-1.5 rounded-full", dotCls)} />
-                      <div className="flex items-baseline gap-2 flex-wrap">
-                        <span className="text-foreground font-medium">{s.label}</span>
-                        {typeof s.ms === "number" && (
-                          <span className="text-[10px] text-muted-foreground tabular-nums">{s.ms}ms</span>
-                        )}
-                      </div>
-                      {s.detail && (
-                        <p className="text-[10px] text-muted-foreground mt-0.5">{s.detail}</p>
-                      )}
-                    </li>
-                  );
-                })}
-              </ol>
-            </section>
-          )}
+          {/* 调用过程时间线已移除：极简模式只保留 参数 / 结果 */}
 
           {/* 4. 返回结果 */}
           {(call.resultItems && call.resultItems.length > 0) ? (
