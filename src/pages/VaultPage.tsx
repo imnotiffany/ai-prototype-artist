@@ -137,14 +137,14 @@ const VaultPage = () => {
       <div className="border border-border rounded-lg overflow-hidden mt-5">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead className="text-sm">名称</TableHead>
-              <TableHead className="text-sm">标识符</TableHead>
-              <TableHead className="text-sm">服务端点</TableHead>
-              <TableHead className="text-sm">使用情况</TableHead>
-              <TableHead className="text-sm">创建时间</TableHead>
-              <TableHead className="text-sm w-28">连接状态</TableHead>
-              <TableHead className="w-32 text-sm">操作</TableHead>
+            <TableRow className="hover:bg-transparent">
+              <TableHead className="text-xs h-9 whitespace-nowrap">名称</TableHead>
+              <TableHead className="text-xs h-9 whitespace-nowrap">标识符</TableHead>
+              <TableHead className="text-xs h-9 whitespace-nowrap">服务端点</TableHead>
+              <TableHead className="text-xs h-9 whitespace-nowrap w-[110px]">使用情况</TableHead>
+              <TableHead className="text-xs h-9 whitespace-nowrap w-[100px]">创建时间</TableHead>
+              <TableHead className="text-xs h-9 whitespace-nowrap w-[90px]">连接状态</TableHead>
+              <TableHead className="text-xs h-9 whitespace-nowrap w-[100px]">操作</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -152,30 +152,33 @@ const VaultPage = () => {
               const agents = linkedAgents(m.name);
               return (
                 <TableRow key={m.id}>
-                  <TableCell className="font-medium text-sm">
-                    <div className="flex items-center gap-2">
+                  <TableCell className="py-2">
+                    <div className="flex items-center gap-2 min-w-0">
                       <div className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center shrink-0">
                         <Server className="w-3 h-3 text-primary" />
                       </div>
-                      {m.name}
+                      <span className="text-xs font-medium truncate" title={m.name}>{m.name}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-xs text-muted-foreground font-mono">{m.identifier}</TableCell>
-                  <TableCell className="text-xs text-muted-foreground font-mono max-w-[260px] truncate" title={m.endpoint}>
-                    <span className="inline-flex items-center gap-1"><Link2 className="w-3 h-3" />{m.endpoint}</span>
+                  <TableCell className="py-2 text-[11px] text-muted-foreground font-mono whitespace-nowrap">{m.identifier}</TableCell>
+                  <TableCell className="py-2 text-[11px] text-muted-foreground font-mono max-w-[240px]">
+                    <div className="flex items-center gap-1 min-w-0">
+                      <Link2 className="w-3 h-3 shrink-0" />
+                      <span className="truncate" title={m.endpoint}>{m.endpoint}</span>
+                    </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-2 whitespace-nowrap">
                     {agents.length > 0 ? (
-                      <Badge variant="secondary" className="text-xs gap-1 font-normal">
+                      <Badge variant="secondary" className="text-[11px] gap-1 font-normal">
                         <Bot className="w-3 h-3" />
                         {agents.length} 个智能体
                       </Badge>
                     ) : (
-                      <span className="text-sm text-muted-foreground">未使用</span>
+                      <span className="text-[11px] text-muted-foreground">未使用</span>
                     )}
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{m.createdAt}</TableCell>
-                  <TableCell>
+                  <TableCell className="py-2 text-[11px] text-muted-foreground whitespace-nowrap">{m.createdAt}</TableCell>
+                  <TableCell className="py-2 whitespace-nowrap">
                     {testingId === m.id ? (
                       <Badge variant="outline" className="text-[10px] gap-1 font-normal"><Loader2 className="w-3 h-3 animate-spin" />测试中</Badge>
                     ) : testResult[m.id] === "ok" ? (
@@ -186,7 +189,7 @@ const VaultPage = () => {
                       <span className="text-[11px] text-muted-foreground">未测试</span>
                     )}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-2">
                     <div className="flex items-center gap-0.5">
                       <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => runTest(m.id, m.name)} title="测试连接" disabled={testingId === m.id}>
                         <Plug className="w-3.5 h-3.5" />
@@ -205,6 +208,7 @@ const VaultPage = () => {
           </TableBody>
         </Table>
       </div>
+
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="max-w-[520px]">
