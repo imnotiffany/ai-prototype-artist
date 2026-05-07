@@ -210,6 +210,39 @@ const ChatPage = () => {
     });
   };
 
+  const handleSelectSession = (sid: string) => {
+    if (isRunning) return;
+    setCurrentSessionId(sid);
+    const full = getChatSession(sid);
+    setMessages(full?.messages ?? [greetingFor(agent.name)]);
+  };
+
+  const handleNewSession = () => {
+    if (isRunning) return;
+    const newId = `cs-new-${Date.now()}`;
+    const now = new Date().toISOString().replace("T", " ").slice(0, 16);
+    setSessions((prev) => [{ id: newId, title: "新会话", lastActiveAt: now }, ...prev]);
+    setCurrentSessionId(newId);
+    setMessages([greetingFor(agent.name)]);
+  };
+
+  const handleRenameSession = (sid: string, title: string) => {
+    setSessions((prev) => prev.map((s) => (s.id === sid ? { ...s, title } : s)));
+  };
+
+  const handleDeleteSession = (sid: string) => {
+    setSessions((prev) => {
+      const next = prev.filter((s) => s.id !== sid);
+      if (sid === currentSessionId) {
+        const fallback = next[0];
+        setCurrentSessionId(fallback?.id ?? null);
+        const full = fallback ? getChatSession(fallback.id) : undefined;
+        setMessages(full?.messages ?? [greetingFor(agent.name)]);
+      }
+      return next;
+    });
+  };
+
   const suggestions = [
     `${agent.name}能帮我做什么？`,
     agent.skills[0] ? `用 ${agent.skills[0]} 帮我处理一个任务` : `给我一个示例`,
