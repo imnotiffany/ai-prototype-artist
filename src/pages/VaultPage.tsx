@@ -219,41 +219,43 @@ const VaultPage = () => {
 
           <div className="space-y-3 py-1">
             <div>
-              <Label className="text-[11px] font-medium">服务端点 URL</Label>
+              <Label className="text-[11px] font-medium">服务地址</Label>
+              <p className="text-[10px] text-muted-foreground mt-0.5">MCP 服务的访问链接，由服务提供方给出</p>
               <Input
                 className="mt-1 h-8 text-xs bg-muted/30"
                 value={endpoint}
                 onChange={(e) => setEndpoint(e.target.value)}
-                placeholder="服务端点的 URL"
+                placeholder="例如 https://mcp.example.com/xxx"
               />
             </div>
 
             <div>
-              <Label className="text-[11px] font-medium">名称和图标</Label>
+              <Label className="text-[11px] font-medium">显示名称</Label>
+              <p className="text-[10px] text-muted-foreground mt-0.5">展示在列表与智能体里的名字，方便识别</p>
               <div className="mt-1 flex items-center gap-2">
                 <Input
                   className="h-8 text-xs bg-muted/30 flex-1"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="命名你的 MCP 服务"
+                  placeholder="例如 钉钉文档"
                 />
-                <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center shrink-0" title="图标">
                   <Server className="w-3.5 h-3.5 text-primary-foreground" />
                 </div>
               </div>
             </div>
 
             <div>
-              <Label className="text-[11px] font-medium">服务器标识符</Label>
+              <Label className="text-[11px] font-medium">英文标识</Label>
               <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">
-                工作空间内服务器的唯一标识。支持小写字母、数字、下划线和连字符，最多 24 个字符。
+                供系统内部调用的英文别名，创建后不可修改；仅支持小写字母、数字、下划线和连字符，最多 24 个字符
               </p>
               <Input
                 className="mt-1 h-8 text-xs bg-muted/30 font-mono"
                 value={identifier}
                 maxLength={24}
                 onChange={(e) => setIdentifier(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))}
-                placeholder="服务器唯一标识，例如 my-mcp-server"
+                placeholder="例如 my-mcp-server"
               />
             </div>
 
