@@ -201,6 +201,14 @@ const VaultPage = () => {
                         <Trash2 className="w-3.5 h-3.5" />
                       </Button>
                     </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
+
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="max-w-[520px]">
