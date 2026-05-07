@@ -1,27 +1,51 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Send, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { mockAgents } from "@/data/mockData";
+import { mockAgents, getSessionsByAgent, getChatSession, type ChatMessage } from "@/data/mockData";
 import { AgentInfoPanel } from "@/components/AgentInfoPanel";
 import { type ToolCall } from "@/components/ToolCallCard";
 import { AIStatusPill } from "@/components/AIStatusPill";
 import { RunTranscriptView, type TranscriptEvent } from "@/components/RunViews";
+import { SessionDrawer, type SessionListItem } from "@/components/SessionDrawer";
 
-type Message =
-  | { role: "user"; content: string }
-  | { role: "agent"; content: string }
-  | { role: "tools"; calls: ToolCall[] };
+type Message = ChatMessage;
 
 const ChatPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const agent = mockAgents.find((a) => a.id === id);
-  const [messages, setMessages] = useState<Message[]>([
-    { role: "agent", content: `你好！我是 ${agent?.name ?? "智能体"}，有什么可以帮你的吗？` },
-  ]);
+
+  const greetingFor = (name?: string): Message => ({
+    role: "agent",
+    content: `你好！我是 ${name ?? "智能体"}，有什么可以帮你的吗？`,
+  });
+
+  const initialSessions = useMemo<SessionListItem[]>(
+    () => (agent ? getSessionsByAgent(agent.id).map((s) => ({ id: s.id, title: s.title, lastActiveAt: s.lastActiveAt })) : []),
+    [agent],
+  );
+  const [sessions, setSessions] = useState<SessionListItem[]>(initialSessions);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(initialSessions[0]?.id ?? null);
+  const [drawerCollapsed, setDrawerCollapsed] = useState(false);
+
+  const [messages, setMessages] = useState<Message[]>(() => {
+    const first = initialSessions[0];
+    const full = first ? getChatSession(first.id) : undefined;
+    return full?.messages ?? [greetingFor(agent?.name)];
+  });
+
+  // 切换 agent 时重置
+  useEffect(() => {
+    setSessions(initialSessions);
+    const first = initialSessions[0];
+    setCurrentSessionId(first?.id ?? null);
+    const full = first ? getChatSession(first.id) : undefined;
+    setMessages(full?.messages ?? [greetingFor(agent?.name)]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [agent?.id]);
   const [input, setInput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   const [stageIndex, setStageIndex] = useState(0);
@@ -186,6 +210,39 @@ const ChatPage = () => {
     });
   };
 
+  const handleSelectSession = (sid: string) => {
+    if (isRunning) return;
+    setCurrentSessionId(sid);
+    const full = getChatSession(sid);
+    setMessages(full?.messages ?? [greetingFor(agent.name)]);
+  };
+
+  const handleNewSession = () => {
+    if (isRunning) return;
+    const newId = `cs-new-${Date.now()}`;
+    const now = new Date().toISOString().replace("T", " ").slice(0, 16);
+    setSessions((prev) => [{ id: newId, title: "新会话", lastActiveAt: now }, ...prev]);
+    setCurrentSessionId(newId);
+    setMessages([greetingFor(agent.name)]);
+  };
+
+  const handleRenameSession = (sid: string, title: string) => {
+    setSessions((prev) => prev.map((s) => (s.id === sid ? { ...s, title } : s)));
+  };
+
+  const handleDeleteSession = (sid: string) => {
+    setSessions((prev) => {
+      const next = prev.filter((s) => s.id !== sid);
+      if (sid === currentSessionId) {
+        const fallback = next[0];
+        setCurrentSessionId(fallback?.id ?? null);
+        const full = fallback ? getChatSession(fallback.id) : undefined;
+        setMessages(full?.messages ?? [greetingFor(agent.name)]);
+      }
+      return next;
+    });
+  };
+
   const suggestions = [
     `${agent.name}能帮我做什么？`,
     agent.skills[0] ? `用 ${agent.skills[0]} 帮我处理一个任务` : `给我一个示例`,
@@ -194,6 +251,16 @@ const ChatPage = () => {
 
   return (
     <div className="flex h-full animate-fade-in">
+      <SessionDrawer
+        sessions={sessions}
+        currentId={currentSessionId}
+        onSelect={handleSelectSession}
+        onNew={handleNewSession}
+        onRename={handleRenameSession}
+        onDelete={handleDeleteSession}
+        collapsed={drawerCollapsed}
+        onToggle={() => setDrawerCollapsed((v) => !v)}
+      />
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
         <div className="h-12 flex items-center justify-between border-b border-border px-4 shrink-0">

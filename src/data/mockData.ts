@@ -337,6 +337,172 @@ export const mockSessions: Session[] = [
   { id: "s5", agentId: "p5", agentName: "Prompt精炼大师", agentAvatar: "🅿️", lastMessage: "已优化你的 Prompt，逻辑更清晰", lastActiveAt: "2026-04-10 16:00", status: "ended" },
 ];
 
+/* ── Chat Sessions（用户与智能体的历史对话） ── */
+import type { ToolCall } from "@/components/ToolCallCard";
+
+export type ChatMessage =
+  | { role: "user"; content: string }
+  | { role: "agent"; content: string }
+  | { role: "tools"; calls: ToolCall[] };
+
+export interface ChatSession {
+  id: string;
+  agentId: string;
+  title: string;
+  lastActiveAt: string;
+  messages: ChatMessage[];
+}
+
+export const mockChatSessions: ChatSession[] = [
+  // ── Agent 1：邮箱智能检索 ──
+  {
+    id: "cs-1-a", agentId: "1", title: "查找上周的项目预算邮件", lastActiveAt: "2026-05-06 10:32",
+    messages: [
+      { role: "user", content: "帮我找一下上周关于项目预算的邮件" },
+      { role: "tools", calls: [{
+        id: "tc-1a-1", kind: "mcp", name: "search_emails", provider: "钉钉文档（钉钉 MCP）",
+        endpoint: "mcp.dingtalk.search_emails", summary: "搜索关键词「项目预算」",
+        status: "success", resultSummary: "命中 3 封 · 268ms",
+        params: [{ key: "query", value: "项目预算" }, { key: "time_range", value: "last_7d" }],
+        steps: [
+          { label: "建立连接", ms: 92, status: "done" },
+          { label: "执行检索", ms: 176, status: "done" },
+        ],
+        resultItems: [
+          { title: "Q2 预算评审会议纪要", meta: "周一 09:18" },
+          { title: "RE: 预算调整说明", meta: "周三 14:22" },
+          { title: "FW: 预算最终确认", meta: "周五 17:05" },
+        ],
+      }]},
+      { role: "agent", content: "已找到 3 封相关邮件，按时间倒序：\n1. **预算最终确认**（周五）— 已签字版本\n2. **预算调整说明**（周三）— 含变更明细\n3. **Q2 预算评审会议纪要**（周一）" },
+    ],
+  },
+  {
+    id: "cs-1-b", agentId: "1", title: "整理客户回复", lastActiveAt: "2026-05-04 15:10",
+    messages: [
+      { role: "user", content: "帮我归类本周客户的回复邮件" },
+      { role: "agent", content: "已将本周 12 封客户邮件按「咨询/投诉/反馈」三类整理完毕。" },
+    ],
+  },
+  {
+    id: "cs-1-c", agentId: "1", title: "查找招聘相关邮件", lastActiveAt: "2026-04-28 09:40",
+    messages: [
+      { role: "user", content: "搜一下 HR 发的招聘邮件" },
+      { role: "agent", content: "找到 5 封 HR 招聘相关邮件，已按职位汇总。" },
+    ],
+  },
+
+  // ── Agent 2：代码审查助手 ──
+  {
+    id: "cs-2-a", agentId: "2", title: "审查 PR #482", lastActiveAt: "2026-05-06 16:08",
+    messages: [
+      { role: "user", content: "帮我 review 一下 PR #482" },
+      { role: "tools", calls: [{
+        id: "tc-2a-1", kind: "skill", name: "Code Analysis", provider: "内置 Skill",
+        endpoint: "skill.code_analysis.review", summary: "扫描 PR #482 全部变更",
+        status: "success", resultSummary: "扫描 12 个文件 · 1.4s",
+        steps: [
+          { label: "拉取 diff", ms: 210, status: "done" },
+          { label: "静态分析", ms: 920, status: "done" },
+          { label: "生成报告", ms: 270, status: "done" },
+        ],
+        resultItems: [
+          { title: "潜在 SQL 注入：UserService.ts:88" },
+          { title: "未处理的 Promise rejection：api/order.ts:142" },
+        ],
+      }]},
+      { role: "agent", content: "发现 2 个高危问题：\n1. UserService.ts 存在 SQL 注入风险\n2. order.ts 有未处理的 Promise rejection\n\n建议先修复后再合并。" },
+    ],
+  },
+  {
+    id: "cs-2-b", agentId: "2", title: "解释一段递归代码", lastActiveAt: "2026-05-02 11:00",
+    messages: [
+      { role: "user", content: "这段递归是怎么跑的？" },
+      { role: "agent", content: "这是一个典型的尾递归实现，每次调用把累计值传下去……" },
+    ],
+  },
+
+  // ── Agent 3：多语言文档翻译 ──
+  {
+    id: "cs-3-a", agentId: "3", title: "翻译产品发布稿（中→英）", lastActiveAt: "2026-05-05 19:45",
+    messages: [
+      { role: "user", content: "把这份发布稿翻译成英文，保留 Markdown 格式" },
+      { role: "agent", content: "已翻译完成，共 1,240 字，专业术语已采用业界通用译法。" },
+    ],
+  },
+  {
+    id: "cs-3-b", agentId: "3", title: "日文邮件回复草稿", lastActiveAt: "2026-04-30 10:22",
+    messages: [
+      { role: "user", content: "帮我用日文写一封回复邮件" },
+      { role: "agent", content: "已生成日文邮件草稿，使用敬语体。" },
+    ],
+  },
+
+  // ── Agent 4：运维监控助手 ──
+  {
+    id: "cs-4-a", agentId: "4", title: "排查 node-3 报警", lastActiveAt: "2026-05-06 22:15",
+    messages: [
+      { role: "user", content: "node-3 一直在报警，帮我看看" },
+      { role: "tools", calls: [{
+        id: "tc-4a-1", kind: "mcp", name: "query_logs", provider: "智水-MCP服务（领慧 MCP）",
+        endpoint: "mcp.smartwater.query_logs", summary: "拉取 node-3 最近 1h 日志",
+        status: "success", resultSummary: "返回 3 条 · 412ms",
+        steps: [
+          { label: "建立 MCP 连接", ms: 124, status: "done" },
+          { label: "执行 query_logs", ms: 412, status: "done" },
+        ],
+        resultItems: [
+          { title: "[ERROR] connection refused @ node-3", meta: "22:10:18" },
+          { title: "[WARN] cpu usage 92% @ node-1", meta: "22:09:16" },
+        ],
+      }]},
+      { role: "agent", content: "根因：node-3 网络抖动导致连接被拒。建议重启网卡并检查交换机端口。" },
+    ],
+  },
+  {
+    id: "cs-4-b", agentId: "4", title: "本周告警汇总", lastActiveAt: "2026-05-03 09:00",
+    messages: [
+      { role: "user", content: "本周一共有多少条 P1 告警？" },
+      { role: "agent", content: "本周共 7 条 P1 告警，集中在周二和周五。" },
+    ],
+  },
+
+  // ── Agent 5：内容创作大师 ──
+  {
+    id: "cs-5-a", agentId: "5", title: "写一篇产品发布博客", lastActiveAt: "2026-05-06 14:30",
+    messages: [
+      { role: "user", content: "帮我写一篇关于新功能上线的博客，风格活泼一点" },
+      { role: "agent", content: "已生成 800 字博客稿，含 3 个小节标题和 emoji 点缀。" },
+    ],
+  },
+
+  // ── Agent 6：数据管道编排 ──
+  {
+    id: "cs-6-a", agentId: "6", title: "设计订单宽表 ETL", lastActiveAt: "2026-05-05 17:20",
+    messages: [
+      { role: "user", content: "我想把订单、用户、商品三张表合成一张宽表，怎么设计？" },
+      { role: "agent", content: "建议按 order_id 为主键左连接 user 与 product，并物化为日级增量表……" },
+    ],
+  },
+
+  // ── Agent p5：Prompt 精炼大师 ──
+  {
+    id: "cs-p5-a", agentId: "p5", title: "优化客服话术 Prompt", lastActiveAt: "2026-05-06 11:10",
+    messages: [
+      { role: "user", content: "帮我润色一下这个客服 Prompt" },
+      { role: "agent", content: "已重写为结构化指令，明确角色/风格/约束三段。" },
+    ],
+  },
+];
+
+export const getSessionsByAgent = (agentId: string): ChatSession[] =>
+  mockChatSessions
+    .filter((s) => s.agentId === agentId)
+    .sort((a, b) => b.lastActiveAt.localeCompare(a.lastActiveAt));
+
+export const getChatSession = (sessionId: string): ChatSession | undefined =>
+  mockChatSessions.find((s) => s.id === sessionId);
+
 /* ── Credentials (reference real MCP names) ── */
 export const mockCredentials: Credential[] = [
   { id: "c1", name: "腾讯文档 Token (个人)", type: "Bearer Token", mcpServer: "sfdoc-mcp", createdAt: "2026-03-15" },
