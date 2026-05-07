@@ -251,6 +251,16 @@ const ChatPage = () => {
 
   return (
     <div className="flex h-full animate-fade-in">
+      <SessionDrawer
+        sessions={sessions}
+        currentId={currentSessionId}
+        onSelect={handleSelectSession}
+        onNew={handleNewSession}
+        onRename={handleRenameSession}
+        onDelete={handleDeleteSession}
+        collapsed={drawerCollapsed}
+        onToggle={() => setDrawerCollapsed((v) => !v)}
+      />
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
         <div className="h-12 flex items-center justify-between border-b border-border px-4 shrink-0">
