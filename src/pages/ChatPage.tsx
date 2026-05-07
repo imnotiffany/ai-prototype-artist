@@ -280,16 +280,17 @@ const ChatPage = () => {
           </div>
         </div>
 
-        {/* Messages — 与对话视图保持一致 */}
+        {/* Messages — 同步对话视图与调试视图 */}
         <div className="flex-1 min-h-0">
-          <RunTranscriptView
-            showSearch={false}
-            events={messages.map<TranscriptEvent>((m, i) => {
+          <RunDualView
+            showTranscriptSearch={false}
+            transcriptEvents={messages.map<TranscriptEvent>((m, i) => {
               if (m.role === "tools") return { id: `t${i}`, type: "tools", calls: m.calls };
               if (m.role === "user") return { id: `u${i}`, type: "user", content: m.content };
               return { id: `a${i}`, type: "agent", content: m.content };
             })}
-            footer={isRunning ? <AIStatusPill stages={stages} stageIndex={stageIndex} /> : undefined}
+            debugEvents={debugEvents}
+            debugMeta={debugMeta}
           />
         </div>
 
