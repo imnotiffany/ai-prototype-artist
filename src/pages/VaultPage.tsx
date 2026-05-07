@@ -211,17 +211,17 @@ const VaultPage = () => {
 
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-[520px]">
-          <DialogHeader>
-            <DialogTitle>{editingId ? "编辑 MCP 服务 (HTTP)" : "添加 MCP 服务 (HTTP)"}</DialogTitle>
+        <DialogContent className="max-w-[440px] p-5">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-sm">{editingId ? "编辑 MCP 服务 (HTTP)" : "添加 MCP 服务 (HTTP)"}</DialogTitle>
             <DialogDescription className="sr-only">配置 MCP 服务端点与请求头</DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-1">
+          <div className="space-y-3 py-1">
             <div>
-              <Label className="text-xs font-medium">服务端点 URL</Label>
+              <Label className="text-[11px] font-medium">服务端点 URL</Label>
               <Input
-                className="mt-1.5 h-9 text-sm bg-muted/30"
+                className="mt-1 h-8 text-xs bg-muted/30"
                 value={endpoint}
                 onChange={(e) => setEndpoint(e.target.value)}
                 placeholder="服务端点的 URL"
@@ -229,27 +229,27 @@ const VaultPage = () => {
             </div>
 
             <div>
-              <Label className="text-xs font-medium">名称和图标</Label>
-              <div className="mt-1.5 flex items-center gap-2">
+              <Label className="text-[11px] font-medium">名称和图标</Label>
+              <div className="mt-1 flex items-center gap-2">
                 <Input
-                  className="h-9 text-sm bg-muted/30 flex-1"
+                  className="h-8 text-xs bg-muted/30 flex-1"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="命名你的 MCP 服务"
                 />
-                <div className="w-9 h-9 rounded-md bg-primary flex items-center justify-center shrink-0">
-                  <Server className="w-4 h-4 text-primary-foreground" />
+                <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center shrink-0">
+                  <Server className="w-3.5 h-3.5 text-primary-foreground" />
                 </div>
               </div>
             </div>
 
             <div>
-              <Label className="text-xs font-medium">服务器标识符</Label>
-              <p className="text-[11px] text-muted-foreground mt-1">
+              <Label className="text-[11px] font-medium">服务器标识符</Label>
+              <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">
                 工作空间内服务器的唯一标识。支持小写字母、数字、下划线和连字符，最多 24 个字符。
               </p>
               <Input
-                className="mt-1.5 h-9 text-sm bg-muted/30"
+                className="mt-1 h-8 text-xs bg-muted/30 font-mono"
                 value={identifier}
                 maxLength={24}
                 onChange={(e) => setIdentifier(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))}
@@ -258,38 +258,38 @@ const VaultPage = () => {
             </div>
 
             <Tabs value={tab} onValueChange={(v) => setTab(v as "headers" | "config")} className="w-full">
-              <TabsList className="grid grid-cols-2 w-full bg-muted/40">
-                <TabsTrigger value="headers">请求头</TabsTrigger>
-                <TabsTrigger value="config">配置</TabsTrigger>
+              <TabsList className="grid grid-cols-2 w-full bg-muted/40 h-8">
+                <TabsTrigger value="headers" className="text-xs h-6">请求头</TabsTrigger>
+                <TabsTrigger value="config" className="text-xs h-6">配置</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="headers" className="space-y-3 mt-3">
+              <TabsContent value="headers" className="space-y-2 mt-3">
                 <div>
-                  <div className="text-xs font-medium">请求头</div>
-                  <p className="text-[11px] text-muted-foreground mt-1">
+                  <div className="text-[11px] font-medium">请求头</div>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
                     发送到 MCP 服务器的额外 HTTP 请求头
                   </p>
                 </div>
                 {headers.length === 0 ? (
-                  <div className="text-[11px] text-muted-foreground">未配置自定义请求头</div>
+                  <div className="text-[10px] text-muted-foreground">未配置自定义请求头</div>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     {headers.map((h, i) => (
-                      <div key={i} className="flex items-center gap-2">
+                      <div key={i} className="flex items-center gap-1.5">
                         <Input
-                          className="h-8 text-xs flex-1"
+                          className="h-7 text-xs flex-1"
                           placeholder="Header"
                           value={h.key}
                           onChange={(e) => setHeaders((arr) => arr.map((x, idx) => idx === i ? { ...x, key: e.target.value } : x))}
                         />
                         <Input
-                          className="h-8 text-xs flex-1"
+                          className="h-7 text-xs flex-1"
                           placeholder="Value"
                           value={h.value}
                           onChange={(e) => setHeaders((arr) => arr.map((x, idx) => idx === i ? { ...x, value: e.target.value } : x))}
                         />
-                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setHeaders((arr) => arr.filter((_, idx) => idx !== i))}>
-                          <X className="w-3.5 h-3.5" />
+                        <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setHeaders((arr) => arr.filter((_, idx) => idx !== i))}>
+                          <X className="w-3 h-3" />
                         </Button>
                       </div>
                     ))}
@@ -298,21 +298,21 @@ const VaultPage = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full h-8 text-xs gap-1 border-dashed"
+                  className="w-full h-7 text-xs gap-1 border-dashed"
                   onClick={() => setHeaders((arr) => [...arr, { key: "", value: "" }])}
                 >
-                  <Plus className="w-3.5 h-3.5" /> 添加请求头
+                  <Plus className="w-3 h-3" /> 添加请求头
                 </Button>
               </TabsContent>
 
-              <TabsContent value="config" className="space-y-3 mt-3">
+              <TabsContent value="config" className="space-y-2 mt-3">
                 <div>
-                  <Label className="text-xs font-medium">超时时间</Label>
-                  <Input className="mt-1.5 h-9 text-sm bg-muted/30" value={timeout} onChange={(e) => setTimeoutVal(e.target.value)} />
+                  <Label className="text-[11px] font-medium">超时时间（秒）</Label>
+                  <Input className="mt-1 h-8 text-xs bg-muted/30" value={timeout} onChange={(e) => setTimeoutVal(e.target.value)} />
                 </div>
                 <div>
-                  <Label className="text-xs font-medium">SSE 读取超时时间</Label>
-                  <Input className="mt-1.5 h-9 text-sm bg-muted/30" value={sseTimeout} onChange={(e) => setSseTimeout(e.target.value)} />
+                  <Label className="text-[11px] font-medium">SSE 读取超时时间（秒）</Label>
+                  <Input className="mt-1 h-8 text-xs bg-muted/30" value={sseTimeout} onChange={(e) => setSseTimeout(e.target.value)} />
                 </div>
               </TabsContent>
             </Tabs>
