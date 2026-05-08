@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, RotateCcw, Rocket } from "lucide-react";
+import { Plus, RotateCcw, Rocket, Pencil, Copy, Share2, ArrowDownToLine, Trash2 } from "lucide-react";
 import { mockAgents, type Agent } from "@/data/mockData";
 import { PublishAgentDialog } from "@/components/PublishAgentDialog";
 import { AgentRuntimeBadge, type AgentRuntimeStatus } from "@/components/AgentRuntimeBadge";
@@ -150,7 +150,7 @@ const ProjectAgents = () => {
           {filtered.map((app) => (
             <div
               key={app.id}
-              className="relative border border-border rounded-lg p-4 hover:shadow-md hover:border-primary/40 transition-all cursor-pointer bg-card"
+              className="group relative border border-border rounded-lg p-4 hover:shadow-md hover:border-primary/40 transition-all cursor-pointer bg-card overflow-hidden"
               onClick={() => navigate(app.kind === "app" ? `/app/${app.id}` : `/agent/${app.id}`)}
             >
               <div
@@ -197,15 +197,35 @@ const ProjectAgents = () => {
                   </div>
                   <p className="mt-1">{app.updatedAt}更新</p>
                 </div>
-                {app.kind !== "app" && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-7 text-[11px] gap-1 shrink-0"
-                    onClick={(e) => { e.stopPropagation(); setPublishTarget(app); }}
-                  >
-                    <Rocket className="w-3 h-3" />发布
-                  </Button>
+              </div>
+
+              {/* Hover action bar */}
+              <div
+                className="absolute inset-x-0 bottom-0 px-4 py-2.5 bg-card border-t border-border flex items-center gap-4 opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button className="inline-flex items-center gap-1 text-xs text-primary hover:opacity-80">
+                  <Pencil className="w-3.5 h-3.5" />编辑
+                </button>
+                <button className="inline-flex items-center gap-1 text-xs text-primary hover:opacity-80">
+                  <Copy className="w-3.5 h-3.5" />复制
+                </button>
+                {app.status === "published" ? (
+                  <>
+                    <button className="inline-flex items-center gap-1 text-xs text-primary hover:opacity-80">
+                      <Share2 className="w-3.5 h-3.5" />分享
+                    </button>
+                    <button
+                      className="inline-flex items-center gap-1 text-xs text-primary hover:opacity-80"
+                      onClick={() => setPublishTarget(app)}
+                    >
+                      <ArrowDownToLine className="w-3.5 h-3.5" />下架
+                    </button>
+                  </>
+                ) : (
+                  <button className="inline-flex items-center gap-1 text-xs text-destructive hover:opacity-80">
+                    <Trash2 className="w-3.5 h-3.5" />删除
+                  </button>
                 )}
               </div>
             </div>
