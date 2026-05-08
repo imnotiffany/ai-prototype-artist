@@ -41,8 +41,11 @@ export const CapabilityPickerDialog = ({
   trigger,
 }: Props) => {
   const isMcp = label === "MCP";
+  const isSkill = label === "Skill";
+  const hasSkillScopes = isSkill && items.some((i) => i.scope);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [skillScope, setSkillScope] = useState<"market" | "project">("market");
   // Snapshot selected order at dialog open so newly toggled items "float to top"
   // without items reshuffling on every click.
   const [orderSnapshot, setOrderSnapshot] = useState<string[]>([]);
@@ -53,22 +56,23 @@ export const CapabilityPickerDialog = ({
   };
 
   const filtered = items.filter((it) => {
+    if (hasSkillScopes && (it.scope ?? "market") !== skillScope) return false;
     const q = search.toLowerCase();
     return it.name.toLowerCase().includes(q) || it.description.toLowerCase().includes(q);
   });
 
   const sorted = useMemo(() => {
     if (!isMcp) return filtered;
-    // Newly enabled (in selected but not in snapshot) → very top
-    // Then originally selected (snapshot)
-    // Then everything else, original order
     const newlyOn = filtered.filter((it) => selected.includes(it.name) && !orderSnapshot.includes(it.name));
     const wasOn = filtered.filter((it) => orderSnapshot.includes(it.name));
     const rest = filtered.filter((it) => !selected.includes(it.name) && !orderSnapshot.includes(it.name));
     return [...newlyOn, ...wasOn, ...rest];
   }, [filtered, selected, orderSnapshot, isMcp]);
 
-  const marketLabel = isMcp ? "前往 MCP 广场" : `前往${label === "Skill" ? "Skill 广场" : "智能体广场"}`;
+  const marketCount = items.filter((i) => (i.scope ?? "market") === "market").length;
+  const projectCount = items.filter((i) => i.scope === "project").length;
+  const marketLabel = isMcp ? "前往 MCP 广场" : `前往${isSkill ? "Skill 广场" : "智能体广场"}`;
+  const skillUploadUrl = "https://ai.sf-express.com/project/enter/skill-app/skills/project";
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
