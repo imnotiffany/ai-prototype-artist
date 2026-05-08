@@ -21,6 +21,8 @@ export interface Resource {
   deployment?: string;
   /** MCP only: 评级 */
   trustLevel?: McpTrustLevel;
+  /** Skill only: 来源范围 — market=Skill 广场公共，project=项目自建 */
+  scope?: "market" | "project";
 }
 
 export interface Agent {
@@ -84,21 +86,21 @@ export const categories = [
 
 /* ── Unified Resources (Skills & MCPs) ── */
 export const sharedResources: Resource[] = [
-  { id: "s1", name: "Web Search", type: "skill", description: "联网搜索能力，支持多搜索引擎", status: "active", addedAt: "2026-04-10", usageCount: 12 },
-  { id: "s2", name: "Code Analysis", type: "skill", description: "代码分析与审查，支持多语言", status: "active", addedAt: "2026-04-08", usageCount: 8 },
-  { id: "s3", name: "Email Parser", type: "skill", description: "邮件内容解析与结构化提取", status: "active", addedAt: "2026-04-05", usageCount: 5 },
-  { id: "s4", name: "Translation Engine", type: "skill", description: "多语言翻译引擎，支持中英日韩", status: "active", addedAt: "2026-04-01", usageCount: 15 },
-  { id: "s5", name: "Content Generation", type: "skill", description: "内容生成与创作", status: "inactive", addedAt: "2026-03-28", usageCount: 3 },
-  { id: "s6", name: "SQL Generator", type: "skill", description: "SQL 查询自动生成与优化", status: "active", addedAt: "2026-03-25", usageCount: 7 },
-  { id: "s7", name: "File Processor", type: "skill", description: "文件读写与格式转换", status: "active", addedAt: "2026-04-12", usageCount: 4 },
-  { id: "s8", name: "Data Visualizer", type: "skill", description: "数据可视化图表生成", status: "inactive", addedAt: "2026-03-20", usageCount: 2 },
-  { id: "s9", name: "Security Scanner", type: "skill", description: "安全漏洞扫描与检测", status: "active", addedAt: "2026-04-10", usageCount: 6 },
-  { id: "s10", name: "Log Analyzer", type: "skill", description: "系统日志分析与异常检测", status: "active", addedAt: "2026-04-09", usageCount: 4 },
-  { id: "s11", name: "Alert Manager", type: "skill", description: "告警管理与通知分发", status: "active", addedAt: "2026-04-08", usageCount: 3 },
-  { id: "s12", name: "SEO Optimizer", type: "skill", description: "SEO 优化建议与关键词分析", status: "active", addedAt: "2026-04-07", usageCount: 5 },
-  { id: "s13", name: "Schema Analyzer", type: "skill", description: "数据库 Schema 分析与优化", status: "active", addedAt: "2026-04-06", usageCount: 3 },
-  { id: "s14", name: "灵慧 Skill", type: "skill", description: "公司内部灵慧平台技能集，覆盖知识检索、流程自动化、智能问答等通用能力", status: "active", addedAt: "2026-04-15", usageCount: 22 },
-  { id: "s15", name: "钉钉 Skill", type: "skill", description: "钉钉工作流技能集，支持发送消息、创建日程、审批发起、待办通知等钉钉原生操作", status: "active", addedAt: "2026-04-15", usageCount: 18 },
+  { id: "s1", name: "Web Search", type: "skill", scope: "market", description: "联网搜索能力，支持多搜索引擎", status: "active", addedAt: "2026-04-10", usageCount: 12 },
+  { id: "s2", name: "Code Analysis", type: "skill", scope: "market", description: "代码分析与审查，支持多语言", status: "active", addedAt: "2026-04-08", usageCount: 8 },
+  { id: "s3", name: "Email Parser", type: "skill", scope: "market", description: "邮件内容解析与结构化提取", status: "active", addedAt: "2026-04-05", usageCount: 5 },
+  { id: "s4", name: "Translation Engine", type: "skill", scope: "market", description: "多语言翻译引擎，支持中英日韩", status: "active", addedAt: "2026-04-01", usageCount: 15 },
+  { id: "s5", name: "Content Generation", type: "skill", scope: "market", description: "内容生成与创作", status: "inactive", addedAt: "2026-03-28", usageCount: 3 },
+  { id: "s6", name: "SQL Generator", type: "skill", scope: "market", description: "SQL 查询自动生成与优化", status: "active", addedAt: "2026-03-25", usageCount: 7 },
+  { id: "s7", name: "File Processor", type: "skill", scope: "market", description: "文件读写与格式转换", status: "active", addedAt: "2026-04-12", usageCount: 4 },
+  { id: "s8", name: "Data Visualizer", type: "skill", scope: "market", description: "数据可视化图表生成", status: "inactive", addedAt: "2026-03-20", usageCount: 2 },
+  { id: "s9", name: "Security Scanner", type: "skill", scope: "market", description: "安全漏洞扫描与检测", status: "active", addedAt: "2026-04-10", usageCount: 6 },
+  { id: "s10", name: "Log Analyzer", type: "skill", scope: "project", description: "系统日志分析与异常检测（项目自建）", status: "active", addedAt: "2026-04-09", usageCount: 4 },
+  { id: "s11", name: "Alert Manager", type: "skill", scope: "project", description: "告警管理与通知分发（项目自建）", status: "active", addedAt: "2026-04-08", usageCount: 3 },
+  { id: "s12", name: "SEO Optimizer", type: "skill", scope: "market", description: "SEO 优化建议与关键词分析", status: "active", addedAt: "2026-04-07", usageCount: 5 },
+  { id: "s13", name: "Schema Analyzer", type: "skill", scope: "project", description: "数据库 Schema 分析与优化（项目自建）", status: "active", addedAt: "2026-04-06", usageCount: 3 },
+  { id: "s14", name: "灵慧 Skill", type: "skill", scope: "market", description: "公司内部灵慧平台技能集，覆盖知识检索、流程自动化、智能问答等通用能力", status: "active", addedAt: "2026-04-15", usageCount: 22 },
+  { id: "s15", name: "钉钉 Skill", type: "skill", scope: "market", description: "钉钉工作流技能集，支持发送消息、创建日程、审批发起、待办通知等钉钉原生操作", status: "active", addedAt: "2026-04-15", usageCount: 18 },
   // ── 领慧 MCP（公司内部业务 MCP，多数无需凭据，使用 SSO/内部鉴权）──
   { id: "lh1", name: "测试管理-MCP", type: "mcp", provider: "lh", deployment: "云端", requiresCredential: false, description: "测试用例查询：通过用例ID查询用例详情。版本缺陷查询：通过缺陷ID查询缺陷详情及变更记录。其它功能持续增加中", status: "active", addedAt: "2026-04-29", usageCount: 12 },
   { id: "lh2", name: "丰景台", type: "mcp", provider: "lh", deployment: "云端", requiresCredential: false, description: "丰景台MCP全家桶，支持按个人权限查数", status: "active", addedAt: "2026-04-24", usageCount: 18 },
@@ -127,7 +129,7 @@ export const sharedResources: Resource[] = [
 
 /* ── Helper: get active resources as picker items ── */
 export const getActiveSkills = () =>
-  sharedResources.filter((r) => r.type === "skill" && r.status === "active").map((r) => ({ name: r.name, description: r.description }));
+  sharedResources.filter((r) => r.type === "skill" && r.status === "active").map((r) => ({ name: r.name, description: r.description, scope: r.scope ?? "market" }));
 
 export const getActiveMCPs = () =>
   sharedResources

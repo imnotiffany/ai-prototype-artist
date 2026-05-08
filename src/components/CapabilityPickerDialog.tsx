@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { CheckCircle2, ExternalLink, Plus, KeyRound } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CheckCircle2, ExternalLink, Plus, KeyRound, Upload } from "lucide-react";
 
 export interface PickerItem {
   name: string;
@@ -13,6 +14,8 @@ export interface PickerItem {
   provider?: "lh" | "dd";
   /** MCP 专用：是否需要凭据 */
   requiresCredential?: boolean;
+  /** Skill 专用：来源范围 — market=Skill 广场公共，project=项目自建 */
+  scope?: "market" | "project";
 }
 
 interface Props {
@@ -38,8 +41,11 @@ export const CapabilityPickerDialog = ({
   trigger,
 }: Props) => {
   const isMcp = label === "MCP";
+  const isSkill = label === "Skill";
+  const hasSkillScopes = isSkill && items.some((i) => i.scope);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [skillScope, setSkillScope] = useState<"market" | "project">("market");
   // Snapshot selected order at dialog open so newly toggled items "float to top"
   // without items reshuffling on every click.
   const [orderSnapshot, setOrderSnapshot] = useState<string[]>([]);
@@ -50,22 +56,23 @@ export const CapabilityPickerDialog = ({
   };
 
   const filtered = items.filter((it) => {
+    if (hasSkillScopes && (it.scope ?? "market") !== skillScope) return false;
     const q = search.toLowerCase();
     return it.name.toLowerCase().includes(q) || it.description.toLowerCase().includes(q);
   });
 
   const sorted = useMemo(() => {
     if (!isMcp) return filtered;
-    // Newly enabled (in selected but not in snapshot) → very top
-    // Then originally selected (snapshot)
-    // Then everything else, original order
     const newlyOn = filtered.filter((it) => selected.includes(it.name) && !orderSnapshot.includes(it.name));
     const wasOn = filtered.filter((it) => orderSnapshot.includes(it.name));
     const rest = filtered.filter((it) => !selected.includes(it.name) && !orderSnapshot.includes(it.name));
     return [...newlyOn, ...wasOn, ...rest];
   }, [filtered, selected, orderSnapshot, isMcp]);
 
-  const marketLabel = isMcp ? "前往 MCP 广场" : `前往${label === "Skill" ? "Skill 广场" : "智能体广场"}`;
+  const marketCount = items.filter((i) => (i.scope ?? "market") === "market").length;
+  const projectCount = items.filter((i) => i.scope === "project").length;
+  const marketLabel = isMcp ? "前往 MCP 广场" : `前往${isSkill ? "Skill 广场" : "智能体广场"}`;
+  const skillUploadUrl = "https://ai.sf-express.com/project/enter/skill-app/skills/project";
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -83,6 +90,14 @@ export const CapabilityPickerDialog = ({
             <Badge variant="secondary" className="text-[10px] font-normal">已选 {selected.length}</Badge>
           </DialogTitle>
         </DialogHeader>
+        {hasSkillScopes && (
+          <Tabs value={skillScope} onValueChange={(v) => setSkillScope(v as "market" | "project")}>
+            <TabsList className="h-8">
+              <TabsTrigger value="market" className="text-xs h-6 px-3">市场 Skill <span className="ml-1 text-muted-foreground">({marketCount})</span></TabsTrigger>
+              <TabsTrigger value="project" className="text-xs h-6 px-3">项目 Skill <span className="ml-1 text-muted-foreground">({projectCount})</span></TabsTrigger>
+            </TabsList>
+          </Tabs>
+        )}
         <div className="flex items-center gap-2">
           <Input
             className="h-8 text-xs"
@@ -90,15 +105,33 @@ export const CapabilityPickerDialog = ({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 text-xs shrink-0"
-            onClick={() => window.open(marketLink, "_blank")}
-          >
-            {marketLabel}
-          </Button>
+          {hasSkillScopes && skillScope === "project" ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs shrink-0 gap-1"
+              onClick={() => window.open(skillUploadUrl, "_blank")}
+              title="跳转到项目 Skill 页面上传安装包"
+            >
+              <Upload className="w-3 h-3" />
+              上传 Skill 安装包
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 text-xs shrink-0"
+              onClick={() => window.open(marketLink, "_blank")}
+            >
+              {marketLabel}
+            </Button>
+          )}
         </div>
+        {hasSkillScopes && skillScope === "project" && (
+          <p className="text-[10px] text-muted-foreground -mt-1">
+            项目 Skill 仅当前项目可见。如需上传新的 Skill 安装包，请前往「项目 Skill」页面。
+          </p>
+        )}
         <div className="overflow-auto -mx-1 px-1 grid grid-cols-2 gap-2.5">
           {sorted.map((it) => {
             const sel = selected.includes(it.name);
