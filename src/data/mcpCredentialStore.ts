@@ -25,7 +25,7 @@ export const setMcpConfigured = (name: string, value: boolean) => {
   emit();
 };
 
-export const subscribeMcpStore = (l: Listener) => {
+export const subscribeMcpStore = (l: Listener): (() => void) => {
   listeners.add(l);
-  return () => listeners.delete(l);
+  return () => { listeners.delete(l); };
 };
