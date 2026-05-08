@@ -194,7 +194,7 @@ const VaultPage = () => {
               <TableHead className="text-xs h-9 whitespace-nowrap w-[110px]">使用情况</TableHead>
               <TableHead className="text-xs h-9 whitespace-nowrap w-[100px]">创建时间</TableHead>
               <TableHead className="text-xs h-9 whitespace-nowrap w-[140px]">测试连接</TableHead>
-              <TableHead className="text-xs h-9 whitespace-nowrap w-[80px]">操作</TableHead>
+              
             </TableRow>
           </TableHeader>
           <TableBody>
