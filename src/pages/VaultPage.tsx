@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -7,9 +7,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Switch } from "@/components/ui/switch";
-import { Plus, Pencil, Trash2, Server, AlertTriangle, Bot, Plug, Loader2, CheckCircle2, XCircle, Link2, X, Search, KeyRound } from "lucide-react";
-import { sharedResources, mockAgents } from "@/data/mockData";
+import { Plus, Pencil, Trash2, Server, AlertTriangle, Bot, Plug, Loader2, CheckCircle2, XCircle, Link2, X, Search, KeyRound, ShieldCheck } from "lucide-react";
+import { sharedResources, mockAgents, getCredentialFreeMcps, getCredentialRequiredMcps } from "@/data/mockData";
+import { setMcpConfigured, isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { toast } from "@/hooks/use-toast";
 
 interface McpEntry {
@@ -19,32 +19,43 @@ interface McpEntry {
   endpoint: string;
   deployment: string;
   createdAt: string;
+  requiresCredential: boolean;
 }
 
-const initialMcps: McpEntry[] = sharedResources
-  .filter((r) => r.type === "mcp")
-  .slice(0, 10)
-  .map((r, i) => ({
-    id: r.id,
-    name: r.name,
-    identifier: `mcp-${String(i + 1).padStart(2, "0")}`,
-    endpoint:
-      r.deployment === "本地"
-        ? `http://localhost:${3000 + i}/mcp`
-        : `https://mcp.example.com/${r.provider ?? "svc"}/${r.id}/http`,
-    deployment: r.deployment ?? "云端",
-    createdAt: r.addedAt,
-  }));
+// 免凭据 MCP 默认即在列表
+const freeMcps: McpEntry[] = getCredentialFreeMcps().map((r, i) => ({
+  id: r.id,
+  name: r.name,
+  identifier: `mcp-${String(i + 1).padStart(2, "0")}`,
+  endpoint:
+    r.deployment === "本地"
+      ? `http://localhost:${3000 + i}/mcp`
+      : `https://mcp.example.com/${r.provider ?? "svc"}/${r.id}/http`,
+  deployment: r.deployment ?? "云端",
+  createdAt: r.addedAt,
+  requiresCredential: false,
+}));
 
 const VaultPage = () => {
-  const [mcps, setMcps] = useState<McpEntry[]>(initialMcps);
+  // 用户已配置凭据 / 手动新增的 MCP
+  const [credMcps, setCredMcps] = useState<McpEntry[]>([]);
+  // 强制订阅 store（用于跨页面同步显示）
+  const [, setTick] = useState(0);
+  useEffect(() => subscribeMcpStore(() => setTick((t) => t + 1)) as unknown as () => void, []);
+
+  const mcps = useMemo(() => [...credMcps, ...freeMcps], [credMcps]);
+
   const [createOpen, setCreateOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<McpEntry | null>(null);
   const [testingId, setTestingId] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<Record<string, "ok" | "fail">>({});
 
-  // form state
+  // 凭据配置子弹窗
+  const [credTarget, setCredTarget] = useState<{ id: string; name: string; provider?: string; deployment?: string } | null>(null);
+  const [credToken, setCredToken] = useState("");
+
+  // 手动创建表单
   const [endpoint, setEndpoint] = useState("");
   const [name, setName] = useState("");
   const [identifier, setIdentifier] = useState("");
@@ -55,11 +66,13 @@ const VaultPage = () => {
   const [createMode, setCreateMode] = useState<"market" | "manual">("market");
   const [marketSearch, setMarketSearch] = useState("");
 
-  const marketList = sharedResources.filter((r) => {
-    if (r.type !== "mcp") return false;
+  // 市场列表 = 所有需凭据的 MCP
+  const marketList = useMemo(() => {
     const q = marketSearch.toLowerCase();
-    return r.name.toLowerCase().includes(q) || r.description.toLowerCase().includes(q);
-  });
+    return getCredentialRequiredMcps().filter(
+      (r) => r.name.toLowerCase().includes(q) || r.description.toLowerCase().includes(q),
+    );
+  }, [marketSearch]);
 
   const reset = () => {
     setEndpoint(""); setName(""); setIdentifier("");
@@ -104,16 +117,17 @@ const VaultPage = () => {
   const canSave = endpoint.trim() && name.trim() && identifier.trim();
 
   const handleSave = () => {
-    if (!endpoint.trim()) return toast({ title: "请填写服务端点 URL", variant: "destructive" });
-    if (!name.trim()) return toast({ title: "请填写名称", variant: "destructive" });
-    if (!identifier.trim()) return toast({ title: "请填写服务器标识符", variant: "destructive" });
+    if (!endpoint.trim()) return toast({ title: "请填写服务地址", variant: "destructive" });
+    if (!name.trim()) return toast({ title: "请填写显示名称", variant: "destructive" });
+    if (!identifier.trim()) return toast({ title: "请填写英文标识", variant: "destructive" });
 
     if (editingId) {
-      setMcps((arr) => arr.map((m) => m.id === editingId ? { ...m, endpoint, name, identifier } : m));
+      setCredMcps((arr) => arr.map((m) => m.id === editingId ? { ...m, endpoint, name, identifier } : m));
       toast({ title: "MCP 已更新", description: `${name} 已保存` });
     } else {
       const id = `m_${Date.now()}`;
-      setMcps((arr) => [{ id, name, identifier, endpoint, deployment: "Remote", createdAt: new Date().toISOString().slice(0, 10) }, ...arr]);
+      setCredMcps((arr) => [{ id, name, identifier, endpoint, deployment: "Remote", createdAt: new Date().toISOString().slice(0, 10), requiresCredential: true }, ...arr]);
+      setMcpConfigured(name, true);
       toast({ title: "MCP 已添加", description: `${name} 已加入 MCP 管理` });
     }
     setCreateOpen(false);
@@ -121,9 +135,29 @@ const VaultPage = () => {
     reset();
   };
 
+  const submitCredential = () => {
+    if (!credTarget) return;
+    if (!credToken.trim()) return toast({ title: "请填写凭据", variant: "destructive" });
+    const id = `m_${Date.now()}`;
+    setCredMcps((arr) => [{
+      id,
+      name: credTarget.name,
+      identifier: credTarget.id,
+      endpoint: `https://mcp.example.com/${credTarget.provider ?? "svc"}/${credTarget.id}/http`,
+      deployment: credTarget.deployment ?? "Remote",
+      createdAt: new Date().toISOString().slice(0, 10),
+      requiresCredential: true,
+    }, ...arr]);
+    setMcpConfigured(credTarget.name, true);
+    toast({ title: "凭据已配置", description: `${credTarget.name} 已加入 MCP 管理，可在拼装时选用` });
+    setCredTarget(null);
+    setCredToken("");
+  };
+
   const confirmDelete = () => {
     if (!deleteTarget) return;
-    setMcps((arr) => arr.filter((m) => m.id !== deleteTarget.id));
+    setCredMcps((arr) => arr.filter((m) => m.id !== deleteTarget.id));
+    setMcpConfigured(deleteTarget.name, false);
     toast({ title: "MCP 已删除", description: `${deleteTarget.name} 已从 MCP 管理中移除` });
     setDeleteTarget(null);
   };
@@ -137,7 +171,7 @@ const VaultPage = () => {
             MCP 管理
           </h1>
           <p className="text-xs text-muted-foreground mt-1">
-            集中管理已接入的 MCP 服务，支持 HTTP/SSE 接入，并在多个智能体中复用
+            免凭据 MCP 已默认接入；需凭据 MCP 请通过「新增 MCP」配置凭据后启用
           </p>
         </div>
         <Button onClick={openCreate} className="gap-1.5">
@@ -153,6 +187,7 @@ const VaultPage = () => {
               <TableHead className="text-xs h-9 whitespace-nowrap">名称</TableHead>
               <TableHead className="text-xs h-9 whitespace-nowrap">标识符</TableHead>
               <TableHead className="text-xs h-9 whitespace-nowrap">服务端点</TableHead>
+              <TableHead className="text-xs h-9 whitespace-nowrap w-[110px]">凭据</TableHead>
               <TableHead className="text-xs h-9 whitespace-nowrap w-[110px]">使用情况</TableHead>
               <TableHead className="text-xs h-9 whitespace-nowrap w-[100px]">创建时间</TableHead>
               <TableHead className="text-xs h-9 whitespace-nowrap w-[90px]">连接状态</TableHead>
@@ -178,6 +213,13 @@ const VaultPage = () => {
                       <Link2 className="w-3 h-3 shrink-0" />
                       <span className="truncate" title={m.endpoint}>{m.endpoint}</span>
                     </div>
+                  </TableCell>
+                  <TableCell className="py-2 whitespace-nowrap">
+                    {m.requiresCredential ? (
+                      <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-0 text-[10px] gap-1"><KeyRound className="w-3 h-3" />已配置</Badge>
+                    ) : (
+                      <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0 text-[10px] gap-1"><ShieldCheck className="w-3 h-3" />免凭据</Badge>
+                    )}
                   </TableCell>
                   <TableCell className="py-2 whitespace-nowrap">
                     {agents.length > 0 ? (
@@ -206,12 +248,16 @@ const VaultPage = () => {
                       <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => runTest(m.id, m.name)} title="测试连接" disabled={testingId === m.id}>
                         <Plug className="w-3.5 h-3.5" />
                       </Button>
-                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEdit(m)} title="编辑">
-                        <Pencil className="w-3.5 h-3.5" />
-                      </Button>
-                      <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeleteTarget(m)} title="删除">
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
+                      {m.requiresCredential && (
+                        <>
+                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEdit(m)} title="编辑">
+                            <Pencil className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeleteTarget(m)} title="删除">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -226,13 +272,15 @@ const VaultPage = () => {
         <DialogContent className="max-w-[560px] p-5">
           <DialogHeader className="space-y-1">
             <DialogTitle className="text-sm">{editingId ? "编辑 MCP 服务" : "新增 MCP"}</DialogTitle>
-            <DialogDescription className="sr-only">从市场添加或手动创建 MCP 服务</DialogDescription>
+            <DialogDescription className="text-[11px]">
+              免凭据 MCP 已自动接入，无需手动添加；这里仅用于配置「需凭据」的 MCP 或手动接入自有 MCP
+            </DialogDescription>
           </DialogHeader>
 
           <Tabs value={createMode} onValueChange={(v) => setCreateMode(v as "market" | "manual")} className="w-full">
             {!editingId && (
               <TabsList className="grid grid-cols-2 w-full bg-muted/40 h-8 mb-3">
-                <TabsTrigger value="market" className="text-xs h-6">从 MCP 广场添加</TabsTrigger>
+                <TabsTrigger value="market" className="text-xs h-6">从 MCP 广场配置</TabsTrigger>
                 <TabsTrigger value="manual" className="text-xs h-6">手动创建</TabsTrigger>
               </TabsList>
             )}
@@ -251,54 +299,39 @@ const VaultPage = () => {
                 {marketList.length === 0 ? (
                   <p className="text-center text-[11px] text-muted-foreground py-8">未找到匹配的 MCP</p>
                 ) : marketList.map((it) => {
-                  const sel = mcps.some((m) => m.name === it.name);
+                  const done = isMcpConfigured(it.name);
                   return (
                     <div
                       key={it.id}
-                      className={`border rounded-lg p-2.5 transition-colors ${sel ? "border-primary/60 bg-primary/5" : "border-border bg-card"}`}
+                      className={`border rounded-lg p-2.5 transition-colors ${done ? "border-emerald-300/60 bg-emerald-50/40 dark:bg-emerald-950/10" : "border-border bg-card"}`}
                     >
                       <div className="flex items-start gap-2">
-                        <div className={`w-7 h-7 rounded flex items-center justify-center shrink-0 ${sel ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
+                        <div className={`w-7 h-7 rounded flex items-center justify-center shrink-0 ${done ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground"}`}>
                           <Server className="w-3.5 h-3.5" />
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5">
                             <p className="text-xs font-semibold truncate">{it.name}</p>
-                            {it.requiresCredential ? (
-                              <Badge variant="outline" className="text-[10px] h-4 px-1.5 gap-0.5 border-amber-300 text-amber-700 bg-amber-50/60">
-                                <KeyRound className="w-2.5 h-2.5" />需凭据
-                              </Badge>
-                            ) : (
-                              <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-emerald-300 text-emerald-700 bg-emerald-50/60">
-                                免凭据
-                              </Badge>
-                            )}
+                            <Badge variant="outline" className="text-[10px] h-4 px-1.5 gap-0.5 border-amber-300 text-amber-700 bg-amber-50/60">
+                              <KeyRound className="w-2.5 h-2.5" />需凭据
+                            </Badge>
                           </div>
                           <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">{it.description}</p>
                         </div>
-                        <Switch
-                          checked={sel}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setMcps((arr) => [
-                                {
-                                  id: `m_${Date.now()}`,
-                                  name: it.name,
-                                  identifier: it.id,
-                                  endpoint: `https://mcp.example.com/${it.provider ?? "svc"}/${it.id}/http`,
-                                  deployment: it.deployment ?? "云端",
-                                  createdAt: new Date().toISOString().slice(0, 10),
-                                },
-                                ...arr,
-                              ]);
-                              toast({ title: "已添加 MCP", description: `${it.name} 已加入 MCP 管理` });
-                            } else {
-                              setMcps((arr) => arr.filter((m) => m.name !== it.name));
-                              toast({ title: "已移除 MCP", description: `${it.name} 已从 MCP 管理移除` });
-                            }
-                          }}
-                          className="shrink-0 mt-0.5"
-                        />
+                        {done ? (
+                          <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0 text-[10px] gap-1 shrink-0 mt-1">
+                            <CheckCircle2 className="w-3 h-3" />已配置
+                          </Badge>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-[11px] px-2 shrink-0 gap-1"
+                            onClick={() => { setCredTarget(it); setCredToken(""); }}
+                          >
+                            <KeyRound className="w-3 h-3" />配置凭据
+                          </Button>
+                        )}
                       </div>
                     </div>
                   );
@@ -419,6 +452,38 @@ const VaultPage = () => {
                 {editingId ? "保存" : "添加并授权"}
               </Button>
             )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 配置凭据子弹窗 */}
+      <Dialog open={!!credTarget} onOpenChange={(o) => !o && setCredTarget(null)}>
+        <DialogContent className="max-w-[420px] p-5">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-sm flex items-center gap-1.5">
+              <KeyRound className="w-3.5 h-3.5 text-amber-600" />
+              配置凭据
+            </DialogTitle>
+            <DialogDescription className="text-[11px]">
+              为「{credTarget?.name}」填写访问凭据，配置完成后该 MCP 将进入管理列表，可在智能体拼装中直接选用
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label className="text-[11px] font-medium">访问 Token</Label>
+              <p className="text-[10px] text-muted-foreground mt-0.5">由服务提供方颁发的 Bearer Token / API Key</p>
+              <Input
+                className="mt-1 h-8 text-xs bg-muted/30 font-mono"
+                type="password"
+                value={credToken}
+                onChange={(e) => setCredToken(e.target.value)}
+                placeholder="粘贴凭据"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setCredTarget(null)}>取消</Button>
+            <Button size="sm" className="h-8 text-xs" onClick={submitCredential} disabled={!credToken.trim()}>完成配置</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
