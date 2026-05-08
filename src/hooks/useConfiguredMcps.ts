@@ -1,12 +1,12 @@
-import { useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
 import { getConfiguredMcps, subscribeMcpStore } from "@/data/mcpCredentialStore";
 
-export const useConfiguredMcps = () =>
-  useSyncExternalStore(
-    (cb) => {
-      const u = subscribeMcpStore(cb);
-      return () => { u; };
-    },
-    () => getConfiguredMcps().join("|"),
-    () => "",
-  );
+/** Subscribe to the configured-credential MCP store. Returns names array snapshot. */
+export const useConfiguredMcps = (): string[] => {
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const unsub = subscribeMcpStore(() => setTick((t) => t + 1));
+    return () => { unsub; };
+  }, []);
+  return getConfiguredMcps();
+};
