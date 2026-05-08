@@ -63,14 +63,14 @@ const ProjectAgents = () => {
     setOnlyMine(false);
   };
 
-  const getStatusBadge = (app: Agent) => {
+  const getStatusInfo = (app: Agent): { label: string; dot: string; text: string; bg: string } => {
     if (app.status === "published" && app.publishScope === "marketplace") {
-      return <Badge key="mkt" className="bg-green-100 text-green-700 hover:bg-green-100 border-0 text-[10px] px-1.5 h-5">已发布到广场</Badge>;
+      return { label: "已发布广场", dot: "bg-green-500", text: "text-green-700 dark:text-green-400", bg: "bg-green-500/10" };
     }
     if (app.status === "published" && app.publishScope === "project") {
-      return <Badge key="proj" className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-0 text-[10px] px-1.5 h-5">已发布到项目</Badge>;
+      return { label: "已发布项目", dot: "bg-blue-500", text: "text-blue-700 dark:text-blue-400", bg: "bg-blue-500/10" };
     }
-    return <Badge key="unp" className="bg-gray-100 text-gray-600 hover:bg-gray-100 border-0 text-[10px] px-1.5 h-5">未发布</Badge>;
+    return { label: "未发布", dot: "bg-gray-400", text: "text-muted-foreground", bg: "bg-muted" };
   };
 
   const usedCategories = [...new Set(mockAgents.map((a) => a.category))];
