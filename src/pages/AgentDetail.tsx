@@ -17,7 +17,8 @@ import {
   History, Server, Bot as BotIcon, Bug, Terminal, Loader2, Mic, MicOff, Zap, Plus, X, RotateCcw, Eye, EyeOff, Search, Settings2,
   Brain, Wrench, Info, AlertTriangle, AlertCircle, Copy, Pencil, Rocket, KeyRound, Code2, Layout, Users,
 } from "lucide-react";
-import { mockAgents, getActiveMCPs, getActiveSkills, mockCredentials } from "@/data/mockData";
+import { mockAgents, getActiveMCPs, getActiveSkills } from "@/data/mockData";
+import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { toast } from "@/hooks/use-toast";
 import { PublishAgentDialog } from "@/components/PublishAgentDialog";
 import { AgentRuntimeBadge, type AgentRuntimeStatus } from "@/components/AgentRuntimeBadge";
