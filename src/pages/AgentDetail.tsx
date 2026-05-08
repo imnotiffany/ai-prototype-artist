@@ -314,11 +314,6 @@ const AgentDetail = () => {
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-lg font-semibold text-foreground truncate">{name}</h1>
-              {(() => {
-                const latest = mockRuns[0];
-                const map: Record<RunStatus, AgentRuntimeStatus> = { success: "done", failed: "failed", running: "running" };
-                return <AgentRuntimeBadge status={map[latest.status]} />;
-              })()}
               {agent.status === "published" ? (
                 <span className="inline-flex items-center gap-1.5 text-[11px]">
                   <Badge variant="outline" className="text-[10px] h-5 px-1.5 border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30">已发布</Badge>
