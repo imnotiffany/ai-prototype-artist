@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { CheckCircle2, ExternalLink, Plus, KeyRound } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CheckCircle2, ExternalLink, Plus, KeyRound, Upload } from "lucide-react";
 
 export interface PickerItem {
   name: string;
@@ -13,6 +14,8 @@ export interface PickerItem {
   provider?: "lh" | "dd";
   /** MCP 专用：是否需要凭据 */
   requiresCredential?: boolean;
+  /** Skill 专用：来源范围 — market=Skill 广场公共，project=项目自建 */
+  scope?: "market" | "project";
 }
 
 interface Props {
