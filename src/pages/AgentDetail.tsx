@@ -377,7 +377,7 @@ const AgentDetail = () => {
                   <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground gap-2 px-4">
                     <BotIcon className="w-7 h-7 opacity-30" />
                     <p className="text-xs">告诉我你想怎么调整这个智能体</p>
-                    <p className="text-[10px] leading-relaxed">例如："让回复更简洁"、"补充一下 BigQuery 的用途"</p>
+                    
                   </div>
                 )}
                 {assistantMessages.map((msg, i) => (
