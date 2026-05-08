@@ -107,6 +107,11 @@ const AgentDetail = () => {
   const [fsAppSecret, setFsAppSecret] = useState(initialSnapshot.fsAppSecret);
   const [fsRobotCode, setFsRobotCode] = useState(initialSnapshot.fsRobotCode);
   const [fsSecretVisible, setFsSecretVisible] = useState(false);
+  const [subAgents, setSubAgents] = useState<{ id: string; name: string; role: string; trigger: string }[]>([
+    { id: "sa-1", name: "数据查询子智能体", role: "负责调用丰景台数据 API 查询数据", trigger: "当用户询问销售/留存等指标时" },
+    { id: "sa-2", name: "报告撰写子智能体", role: "将查询结果整理为结构化报告", trigger: "当主智能体获得数据后" },
+  ]);
+  const [configView, setConfigView] = useState<"form" | "code">("form");
   const [savedSnapshot, setSavedSnapshot] = useState(initialSnapshot);
 
   const [versions, setVersions] = useState([
