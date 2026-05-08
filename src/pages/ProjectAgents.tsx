@@ -173,10 +173,7 @@ const ProjectAgents = () => {
                   {app.avatar}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <h3 className="text-sm font-medium truncate max-w-[140px]">{app.name}</h3>
-                    {getStatusBadge(app)}
-                  </div>
+                  <h3 className="text-sm font-medium truncate">{app.name}</h3>
                   <div className="flex items-center gap-1.5 mt-1">
                     <Badge variant="outline" className="text-[10px] h-5 px-1.5 text-primary border-primary/30">{app.category}</Badge>
                     {app.featured && (
@@ -186,6 +183,15 @@ const ProjectAgents = () => {
                 </div>
               </div>
               <p className="text-xs text-muted-foreground line-clamp-2 mb-3 leading-relaxed">{app.description}</p>
+              {(() => {
+                const s = getStatusInfo(app);
+                return (
+                  <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full mb-2 ${s.bg} ${s.text}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+                    <span className="text-[10px] font-medium">{s.label}</span>
+                  </div>
+                );
+              })()}
               <div className="flex items-end justify-between gap-2 text-[11px] text-muted-foreground">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 truncate">
