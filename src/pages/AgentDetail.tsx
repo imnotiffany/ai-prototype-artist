@@ -626,10 +626,12 @@ fengsheng:
               <header className="px-4 py-2.5 border-b border-border flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <h3 className="text-sm font-semibold">MCP 绑定</h3>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">连接外部系统（数据库、SaaS、内部 API）；部分 MCP 需要绑定凭据后才能调用</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    仅可绑定已在「<button onClick={() => navigate("/vault")} className="text-primary hover:underline">MCP 管理</button>」中配置的 MCP；凭据由 MCP 管理统一维护
+                  </p>
                 </div>
                 <CapabilityPickerDialog
-                  items={getActiveMCPs()}
+                  items={vaultAvailableMcps}
                   selected={mcpBindings.map((b) => b.name)}
                   onToggle={(n) => {
                     const idx = mcpBindings.findIndex((b) => b.name === n);
@@ -637,55 +639,49 @@ fengsheng:
                   }}
                   icon={<Server className="w-3.5 h-3.5" />}
                   label="MCP"
-                  marketLink="/"
+                  marketLink="/vault"
                   deployBadge={(n) => getActiveMCPs().find((m) => m.name === n)?.deployment ?? "云端"}
                   trigger={<Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0"><Plus className="w-3 h-3" />添加 MCP</Button>}
                 />
               </header>
               <div className="p-4">
                 {mcpBindings.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-4">尚未绑定任何 MCP。点击右上角「添加 MCP」选择。</p>
+                  <p className="text-xs text-muted-foreground text-center py-4">
+                    尚未绑定任何 MCP。如目标 MCP 不在列表中，请先到「<button onClick={() => navigate("/vault")} className="text-primary hover:underline">MCP 管理</button>」中添加并配置凭据。
+                  </p>
                 ) : (
                   <div className="space-y-2">
                     {mcpBindings.map((b, i) => {
                       const meta = getActiveMCPs().find((m) => m.name === b.name);
                       const needsCred = !!meta?.requiresCredential;
-                      const creds = credentialsByMcp(b.name);
-                      const credMissing = needsCred && !b.credential;
+                      const available = isMcpAvailableInVault(b.name);
+                      const credMissing = needsCred && !available;
                       return (
-                        <div key={b.name} className={`border rounded-md p-3 space-y-2 ${credMissing ? "border-amber-300 bg-amber-50/40" : "border-border"}`}>
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-medium flex items-center gap-1.5">
-                              {b.name}
-                              {!needsCred && (
-                                <Badge variant="outline" className="border-emerald-300 text-emerald-700 bg-emerald-50/60 text-[10px] h-4 px-1.5">免凭据</Badge>
-                              )}
-                              {credMissing && (
-                                <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-0 text-[10px] h-4 gap-1">
-                                  <AlertTriangle className="w-2.5 h-2.5" />未绑定凭据
-                                </Badge>
-                              )}
-                            </span>
+                        <div key={b.name} className={`border rounded-md p-3 flex items-center justify-between gap-3 ${credMissing ? "border-amber-300 bg-amber-50/40" : "border-border"}`}>
+                          <div className="min-w-0 flex items-center gap-2 flex-wrap">
+                            <span className="text-xs font-medium truncate">{b.name}</span>
+                            {!needsCred ? (
+                              <Badge variant="outline" className="border-emerald-300 text-emerald-700 bg-emerald-50/60 text-[10px] h-4 px-1.5">免凭据</Badge>
+                            ) : credMissing ? (
+                              <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-0 text-[10px] h-4 gap-1">
+                                <AlertTriangle className="w-2.5 h-2.5" />MCP 管理中已移除或未配置
+                              </Badge>
+                            ) : (
+                              <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0 text-[10px] h-4 gap-1">
+                                <CheckCircle2 className="w-2.5 h-2.5" />已就绪 · 凭据由 MCP 管理维护
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            {credMissing && (
+                              <Button size="sm" variant="outline" className="h-7 text-[11px]" onClick={() => navigate("/vault")}>
+                                前往 MCP 管理
+                              </Button>
+                            )}
                             <button onClick={() => removeMcp(i)} className="text-muted-foreground hover:text-destructive p-1" title="移除">
                               <X className="w-3.5 h-3.5" />
                             </button>
                           </div>
-                          {needsCred && (
-                            <div className="flex items-center gap-2">
-                              <Label className="text-[11px] text-muted-foreground shrink-0">凭据</Label>
-                              <Select value={b.credential} onValueChange={(v) => updateMcpCred(i, v)}>
-                                <SelectTrigger className="h-7 text-xs"><SelectValue placeholder={creds.length ? "选择凭据" : "凭据库无可用凭据"} /></SelectTrigger>
-                                <SelectContent>
-                                  {creds.map((c) => (
-                                    <SelectItem key={c.id} value={c.name} className="text-xs">
-                                      {c.name} <span className="text-muted-foreground ml-1">({c.type})</span>
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <Button size="sm" variant="ghost" className="h-7 text-[10px]" onClick={() => navigate("/vault")}>前往凭据管理</Button>
-                            </div>
-                          )}
                         </div>
                       );
                     })}
