@@ -223,9 +223,17 @@ const ProjectAgents = () => {
                     </button>
                   </>
                 ) : (
-                  <button className="inline-flex items-center gap-1 text-xs text-destructive hover:opacity-80">
-                    <Trash2 className="w-3.5 h-3.5" />删除
-                  </button>
+                  <>
+                    <button
+                      className="inline-flex items-center gap-1 text-xs text-primary hover:opacity-80"
+                      onClick={() => setPublishTarget(app)}
+                    >
+                      <Rocket className="w-3.5 h-3.5" />发布
+                    </button>
+                    <button className="inline-flex items-center gap-1 text-xs text-destructive hover:opacity-80">
+                      <Trash2 className="w-3.5 h-3.5" />删除
+                    </button>
+                  </>
                 )}
               </div>
             </div>
