@@ -51,8 +51,30 @@ const AgentMarketplace = () => {
 
   return (
     <div className="flex-1 overflow-auto animate-fade-in">
+      {/* Top tabs */}
+      <div className="px-6 pt-4">
+        <div className="inline-flex items-center bg-muted rounded-md p-0.5">
+          {([
+            { value: "marketplace", label: "作品广场" },
+            { value: "project", label: "项目作品" },
+          ] as const).map((t) => (
+            <button
+              key={t.value}
+              onClick={() => setScopeTab(t.value)}
+              className={`px-3 py-1 text-xs rounded transition-colors ${
+                scopeTab === t.value
+                  ? "bg-background text-foreground shadow-sm font-medium"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Hero */}
-      <div className="pt-12 pb-6 text-center">
+      <div className="pt-6 pb-6 text-center">
         <h1 className="text-2xl font-semibold text-foreground tracking-tight">
           数字同事就位，
           <span className="text-primary font-bold">组建你的专属团队</span>
