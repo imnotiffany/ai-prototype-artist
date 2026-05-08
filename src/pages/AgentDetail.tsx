@@ -222,7 +222,15 @@ const AgentDetail = () => {
 
   const allMcpOptions = getActiveMCPs().map((m) => m.name);
   const allSkillOptions = getActiveSkills().map((s) => s.name);
-  const credentialsByMcp = (mcp: string) => mockCredentials.filter((c) => c.mcpServer === mcp);
+
+  /** 在 MCP 管理（Vault）中可用的 MCP：免凭据 + 已在 Vault 中配置好凭据 */
+  const isMcpAvailableInVault = (name: string) => {
+    const meta = getActiveMCPs().find((m) => m.name === name);
+    if (!meta) return false;
+    if (!meta.requiresCredential) return true;
+    return isMcpConfigured(name);
+  };
+  const vaultAvailableMcps = getActiveMCPs().filter((m) => isMcpAvailableInVault(m.name));
 
   /* ── Config actions ── */
   const bumpPatch = (v: string) => {
