@@ -47,20 +47,38 @@ const ProjectAgents = () => {
   const [publishTarget, setPublishTarget] = useState<Agent | null>(null);
   const [unpublishTarget, setUnpublishTarget] = useState<Agent | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Agent | null>(null);
+  const [agents, setAgents] = useState<Agent[]>(mockAgents);
   const { toast } = useToast();
 
   const handleCopy = (app: Agent) => {
+    const copy: Agent = {
+      ...app,
+      id: `${app.id}-copy-${Date.now()}`,
+      name: `${app.name} 副本`,
+      status: "project",
+      publishScope: undefined,
+      featured: false,
+      updatedAt: new Date().toISOString().slice(0, 10),
+    };
+    setAgents((prev) => {
+      const idx = prev.findIndex((a) => a.id === app.id);
+      const next = [...prev];
+      next.splice(idx + 1, 0, copy);
+      return next;
+    });
     toast({ title: "复制成功", description: `已复制${app.kind === "app" ? "应用" : "智能体"}「${app.name}」` });
   };
 
   const handleConfirmUnpublish = () => {
     if (!unpublishTarget) return;
+    setAgents((prev) => prev.map((a) => (a.id === unpublishTarget.id ? { ...a, status: "project" as const, publishScope: undefined } : a)));
     toast({ title: "已下架", description: `「${unpublishTarget.name}」已下架` });
     setUnpublishTarget(null);
   };
 
   const handleConfirmDelete = () => {
     if (!deleteTarget) return;
+    setAgents((prev) => prev.filter((a) => a.id !== deleteTarget.id));
     toast({ title: "已删除", description: `「${deleteTarget.name}」已删除` });
     setDeleteTarget(null);
   };
