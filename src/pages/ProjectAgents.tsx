@@ -234,17 +234,17 @@ const ProjectAgents = () => {
                 className="absolute inset-x-0 bottom-0 px-4 py-2.5 bg-card border-t border-border flex items-center gap-4 opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all"
                 onClick={(e) => e.stopPropagation()}
               >
-                <button className="inline-flex items-center gap-1 text-xs text-primary hover:opacity-80">
-                  <Pencil className="w-3.5 h-3.5" />编辑
-                </button>
-                <button className="inline-flex items-center gap-1 text-xs text-primary hover:opacity-80">
+                <button
+                  className="inline-flex items-center gap-1 text-xs text-primary hover:opacity-80"
+                  onClick={() => handleCopy(app)}
+                >
                   <Copy className="w-3.5 h-3.5" />复制
                 </button>
                 {app.status === "published" ? (
                   <>
                     <button
                       className="inline-flex items-center gap-1 text-xs text-primary hover:opacity-80"
-                      onClick={() => setPublishTarget(app)}
+                      onClick={() => setUnpublishTarget(app)}
                     >
                       <ArrowDownToLine className="w-3.5 h-3.5" />下架
                     </button>
@@ -260,7 +260,10 @@ const ProjectAgents = () => {
                     >
                       <Rocket className="w-3.5 h-3.5" />发布
                     </button>
-                    <button className="inline-flex items-center gap-1 text-xs text-destructive hover:opacity-80">
+                    <button
+                      className="inline-flex items-center gap-1 text-xs text-destructive hover:opacity-80"
+                      onClick={() => setDeleteTarget(app)}
+                    >
                       <Trash2 className="w-3.5 h-3.5" />删除
                     </button>
                   </>
