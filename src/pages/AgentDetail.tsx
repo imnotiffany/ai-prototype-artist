@@ -762,6 +762,83 @@ fengsheng:
                 </div>
               </div>
             </section>
+
+            {/* 6. 子智能体 */}
+            <section className="border border-border rounded-lg bg-card">
+              <header className="px-4 py-2.5 border-b border-border flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <h3 className="text-sm font-semibold flex items-center gap-1.5">
+                    <Users className="w-3.5 h-3.5 text-primary" />子智能体
+                  </h3>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">为主智能体配置可调用的子智能体，由主智能体根据任务动态分发</p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs gap-1 shrink-0"
+                  onClick={() =>
+                    setSubAgents((prev) => [
+                      ...prev,
+                      { id: `sa-${Date.now()}`, name: "新子智能体", role: "", trigger: "" },
+                    ])
+                  }
+                >
+                  <Plus className="w-3 h-3" />添加子智能体
+                </Button>
+              </header>
+              <div className="p-4 space-y-3">
+                {subAgents.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-4">尚未配置子智能体。点击右上角「添加子智能体」。</p>
+                ) : (
+                  subAgents.map((sa, i) => (
+                    <div key={sa.id} className="border border-border rounded-md p-3 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <Input
+                          value={sa.name}
+                          onChange={(e) =>
+                            setSubAgents((prev) => prev.map((s, idx) => (idx === i ? { ...s, name: e.target.value } : s)))
+                          }
+                          placeholder="子智能体名称"
+                          className="h-7 text-xs font-medium"
+                        />
+                        <button
+                          onClick={() => setSubAgents((prev) => prev.filter((_, idx) => idx !== i))}
+                          className="text-muted-foreground hover:text-destructive p-1 shrink-0"
+                          title="移除"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                      <div>
+                        <Label className="text-[11px] text-muted-foreground">职责描述</Label>
+                        <Textarea
+                          value={sa.role}
+                          onChange={(e) =>
+                            setSubAgents((prev) => prev.map((s, idx) => (idx === i ? { ...s, role: e.target.value } : s)))
+                          }
+                          rows={2}
+                          placeholder="该子智能体负责的具体任务"
+                          className="mt-1 text-xs"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-[11px] text-muted-foreground">调用触发条件</Label>
+                        <Input
+                          value={sa.trigger}
+                          onChange={(e) =>
+                            setSubAgents((prev) => prev.map((s, idx) => (idx === i ? { ...s, trigger: e.target.value } : s)))
+                          }
+                          placeholder="主智能体在何种条件下调用该子智能体"
+                          className="mt-1 h-7 text-xs"
+                        />
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </section>
+              </>
+            )}
           </div>
         </TabsContent>
 
