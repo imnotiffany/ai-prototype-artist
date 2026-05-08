@@ -41,7 +41,10 @@ const VaultPage = () => {
   const [credMcps, setCredMcps] = useState<McpEntry[]>([]);
   // 强制订阅 store（用于跨页面同步显示）
   const [, setTick] = useState(0);
-  useEffect(() => subscribeMcpStore(() => setTick((t) => t + 1)) as unknown as () => void, []);
+  useEffect(() => {
+    const unsub = subscribeMcpStore(() => setTick((t) => t + 1));
+    return () => { unsub(); };
+  }, []);
 
   const mcps = useMemo(() => [...credMcps, ...freeMcps], [credMcps]);
 
