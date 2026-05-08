@@ -21,8 +21,7 @@ const MY_AUTHOR_ID = "01441970";
 
 const statusOptions = [
   { value: "all", label: "全部" },
-  { value: "marketplace", label: "已发布广场" },
-  { value: "project", label: "已发布项目" },
+  { value: "published", label: "已发布" },
   { value: "unpublished", label: "未发布" },
 ];
 
@@ -46,9 +45,8 @@ const ProjectAgents = () => {
     if (searchName && !app.name.toLowerCase().includes(searchName.toLowerCase())) return false;
     if (categoryFilter !== "all" && app.category !== categoryFilter) return false;
     if (statusFilter !== "all") {
-      if (statusFilter === "marketplace" && !(app.status === "published" && app.publishScope === "marketplace")) return false;
-      if (statusFilter === "project" && !(app.status === "published" && app.publishScope === "project")) return false;
-      if (statusFilter === "unpublished" && app.status !== "project") return false;
+      if (statusFilter === "published" && app.status !== "published") return false;
+      if (statusFilter === "unpublished" && app.status === "published") return false;
     }
     if (kindFilter !== "all" && app.kind !== kindFilter) return false;
     if (onlyMine && app.authorId !== MY_AUTHOR_ID) return false;
@@ -64,11 +62,8 @@ const ProjectAgents = () => {
   };
 
   const getStatusInfo = (app: Agent): { label: string; dot: string; text: string; bg: string } => {
-    if (app.status === "published" && app.publishScope === "marketplace") {
-      return { label: "已发布广场", dot: "bg-green-500", text: "text-green-700 dark:text-green-400", bg: "bg-green-500/10" };
-    }
-    if (app.status === "published" && app.publishScope === "project") {
-      return { label: "已发布项目", dot: "bg-blue-500", text: "text-blue-700 dark:text-blue-400", bg: "bg-blue-500/10" };
+    if (app.status === "published") {
+      return { label: "已发布", dot: "bg-green-500", text: "text-green-700 dark:text-green-400", bg: "bg-green-500/10" };
     }
     return { label: "未发布", dot: "bg-gray-400", text: "text-muted-foreground", bg: "bg-muted" };
   };
