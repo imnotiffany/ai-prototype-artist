@@ -15,7 +15,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import {
   ArrowLeft, MessageSquare, Send, Save, Bot, ChevronDown, ChevronRight, CheckCircle2, XCircle, Clock,
   History, Server, Bot as BotIcon, Bug, Terminal, Loader2, Mic, MicOff, Zap, Plus, X, RotateCcw, Eye, EyeOff, Search, Settings2,
-  Brain, Wrench, Info, AlertTriangle, AlertCircle, Copy, Pencil, Rocket, KeyRound,
+  Brain, Wrench, Info, AlertTriangle, AlertCircle, Copy, Pencil, Rocket, KeyRound, Code2, Layout, Users,
 } from "lucide-react";
 import { mockAgents, getActiveMCPs, getActiveSkills, mockCredentials } from "@/data/mockData";
 import { toast } from "@/hooks/use-toast";
@@ -107,6 +107,11 @@ const AgentDetail = () => {
   const [fsAppSecret, setFsAppSecret] = useState(initialSnapshot.fsAppSecret);
   const [fsRobotCode, setFsRobotCode] = useState(initialSnapshot.fsRobotCode);
   const [fsSecretVisible, setFsSecretVisible] = useState(false);
+  const [subAgents, setSubAgents] = useState<{ id: string; name: string; role: string; trigger: string }[]>([
+    { id: "sa-1", name: "数据查询子智能体", role: "负责调用丰景台数据 API 查询数据", trigger: "当用户询问销售/留存等指标时" },
+    { id: "sa-2", name: "报告撰写子智能体", role: "将查询结果整理为结构化报告", trigger: "当主智能体获得数据后" },
+  ]);
+  const [configView, setConfigView] = useState<"form" | "code">("form");
   const [savedSnapshot, setSavedSnapshot] = useState(initialSnapshot);
 
   const [versions, setVersions] = useState([
@@ -314,11 +319,6 @@ const AgentDetail = () => {
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-lg font-semibold text-foreground truncate">{name}</h1>
-              {(() => {
-                const latest = mockRuns[0];
-                const map: Record<RunStatus, AgentRuntimeStatus> = { success: "done", failed: "failed", running: "running" };
-                return <AgentRuntimeBadge status={map[latest.status]} />;
-              })()}
               {agent.status === "published" ? (
                 <span className="inline-flex items-center gap-1.5 text-[11px]">
                   <Badge variant="outline" className="text-[10px] h-5 px-1.5 border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30">已发布</Badge>
@@ -382,7 +382,7 @@ const AgentDetail = () => {
                   <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground gap-2 px-4">
                     <BotIcon className="w-7 h-7 opacity-30" />
                     <p className="text-xs">告诉我你想怎么调整这个智能体</p>
-                    <p className="text-[10px] leading-relaxed">例如："让回复更简洁"、"补充一下 BigQuery 的用途"</p>
+                    
                   </div>
                 )}
                 {assistantMessages.map((msg, i) => (
@@ -510,10 +510,69 @@ const AgentDetail = () => {
         {/* ───────── 配置 ───────── */}
         <TabsContent value="config" className="mt-4">
           <div className="space-y-4">
-            <p className="text-[11px] text-muted-foreground px-1">
-              名称、描述等基本信息请通过页面右上角的「编辑基本信息」修改，不会产生新版本。以下配置变更会生成新版本。
-            </p>
+            <div className="flex items-center justify-between gap-3 px-1">
+              <p className="text-[11px] text-muted-foreground">
+                名称、描述等基本信息请通过页面右上角的「编辑基本信息」修改，不会产生新版本。以下配置变更会生成新版本。
+              </p>
+              <div className="inline-flex items-center rounded-md border border-border bg-muted/40 p-0.5 shrink-0">
+                <button
+                  onClick={() => setConfigView("form")}
+                  className={`inline-flex items-center gap-1 px-2.5 h-7 rounded text-xs transition-colors ${
+                    configView === "form" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Layout className="w-3 h-3" />表单
+                </button>
+                <button
+                  onClick={() => setConfigView("code")}
+                  className={`inline-flex items-center gap-1 px-2.5 h-7 rounded text-xs transition-colors ${
+                    configView === "code" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Code2 className="w-3 h-3" />代码
+                </button>
+              </div>
+            </div>
 
+            {configView === "code" ? (
+              <section className="border border-border rounded-lg bg-card">
+                <header className="px-4 py-2.5 border-b border-border flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-semibold flex items-center gap-1.5"><Code2 className="w-3.5 h-3.5 text-primary" />配置代码</h3>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">以 YAML 形式查看完整配置，便于版本对比与导出</p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs gap-1"
+                    onClick={() => {
+                      navigator.clipboard.writeText(
+                        `name: ${name}\nmodel: ${model}\nsystem_prompt: |\n  ${systemPrompt.split("\n").join("\n  ")}\nskills:\n${selSkills.map((s) => `  - ${s}`).join("\n") || "  []"}\nmcp_bindings:\n${mcpBindings.map((b) => `  - name: ${b.name}\n    credential: ${b.credential || "(未绑定)"}`).join("\n") || "  []"}\nsub_agents:\n${subAgents.map((s) => `  - name: ${s.name}\n    role: ${s.role}\n    trigger: ${s.trigger}`).join("\n") || "  []"}\nfengsheng:\n  client_id: ${fsAppKey || "(未配置)"}\n  robot_code: ${fsRobotCode || "(未配置)"}`
+                      );
+                      toast({ title: "已复制配置到剪贴板" });
+                    }}
+                  >
+                    <Copy className="w-3 h-3" />复制
+                  </Button>
+                </header>
+                <pre className="text-[11px] font-mono leading-relaxed p-4 whitespace-pre-wrap break-all max-h-[640px] overflow-auto">
+{`name: ${name}
+model: ${model}
+system_prompt: |
+  ${systemPrompt.split("\n").join("\n  ")}
+skills:
+${selSkills.map((s) => `  - ${s}`).join("\n") || "  []"}
+mcp_bindings:
+${mcpBindings.map((b) => `  - name: ${b.name}\n    credential: ${b.credential || "(未绑定)"}`).join("\n") || "  []"}
+sub_agents:
+${subAgents.map((s) => `  - name: ${s.name}\n    role: ${s.role}\n    trigger: ${s.trigger}`).join("\n") || "  []"}
+fengsheng:
+  client_id: ${fsAppKey || "(未配置)"}
+  robot_code: ${fsRobotCode || "(未配置)"}`}
+                </pre>
+              </section>
+            ) : (
+              <>
 
             {/* 2. 模型与提示词 */}
             <section className="border border-border rounded-lg bg-card">
@@ -703,6 +762,83 @@ const AgentDetail = () => {
                 </div>
               </div>
             </section>
+
+            {/* 6. 子智能体 */}
+            <section className="border border-border rounded-lg bg-card">
+              <header className="px-4 py-2.5 border-b border-border flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <h3 className="text-sm font-semibold flex items-center gap-1.5">
+                    <Users className="w-3.5 h-3.5 text-primary" />子智能体
+                  </h3>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">为主智能体配置可调用的子智能体，由主智能体根据任务动态分发</p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs gap-1 shrink-0"
+                  onClick={() =>
+                    setSubAgents((prev) => [
+                      ...prev,
+                      { id: `sa-${Date.now()}`, name: "新子智能体", role: "", trigger: "" },
+                    ])
+                  }
+                >
+                  <Plus className="w-3 h-3" />添加子智能体
+                </Button>
+              </header>
+              <div className="p-4 space-y-3">
+                {subAgents.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-4">尚未配置子智能体。点击右上角「添加子智能体」。</p>
+                ) : (
+                  subAgents.map((sa, i) => (
+                    <div key={sa.id} className="border border-border rounded-md p-3 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <Input
+                          value={sa.name}
+                          onChange={(e) =>
+                            setSubAgents((prev) => prev.map((s, idx) => (idx === i ? { ...s, name: e.target.value } : s)))
+                          }
+                          placeholder="子智能体名称"
+                          className="h-7 text-xs font-medium"
+                        />
+                        <button
+                          onClick={() => setSubAgents((prev) => prev.filter((_, idx) => idx !== i))}
+                          className="text-muted-foreground hover:text-destructive p-1 shrink-0"
+                          title="移除"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                      <div>
+                        <Label className="text-[11px] text-muted-foreground">职责描述</Label>
+                        <Textarea
+                          value={sa.role}
+                          onChange={(e) =>
+                            setSubAgents((prev) => prev.map((s, idx) => (idx === i ? { ...s, role: e.target.value } : s)))
+                          }
+                          rows={2}
+                          placeholder="该子智能体负责的具体任务"
+                          className="mt-1 text-xs"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-[11px] text-muted-foreground">调用触发条件</Label>
+                        <Input
+                          value={sa.trigger}
+                          onChange={(e) =>
+                            setSubAgents((prev) => prev.map((s, idx) => (idx === i ? { ...s, trigger: e.target.value } : s)))
+                          }
+                          placeholder="主智能体在何种条件下调用该子智能体"
+                          className="mt-1 h-7 text-xs"
+                        />
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </section>
+              </>
+            )}
           </div>
         </TabsContent>
 
