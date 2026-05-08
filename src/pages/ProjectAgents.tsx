@@ -21,8 +21,8 @@ const MY_AUTHOR_ID = "01441970";
 
 const statusOptions = [
   { value: "all", label: "全部" },
-  { value: "marketplace", label: "已发布到广场" },
-  { value: "project", label: "已发布到项目" },
+  { value: "marketplace", label: "已发布广场" },
+  { value: "project", label: "已发布项目" },
   { value: "unpublished", label: "未发布" },
 ];
 
