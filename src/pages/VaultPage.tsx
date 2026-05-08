@@ -236,21 +236,26 @@ const VaultPage = () => {
                   </TableCell>
                   <TableCell className="py-2 text-[11px] text-muted-foreground whitespace-nowrap">{m.createdAt}</TableCell>
                   <TableCell className="py-2 whitespace-nowrap">
-                    {testingId === m.id ? (
-                      <Badge variant="outline" className="text-[10px] gap-1 font-normal"><Loader2 className="w-3 h-3 animate-spin" />测试中</Badge>
-                    ) : testResult[m.id] === "ok" ? (
-                      <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0 text-[10px] gap-1"><CheckCircle2 className="w-3 h-3" />已连通</Badge>
-                    ) : testResult[m.id] === "fail" ? (
-                      <Badge className="bg-red-100 text-red-700 hover:bg-red-100 border-0 text-[10px] gap-1"><XCircle className="w-3 h-3" />失败</Badge>
-                    ) : (
-                      <span className="text-[11px] text-muted-foreground">未测试</span>
-                    )}
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-[11px] px-2 gap-1"
+                        onClick={() => runTest(m.id, m.name)}
+                        disabled={testingId === m.id}
+                      >
+                        {testingId === m.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plug className="w-3 h-3" />}
+                        测试连接
+                      </Button>
+                      {testResult[m.id] === "ok" && (
+                        <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0 text-[10px] gap-1"><CheckCircle2 className="w-3 h-3" />已连通</Badge>
+                      )}
+                      {testResult[m.id] === "fail" && (
+                        <Badge className="bg-red-100 text-red-700 hover:bg-red-100 border-0 text-[10px] gap-1"><XCircle className="w-3 h-3" />失败</Badge>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell className="py-2">
-                    <div className="flex items-center gap-0.5">
-                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => runTest(m.id, m.name)} title="测试连接" disabled={testingId === m.id}>
-                        <Plug className="w-3.5 h-3.5" />
-                      </Button>
                       {m.requiresCredential && (
                         <>
                           <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEdit(m)} title="编辑">
