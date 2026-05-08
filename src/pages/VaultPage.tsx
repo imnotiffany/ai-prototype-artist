@@ -212,13 +212,90 @@ const VaultPage = () => {
 
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-[440px] p-5">
+        <DialogContent className="max-w-[560px] p-5">
           <DialogHeader className="space-y-1">
-            <DialogTitle className="text-sm">{editingId ? "编辑 MCP 服务 (HTTP)" : "添加 MCP 服务 (HTTP)"}</DialogTitle>
-            <DialogDescription className="sr-only">配置 MCP 服务端点与请求头</DialogDescription>
+            <DialogTitle className="text-sm">{editingId ? "编辑 MCP 服务" : "新增 MCP"}</DialogTitle>
+            <DialogDescription className="sr-only">从市场添加或手动创建 MCP 服务</DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-3 py-1">
+          <Tabs value={createMode} onValueChange={(v) => setCreateMode(v as "market" | "manual")} className="w-full">
+            {!editingId && (
+              <TabsList className="grid grid-cols-2 w-full bg-muted/40 h-8 mb-3">
+                <TabsTrigger value="market" className="text-xs h-6">从 MCP 广场添加</TabsTrigger>
+                <TabsTrigger value="manual" className="text-xs h-6">手动创建</TabsTrigger>
+              </TabsList>
+            )}
+
+            <TabsContent value="market" className="mt-0 space-y-2">
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  className="h-8 text-xs pl-8 bg-muted/30"
+                  placeholder="搜索 MCP 名称或功能描述"
+                  value={marketSearch}
+                  onChange={(e) => setMarketSearch(e.target.value)}
+                />
+              </div>
+              <div className="max-h-[420px] overflow-auto -mx-1 px-1 space-y-2">
+                {marketList.length === 0 ? (
+                  <p className="text-center text-[11px] text-muted-foreground py-8">未找到匹配的 MCP</p>
+                ) : marketList.map((it) => {
+                  const sel = mcps.some((m) => m.name === it.name);
+                  return (
+                    <div
+                      key={it.id}
+                      className={`border rounded-lg p-2.5 transition-colors ${sel ? "border-primary/60 bg-primary/5" : "border-border bg-card"}`}
+                    >
+                      <div className="flex items-start gap-2">
+                        <div className={`w-7 h-7 rounded flex items-center justify-center shrink-0 ${sel ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
+                          <Server className="w-3.5 h-3.5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5">
+                            <p className="text-xs font-semibold truncate">{it.name}</p>
+                            {it.requiresCredential ? (
+                              <Badge variant="outline" className="text-[10px] h-4 px-1.5 gap-0.5 border-amber-300 text-amber-700 bg-amber-50/60">
+                                <KeyRound className="w-2.5 h-2.5" />需凭据
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-emerald-300 text-emerald-700 bg-emerald-50/60">
+                                免凭据
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">{it.description}</p>
+                        </div>
+                        <Switch
+                          checked={sel}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setMcps((arr) => [
+                                {
+                                  id: `m_${Date.now()}`,
+                                  name: it.name,
+                                  identifier: it.id,
+                                  endpoint: `https://mcp.example.com/${it.provider ?? "svc"}/${it.id}/http`,
+                                  deployment: it.deployment ?? "云端",
+                                  createdAt: new Date().toISOString().slice(0, 10),
+                                },
+                                ...arr,
+                              ]);
+                              toast({ title: "已添加 MCP", description: `${it.name} 已加入 MCP 管理` });
+                            } else {
+                              setMcps((arr) => arr.filter((m) => m.name !== it.name));
+                              toast({ title: "已移除 MCP", description: `${it.name} 已从 MCP 管理移除` });
+                            }
+                          }}
+                          className="shrink-0 mt-0.5"
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="manual" className="mt-0 space-y-3">
             <div>
               <Label className="text-[11px] font-medium">服务地址</Label>
               <p className="text-[10px] text-muted-foreground mt-0.5">MCP 服务的访问链接，由服务提供方给出</p>
@@ -319,13 +396,18 @@ const VaultPage = () => {
                 </div>
               </TabsContent>
             </Tabs>
-          </div>
+            </TabsContent>
+          </Tabs>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateOpen(false)}>取消</Button>
-            <Button onClick={handleSave} disabled={!canSave}>
-              {editingId ? "保存" : "添加并授权"}
+            <Button variant="outline" onClick={() => setCreateOpen(false)}>
+              {createMode === "market" && !editingId ? "完成" : "取消"}
             </Button>
+            {(createMode === "manual" || editingId) && (
+              <Button onClick={handleSave} disabled={!canSave}>
+                {editingId ? "保存" : "添加并授权"}
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
