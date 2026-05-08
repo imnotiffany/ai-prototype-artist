@@ -212,14 +212,14 @@ const ProjectAgents = () => {
                 </button>
                 {app.status === "published" ? (
                   <>
-                    <button className="inline-flex items-center gap-1 text-xs text-primary hover:opacity-80">
-                      <Share2 className="w-3.5 h-3.5" />分享
-                    </button>
                     <button
                       className="inline-flex items-center gap-1 text-xs text-primary hover:opacity-80"
                       onClick={() => setPublishTarget(app)}
                     >
                       <ArrowDownToLine className="w-3.5 h-3.5" />下架
+                    </button>
+                    <button className="inline-flex items-center gap-1 text-xs text-primary hover:opacity-80">
+                      <Share2 className="w-3.5 h-3.5" />分享
                     </button>
                   </>
                 ) : (
