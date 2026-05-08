@@ -61,7 +61,7 @@ const promptScaffold = `# 角色与目标
 
 const skills = getActiveSkills();
 const mcps = getActiveMCPs();
-const subagents = mockAgents.filter((a) => a.kind === "agent").slice(0, 8);
+const subagents = mockAgents.filter((a) => a.kind === "agent" && a.publishScope === "marketplace");
 
 const CreateAgentManualPage = () => {
   const navigate = useNavigate();
@@ -598,6 +598,44 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                       <button onClick={() => toggle(selSkills, setSelSkills, s)} className="text-muted-foreground hover:text-destructive"><X className="w-3 h-3" /></button>
                     </div>
                   ))}
+                </div>
+              )}
+            </div>
+
+            {/* 子智能体绑定 */}
+            <div className="border border-border rounded-lg p-5 bg-card">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <Label className="text-xs">子智能体绑定</Label>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">从智能体广场挑选已发布的智能体作为子智能体，主智能体可调度它们协同完成任务</p>
+                </div>
+                <CapabilityPickerDialog
+                  items={subagents.map((a) => ({ name: a.name, description: a.description }))}
+                  selected={selSubagents}
+                  onToggle={(n) => toggle(selSubagents, setSelSubagents, n)}
+                  icon={<Bot className="w-3.5 h-3.5" />}
+                  label="子智能体"
+                  marketLink="/"
+                  trigger={<Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0"><Plus className="w-3 h-3" />添加子智能体</Button>}
+                />
+              </div>
+              {selSubagents.length === 0 ? (
+                <p className="text-xs text-muted-foreground text-center py-4">尚未绑定任何子智能体。点击右上角「添加子智能体」从广场选择。</p>
+              ) : (
+                <div className="space-y-1.5">
+                  {selSubagents.map((s) => {
+                    const meta = subagents.find((a) => a.name === s);
+                    return (
+                      <div key={s} className="flex items-center justify-between border border-border rounded px-3 py-1.5 text-xs">
+                        <span className="flex items-center gap-1.5 min-w-0">
+                          <Bot className="w-3 h-3 text-primary shrink-0" />
+                          <span className="truncate">{s}</span>
+                          {meta && <span className="text-[10px] text-muted-foreground truncate">· {meta.description}</span>}
+                        </span>
+                        <button onClick={() => toggle(selSubagents, setSelSubagents, s)} className="text-muted-foreground hover:text-destructive shrink-0"><X className="w-3 h-3" /></button>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
