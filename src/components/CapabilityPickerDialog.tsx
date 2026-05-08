@@ -1,15 +1,15 @@
-import { useState, ReactNode } from "react";
+import { useMemo, useState, ReactNode } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import { CheckCircle2, ExternalLink, Plus, KeyRound } from "lucide-react";
 
 export interface PickerItem {
   name: string;
   description: string;
-  /** MCP 专用：服务商分组，"lh" 领慧 / "dd" 钉钉 */
+  /** MCP 专用：服务商分组，"lh" 领慧 / "dd" 钉钉（仅用于历史兼容，UI 不再展示分组） */
   provider?: "lh" | "dd";
   /** MCP 专用：是否需要凭据 */
   requiresCredential?: boolean;
@@ -35,32 +35,40 @@ export const CapabilityPickerDialog = ({
   icon,
   label,
   marketLink,
-  deployBadge,
   trigger,
 }: Props) => {
   const isMcp = label === "MCP";
-  const hasProviders = isMcp && items.some((i) => i.provider);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [provider, setProvider] = useState<"lh" | "dd">("lh");
+  // Snapshot selected order at dialog open so newly toggled items "float to top"
+  // without items reshuffling on every click.
+  const [orderSnapshot, setOrderSnapshot] = useState<string[]>([]);
+
+  const handleOpenChange = (o: boolean) => {
+    if (o) setOrderSnapshot(selected);
+    setOpen(o);
+  };
+
   const filtered = items.filter((it) => {
-    if (hasProviders && it.provider && it.provider !== provider) return false;
     const q = search.toLowerCase();
     return it.name.toLowerCase().includes(q) || it.description.toLowerCase().includes(q);
   });
-  const lhCount = items.filter((i) => i.provider === "lh").length;
-  const ddCount = items.filter((i) => i.provider === "dd").length;
 
-  const mcpMarketUrl = provider === "dd"
-    ? "https://aihub.dingtalk.com/#/mcp"
-    : "https://ai.sf-express.com/project/enter/llm/mcp-square";
-  const marketLabel = isMcp
-    ? (provider === "dd" ? "前往钉钉 MCP 广场" : "前往领慧 MCP 广场")
-    : `前往${label === "Skill" ? "Skill 广场" : "智能体广场"}`;
-  const effectiveMarketLink = isMcp ? mcpMarketUrl : marketLink;
+  const sorted = useMemo(() => {
+    if (!isMcp) return filtered;
+    // Newly enabled (in selected but not in snapshot) → very top
+    // Then originally selected (snapshot)
+    // Then everything else, original order
+    const newlyOn = filtered.filter((it) => selected.includes(it.name) && !orderSnapshot.includes(it.name));
+    const wasOn = filtered.filter((it) => orderSnapshot.includes(it.name));
+    const rest = filtered.filter((it) => !selected.includes(it.name) && !orderSnapshot.includes(it.name));
+    return [...newlyOn, ...wasOn, ...rest];
+  }, [filtered, selected, orderSnapshot, isMcp]);
+
+  const marketLabel = isMcp ? "前往 MCP 广场" : `前往${label === "Skill" ? "Skill 广场" : "智能体广场"}`;
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {trigger ?? (
           <Button variant="outline" size="icon" className="h-7 w-7" title={`添加 ${label}`}>
@@ -75,14 +83,6 @@ export const CapabilityPickerDialog = ({
             <Badge variant="secondary" className="text-[10px] font-normal">已选 {selected.length}</Badge>
           </DialogTitle>
         </DialogHeader>
-        {hasProviders && (
-          <Tabs value={provider} onValueChange={(v) => setProvider(v as "lh" | "dd")}>
-            <TabsList className="h-8">
-              <TabsTrigger value="lh" className="text-xs h-6 px-3">领慧 MCP <span className="ml-1 text-muted-foreground">({lhCount})</span></TabsTrigger>
-              <TabsTrigger value="dd" className="text-xs h-6 px-3">钉钉 MCP <span className="ml-1 text-muted-foreground">({ddCount})</span></TabsTrigger>
-            </TabsList>
-          </Tabs>
-        )}
         <div className="flex items-center gap-2">
           <Input
             className="h-8 text-xs"
@@ -94,13 +94,13 @@ export const CapabilityPickerDialog = ({
             variant="ghost"
             size="sm"
             className="h-8 text-xs shrink-0"
-            onClick={() => window.open(effectiveMarketLink, "_blank")}
+            onClick={() => window.open(marketLink, "_blank")}
           >
             {marketLabel}
           </Button>
         </div>
         <div className="overflow-auto -mx-1 px-1 grid grid-cols-2 gap-2.5">
-          {filtered.map((it) => {
+          {sorted.map((it) => {
             const sel = selected.includes(it.name);
             return (
               <div
@@ -135,7 +135,11 @@ export const CapabilityPickerDialog = ({
                       )}
                     </div>
                   </div>
-                  {sel && <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />}
+                  {isMcp ? (
+                    <Switch checked={sel} onCheckedChange={() => onToggle(it.name)} className="shrink-0" />
+                  ) : (
+                    sel && <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                  )}
                 </div>
                 <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed mb-2.5 min-h-[32px]">
                   {it.description}
@@ -147,19 +151,21 @@ export const CapabilityPickerDialog = ({
                   >
                     查看详情 <ExternalLink className="w-2.5 h-2.5" />
                   </button>
-                  <Button
-                    size="sm"
-                    variant={sel ? "outline" : "default"}
-                    className="h-6 text-[10px] px-2"
-                    onClick={() => onToggle(it.name)}
-                  >
-                    {sel ? "移除" : "添加"}
-                  </Button>
+                  {!isMcp && (
+                    <Button
+                      size="sm"
+                      variant={sel ? "outline" : "default"}
+                      className="h-6 text-[10px] px-2"
+                      onClick={() => onToggle(it.name)}
+                    >
+                      {sel ? "移除" : "添加"}
+                    </Button>
+                  )}
                 </div>
               </div>
             );
           })}
-          {filtered.length === 0 && (
+          {sorted.length === 0 && (
             <p className="col-span-2 text-center text-xs text-muted-foreground py-8">未找到匹配的 {label}</p>
           )}
         </div>
