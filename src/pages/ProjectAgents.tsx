@@ -5,10 +5,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, RotateCcw, Rocket, Pencil, Copy, Share2, ArrowDownToLine, Trash2 } from "lucide-react";
+import { Plus, RotateCcw, Rocket, Copy, Share2, ArrowDownToLine, Trash2 } from "lucide-react";
 import { mockAgents, type Agent } from "@/data/mockData";
 import { PublishAgentDialog } from "@/components/PublishAgentDialog";
 import { AgentRuntimeBadge, type AgentRuntimeStatus } from "@/components/AgentRuntimeBadge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 
 const runtimeStatusFor = (id: string): AgentRuntimeStatus => {
   const opts: AgentRuntimeStatus[] = ["running", "done", "starting", "failed", "stopped"];
@@ -34,6 +45,25 @@ const ProjectAgents = () => {
   const [kindFilter, setKindFilter] = useState<"all" | "app" | "agent">("all");
   const [onlyMine, setOnlyMine] = useState(false);
   const [publishTarget, setPublishTarget] = useState<Agent | null>(null);
+  const [unpublishTarget, setUnpublishTarget] = useState<Agent | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Agent | null>(null);
+  const { toast } = useToast();
+
+  const handleCopy = (app: Agent) => {
+    toast({ title: "复制成功", description: `已复制${app.kind === "app" ? "应用" : "智能体"}「${app.name}」` });
+  };
+
+  const handleConfirmUnpublish = () => {
+    if (!unpublishTarget) return;
+    toast({ title: "已下架", description: `「${unpublishTarget.name}」已下架` });
+    setUnpublishTarget(null);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deleteTarget) return;
+    toast({ title: "已删除", description: `「${deleteTarget.name}」已删除` });
+    setDeleteTarget(null);
+  };
 
   const mockVersionsFor = (a: Agent) => [
     { v: "v0.0.3", at: "2026-04-25 14:02", note: "新增 丰景台数据查询v2", current: true },
@@ -204,17 +234,17 @@ const ProjectAgents = () => {
                 className="absolute inset-x-0 bottom-0 px-4 py-2.5 bg-card border-t border-border flex items-center gap-4 opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all"
                 onClick={(e) => e.stopPropagation()}
               >
-                <button className="inline-flex items-center gap-1 text-xs text-primary hover:opacity-80">
-                  <Pencil className="w-3.5 h-3.5" />编辑
-                </button>
-                <button className="inline-flex items-center gap-1 text-xs text-primary hover:opacity-80">
+                <button
+                  className="inline-flex items-center gap-1 text-xs text-primary hover:opacity-80"
+                  onClick={() => handleCopy(app)}
+                >
                   <Copy className="w-3.5 h-3.5" />复制
                 </button>
                 {app.status === "published" ? (
                   <>
                     <button
                       className="inline-flex items-center gap-1 text-xs text-primary hover:opacity-80"
-                      onClick={() => setPublishTarget(app)}
+                      onClick={() => setUnpublishTarget(app)}
                     >
                       <ArrowDownToLine className="w-3.5 h-3.5" />下架
                     </button>
@@ -230,7 +260,10 @@ const ProjectAgents = () => {
                     >
                       <Rocket className="w-3.5 h-3.5" />发布
                     </button>
-                    <button className="inline-flex items-center gap-1 text-xs text-destructive hover:opacity-80">
+                    <button
+                      className="inline-flex items-center gap-1 text-xs text-destructive hover:opacity-80"
+                      onClick={() => setDeleteTarget(app)}
+                    >
                       <Trash2 className="w-3.5 h-3.5" />删除
                     </button>
                   </>
@@ -252,6 +285,41 @@ const ProjectAgents = () => {
         versions={publishTarget ? mockVersionsFor(publishTarget) : []}
         kind={publishTarget?.kind}
       />
+
+      <AlertDialog open={!!unpublishTarget} onOpenChange={(o) => !o && setUnpublishTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认下架</AlertDialogTitle>
+            <AlertDialogDescription>
+              确定要下架「{unpublishTarget?.name}」吗？下架后将无法被其他用户访问。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmUnpublish}>确认下架</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认删除</AlertDialogTitle>
+            <AlertDialogDescription>
+              确定要删除「{deleteTarget?.name}」吗？此操作无法撤销。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              确认删除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
