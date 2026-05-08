@@ -89,7 +89,7 @@ const ProjectAgents = () => {
     { v: "v0.0.1", at: "2026-04-10 16:45", note: "初始版本" },
   ];
 
-  const filtered = mockAgents.filter((app) => {
+  const filtered = agents.filter((app) => {
     if (searchName && !app.name.toLowerCase().includes(searchName.toLowerCase())) return false;
     if (categoryFilter !== "all" && app.category !== categoryFilter) return false;
     if (statusFilter !== "all") {
