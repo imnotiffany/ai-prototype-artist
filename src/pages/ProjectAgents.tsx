@@ -62,11 +62,8 @@ const ProjectAgents = () => {
   };
 
   const getStatusInfo = (app: Agent): { label: string; dot: string; text: string; bg: string } => {
-    if (app.status === "published" && app.publishScope === "marketplace") {
-      return { label: "已发布广场", dot: "bg-green-500", text: "text-green-700 dark:text-green-400", bg: "bg-green-500/10" };
-    }
-    if (app.status === "published" && app.publishScope === "project") {
-      return { label: "已发布项目", dot: "bg-blue-500", text: "text-blue-700 dark:text-blue-400", bg: "bg-blue-500/10" };
+    if (app.status === "published") {
+      return { label: "已发布", dot: "bg-green-500", text: "text-green-700 dark:text-green-400", bg: "bg-green-500/10" };
     }
     return { label: "未发布", dot: "bg-gray-400", text: "text-muted-foreground", bg: "bg-muted" };
   };
