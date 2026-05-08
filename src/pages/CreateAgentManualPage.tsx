@@ -61,7 +61,7 @@ const promptScaffold = `# 角色与目标
 
 const skills = getActiveSkills();
 const mcps = getActiveMCPs();
-const subagents = mockAgents.filter((a) => a.kind === "agent").slice(0, 8);
+const subagents = mockAgents.filter((a) => a.kind === "agent" && a.publishScope === "marketplace");
 
 const CreateAgentManualPage = () => {
   const navigate = useNavigate();
