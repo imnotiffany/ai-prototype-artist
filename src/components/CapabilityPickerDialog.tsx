@@ -1,20 +1,22 @@
-import { useMemo, useState, ReactNode } from "react";
+import { useMemo, useState, ReactNode, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CheckCircle2, ExternalLink, Plus, KeyRound, Upload } from "lucide-react";
+import { CheckCircle2, ExternalLink, Plus, KeyRound, Upload, ShieldCheck, Settings2 } from "lucide-react";
+import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 
 export interface PickerItem {
   name: string;
   description: string;
-  /** MCP 专用：服务商分组，"lh" 领慧 / "dd" 钉钉（仅用于历史兼容，UI 不再展示分组） */
+  /** MCP 专用：服务商分组 */
   provider?: "lh" | "dd";
   /** MCP 专用：是否需要凭据 */
   requiresCredential?: boolean;
-  /** Skill 专用：来源范围 — market=Skill 广场公共，project=项目自建 */
+  /** Skill 专用：来源范围 */
   scope?: "market" | "project";
 }
 
@@ -46,9 +48,15 @@ export const CapabilityPickerDialog = ({
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [skillScope, setSkillScope] = useState<"market" | "project">("market");
-  // Snapshot selected order at dialog open so newly toggled items "float to top"
-  // without items reshuffling on every click.
   const [orderSnapshot, setOrderSnapshot] = useState<string[]>([]);
+
+  // 订阅 MCP 凭据 store，使「未配置 → 已配置」状态变更后立即反映
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    if (!isMcp) return;
+    const unsub = subscribeMcpStore(() => setTick((t) => t + 1));
+    return () => { unsub(); };
+  }, [isMcp]);
 
   const handleOpenChange = (o: boolean) => {
     if (o) setOrderSnapshot(selected);
@@ -61,18 +69,113 @@ export const CapabilityPickerDialog = ({
     return it.name.toLowerCase().includes(q) || it.description.toLowerCase().includes(q);
   });
 
-  const sorted = useMemo(() => {
-    if (!isMcp) return filtered;
-    const newlyOn = filtered.filter((it) => selected.includes(it.name) && !orderSnapshot.includes(it.name));
-    const wasOn = filtered.filter((it) => orderSnapshot.includes(it.name));
-    const rest = filtered.filter((it) => !selected.includes(it.name) && !orderSnapshot.includes(it.name));
+  // MCP 拼装可用性：免凭据 || 已配置凭据
+  const isAvailable = (it: PickerItem) =>
+    !isMcp || !it.requiresCredential || isMcpConfigured(it.name);
+
+  const sortedAvailable = useMemo(() => {
+    const avail = filtered.filter(isAvailable);
+    if (!isMcp) return avail;
+    const newlyOn = avail.filter((it) => selected.includes(it.name) && !orderSnapshot.includes(it.name));
+    const wasOn = avail.filter((it) => orderSnapshot.includes(it.name));
+    const rest = avail.filter((it) => !selected.includes(it.name) && !orderSnapshot.includes(it.name));
     return [...newlyOn, ...wasOn, ...rest];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtered, selected, orderSnapshot, isMcp]);
+
+  const unconfigured = isMcp ? filtered.filter((it) => !isAvailable(it)) : [];
 
   const marketCount = items.filter((i) => (i.scope ?? "market") === "market").length;
   const projectCount = items.filter((i) => i.scope === "project").length;
-  const marketLabel = isMcp ? "前往 MCP 广场" : `前往${isSkill ? "Skill 广场" : "智能体广场"}`;
+  const marketLabel = isMcp ? "前往 MCP 管理" : `前往${isSkill ? "Skill 广场" : "智能体广场"}`;
   const skillUploadUrl = "https://ai.sf-express.com/project/enter/skill-app/skills/project";
+  const mcpManageHref = "/vault";
+
+  const renderCard = (it: PickerItem, opts: { disabled?: boolean }) => {
+    const sel = selected.includes(it.name);
+    const disabled = !!opts.disabled;
+    return (
+      <div
+        key={it.name}
+        className={`border rounded-lg p-3 transition-colors ${
+          disabled
+            ? "border-dashed border-border bg-muted/30 opacity-80"
+            : sel
+              ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+              : "border-border hover:border-primary/40 bg-card"
+        }`}
+      >
+        <div className="flex items-start gap-2 mb-1.5">
+          <div
+            className={`w-7 h-7 rounded flex items-center justify-center shrink-0 ${
+              sel && !disabled ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
+            }`}
+          >
+            {icon}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-semibold truncate">{it.name}</p>
+            <div className="flex items-center gap-1 mt-0.5 flex-wrap">
+              {isMcp && (
+                it.requiresCredential ? (
+                  isMcpConfigured(it.name) ? (
+                    <Badge variant="outline" className="text-[10px] h-4 px-1.5 gap-0.5 border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30">
+                      <CheckCircle2 className="w-2.5 h-2.5" />已配置凭据
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-[10px] h-4 px-1.5 gap-0.5 border-amber-300 text-amber-700 bg-amber-50/60 dark:bg-amber-950/30">
+                      <KeyRound className="w-2.5 h-2.5" />未配置凭据
+                    </Badge>
+                  )
+                ) : (
+                  <Badge variant="outline" className="text-[10px] h-4 px-1.5 gap-0.5 border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30">
+                    <ShieldCheck className="w-2.5 h-2.5" />免凭据
+                  </Badge>
+                )
+              )}
+            </div>
+          </div>
+          {isMcp ? (
+            disabled ? (
+              <Link
+                to={mcpManageHref}
+                onClick={() => setOpen(false)}
+                className="shrink-0 text-[10px] text-primary hover:underline flex items-center gap-0.5 mt-1"
+                title="前往 MCP 管理配置凭据"
+              >
+                <Settings2 className="w-3 h-3" />去配置
+              </Link>
+            ) : (
+              <Switch checked={sel} onCheckedChange={() => onToggle(it.name)} className="shrink-0" />
+            )
+          ) : (
+            sel && <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+          )}
+        </div>
+        <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed mb-2.5 min-h-[32px]">
+          {it.description}
+        </p>
+        <div className="flex items-center justify-between">
+          <button
+            className="text-[10px] text-primary hover:underline flex items-center gap-0.5"
+            onClick={() => window.open(`${marketLink}#${encodeURIComponent(it.name)}`, "_blank")}
+          >
+            查看详情 <ExternalLink className="w-2.5 h-2.5" />
+          </button>
+          {!isMcp && (
+            <Button
+              size="sm"
+              variant={sel ? "outline" : "default"}
+              className="h-6 text-[10px] px-2"
+              onClick={() => onToggle(it.name)}
+            >
+              {sel ? "移除" : "添加"}
+            </Button>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -116,6 +219,10 @@ export const CapabilityPickerDialog = ({
               <Upload className="w-3 h-3" />
               上传 Skill 安装包
             </Button>
+          ) : isMcp ? (
+            <Button asChild variant="ghost" size="sm" className="h-8 text-xs shrink-0">
+              <Link to={mcpManageHref} onClick={() => setOpen(false)}>{marketLabel}</Link>
+            </Button>
           ) : (
             <Button
               variant="ghost"
@@ -132,74 +239,50 @@ export const CapabilityPickerDialog = ({
             项目 Skill 仅当前项目可见。如需上传新的 Skill 安装包，请前往「项目 Skill」页面。
           </p>
         )}
-        <div className="overflow-auto -mx-1 px-1 grid grid-cols-2 gap-2.5">
-          {sorted.map((it) => {
-            const sel = selected.includes(it.name);
-            return (
-              <div
-                key={it.name}
-                className={`border rounded-lg p-3 transition-colors ${
-                  sel
-                    ? "border-primary bg-primary/5 ring-1 ring-primary/30"
-                    : "border-border hover:border-primary/40 bg-card"
-                }`}
-              >
-                <div className="flex items-start gap-2 mb-1.5">
-                  <div
-                    className={`w-7 h-7 rounded flex items-center justify-center shrink-0 ${
-                      sel ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {icon}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-semibold truncate">{it.name}</p>
-                    <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-                      {isMcp && (
-                        it.requiresCredential ? (
-                          <Badge variant="outline" className="text-[10px] h-4 px-1.5 gap-0.5 border-amber-300 text-amber-700 bg-amber-50/60 dark:bg-amber-950/30">
-                            <KeyRound className="w-2.5 h-2.5" />需凭据
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30">
-                            免凭据
-                          </Badge>
-                        )
-                      )}
-                    </div>
-                  </div>
-                  {isMcp ? (
-                    <Switch checked={sel} onCheckedChange={() => onToggle(it.name)} className="shrink-0" />
-                  ) : (
-                    sel && <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                  )}
+
+        <div className="overflow-auto -mx-1 px-1 space-y-3">
+          {/* 可选区：免凭据 + 已配置 */}
+          {isMcp && (
+            <div className="flex items-center gap-2 sticky top-0 bg-background py-1 z-10">
+              <span className="text-[11px] font-semibold text-foreground">可选</span>
+              <Badge variant="secondary" className="text-[10px] h-4 px-1.5 font-normal">{sortedAvailable.length}</Badge>
+              <span className="text-[10px] text-muted-foreground">免凭据 / 已配置凭据</span>
+            </div>
+          )}
+          <div className="grid grid-cols-2 gap-2.5">
+            {sortedAvailable.map((it) => renderCard(it, { disabled: false }))}
+            {sortedAvailable.length === 0 && (
+              <p className="col-span-2 text-center text-xs text-muted-foreground py-6">
+                暂无{isMcp ? "可选 MCP" : `匹配的 ${label}`}
+              </p>
+            )}
+          </div>
+
+          {/* 未配置区：仅 MCP */}
+          {isMcp && unconfigured.length > 0 && (
+            <>
+              <div className="flex items-center justify-between gap-2 sticky top-0 bg-background py-1 z-10 mt-2 pt-2 border-t border-border">
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-semibold text-foreground">未配置凭据</span>
+                  <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-normal border-amber-300 text-amber-700 bg-amber-50/60">
+                    {unconfigured.length}
+                  </Badge>
                 </div>
-                <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed mb-2.5 min-h-[32px]">
-                  {it.description}
-                </p>
-                <div className="flex items-center justify-between">
-                  <button
-                    className="text-[10px] text-primary hover:underline flex items-center gap-0.5"
-                    onClick={() => window.open(`${marketLink}#${encodeURIComponent(it.name)}`, "_blank")}
-                  >
-                    查看详情 <ExternalLink className="w-2.5 h-2.5" />
-                  </button>
-                  {!isMcp && (
-                    <Button
-                      size="sm"
-                      variant={sel ? "outline" : "default"}
-                      className="h-6 text-[10px] px-2"
-                      onClick={() => onToggle(it.name)}
-                    >
-                      {sel ? "移除" : "添加"}
-                    </Button>
-                  )}
-                </div>
+                <Link
+                  to={mcpManageHref}
+                  onClick={() => setOpen(false)}
+                  className="text-[10px] text-primary hover:underline flex items-center gap-0.5"
+                >
+                  <Settings2 className="w-3 h-3" />前往 MCP 管理配置
+                </Link>
               </div>
-            );
-          })}
-          {sorted.length === 0 && (
-            <p className="col-span-2 text-center text-xs text-muted-foreground py-8">未找到匹配的 {label}</p>
+              <p className="text-[10px] text-muted-foreground -mt-1">
+                以下 MCP 需要先在「MCP 管理 → 新增 MCP」中配置凭据，配置完成后即可在此处选用。
+              </p>
+              <div className="grid grid-cols-2 gap-2.5">
+                {unconfigured.map((it) => renderCard(it, { disabled: true }))}
+              </div>
+            </>
           )}
         </div>
         <DialogFooter>
