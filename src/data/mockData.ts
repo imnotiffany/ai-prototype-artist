@@ -136,6 +136,18 @@ export const getActiveMCPs = () =>
     .filter((r) => r.type === "mcp" && r.status === "active")
     .map((r) => ({ name: r.name, description: r.description, provider: r.provider, deployment: r.deployment, requiresCredential: !!r.requiresCredential }));
 
+/** 所有需要凭据的 MCP（用于 MCP 管理 → 新增 MCP → 市场列表） */
+export const getCredentialRequiredMcps = () =>
+  sharedResources
+    .filter((r) => r.type === "mcp" && r.status === "active" && r.requiresCredential)
+    .map((r) => ({ id: r.id, name: r.name, description: r.description, provider: r.provider, deployment: r.deployment }));
+
+/** 所有免凭据 MCP（默认即出现在 MCP 管理列表） */
+export const getCredentialFreeMcps = () =>
+  sharedResources
+    .filter((r) => r.type === "mcp" && r.status === "active" && !r.requiresCredential)
+    .map((r) => ({ id: r.id, name: r.name, description: r.description, provider: r.provider, deployment: r.deployment, addedAt: r.addedAt }));
+
 export const mcpRequiresCredential = (name: string): boolean =>
   !!sharedResources.find((r) => r.type === "mcp" && r.name === name)?.requiresCredential;
 
