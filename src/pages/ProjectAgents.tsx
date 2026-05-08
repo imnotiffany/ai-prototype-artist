@@ -45,6 +45,25 @@ const ProjectAgents = () => {
   const [kindFilter, setKindFilter] = useState<"all" | "app" | "agent">("all");
   const [onlyMine, setOnlyMine] = useState(false);
   const [publishTarget, setPublishTarget] = useState<Agent | null>(null);
+  const [unpublishTarget, setUnpublishTarget] = useState<Agent | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Agent | null>(null);
+  const { toast } = useToast();
+
+  const handleCopy = (app: Agent) => {
+    toast({ title: "复制成功", description: `已复制${app.kind === "app" ? "应用" : "智能体"}「${app.name}」` });
+  };
+
+  const handleConfirmUnpublish = () => {
+    if (!unpublishTarget) return;
+    toast({ title: "已下架", description: `「${unpublishTarget.name}」已下架` });
+    setUnpublishTarget(null);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deleteTarget) return;
+    toast({ title: "已删除", description: `「${deleteTarget.name}」已删除` });
+    setDeleteTarget(null);
+  };
 
   const mockVersionsFor = (a: Agent) => [
     { v: "v0.0.3", at: "2026-04-25 14:02", note: "新增 丰景台数据查询v2", current: true },
