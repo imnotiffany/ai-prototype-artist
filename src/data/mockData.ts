@@ -21,6 +21,8 @@ export interface Resource {
   deployment?: string;
   /** MCP only: 评级 */
   trustLevel?: McpTrustLevel;
+  /** Skill only: 来源范围 — market=Skill 广场公共，project=项目自建 */
+  scope?: "market" | "project";
 }
 
 export interface Agent {
