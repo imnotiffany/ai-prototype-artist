@@ -94,6 +94,7 @@ const VaultPage = () => {
   const openEdit = (m: McpEntry) => {
     reset();
     setEditingId(m.id);
+    setCreateMode("manual");
     setEndpoint(m.endpoint);
     setName(m.name);
     setIdentifier(m.identifier);
