@@ -86,6 +86,8 @@ const VaultPage = () => {
   const openCreate = () => {
     reset();
     setEditingId(null);
+    setCreateMode("market");
+    setMarketSearch("");
     setCreateOpen(true);
   };
 
