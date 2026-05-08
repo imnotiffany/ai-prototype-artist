@@ -218,6 +218,14 @@ const AgentDetail = () => {
   /* ── Version detail dialog ── */
   const [viewingVersion, setViewingVersion] = useState<typeof versions[0] | null>(null);
 
+  /* ── 订阅 MCP 管理（Vault）配置变化，让本页绑定区实时联动 ── */
+  const [, setVaultTick] = useState(0);
+  useEffect(() => {
+    const unsub = subscribeMcpStore(() => setVaultTick((t) => t + 1));
+    return () => { unsub(); };
+  }, []);
+
+
   if (!agent) return <div className="p-6">智能体不存在</div>;
 
   const allMcpOptions = getActiveMCPs().map((m) => m.name);
