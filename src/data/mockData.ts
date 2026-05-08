@@ -129,7 +129,7 @@ export const sharedResources: Resource[] = [
 
 /* ── Helper: get active resources as picker items ── */
 export const getActiveSkills = () =>
-  sharedResources.filter((r) => r.type === "skill" && r.status === "active").map((r) => ({ name: r.name, description: r.description }));
+  sharedResources.filter((r) => r.type === "skill" && r.status === "active").map((r) => ({ name: r.name, description: r.description, scope: r.scope ?? "market" }));
 
 export const getActiveMCPs = () =>
   sharedResources
