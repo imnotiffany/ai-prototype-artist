@@ -52,8 +52,8 @@ const AgentMarketplace = () => {
   return (
     <div className="flex-1 overflow-auto animate-fade-in">
       {/* Top tabs */}
-      <div className="px-6 pt-4">
-        <div className="inline-flex items-center bg-muted rounded-md p-0.5">
+      <div className="px-6 pt-4 border-b border-border">
+        <div className="flex items-center gap-6">
           {([
             { value: "marketplace", label: "作品广场" },
             { value: "project", label: "项目作品" },
@@ -61,13 +61,16 @@ const AgentMarketplace = () => {
             <button
               key={t.value}
               onClick={() => setScopeTab(t.value)}
-              className={`px-3 py-1 text-xs rounded transition-colors ${
+              className={`relative pb-3 text-sm transition-colors ${
                 scopeTab === t.value
-                  ? "bg-background text-foreground shadow-sm font-medium"
+                  ? "text-primary font-semibold"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {t.label}
+              {scopeTab === t.value && (
+                <span className="absolute -bottom-px left-0 right-0 h-0.5 bg-primary rounded-full" />
+              )}
             </button>
           ))}
         </div>
