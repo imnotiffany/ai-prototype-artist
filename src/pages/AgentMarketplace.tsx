@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { getMarketplaceAgents, categories, type Agent } from "@/data/mockData";
+import { mockAgents, categories, type Agent } from "@/data/mockData";
 
 type KindFilter = "all" | "app" | "agent";
 
