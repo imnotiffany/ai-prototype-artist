@@ -236,24 +236,36 @@ const VaultPage = () => {
                   </TableCell>
                   <TableCell className="py-2 text-[11px] text-muted-foreground whitespace-nowrap">{m.createdAt}</TableCell>
                   <TableCell className="py-2 whitespace-nowrap">
-                    <div className="flex items-center gap-1.5">
+                    {testingId === m.id ? (
+                      <Button size="sm" variant="outline" className="h-7 text-[11px] px-2 gap-1" disabled>
+                        <Loader2 className="w-3 h-3 animate-spin" />测试中
+                      </Button>
+                    ) : testResult[m.id] === "ok" ? (
+                      <button
+                        onClick={() => runTest(m.id, m.name)}
+                        className="inline-flex items-center gap-1 h-7 px-2 rounded-md bg-emerald-100 text-emerald-700 text-[11px] hover:bg-emerald-200 transition-colors"
+                        title="重新测试"
+                      >
+                        <CheckCircle2 className="w-3 h-3" />已连通
+                      </button>
+                    ) : testResult[m.id] === "fail" ? (
+                      <button
+                        onClick={() => runTest(m.id, m.name)}
+                        className="inline-flex items-center gap-1 h-7 px-2 rounded-md bg-red-100 text-red-700 text-[11px] hover:bg-red-200 transition-colors"
+                        title="重新测试"
+                      >
+                        <XCircle className="w-3 h-3" />连接失败
+                      </button>
+                    ) : (
                       <Button
                         size="sm"
                         variant="outline"
                         className="h-7 text-[11px] px-2 gap-1"
                         onClick={() => runTest(m.id, m.name)}
-                        disabled={testingId === m.id}
                       >
-                        {testingId === m.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plug className="w-3 h-3" />}
-                        测试连接
+                        <Plug className="w-3 h-3" />测试连接
                       </Button>
-                      {testResult[m.id] === "ok" && (
-                        <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0 text-[10px] gap-1"><CheckCircle2 className="w-3 h-3" />已连通</Badge>
-                      )}
-                      {testResult[m.id] === "fail" && (
-                        <Badge className="bg-red-100 text-red-700 hover:bg-red-100 border-0 text-[10px] gap-1"><XCircle className="w-3 h-3" />失败</Badge>
-                      )}
-                    </div>
+                    )}
                   </TableCell>
                   <TableCell className="py-2">
                     <div className="flex items-center gap-0.5">
