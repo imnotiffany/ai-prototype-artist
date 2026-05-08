@@ -21,8 +21,8 @@ const MY_AUTHOR_ID = "01441970";
 
 const statusOptions = [
   { value: "all", label: "全部" },
-  { value: "marketplace", label: "已发布到广场" },
-  { value: "project", label: "已发布到项目" },
+  { value: "marketplace", label: "已发布广场" },
+  { value: "project", label: "已发布项目" },
   { value: "unpublished", label: "未发布" },
 ];
 
@@ -63,14 +63,14 @@ const ProjectAgents = () => {
     setOnlyMine(false);
   };
 
-  const getStatusBadge = (app: Agent) => {
+  const getStatusInfo = (app: Agent): { label: string; dot: string; text: string; bg: string } => {
     if (app.status === "published" && app.publishScope === "marketplace") {
-      return <Badge key="mkt" className="bg-green-100 text-green-700 hover:bg-green-100 border-0 text-[10px] px-1.5 h-5">已发布到广场</Badge>;
+      return { label: "已发布广场", dot: "bg-green-500", text: "text-green-700 dark:text-green-400", bg: "bg-green-500/10" };
     }
     if (app.status === "published" && app.publishScope === "project") {
-      return <Badge key="proj" className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-0 text-[10px] px-1.5 h-5">已发布到项目</Badge>;
+      return { label: "已发布项目", dot: "bg-blue-500", text: "text-blue-700 dark:text-blue-400", bg: "bg-blue-500/10" };
     }
-    return <Badge key="unp" className="bg-gray-100 text-gray-600 hover:bg-gray-100 border-0 text-[10px] px-1.5 h-5">未发布</Badge>;
+    return { label: "未发布", dot: "bg-gray-400", text: "text-muted-foreground", bg: "bg-muted" };
   };
 
   const usedCategories = [...new Set(mockAgents.map((a) => a.category))];
@@ -173,10 +173,7 @@ const ProjectAgents = () => {
                   {app.avatar}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <h3 className="text-sm font-medium truncate max-w-[140px]">{app.name}</h3>
-                    {getStatusBadge(app)}
-                  </div>
+                  <h3 className="text-sm font-medium truncate">{app.name}</h3>
                   <div className="flex items-center gap-1.5 mt-1">
                     <Badge variant="outline" className="text-[10px] h-5 px-1.5 text-primary border-primary/30">{app.category}</Badge>
                     {app.featured && (
@@ -186,6 +183,15 @@ const ProjectAgents = () => {
                 </div>
               </div>
               <p className="text-xs text-muted-foreground line-clamp-2 mb-3 leading-relaxed">{app.description}</p>
+              {(() => {
+                const s = getStatusInfo(app);
+                return (
+                  <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full mb-2 ${s.bg} ${s.text}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+                    <span className="text-[10px] font-medium">{s.label}</span>
+                  </div>
+                );
+              })()}
               <div className="flex items-end justify-between gap-2 text-[11px] text-muted-foreground">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 truncate">
