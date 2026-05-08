@@ -16,12 +16,15 @@ const openAgent = (a: Agent, navigate: (p: string) => void) => {
 
 const AgentMarketplace = () => {
   const navigate = useNavigate();
+  const [scopeTab, setScopeTab] = useState<"marketplace" | "project">("marketplace");
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [kindFilter, setKindFilter] = useState<KindFilter>("all");
   const [sortBy, setSortBy] = useState<"latest" | "downloads">("latest");
 
-  const allPublished = getMarketplaceAgents();
+  const allPublished = mockAgents.filter(
+    (a) => a.status === "published" && a.publishScope === scopeTab
+  );
 
   const filtered = allPublished
     .filter((a) => {
