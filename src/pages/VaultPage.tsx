@@ -256,7 +256,8 @@ const VaultPage = () => {
                     </div>
                   </TableCell>
                   <TableCell className="py-2">
-                      {m.requiresCredential && (
+                    <div className="flex items-center gap-0.5">
+                      {m.requiresCredential ? (
                         <>
                           <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEdit(m)} title="编辑">
                             <Pencil className="w-3.5 h-3.5" />
@@ -265,6 +266,8 @@ const VaultPage = () => {
                             <Trash2 className="w-3.5 h-3.5" />
                           </Button>
                         </>
+                      ) : (
+                        <span className="text-[11px] text-muted-foreground">—</span>
                       )}
                     </div>
                   </TableCell>
