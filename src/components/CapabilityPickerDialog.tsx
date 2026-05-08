@@ -136,17 +136,8 @@ export const CapabilityPickerDialog = ({
             </div>
           </div>
           {isMcp ? (
-            disabled ? (
-              <Link
-                to={mcpManageHref}
-                onClick={() => setOpen(false)}
-                className="shrink-0 text-[10px] text-primary hover:underline flex items-center gap-0.5 mt-1"
-                title="前往 MCP 管理配置凭据"
-              >
-                <Settings2 className="w-3 h-3" />去配置
-              </Link>
-            ) : (
-              <Switch checked={sel} onCheckedChange={() => onToggle(it.name)} className="shrink-0" />
+            disabled ? null : (
+              sel && <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
             )
           ) : (
             sel && <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
@@ -162,7 +153,16 @@ export const CapabilityPickerDialog = ({
           >
             查看详情 <ExternalLink className="w-2.5 h-2.5" />
           </button>
-          {!isMcp && (
+          {isMcp && disabled ? (
+            <Link
+              to={mcpManageHref}
+              onClick={() => setOpen(false)}
+              className="text-[10px] text-primary hover:underline flex items-center gap-0.5"
+              title="前往 MCP 管理配置凭据"
+            >
+              <Settings2 className="w-2.5 h-2.5" />去配置
+            </Link>
+          ) : (
             <Button
               size="sm"
               variant={sel ? "outline" : "default"}
