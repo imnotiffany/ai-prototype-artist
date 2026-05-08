@@ -510,10 +510,69 @@ const AgentDetail = () => {
         {/* ───────── 配置 ───────── */}
         <TabsContent value="config" className="mt-4">
           <div className="space-y-4">
-            <p className="text-[11px] text-muted-foreground px-1">
-              名称、描述等基本信息请通过页面右上角的「编辑基本信息」修改，不会产生新版本。以下配置变更会生成新版本。
-            </p>
+            <div className="flex items-center justify-between gap-3 px-1">
+              <p className="text-[11px] text-muted-foreground">
+                名称、描述等基本信息请通过页面右上角的「编辑基本信息」修改，不会产生新版本。以下配置变更会生成新版本。
+              </p>
+              <div className="inline-flex items-center rounded-md border border-border bg-muted/40 p-0.5 shrink-0">
+                <button
+                  onClick={() => setConfigView("form")}
+                  className={`inline-flex items-center gap-1 px-2.5 h-7 rounded text-xs transition-colors ${
+                    configView === "form" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Layout className="w-3 h-3" />表单
+                </button>
+                <button
+                  onClick={() => setConfigView("code")}
+                  className={`inline-flex items-center gap-1 px-2.5 h-7 rounded text-xs transition-colors ${
+                    configView === "code" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Code2 className="w-3 h-3" />代码
+                </button>
+              </div>
+            </div>
 
+            {configView === "code" ? (
+              <section className="border border-border rounded-lg bg-card">
+                <header className="px-4 py-2.5 border-b border-border flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-semibold flex items-center gap-1.5"><Code2 className="w-3.5 h-3.5 text-primary" />配置代码</h3>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">以 YAML 形式查看完整配置，便于版本对比与导出</p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs gap-1"
+                    onClick={() => {
+                      navigator.clipboard.writeText(
+                        `name: ${name}\nmodel: ${model}\nsystem_prompt: |\n  ${systemPrompt.split("\n").join("\n  ")}\nskills:\n${selSkills.map((s) => `  - ${s}`).join("\n") || "  []"}\nmcp_bindings:\n${mcpBindings.map((b) => `  - name: ${b.name}\n    credential: ${b.credential || "(未绑定)"}`).join("\n") || "  []"}\nsub_agents:\n${subAgents.map((s) => `  - name: ${s.name}\n    role: ${s.role}\n    trigger: ${s.trigger}`).join("\n") || "  []"}\nfengsheng:\n  client_id: ${fsAppKey || "(未配置)"}\n  robot_code: ${fsRobotCode || "(未配置)"}`
+                      );
+                      toast({ title: "已复制配置到剪贴板" });
+                    }}
+                  >
+                    <Copy className="w-3 h-3" />复制
+                  </Button>
+                </header>
+                <pre className="text-[11px] font-mono leading-relaxed p-4 whitespace-pre-wrap break-all max-h-[640px] overflow-auto">
+{`name: ${name}
+model: ${model}
+system_prompt: |
+  ${systemPrompt.split("\n").join("\n  ")}
+skills:
+${selSkills.map((s) => `  - ${s}`).join("\n") || "  []"}
+mcp_bindings:
+${mcpBindings.map((b) => `  - name: ${b.name}\n    credential: ${b.credential || "(未绑定)"}`).join("\n") || "  []"}
+sub_agents:
+${subAgents.map((s) => `  - name: ${s.name}\n    role: ${s.role}\n    trigger: ${s.trigger}`).join("\n") || "  []"}
+fengsheng:
+  client_id: ${fsAppKey || "(未配置)"}
+  robot_code: ${fsRobotCode || "(未配置)"}`}
+                </pre>
+              </section>
+            ) : (
+              <>
 
             {/* 2. 模型与提示词 */}
             <section className="border border-border rounded-lg bg-card">
