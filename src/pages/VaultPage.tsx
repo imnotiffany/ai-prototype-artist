@@ -52,6 +52,14 @@ const VaultPage = () => {
   const [timeout, setTimeoutVal] = useState("30");
   const [sseTimeout, setSseTimeout] = useState("300");
   const [tab, setTab] = useState<"headers" | "config">("headers");
+  const [createMode, setCreateMode] = useState<"market" | "manual">("market");
+  const [marketSearch, setMarketSearch] = useState("");
+
+  const marketList = sharedResources.filter((r) => {
+    if (r.type !== "mcp") return false;
+    const q = marketSearch.toLowerCase();
+    return r.name.toLowerCase().includes(q) || r.description.toLowerCase().includes(q);
+  });
 
   const reset = () => {
     setEndpoint(""); setName(""); setIdentifier("");
