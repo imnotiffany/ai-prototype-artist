@@ -116,7 +116,7 @@ const ProjectAgents = () => {
     return { label: "未发布", dot: "bg-gray-400", text: "text-muted-foreground", bg: "bg-muted" };
   };
 
-  const usedCategories = [...new Set(mockAgents.map((a) => a.category))];
+  const usedCategories = [...new Set(agents.map((a) => a.category))];
 
   return (
     <div className="flex-1 overflow-auto">
