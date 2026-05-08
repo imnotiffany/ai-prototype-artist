@@ -45,9 +45,8 @@ const ProjectAgents = () => {
     if (searchName && !app.name.toLowerCase().includes(searchName.toLowerCase())) return false;
     if (categoryFilter !== "all" && app.category !== categoryFilter) return false;
     if (statusFilter !== "all") {
-      if (statusFilter === "marketplace" && !(app.status === "published" && app.publishScope === "marketplace")) return false;
-      if (statusFilter === "project" && !(app.status === "published" && app.publishScope === "project")) return false;
-      if (statusFilter === "unpublished" && app.status !== "project") return false;
+      if (statusFilter === "published" && app.status !== "published") return false;
+      if (statusFilter === "unpublished" && app.status === "published") return false;
     }
     if (kindFilter !== "all" && app.kind !== kindFilter) return false;
     if (onlyMine && app.authorId !== MY_AUTHOR_ID) return false;
