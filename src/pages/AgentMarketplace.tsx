@@ -132,7 +132,8 @@ const AgentMarketplace = () => {
         const overflowSelectedCount = activeCategory && overflow.includes(activeCategory) ? 1 : 0;
 
         return (
-          <div className="flex items-center gap-1.5 mb-5 px-6 flex-wrap">
+          <div className="px-6 mb-5 space-y-3">
+            <div className="flex items-center gap-1.5 flex-wrap">
             <button
               onClick={() => setActiveCategory(null)}
               className={`px-2.5 py-1 rounded-full text-xs transition-colors border ${
