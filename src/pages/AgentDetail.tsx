@@ -62,7 +62,7 @@ const buildMockTranscript = (userPrompt: string): TranscriptEvent[] => [
   },
   { id: "a1", type: "agent",
     content: "已汇总完成，华东区 ¥1.2M（环比 +8%）、华南区 ¥0.9M（+3%）、华北区 ¥0.7M（-2%）。\n\n报告已生成 → 销售周报_20260429.md" },
-  { id: "s1", type: "system", message: "会话结束 · 用时 6.5s · 1552 tokens" },
+  { id: "s1", type: "system", message: "会话结束 · 1552 tokens" },
 ];
 
 const mockDebugEvents: DebugEvent[] = [
