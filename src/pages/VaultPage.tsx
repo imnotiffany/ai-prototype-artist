@@ -73,10 +73,8 @@ const VaultPage = () => {
   const [endpoint, setEndpoint] = useState("");
   const [name, setName] = useState("");
   const [identifier, setIdentifier] = useState("");
+  const [description, setDescription] = useState("");
   const [headers, setHeaders] = useState<{ key: string; value: string }[]>([]);
-  const [timeout, setTimeoutVal] = useState("30");
-  const [sseTimeout, setSseTimeout] = useState("300");
-  const [tab, setTab] = useState<"headers" | "config">("headers");
   const [createMode, setCreateMode] = useState<"market" | "manual">("market");
   const [marketSearch, setMarketSearch] = useState("");
   const [marketTag, setMarketTag] = useState<string>("__all__");
