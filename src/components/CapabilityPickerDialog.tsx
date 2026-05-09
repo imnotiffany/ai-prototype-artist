@@ -219,7 +219,7 @@ export const CapabilityPickerDialog = ({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          {isSkill && availableTags.length > 0 && (
+          {!isMcp && availableTags.length > 0 && (
             <Select value={skillTag} onValueChange={setSkillTag}>
               <SelectTrigger className="h-8 w-[140px] text-xs shrink-0 gap-1">
                 <Tag className="w-3 h-3 text-muted-foreground" />
