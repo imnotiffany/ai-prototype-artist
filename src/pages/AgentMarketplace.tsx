@@ -23,6 +23,7 @@ const AgentMarketplace = () => {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [kindFilter, setKindFilter] = useState<KindFilter>("all");
   const [sortBy, setSortBy] = useState<"latest" | "downloads">("latest");
+  const [catPopOpen, setCatPopOpen] = useState(false);
 
   const allPublished = mockAgents.filter(
     (a) => a.status === "published" && a.publishScope === scopeTab
@@ -117,7 +118,7 @@ const AgentMarketplace = () => {
         allPublished.forEach((a) => {
           if (a.category) counts.set(a.category, (counts.get(a.category) ?? 0) + 1);
         });
-        const ranked = [...SKILL_CATEGORIES].sort(
+        const ranked = ([...SKILL_CATEGORIES] as string[]).sort(
           (a, b) => (counts.get(b) ?? 0) - (counts.get(a) ?? 0)
         );
         const VISIBLE = 7;
