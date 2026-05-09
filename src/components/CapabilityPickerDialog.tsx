@@ -73,11 +73,11 @@ export const CapabilityPickerDialog = ({
     if (!isSkill) return [] as string[];
     const set = new Set<string>();
     items.forEach((it) => {
-      if (hasSkillScopes && (it.scope ?? "market") !== skillScope) return;
+      if (hasScopes && (it.scope ?? "market") !== skillScope) return;
       (it.tags ?? []).forEach((t) => set.add(t));
     });
     return Array.from(set).sort();
-  }, [isSkill, items, hasSkillScopes, skillScope]);
+  }, [isSkill, items, hasScopes, skillScope]);
 
   // 切换 scope 时若当前标签不在新范围内，重置
   useEffect(() => {
@@ -86,7 +86,7 @@ export const CapabilityPickerDialog = ({
   }, [isSkill, availableTags, skillTag]);
 
   const filtered = items.filter((it) => {
-    if (hasSkillScopes && (it.scope ?? "market") !== skillScope) return false;
+    if (hasScopes && (it.scope ?? "market") !== skillScope) return false;
     if (isSkill && skillTag !== "__all__" && !(it.tags ?? []).includes(skillTag)) return false;
     const q = search.toLowerCase();
     return it.name.toLowerCase().includes(q) || it.description.toLowerCase().includes(q);
@@ -221,7 +221,7 @@ export const CapabilityPickerDialog = ({
             <Badge variant="secondary" className="text-[10px] font-normal">已选 {selected.length}</Badge>
           </DialogTitle>
         </DialogHeader>
-        {hasSkillScopes && (
+        {hasScopes && (
           <Tabs value={skillScope} onValueChange={(v) => setSkillScope(v as "market" | "project")}>
             <TabsList className="h-8">
               <TabsTrigger value="market" className="text-xs h-6 px-3">市场 Skill <span className="ml-1 text-muted-foreground">({marketCount})</span></TabsTrigger>
@@ -250,7 +250,7 @@ export const CapabilityPickerDialog = ({
               </SelectContent>
             </Select>
           )}
-          {hasSkillScopes && skillScope === "project" ? (
+          {hasScopes && skillScope === "project" ? (
             <Button
               variant="outline"
               size="sm"
@@ -276,7 +276,7 @@ export const CapabilityPickerDialog = ({
             </Button>
           )}
         </div>
-        {hasSkillScopes && skillScope === "project" && (
+        {hasScopes && skillScope === "project" && (
           <p className="text-[10px] text-muted-foreground -mt-1">
             项目 Skill 仅当前项目可见。如需上传新的 Skill 安装包，请前往「项目 Skill」页面。
           </p>
