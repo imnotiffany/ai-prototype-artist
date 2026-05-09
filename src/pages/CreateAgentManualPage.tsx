@@ -823,29 +823,189 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 </Button>
               </div>
             </div>
+            <div className="flex justify-between mt-3">
+              <Button size="sm" variant="ghost" className="h-8 text-xs gap-1" onClick={() => setCurrentTab("capability")}>
+                <ArrowLeft className="w-3 h-3" /> 上一步
+              </Button>
+              <Button
+                size="sm"
+                className="h-8 text-xs gap-1.5"
+                disabled={!promptComplete}
+                onClick={() => setCurrentTab("channels")}
+                title={promptComplete ? "下一步：对外接入" : "请完善系统提示词（不少于 20 字）"}
+              >
+                下一步：对外接入 <ArrowRight className="w-3 h-3" />
+              </Button>
+            </div>
           </TabsContent>
 
-          {/* FengSheng NEXT Bot */}
-          <TabsContent value="fengsheng" className="mt-4 space-y-4">
-            <div className="border border-dashed border-amber-300 rounded-lg px-4 py-3 bg-amber-50/50 dark:bg-amber-950/20 flex items-start gap-2.5">
-              <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          {/* 对外接入：子智能体 + 丰声 NEXT + Agent Hub */}
+          <TabsContent value="channels" className="mt-4 space-y-4">
+            <div className="border border-dashed border-border rounded-lg px-4 py-3 bg-muted/30 flex items-start gap-2.5">
+              <Info className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs font-medium">丰声 NEXT 群聊机器人接入</span>
-                  <span className="text-[10px] px-1.5 h-4 leading-4 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">可选项</span>
-                </div>
+                <p className="text-xs font-medium">对外接入与协作（全部可选）</p>
                 <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
-                  仅在需要把智能体发布为群聊机器人（成员 @ 即可触发）时配置。不需要的话可直接跳过此栏目，智能体仍可正常使用。
+                  组合 <span className="font-medium">子智能体</span> 让主智能体调度其他 Agent 协同；接入 <span className="font-medium">丰声 NEXT</span> 发布为群聊机器人；发布到 <span className="font-medium">Agent Hub</span> 获得可视化运行监控。不需要可全部跳过，智能体仍可正常使用。
                 </p>
               </div>
             </div>
 
-            <div className="border border-border rounded-lg p-5 bg-card space-y-4">
-              <div className="flex items-center justify-between">
-                <h4 className="text-xs font-semibold flex items-center gap-1.5">
-                  <KeyRound className="w-3.5 h-3.5" />
-                  应用凭证
-                </h4>
+            {/* 子智能体绑定 */}
+            <div className="border border-border rounded-lg p-5 bg-card">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <Label className="text-xs flex items-center gap-1.5"><Bot className="w-3.5 h-3.5 text-primary" />子智能体</Label>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">从智能体广场挑选已发布的智能体作为子智能体，主智能体可调度它们协同完成任务</p>
+                </div>
+                <CapabilityPickerDialog
+                  items={subagents.map((a) => ({ name: a.name, description: a.description }))}
+                  selected={selSubagents}
+                  onToggle={(n) => toggle(selSubagents, setSelSubagents, n)}
+                  icon={<Bot className="w-3.5 h-3.5" />}
+                  label="子智能体"
+                  marketLink="/"
+                  trigger={<Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0"><Plus className="w-3 h-3" />添加子智能体</Button>}
+                />
+              </div>
+              {(() => {
+                const allMissing = new Set<string>();
+                selSubagents.forEach((name) => {
+                  const sub = subagents.find((a) => a.name === name);
+                  sub?.mcpServers.forEach((m) => { if (!isMcpAvailableInVault(m)) allMissing.add(m); });
+                });
+                if (allMissing.size === 0) return null;
+                return (
+                  <div className="border border-amber-300 bg-amber-50/60 dark:bg-amber-950/20 rounded-md px-3 py-2 mb-2 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                      <span className="text-[11px] text-amber-800 dark:text-amber-300 truncate">
+                        有 {allMissing.size} 个子智能体依赖的 MCP 尚未在 MCP 管理中配置凭据
+                      </span>
+                    </div>
+                    <Button size="sm" variant="outline" className="h-7 text-[11px] border-amber-300 text-amber-700 hover:bg-amber-100 shrink-0" onClick={() => setSubagentGapOpen(true)}>
+                      查看并配置
+                    </Button>
+                  </div>
+                );
+              })()}
+              {selSubagents.length === 0 ? (
+                <p className="text-xs text-muted-foreground text-center py-4">尚未绑定任何子智能体。点击右上角「添加子智能体」从广场选择。</p>
+              ) : (
+                <div className="space-y-2">
+                  {selSubagents.map((name) => {
+                    const sub = subagents.find((a) => a.name === name);
+                    if (!sub) return (
+                      <div key={name} className="border border-border rounded-md p-3 flex items-center justify-between">
+                        <span className="text-xs flex items-center gap-1.5"><Bot className="w-3 h-3 text-primary" />{name}</span>
+                        <button onClick={() => toggle(selSubagents, setSelSubagents, name)} className="text-muted-foreground hover:text-destructive p-1"><X className="w-3.5 h-3.5" /></button>
+                      </div>
+                    );
+                    const missingMcps = sub.mcpServers.filter((m) => !isMcpAvailableInVault(m));
+                    return (
+                      <div key={name} className="border border-border rounded-md p-3 space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5">
+                              <Bot className="w-3.5 h-3.5 text-primary shrink-0" />
+                              <span className="text-xs font-medium truncate">{sub.name}</span>
+                              <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-border">来自广场</Badge>
+                            </div>
+                            <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-relaxed">{sub.description}</p>
+                          </div>
+                          <button onClick={() => toggle(selSubagents, setSelSubagents, name)} className="text-muted-foreground hover:text-destructive p-1 shrink-0" title="移除"><X className="w-3.5 h-3.5" /></button>
+                        </div>
+                        {(sub.skills.length > 0 || sub.mcpServers.length > 0) && (
+                          <div className="border-t border-border pt-2 space-y-1.5">
+                            {sub.mcpServers.length > 0 && (
+                              <div className="flex items-start gap-2 flex-wrap">
+                                <span className="text-[10px] text-muted-foreground shrink-0 mt-0.5">继承 MCP</span>
+                                {sub.mcpServers.map((m) => {
+                                  const ok = isMcpAvailableInVault(m);
+                                  return (
+                                    <Badge key={m} variant="outline" className={`text-[10px] h-4 px-1.5 gap-1 ${ok ? "border-emerald-300 text-emerald-700 bg-emerald-50/60" : "border-amber-300 text-amber-700 bg-amber-50/60"}`}>
+                                      <Server className="w-2.5 h-2.5" />{m}
+                                      {!ok && <AlertTriangle className="w-2.5 h-2.5" />}
+                                    </Badge>
+                                  );
+                                })}
+                              </div>
+                            )}
+                            {sub.skills.length > 0 && (
+                              <div className="flex items-start gap-2 flex-wrap">
+                                <span className="text-[10px] text-muted-foreground shrink-0 mt-0.5">继承 Skill</span>
+                                {sub.skills.map((s) => (
+                                  <Badge key={s} variant="outline" className="text-[10px] h-4 px-1.5 gap-1 border-border">
+                                    <Zap className="w-2.5 h-2.5" />{s}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+                            {missingMcps.length > 0 && (
+                              <p className="text-[10px] text-amber-700 dark:text-amber-400 flex items-center gap-1">
+                                <AlertTriangle className="w-2.5 h-2.5" />
+                                {missingMcps.length} 个 MCP 尚未配置凭据，需在 MCP 管理中补齐
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* 子智能体缺口配置 - 独立弹窗 */}
+            <Dialog open={subagentGapOpen} onOpenChange={setSubagentGapOpen}>
+              <DialogContent className="max-w-lg">
+                <DialogHeader>
+                  <DialogTitle className="text-sm">补齐子智能体所需 MCP 凭据</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-2 max-h-[60vh] overflow-auto">
+                  {(() => {
+                    const map = new Map<string, string[]>();
+                    selSubagents.forEach((name) => {
+                      const sub = subagents.find((a) => a.name === name);
+                      sub?.mcpServers.forEach((m) => {
+                        if (!isMcpAvailableInVault(m)) map.set(m, [...(map.get(m) ?? []), name]);
+                      });
+                    });
+                    if (map.size === 0) return <p className="text-xs text-muted-foreground py-4 text-center">所有依赖 MCP 已就绪</p>;
+                    return Array.from(map.entries()).map(([mcp, owners]) => (
+                      <div key={mcp} className="border border-border rounded-md p-3 flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <Server className="w-3 h-3 text-primary shrink-0" />
+                            <span className="text-xs font-medium truncate">{mcp}</span>
+                            <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-0 text-[10px] h-4">未配置</Badge>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground mt-0.5 truncate">被以下子智能体使用：{owners.join("、")}</p>
+                        </div>
+                        <Button size="sm" variant="outline" className="h-7 text-[11px] shrink-0" onClick={() => { setSubagentGapOpen(false); navigate("/vault"); }}>
+                          前往配置
+                        </Button>
+                      </div>
+                    ));
+                  })()}
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setSubagentGapOpen(false)}>关闭</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* 丰声 NEXT 群聊机器人 */}
+            <div className="border border-border rounded-lg bg-card">
+              <div className="px-5 py-3 border-b border-border flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-xs font-semibold flex items-center gap-1.5">
+                    <MessageSquare className="w-3.5 h-3.5 text-primary" />
+                    丰声 NEXT 群聊机器人
+                    <Badge variant="outline" className="text-[10px] h-4 px-1.5 text-muted-foreground">可选</Badge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">把智能体接入丰声 NEXT 群聊（基于 Function Calling），成员 @ 机器人即可触发</p>
+                </div>
                 <Badge
                   variant="outline"
                   className={`text-[10px] gap-1 ${fsConnected ? "text-emerald-600 border-emerald-600/40 bg-emerald-500/10" : "text-muted-foreground"}`}
@@ -854,84 +1014,119 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   {fsConnected ? "已连接" : "未连接"}
                 </Badge>
               </div>
-
-              <div>
-                <Label className="text-xs">
-                  Client ID（AppKey） <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  className="mt-1.5 h-8 text-xs font-mono"
-                  placeholder="企业应用 AppKey"
-                  value={fsAppKey}
-                  onChange={(e) => setFsAppKey(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs">
-                  Client Secret（AppSecret） <span className="text-destructive">*</span>
-                </Label>
-                <div className="relative mt-1.5">
-                  <Input
-                    className="h-8 text-xs font-mono pr-9"
-                    type={fsSecretVisible ? "text" : "password"}
-                    placeholder="企业应用 AppSecret"
-                    value={fsAppSecret}
-                    onChange={(e) => setFsAppSecret(e.target.value)}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setFsSecretVisible(!fsSecretVisible)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
-                    {fsSecretVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                  </button>
+              <div className="p-5 space-y-3">
+                <div>
+                  <Label className="text-xs">Client ID（AppKey）</Label>
+                  <Input className="mt-1.5 h-8 text-xs font-mono" placeholder="企业应用 AppKey" value={fsAppKey} onChange={(e) => setFsAppKey(e.target.value)} />
                 </div>
-              </div>
-
-              <div>
-                <Label className="text-xs">
-                  Robot Code <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  className="mt-1.5 h-8 text-xs font-mono"
-                  placeholder="机器人编码"
-                  value={fsRobotCode}
-                  onChange={(e) => setFsRobotCode(e.target.value)}
-                />
-                <p className="text-[10px] text-muted-foreground mt-1.5">
-                  在丰声 NEXT 开发者后台「机器人管理」中获取，凭据将通过「凭据金库」加密存储
-                </p>
-              </div>
-
-              <div className="flex justify-end pt-1">
-                <Button
-                  size="sm"
-                  variant={fsConnected ? "outline" : "default"}
-                  className="h-8 text-xs gap-1.5"
-                  onClick={() => {
-                    if (!fsAppKey || !fsAppSecret || !fsRobotCode) {
-                      toast({ title: "请先填写完整的应用凭证", variant: "destructive" });
-                      return;
-                    }
-                    setFsConnected(true);
-                    toast({ title: "丰声 NEXT 机器人已连接", description: `Robot ${fsRobotCode}` });
-                  }}
-                >
-                  {fsConnected ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Link2 className="w-3.5 h-3.5" />}
-                  {fsConnected ? "已连接" : "连接"}
-                </Button>
+                <div>
+                  <Label className="text-xs">Client Secret（AppSecret）</Label>
+                  <div className="relative mt-1.5">
+                    <Input className="h-8 text-xs font-mono pr-9" type={fsSecretVisible ? "text" : "password"} placeholder="企业应用 AppSecret" value={fsAppSecret} onChange={(e) => setFsAppSecret(e.target.value)} />
+                    <button type="button" onClick={() => setFsSecretVisible(!fsSecretVisible)} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                      {fsSecretVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs">Robot Code</Label>
+                  <Input className="mt-1.5 h-8 text-xs font-mono" placeholder="机器人编码" value={fsRobotCode} onChange={(e) => setFsRobotCode(e.target.value)} />
+                </div>
+                <div className="flex justify-end pt-1">
+                  <Button
+                    size="sm"
+                    variant={fsConnected ? "outline" : "default"}
+                    className="h-8 text-xs gap-1.5"
+                    onClick={() => {
+                      if (!fsAppKey || !fsAppSecret || !fsRobotCode) {
+                        toast({ title: "请先填写完整的应用凭证", variant: "destructive" });
+                        return;
+                      }
+                      setFsConnected(true);
+                      toast({ title: "丰声 NEXT 机器人已连接", description: `Robot ${fsRobotCode}` });
+                    }}
+                  >
+                    {fsConnected ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Link2 className="w-3.5 h-3.5" />}
+                    {fsConnected ? "已连接" : "连接"}
+                  </Button>
+                </div>
               </div>
             </div>
 
-            <div className="border border-border rounded-lg p-5 bg-card space-y-3">
-              <h4 className="text-xs font-semibold">接入说明</h4>
-              <ol className="text-[11px] text-muted-foreground space-y-1.5 list-decimal pl-4 leading-relaxed">
-                <li>登录丰声 NEXT 开发者后台，创建企业内部应用并开通「机器人」能力</li>
-                <li>复制应用的 AppKey、AppSecret 与 Robot Code，粘贴至上方对应字段</li>
-                <li>点击「连接」校验凭证，校验通过后保存并发布智能体</li>
-                <li>在目标群聊中添加该机器人，即可通过 @ 机器人触发对话</li>
-              </ol>
+            {/* Agent Hub 发布 */}
+            <div className="border border-border rounded-lg bg-card">
+              <div className="px-5 py-3 border-b border-border flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-xs font-semibold flex items-center gap-1.5">
+                    <FolderKanban className="w-3.5 h-3.5 text-primary" />
+                    Agent Hub
+                    <Badge variant="outline" className="text-[10px] h-4 px-1.5 text-muted-foreground">可选</Badge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">发布到 Agent Hub，获得运行状态、调用次数、错误率等可视化监控面板</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch checked={hubEnabled} onCheckedChange={(v) => { setHubEnabled(v); if (!v) setHubConnected(false); }} />
+                  <Badge
+                    variant="outline"
+                    className={`text-[10px] gap-1 ${hubConnected ? "text-emerald-600 border-emerald-600/40 bg-emerald-500/10" : "text-muted-foreground"}`}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full ${hubConnected ? "bg-emerald-500" : "bg-muted-foreground/50"}`} />
+                    {hubConnected ? "已发布" : hubEnabled ? "未发布" : "未启用"}
+                  </Badge>
+                </div>
+              </div>
+              {hubEnabled && (
+                <div className="p-5 space-y-3">
+                  <div>
+                    <Label className="text-xs">所属项目空间</Label>
+                    <Input className="mt-1.5 h-8 text-xs" placeholder="例如：销售运营" value={hubProject} onChange={(e) => setHubProject(e.target.value)} />
+                  </div>
+                  <div>
+                    <Label className="text-xs">可见范围</Label>
+                    <Select value={hubVisibility} onValueChange={(v: "team" | "org" | "public") => setHubVisibility(v)}>
+                      <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="team" className="text-xs">仅团队成员可见</SelectItem>
+                        <SelectItem value="org" className="text-xs">组织内可见</SelectItem>
+                        <SelectItem value="public" className="text-xs">公开</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex justify-end pt-1">
+                    <Button
+                      size="sm"
+                      variant={hubConnected ? "outline" : "default"}
+                      className="h-8 text-xs gap-1.5"
+                      onClick={() => {
+                        if (!hubProject.trim()) {
+                          toast({ title: "请填写所属项目空间", variant: "destructive" });
+                          return;
+                        }
+                        setHubConnected(true);
+                        toast({ title: "已发布到 Agent Hub", description: `${hubProject} · ${hubVisibility}` });
+                      }}
+                    >
+                      {hubConnected ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Rocket className="w-3.5 h-3.5" />}
+                      {hubConnected ? "已发布" : "发布到 Agent Hub"}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-between mt-3">
+              <Button size="sm" variant="ghost" className="h-8 text-xs gap-1" onClick={() => setCurrentTab("prompt")}>
+                <ArrowLeft className="w-3 h-3" /> 上一步
+              </Button>
+              <Button
+                size="sm"
+                className="h-8 text-xs gap-1.5"
+                disabled={!channelsValid}
+                onClick={() => setCurrentTab("debug")}
+                title={channelsValid ? "下一步：调试" : "已启用的接入项尚未完成连接"}
+              >
+                下一步：调试 <ArrowRight className="w-3 h-3" />
+              </Button>
             </div>
           </TabsContent>
 
