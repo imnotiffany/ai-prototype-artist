@@ -250,19 +250,11 @@ export const CapabilityPickerDialog = ({
         </div>
 
         <div className="overflow-auto -mx-1 px-1 space-y-3">
-          {/* 可选区：免凭据 + 已配置 */}
-          {isMcp && (
-            <div className="flex items-center gap-2 sticky top-0 bg-background py-1 z-10">
-              <span className="text-[11px] font-semibold text-foreground">可选</span>
-              <Badge variant="secondary" className="text-[10px] h-4 px-1.5 font-normal">{sortedAvailable.length}</Badge>
-              <span className="text-[10px] text-muted-foreground">免凭据 / 已配置凭据</span>
-            </div>
-          )}
           <div className="grid grid-cols-2 gap-2.5">
             {sortedAvailable.map((it) => renderCard(it, { disabled: false }))}
             {sortedAvailable.length === 0 && (
               <p className="col-span-2 text-center text-xs text-muted-foreground py-6">
-                暂无{isMcp ? "可选 MCP" : `匹配的 ${label}`}
+                暂无{isMcp ? "可选 MCP，请先在「MCP 管理」中配置" : `匹配的 ${label}`}
               </p>
             )}
           </div>
