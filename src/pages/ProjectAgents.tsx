@@ -129,7 +129,7 @@ const ProjectAgents = () => {
         {/* Filters */}
         <div className="flex items-center gap-3 mb-5 flex-wrap">
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-muted-foreground whitespace-nowrap">应用名称</span>
+            <span className="text-xs text-muted-foreground whitespace-nowrap">作品名称</span>
             <Input
               value={searchName}
               onChange={(e) => setSearchName(e.target.value)}
@@ -138,7 +138,7 @@ const ProjectAgents = () => {
             />
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-muted-foreground whitespace-nowrap">应用分类</span>
+            <span className="text-xs text-muted-foreground whitespace-nowrap">作品分类</span>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger className="h-8 text-xs w-28">
                 <SelectValue />
@@ -152,7 +152,7 @@ const ProjectAgents = () => {
             </Select>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-muted-foreground whitespace-nowrap">类型</span>
+            <span className="text-xs text-muted-foreground whitespace-nowrap">作品类型</span>
             <Select value={kindFilter} onValueChange={(v) => setKindFilter(v as "all" | "app" | "agent")}>
               <SelectTrigger className="h-8 text-xs w-24">
                 <SelectValue />
