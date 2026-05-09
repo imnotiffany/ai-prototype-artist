@@ -548,214 +548,8 @@ const VaultPage = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="manual" className="mt-0 space-y-3 max-h-[520px] overflow-auto -mx-1 px-1">
-            {locked && (
-              <div className="flex items-start gap-1.5 rounded-md border border-primary/30 bg-primary/5 px-2.5 py-1.5">
-                <Lock className="w-3 h-3 text-primary mt-0.5 shrink-0" />
-                <p className="text-[10px] text-muted-foreground leading-relaxed">
-                  来自 MCP 广场，服务地址、显示名称与英文标识已自动填入且不可修改；请在下方完成类型与请求头等配置。
-                </p>
-              </div>
-            )}
-
-            <div>
-              <Label className="text-[11px] font-medium">类型</Label>
-              <p className="text-[10px] text-muted-foreground mt-0.5">不同类型对应不同的接入与配置格式</p>
-              <div className="mt-1.5 flex items-center gap-5">
-                {([
-                  { v: "studio", label: "STDIO" },
-                  { v: "sse", label: "SSE" },
-                  { v: "http", label: "StreamableHTTP" },
-                ] as { v: McpType; label: string }[]).map((opt) => {
-                  const active = mcpType === opt.v;
-                  return (
-                    <label key={opt.v} className="flex items-center gap-1.5 cursor-pointer text-xs">
-                      <span className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-colors ${active ? "border-primary" : "border-muted-foreground/40"}`}>
-                        {active && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
-                      </span>
-                      <input
-                        type="radio"
-                        name="mcp-type"
-                        className="sr-only"
-                        checked={active}
-                        onChange={() => setMcpType(opt.v)}
-                      />
-                      <span className={active ? "text-foreground" : "text-muted-foreground"}>{opt.label}</span>
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-
-            {mcpType !== "studio" && (
-              <div>
-                <Label className="text-[11px] font-medium flex items-center gap-1">
-                  服务地址
-                  {locked && <Lock className="w-2.5 h-2.5 text-muted-foreground" />}
-                </Label>
-                <p className="text-[10px] text-muted-foreground mt-0.5">MCP 服务的访问链接，由服务提供方给出</p>
-                <Input
-                  className="mt-1 h-8 text-xs bg-muted/30"
-                  value={endpoint}
-                  readOnly={locked}
-                  disabled={locked}
-                  onChange={(e) => setEndpoint(e.target.value)}
-                  placeholder={mcpType === "sse" ? "例如 https://mcp.example.com/xxx/sse" : "例如 https://mcp.example.com/xxx"}
-                />
-              </div>
-            )}
-
-            <div>
-              <Label className="text-[11px] font-medium flex items-center gap-1">
-                显示名称
-                {locked && <Lock className="w-2.5 h-2.5 text-muted-foreground" />}
-              </Label>
-              <p className="text-[10px] text-muted-foreground mt-0.5">展示在列表与智能体里的名字，方便识别</p>
-              <div className="mt-1 flex items-center gap-2">
-                <Input
-                  className="h-8 text-xs bg-muted/30 flex-1"
-                  value={name}
-                  readOnly={locked}
-                  disabled={locked}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="例如 钉钉文档"
-                />
-                <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center shrink-0" title="图标">
-                  <Server className="w-3.5 h-3.5 text-primary-foreground" />
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-[11px] font-medium flex items-center gap-1">
-                英文标识
-                {locked && <Lock className="w-2.5 h-2.5 text-muted-foreground" />}
-              </Label>
-              <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">
-                供系统内部调用的英文别名，创建后不可修改；仅支持小写字母、数字、下划线和连字符，最多 24 个字符
-              </p>
-              <Input
-                className="mt-1 h-8 text-xs bg-muted/30 font-mono"
-                value={identifier}
-                maxLength={24}
-                readOnly={locked}
-                disabled={locked}
-                onChange={(e) => setIdentifier(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))}
-                placeholder="例如 my-mcp-server"
-              />
-            </div>
-
-            {/* Studio：命令 + 参数 */}
-            {mcpType === "studio" && (
-              <div className="space-y-2 rounded-md border border-border bg-muted/20 p-2.5">
-                <div>
-                  <Label className="text-[11px] font-medium">启动命令</Label>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">本地可执行命令，例如 npx / uvx / node</p>
-                  <Input
-                    className="mt-1 h-8 text-xs bg-background font-mono"
-                    value={stdioCommand}
-                    onChange={(e) => setStdioCommand(e.target.value)}
-                    placeholder="npx"
-                  />
-                </div>
-                <div>
-                  <Label className="text-[11px] font-medium">参数</Label>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">每行一个参数，将依次传给命令</p>
-                  <Textarea
-                    className="mt-1 text-xs bg-background font-mono min-h-[64px]"
-                    value={stdioArgs}
-                    onChange={(e) => setStdioArgs(e.target.value)}
-                    placeholder={"-y\n@modelcontextprotocol/server-xxx"}
-                  />
-                </div>
-              </div>
-            )}
-
-            <Tabs value={tab} onValueChange={(v) => setTab(v as "headers" | "config")} className="w-full">
-              <TabsList className="grid grid-cols-2 w-full bg-muted/40 h-8">
-                <TabsTrigger value="headers" className="text-xs h-6">
-                  {mcpType === "studio" ? "环境变量" : "请求头"}
-                </TabsTrigger>
-                <TabsTrigger value="config" className="text-xs h-6">配置</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="headers" className="space-y-2 mt-3">
-                {mcpType === "studio" ? (
-                  <>
-                    <div>
-                      <div className="text-[11px] font-medium">环境变量</div>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
-                        启动命令时注入的环境变量（如 API Key、Token 等）
-                      </p>
-                    </div>
-                    {envVars.length === 0 ? (
-                      <div className="text-[10px] text-muted-foreground">未配置环境变量</div>
-                    ) : (
-                      <div className="space-y-1.5">
-                        {envVars.map((h, i) => (
-                          <div key={i} className="flex items-center gap-1.5">
-                            <Input className="h-7 text-xs flex-1 font-mono" placeholder="KEY" value={h.key}
-                              onChange={(e) => setEnvVars((arr) => arr.map((x, idx) => idx === i ? { ...x, key: e.target.value } : x))} />
-                            <Input className="h-7 text-xs flex-1 font-mono" placeholder="value" value={h.value}
-                              onChange={(e) => setEnvVars((arr) => arr.map((x, idx) => idx === i ? { ...x, value: e.target.value } : x))} />
-                            <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setEnvVars((arr) => arr.filter((_, idx) => idx !== i))}>
-                              <X className="w-3 h-3" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    <Button variant="outline" size="sm" className="w-full h-7 text-xs gap-1 border-dashed"
-                      onClick={() => setEnvVars((arr) => [...arr, { key: "", value: "" }])}>
-                      <Plus className="w-3 h-3" /> 添加环境变量
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <div>
-                      <div className="text-[11px] font-medium">请求头</div>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
-                        发送到 MCP 服务器的额外 HTTP 请求头（如 Authorization、X-API-Key 等）
-                      </p>
-                    </div>
-                    {headers.length === 0 ? (
-                      <div className="text-[10px] text-muted-foreground">未配置自定义请求头</div>
-                    ) : (
-                      <div className="space-y-1.5">
-                        {headers.map((h, i) => (
-                          <div key={i} className="flex items-center gap-1.5">
-                            <Input className="h-7 text-xs flex-1" placeholder="Header" value={h.key}
-                              onChange={(e) => setHeaders((arr) => arr.map((x, idx) => idx === i ? { ...x, key: e.target.value } : x))} />
-                            <Input className="h-7 text-xs flex-1" placeholder="Value" value={h.value}
-                              onChange={(e) => setHeaders((arr) => arr.map((x, idx) => idx === i ? { ...x, value: e.target.value } : x))} />
-                            <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setHeaders((arr) => arr.filter((_, idx) => idx !== i))}>
-                              <X className="w-3 h-3" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    <Button variant="outline" size="sm" className="w-full h-7 text-xs gap-1 border-dashed"
-                      onClick={() => setHeaders((arr) => [...arr, { key: "", value: "" }])}>
-                      <Plus className="w-3 h-3" /> 添加请求头
-                    </Button>
-                  </>
-                )}
-              </TabsContent>
-
-              <TabsContent value="config" className="space-y-2 mt-3">
-                <div>
-                  <Label className="text-[11px] font-medium">超时时间（秒）</Label>
-                  <Input className="mt-1 h-8 text-xs bg-muted/30" value={timeout} onChange={(e) => setTimeoutVal(e.target.value)} />
-                </div>
-                {mcpType === "sse" && (
-                  <div>
-                    <Label className="text-[11px] font-medium">SSE 读取超时时间（秒）</Label>
-                    <Input className="mt-1 h-8 text-xs bg-muted/30" value={sseTimeout} onChange={(e) => setSseTimeout(e.target.value)} />
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
+            <TabsContent value="manual" className="mt-0">
+              {renderForm()}
             </TabsContent>
           </Tabs>
 
@@ -768,6 +562,29 @@ const VaultPage = () => {
                 {editingId ? "保存" : "添加并授权"}
               </Button>
             )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 来自 MCP 广场的独立配置弹窗 */}
+      <Dialog open={marketFormOpen} onOpenChange={(o) => { if (!o) { setMarketFormOpen(false); setMarketFormItem(null); reset(); } }}>
+        <DialogContent className="max-w-[560px] p-5">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-sm">配置 MCP{marketFormItem ? ` · ${marketFormItem.name}` : ""}</DialogTitle>
+            <DialogDescription className="text-[11px]">
+              来自 MCP 广场，服务地址、显示名称与英文标识已自动填入；请完成类型、请求头等凭据配置后保存
+            </DialogDescription>
+          </DialogHeader>
+
+          {renderForm()}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setMarketFormOpen(false); setMarketFormItem(null); reset(); }}>
+              取消
+            </Button>
+            <Button onClick={handleSave} disabled={!canSave}>
+              添加并授权
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
