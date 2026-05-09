@@ -446,7 +446,7 @@ const VaultPage = () => {
 
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className={createMode === "market" && !editingId ? "max-w-[920px] p-5" : "max-w-[560px] p-5"}>
+        <DialogContent className={createMode === "market" && !editingId ? "max-w-[760px] p-4" : "max-w-[520px] p-4"}>
           <DialogHeader className="space-y-1">
             <DialogTitle className="text-sm">{editingId ? "编辑 MCP 服务" : "新增 MCP"}</DialogTitle>
             <DialogDescription className="text-[11px]">
