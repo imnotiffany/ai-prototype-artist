@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
@@ -124,11 +124,8 @@ const CreateAgentManualPage = () => {
   const [fsSecretVisible, setFsSecretVisible] = useState(false);
   const [fsConnected, setFsConnected] = useState(false);
 
-  // Agent Hub publishing (optional)
+  // Agent Hub publishing (optional) — 仅控制是否发布到 Hub 进行可视化监控
   const [hubEnabled, setHubEnabled] = useState(false);
-  const [hubProject, setHubProject] = useState("");
-  const [hubVisibility, setHubVisibility] = useState<"team" | "org" | "public">("team");
-  const [hubConnected, setHubConnected] = useState(false);
 
   // Controlled tab (so we can jump users between steps)
   const [currentTab, setCurrentTab] = useState("capability");
@@ -404,9 +401,8 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
   // ── Step validation ──────────────────────────────────────────────
   const capabilityComplete = selMCPs.length > 0 || selSkills.length > 0;
   const promptComplete = systemPrompt.trim().length >= 20;
-  // 对外接入是可选的，但若启用了某项则必须完成连接
-  const channelsValid = (!fsConnected || (fsAppKey && fsAppSecret && fsRobotCode)) &&
-                        (!hubEnabled || hubConnected);
+  // 对外接入是可选的，但若启用了丰声 NEXT 必须完成连接（Agent Hub 仅是开关）
+  const channelsValid = !fsConnected || (!!fsAppKey && !!fsAppSecret && !!fsRobotCode);
   const debugComplete = debugPassed && !debugLastError;
 
   const stepStatus = {
@@ -601,26 +597,6 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
         })()}
 
         <Tabs value={currentTab} onValueChange={setCurrentTab}>
-          <TabsList className="grid grid-cols-4 h-9">
-            <TabsTrigger value="capability" className="text-xs gap-1.5">
-              能力配置
-              {stepStatus.capability === "done" && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}
-            </TabsTrigger>
-            <TabsTrigger value="prompt" className="text-xs gap-1.5">
-              系统提示词
-              {stepStatus.prompt === "done" && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}
-            </TabsTrigger>
-            <TabsTrigger value="channels" className="text-xs gap-1.5">
-              对外接入
-              <span className="text-[10px] px-1 h-3.5 leading-[14px] rounded bg-muted text-muted-foreground font-normal">可选</span>
-              {stepStatus.channels === "warn" && <AlertTriangle className="w-3 h-3 text-amber-500" />}
-            </TabsTrigger>
-            <TabsTrigger value="debug" className="text-xs gap-1.5">
-              调试
-              {stepStatus.debug === "done" && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}
-              {stepStatus.debug === "warn" && <AlertTriangle className="w-3 h-3 text-amber-500" />}
-            </TabsTrigger>
-          </TabsList>
 
           {/* Capability: 基座模型 + MCP + Skill + Subagent */}
           <TabsContent value="capability" className="mt-4 space-y-4">
@@ -1038,63 +1014,32 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
 
             {/* Agent Hub 发布 */}
             <div className="border border-border rounded-lg bg-card">
-              <div className="px-5 py-3 border-b border-border flex items-center justify-between gap-3">
+              <div className="px-5 py-3 flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <div className="text-xs font-semibold flex items-center gap-1.5">
                     <FolderKanban className="w-3.5 h-3.5 text-primary" />
                     Agent Hub
                     <Badge variant="outline" className="text-[10px] h-4 px-1.5 text-muted-foreground">可选</Badge>
                   </div>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">发布到 Agent Hub，获得运行状态、调用次数、错误率等可视化监控面板</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">开启后，智能体保存时将同步发布到 Agent Hub，提供运行状态、调用次数、错误率等可视化监控</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Switch checked={hubEnabled} onCheckedChange={(v) => { setHubEnabled(v); if (!v) setHubConnected(false); }} />
+                  <Switch
+                    checked={hubEnabled}
+                    onCheckedChange={(v) => {
+                      setHubEnabled(v);
+                      toast({ title: v ? "已开启 Agent Hub 同步" : "已关闭 Agent Hub 同步" });
+                    }}
+                  />
                   <Badge
                     variant="outline"
-                    className={`text-[10px] gap-1 ${hubConnected ? "text-emerald-600 border-emerald-600/40 bg-emerald-500/10" : "text-muted-foreground"}`}
+                    className={`text-[10px] gap-1 ${hubEnabled ? "text-emerald-600 border-emerald-600/40 bg-emerald-500/10" : "text-muted-foreground"}`}
                   >
-                    <span className={`w-1.5 h-1.5 rounded-full ${hubConnected ? "bg-emerald-500" : "bg-muted-foreground/50"}`} />
-                    {hubConnected ? "已发布" : hubEnabled ? "未发布" : "未启用"}
+                    <span className={`w-1.5 h-1.5 rounded-full ${hubEnabled ? "bg-emerald-500" : "bg-muted-foreground/50"}`} />
+                    {hubEnabled ? "已开启" : "未开启"}
                   </Badge>
                 </div>
               </div>
-              {hubEnabled && (
-                <div className="p-5 space-y-3">
-                  <div>
-                    <Label className="text-xs">所属项目空间</Label>
-                    <Input className="mt-1.5 h-8 text-xs" placeholder="例如：销售运营" value={hubProject} onChange={(e) => setHubProject(e.target.value)} />
-                  </div>
-                  <div>
-                    <Label className="text-xs">可见范围</Label>
-                    <Select value={hubVisibility} onValueChange={(v: "team" | "org" | "public") => setHubVisibility(v)}>
-                      <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="team" className="text-xs">仅团队成员可见</SelectItem>
-                        <SelectItem value="org" className="text-xs">组织内可见</SelectItem>
-                        <SelectItem value="public" className="text-xs">公开</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex justify-end pt-1">
-                    <Button
-                      size="sm"
-                      variant={hubConnected ? "outline" : "default"}
-                      className="h-8 text-xs gap-1.5"
-                      onClick={() => {
-                        if (!hubProject.trim()) {
-                          toast({ title: "请填写所属项目空间", variant: "destructive" });
-                          return;
-                        }
-                        setHubConnected(true);
-                        toast({ title: "已发布到 Agent Hub", description: `${hubProject} · ${hubVisibility}` });
-                      }}
-                    >
-                      {hubConnected ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Rocket className="w-3.5 h-3.5" />}
-                      {hubConnected ? "已发布" : "发布到 Agent Hub"}
-                    </Button>
-                  </div>
-                </div>
-              )}
             </div>
 
             <div className="flex justify-between mt-3">
