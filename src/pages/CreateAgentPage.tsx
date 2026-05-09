@@ -326,18 +326,27 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
           {config.skills.length === 0 ? (
             <p className="text-xs text-muted-foreground">暂无技能</p>
           ) : (
-            <div className="flex flex-wrap gap-1.5">
-              {config.skills.map((s, i) => (
-                <Badge key={i} variant="secondary" className="text-[10px] font-mono gap-1">
-                  {s}
-                  <button
-                    onClick={() => onConfigChange({ ...config, skills: config.skills.filter((_, j) => j !== i) })}
-                    className="hover:text-destructive"
-                  >
-                    <X className="w-2.5 h-2.5" />
-                  </button>
-                </Badge>
-              ))}
+            <div className="space-y-1.5">
+              {config.skills.map((s, i) => {
+                const meta = availableSkills.find((x) => x.name === s);
+                return (
+                  <div key={i} className="flex items-center gap-2 border border-border rounded-lg px-3 py-2">
+                    <Zap className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-foreground truncate">{s}</p>
+                      {meta?.description && (
+                        <p className="text-[10px] text-muted-foreground line-clamp-1">{meta.description}</p>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => onConfigChange({ ...config, skills: config.skills.filter((_, j) => j !== i) })}
+                      className="text-muted-foreground hover:text-destructive shrink-0"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
