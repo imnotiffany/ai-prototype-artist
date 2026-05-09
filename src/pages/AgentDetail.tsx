@@ -209,6 +209,26 @@ const AgentDetail = () => {
 
   /* ── 订阅 MCP 管理（Vault）配置变化，让本页绑定区实时联动 ── */
   const [, setVaultTick] = useState(0);
+
+  // 申请 API Key（每个智能体独立）
+  const [apiKeyOpen, setApiKeyOpen] = useState(false);
+  const [apiKeyName, setApiKeyName] = useState("");
+  const [generatedKey, setGeneratedKey] = useState<string | null>(null);
+  const [keyVisible, setKeyVisible] = useState(false);
+  const handleApplyApiKey = () => {
+    if (!apiKeyName.trim()) {
+      toast({ title: "请填写 API Key 名称", variant: "destructive" });
+      return;
+    }
+    const key = "sk-" + Array.from({ length: 32 }, () => "abcdef0123456789"[Math.floor(Math.random() * 16)]).join("");
+    setGeneratedKey(key);
+  };
+  const closeApiKey = () => {
+    setApiKeyOpen(false);
+    setApiKeyName("");
+    setGeneratedKey(null);
+    setKeyVisible(false);
+  };
   useEffect(() => {
     const unsub = subscribeMcpStore(() => setVaultTick((t) => t + 1));
     return () => { unsub(); };
