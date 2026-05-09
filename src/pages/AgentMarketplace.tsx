@@ -132,7 +132,8 @@ const AgentMarketplace = () => {
         const overflowSelectedCount = activeCategory && overflow.includes(activeCategory) ? 1 : 0;
 
         return (
-          <div className="flex items-center gap-1.5 mb-5 px-6 flex-wrap">
+          <div className="px-6 mb-5 space-y-3">
+            <div className="flex items-center gap-1.5 flex-wrap">
             <button
               onClick={() => setActiveCategory(null)}
               className={`px-2.5 py-1 rounded-full text-xs transition-colors border ${
@@ -207,25 +208,10 @@ const AgentMarketplace = () => {
                 </PopoverContent>
               </Popover>
             )}
+            </div>
 
-            {/* Right cluster: sort + kind filter */}
-            <div className="ml-auto flex items-center gap-3 text-xs">
-              <div className="flex items-center gap-1 text-muted-foreground">
-                <button
-                  onClick={() => setSortBy("latest")}
-                  className={`px-2 py-0.5 rounded ${sortBy === "latest" ? "text-primary font-medium" : "hover:text-foreground"}`}
-                >
-                  最新
-                </button>
-                <span className="text-border">|</span>
-                <button
-                  onClick={() => setSortBy("downloads")}
-                  className={`px-2 py-0.5 rounded ${sortBy === "downloads" ? "text-primary font-medium" : "hover:text-foreground"}`}
-                >
-                  使用量
-                </button>
-              </div>
-              <div className="h-4 w-px bg-border" />
+            {/* Second row: kind filter (left) + sort (right) */}
+            <div className="flex items-center gap-3 text-xs">
               <div className="inline-flex items-center bg-muted rounded-md p-0.5">
                 {kindTabs.map((t) => (
                   <button
@@ -240,6 +226,21 @@ const AgentMarketplace = () => {
                     {t.label}
                   </button>
                 ))}
+              </div>
+              <div className="ml-auto flex items-center gap-1 text-muted-foreground">
+                <button
+                  onClick={() => setSortBy("latest")}
+                  className={`px-2 py-0.5 rounded ${sortBy === "latest" ? "text-primary font-medium" : "hover:text-foreground"}`}
+                >
+                  最新
+                </button>
+                <span className="text-border">|</span>
+                <button
+                  onClick={() => setSortBy("downloads")}
+                  className={`px-2 py-0.5 rounded ${sortBy === "downloads" ? "text-primary font-medium" : "hover:text-foreground"}`}
+                >
+                  使用量
+                </button>
               </div>
             </div>
           </div>
