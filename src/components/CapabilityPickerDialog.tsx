@@ -245,6 +245,7 @@ export const CapabilityPickerDialog = ({
               </SelectContent>
             </Select>
           )}
+          {hasSkillScopes && skillScope === "project" ? (
             <Button
               variant="outline"
               size="sm"
