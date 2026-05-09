@@ -738,7 +738,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
             <div className="border border-border rounded-lg p-5 bg-card">
               <div className="flex items-center justify-between mb-3">
                 <div>
-                  <Label className="text-xs flex items-center gap-1.5"><Bot className="w-3.5 h-3.5 text-primary" />子智能体</Label>
+                  <Label className="text-xs flex items-center gap-1.5"><Bot className="w-3.5 h-3.5 text-muted-foreground" />子智能体绑定</Label>
                   <p className="text-[10px] text-muted-foreground mt-0.5">从智能体广场挑选已发布的智能体作为子智能体，主智能体可调度它们协同完成任务（可选）</p>
                 </div>
                 <CapabilityPickerDialog
