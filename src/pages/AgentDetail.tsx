@@ -14,7 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import {
   ArrowLeft, MessageSquare, Send, Save, Bot, CheckCircle2, Server, Bug, Mic, MicOff, Zap, Plus, X, RotateCcw, EyeOff, Eye, Settings2,
-  AlertTriangle, Copy, Pencil, Rocket, Code2, Layout, Users,
+  AlertTriangle, Copy, Pencil, Rocket, Code2, Layout, Users, KeyRound,
 } from "lucide-react";
 import { mockAgents, getActiveMCPs, getActiveSkills } from "@/data/mockData";
 import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
@@ -22,7 +22,7 @@ import { toast } from "@/hooks/use-toast";
 import { PublishAgentDialog } from "@/components/PublishAgentDialog";
 import { AgentRuntimeBadge, type AgentRuntimeStatus } from "@/components/AgentRuntimeBadge";
 import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { RunDualView, RunningIndicator, type TranscriptEvent, type DebugEvent } from "@/components/RunViews";
 
 /* ───────── Mock run history ───────── */
@@ -209,6 +209,26 @@ const AgentDetail = () => {
 
   /* ── 订阅 MCP 管理（Vault）配置变化，让本页绑定区实时联动 ── */
   const [, setVaultTick] = useState(0);
+
+  // 申请 API Key（每个智能体独立）
+  const [apiKeyOpen, setApiKeyOpen] = useState(false);
+  const [apiKeyName, setApiKeyName] = useState("");
+  const [generatedKey, setGeneratedKey] = useState<string | null>(null);
+  const [keyVisible, setKeyVisible] = useState(false);
+  const handleApplyApiKey = () => {
+    if (!apiKeyName.trim()) {
+      toast({ title: "请填写 API Key 名称", variant: "destructive" });
+      return;
+    }
+    const key = "sk-" + Array.from({ length: 32 }, () => "abcdef0123456789"[Math.floor(Math.random() * 16)]).join("");
+    setGeneratedKey(key);
+  };
+  const closeApiKey = () => {
+    setApiKeyOpen(false);
+    setApiKeyName("");
+    setGeneratedKey(null);
+    setKeyVisible(false);
+  };
   useEffect(() => {
     const unsub = subscribeMcpStore(() => setVaultTick((t) => t + 1));
     return () => { unsub(); };
@@ -336,6 +356,9 @@ const AgentDetail = () => {
               <span className="text-[11px] text-emerald-800 dark:text-emerald-200">已保存</span>
             </div>
           ) : null}
+          <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={() => setApiKeyOpen(true)}>
+            <KeyRound className="w-3.5 h-3.5" />申请 API Key
+          </Button>
           <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={openEditInfo}>
             <Pencil className="w-3.5 h-3.5" />编辑基本信息
           </Button>
@@ -954,6 +977,75 @@ fengsheng:
         agentName={name}
         kind={agent.kind}
       />
+
+      {/* Apply API Key dialog */}
+      <Dialog open={apiKeyOpen} onOpenChange={(o) => (o ? setApiKeyOpen(true) : closeApiKey())}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base flex items-center gap-2">
+              <KeyRound className="w-4 h-4 text-primary" />申请 API Key
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              该 API Key 仅用于调用「{name}」。请妥善保管，密钥仅在生成时完整展示一次。
+            </DialogDescription>
+          </DialogHeader>
+          {!generatedKey ? (
+            <div className="space-y-3 py-1">
+              <div>
+                <Label className="text-xs">名称（用途备注）</Label>
+                <Input
+                  value={apiKeyName}
+                  onChange={(e) => setApiKeyName(e.target.value)}
+                  placeholder="如：CRM 系统集成"
+                  className="mt-1.5 h-9 text-xs"
+                />
+                <p className="text-[10px] text-muted-foreground mt-1.5">建议按调用方区分，便于后续审计与吊销</p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3 py-1">
+              <div className="border border-amber-300 bg-amber-50 dark:bg-amber-950/30 rounded-md px-3 py-2 text-[11px] text-amber-800 dark:text-amber-200">
+                请立即复制并保存。关闭后将无法再次查看完整 Key。
+              </div>
+              <div>
+                <Label className="text-xs">API Key</Label>
+                <div className="mt-1.5 flex items-center gap-1.5">
+                  <Input
+                    readOnly
+                    type={keyVisible ? "text" : "password"}
+                    value={generatedKey}
+                    className="h-9 text-xs font-mono"
+                  />
+                  <Button size="icon" variant="outline" className="h-9 w-9 shrink-0" onClick={() => setKeyVisible((v) => !v)}>
+                    {keyVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    className="h-9 w-9 shrink-0"
+                    onClick={() => {
+                      navigator.clipboard.writeText(generatedKey);
+                      toast({ title: "已复制到剪贴板" });
+                    }}
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            {!generatedKey ? (
+              <>
+                <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={closeApiKey}>取消</Button>
+                <Button size="sm" className="h-8 text-xs" onClick={handleApplyApiKey}>生成</Button>
+              </>
+            ) : (
+              <Button size="sm" className="h-8 text-xs" onClick={closeApiKey}>完成</Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
