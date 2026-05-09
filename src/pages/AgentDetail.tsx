@@ -551,6 +551,26 @@ const AgentDetail = () => {
         {/* ───────── 配置 ───────── */}
         <TabsContent value="config" className="mt-4">
           <div className="space-y-4">
+            {isDirty && (
+              <div className="border-2 border-amber-400 bg-amber-50 dark:bg-amber-950/30 rounded-lg px-4 py-3 flex items-center justify-between gap-3 shadow-sm animate-fade-in">
+                <div className="flex items-center gap-2 min-w-0">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-amber-900 dark:text-amber-200">配置已修改，尚未保存</p>
+                    <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80 mt-0.5">保存后将生成新版本 {nextVersion}，发布按钮在保存前不可用</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1 text-amber-900 hover:text-amber-900 hover:bg-amber-100/80 dark:text-amber-200" onClick={handleRevert}>
+                    <RotateCcw className="w-3 h-3" />撤销修改
+                  </Button>
+                  <Button size="sm" className="h-7 text-[11px] gap-1 bg-amber-600 hover:bg-amber-700 text-white" onClick={handleSave}>
+                    <Save className="w-3 h-3" />保存为 {nextVersion}
+                  </Button>
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center justify-between gap-3 px-1">
               <p className="text-[11px] text-muted-foreground">
                 名称、描述等基本信息请通过页面右上角的「编辑基本信息」修改，不会产生新版本。以下配置变更会生成新版本。
