@@ -79,18 +79,27 @@ const VaultPage = () => {
   const [tab, setTab] = useState<"headers" | "config">("headers");
   const [createMode, setCreateMode] = useState<"market" | "manual">("market");
   const [marketSearch, setMarketSearch] = useState("");
+  const [marketTag, setMarketTag] = useState<string>("__all__");
   // Studio 专用
   const [stdioCommand, setStdioCommand] = useState("npx");
   const [stdioArgs, setStdioArgs] = useState("");
   const [envVars, setEnvVars] = useState<{ key: string; value: string }[]>([]);
 
   // 市场列表 = 所有需凭据的 MCP
+  const allMarketMcps = useMemo(() => getCredentialRequiredMcps(), []);
+  const marketTags = useMemo(() => {
+    const set = new Set<string>();
+    allMarketMcps.forEach((m) => set.add(m.tag));
+    return Array.from(set).sort();
+  }, [allMarketMcps]);
   const marketList = useMemo(() => {
     const q = marketSearch.toLowerCase();
-    return getCredentialRequiredMcps().filter(
-      (r) => r.name.toLowerCase().includes(q) || r.description.toLowerCase().includes(q),
+    return allMarketMcps.filter(
+      (r) =>
+        (marketTag === "__all__" || r.tag === marketTag) &&
+        (r.name.toLowerCase().includes(q) || r.description.toLowerCase().includes(q)),
     );
-  }, [marketSearch]);
+  }, [marketSearch, marketTag, allMarketMcps]);
 
   const reset = () => {
     setEndpoint(""); setName(""); setIdentifier("");
