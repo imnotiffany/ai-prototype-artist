@@ -596,23 +596,6 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   );
                 })}
               </div>
-              {!canSave && (
-                <div className="mt-3 pt-3 border-t border-border flex items-start gap-2">
-                  <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
-                  <div className="text-[11px] text-muted-foreground flex-1 min-w-0">
-                    <span className="text-foreground font-medium">保存前需完成以下事项：</span>
-                    <ul className="mt-1 space-y-0.5">
-                      {blockingReasons.map((r, i) => (
-                        <li key={i} className="flex items-center gap-1.5">
-                          <span className="w-1 h-1 rounded-full bg-amber-500" />
-                          <span>{r.msg}</span>
-                          <button onClick={() => setCurrentTab(r.jumpTo)} className="text-primary hover:underline ml-1">前往</button>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              )}
             </div>
           );
         })()}
@@ -767,96 +750,12 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               )}
             </div>
 
-            <div className="flex justify-end">
-              <Button
-                size="sm"
-                className="h-8 text-xs gap-1.5"
-                disabled={!capabilityComplete}
-                onClick={() => setCurrentTab("prompt")}
-                title={capabilityComplete ? "下一步：系统提示词" : "请至少绑定 1 个 MCP 或 Skill"}
-              >
-                下一步：系统提示词 <ArrowRight className="w-3 h-3" />
-              </Button>
-            </div>
-
-          </TabsContent>
-
-          {/* Prompt */}
-          <TabsContent value="prompt" className="mt-4">
-            <div className="border border-border rounded-lg p-5 bg-card">
-              <div className="flex items-start justify-between gap-3 mb-2">
-                <div>
-                  <Label className="text-xs">系统提示词</Label>
-                  <p className="text-[10px] text-muted-foreground">定义智能体身份、行为约束和输出格式</p>
-                </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-7 text-xs gap-1.5 border-primary/40 text-primary hover:bg-primary/10 hover:text-primary"
-                  onClick={handleAutoGeneratePrompt}
-                  disabled={generatingPrompt}
-                >
-                  {generatingPrompt ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand className="w-3 h-3" />}
-                  AI 自动生成
-                </Button>
-              </div>
-              <Textarea className="font-mono text-xs leading-relaxed" rows={18} value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)} />
-              <div className="flex items-center justify-between mt-2">
-                <p className="text-[10px] text-muted-foreground">
-                  {systemPrompt.length} 字符 · 将根据已绑定的 {selSkills.length} 个 Skill 与 {selMCPs.length} 个 MCP 生成
-                </p>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 text-xs gap-1"
-                  onClick={() => {
-                    if (systemPrompt.trim() && !window.confirm("将用提示词脚手架覆盖当前内容，是否继续？")) return;
-                    setSystemPrompt(promptScaffold);
-                    toast({
-                      title: "已导入提示词脚手架",
-                      description: "按段落把 < > 占位符替换为你 Agent 的实际信息",
-                    });
-                  }}
-                >
-                  <FileEdit className="w-3 h-3" />
-                  使用提示词脚手架
-                </Button>
-              </div>
-            </div>
-            <div className="flex justify-between mt-3">
-              <Button size="sm" variant="ghost" className="h-8 text-xs gap-1" onClick={() => setCurrentTab("capability")}>
-                <ArrowLeft className="w-3 h-3" /> 上一步
-              </Button>
-              <Button
-                size="sm"
-                className="h-8 text-xs gap-1.5"
-                disabled={!promptComplete}
-                onClick={() => setCurrentTab("channels")}
-                title={promptComplete ? "下一步：对外接入" : "请完善系统提示词（不少于 20 字）"}
-              >
-                下一步：对外接入 <ArrowRight className="w-3 h-3" />
-              </Button>
-            </div>
-          </TabsContent>
-
-          {/* 对外接入：子智能体 + 丰声 NEXT + Agent Hub */}
-          <TabsContent value="channels" className="mt-4 space-y-4">
-            <div className="border border-dashed border-border rounded-lg px-4 py-3 bg-muted/30 flex items-start gap-2.5">
-              <Info className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-medium">对外接入与协作（全部可选）</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
-                  组合 <span className="font-medium">子智能体</span> 让主智能体调度其他 Agent 协同；接入 <span className="font-medium">丰声 NEXT</span> 发布为群聊机器人；发布到 <span className="font-medium">Agent Hub</span> 获得可视化运行监控。不需要可全部跳过，智能体仍可正常使用。
-                </p>
-              </div>
-            </div>
-
             {/* 子智能体绑定 */}
             <div className="border border-border rounded-lg p-5 bg-card">
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <Label className="text-xs flex items-center gap-1.5"><Bot className="w-3.5 h-3.5 text-primary" />子智能体</Label>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">从智能体广场挑选已发布的智能体作为子智能体，主智能体可调度它们协同完成任务</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">从智能体广场挑选已发布的智能体作为子智能体，主智能体可调度它们协同完成任务（可选）</p>
                 </div>
                 <CapabilityPickerDialog
                   items={subagents.map((a) => ({ name: a.name, description: a.description }))}
@@ -994,6 +893,90 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+
+            <div className="flex justify-end">
+              <Button
+                size="sm"
+                className="h-8 text-xs gap-1.5"
+                disabled={!capabilityComplete}
+                onClick={() => setCurrentTab("prompt")}
+                title={capabilityComplete ? "下一步：系统提示词" : "请至少绑定 1 个 MCP 或 Skill"}
+              >
+                下一步：系统提示词 <ArrowRight className="w-3 h-3" />
+              </Button>
+            </div>
+
+          </TabsContent>
+
+          {/* Prompt */}
+          <TabsContent value="prompt" className="mt-4">
+            <div className="border border-border rounded-lg p-5 bg-card">
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div>
+                  <Label className="text-xs">系统提示词</Label>
+                  <p className="text-[10px] text-muted-foreground">定义智能体身份、行为约束和输出格式</p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs gap-1.5 border-primary/40 text-primary hover:bg-primary/10 hover:text-primary"
+                  onClick={handleAutoGeneratePrompt}
+                  disabled={generatingPrompt}
+                >
+                  {generatingPrompt ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand className="w-3 h-3" />}
+                  AI 自动生成
+                </Button>
+              </div>
+              <Textarea className="font-mono text-xs leading-relaxed" rows={18} value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)} />
+              <div className="flex items-center justify-between mt-2">
+                <p className="text-[10px] text-muted-foreground">
+                  {systemPrompt.length} 字符 · 将根据已绑定的 {selSkills.length} 个 Skill 与 {selMCPs.length} 个 MCP 生成
+                </p>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 text-xs gap-1"
+                  onClick={() => {
+                    if (systemPrompt.trim() && !window.confirm("将用提示词脚手架覆盖当前内容，是否继续？")) return;
+                    setSystemPrompt(promptScaffold);
+                    toast({
+                      title: "已导入提示词脚手架",
+                      description: "按段落把 < > 占位符替换为你 Agent 的实际信息",
+                    });
+                  }}
+                >
+                  <FileEdit className="w-3 h-3" />
+                  使用提示词脚手架
+                </Button>
+              </div>
+            </div>
+            <div className="flex justify-between mt-3">
+              <Button size="sm" variant="ghost" className="h-8 text-xs gap-1" onClick={() => setCurrentTab("capability")}>
+                <ArrowLeft className="w-3 h-3" /> 上一步
+              </Button>
+              <Button
+                size="sm"
+                className="h-8 text-xs gap-1.5"
+                disabled={!promptComplete}
+                onClick={() => setCurrentTab("channels")}
+                title={promptComplete ? "下一步：对外接入" : "请完善系统提示词（不少于 20 字）"}
+              >
+                下一步：对外接入 <ArrowRight className="w-3 h-3" />
+              </Button>
+            </div>
+          </TabsContent>
+
+          {/* 对外接入：子智能体 + 丰声 NEXT + Agent Hub */}
+          <TabsContent value="channels" className="mt-4 space-y-4">
+            <div className="border border-dashed border-border rounded-lg px-4 py-3 bg-muted/30 flex items-start gap-2.5">
+              <Info className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-medium">对外接入（全部可选）</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+                  接入 <span className="font-medium">丰声 NEXT</span> 发布为群聊机器人；发布到 <span className="font-medium">Agent Hub</span> 获得可视化运行监控。不需要可全部跳过，智能体仍可正常使用。
+                </p>
+              </div>
+            </div>
 
             {/* 丰声 NEXT 群聊机器人 */}
             <div className="border border-border rounded-lg bg-card">
