@@ -556,7 +556,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
           ];
           return (
             <div className="mb-4 rounded-lg border border-border bg-card p-3">
-              <div className="flex items-center gap-2 overflow-x-auto">
+              <div className="flex items-center w-full">
                 {steps.map((s, i) => {
                   const status = (stepStatus as Record<string, string>)[s.key] ?? "todo";
                   const active = currentTab === s.key;
@@ -569,25 +569,33 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   const labelCls =
                     status === "locked" ? "text-muted-foreground" :
                     active ? "text-foreground font-medium" : "text-foreground";
+                  const connectorCls =
+                    status === "done" ? "bg-emerald-500/60" : "bg-border";
                   return (
-                    <div key={s.key} className="flex items-center gap-2 shrink-0">
+                    <div key={s.key} className="flex items-center flex-1 last:flex-none min-w-0">
                       <button
                         type="button"
                         onClick={() => setCurrentTab(s.key)}
                         disabled={status === "locked"}
-                        className="flex items-center gap-2 group"
+                        className="flex items-center gap-2 group min-w-0 shrink-0"
                       >
-                        <span className={`w-6 h-6 rounded-full border flex items-center justify-center text-[11px] ${dotCls}`}>
+                        <span className={`w-6 h-6 rounded-full border flex items-center justify-center text-[11px] shrink-0 ${dotCls}`}>
                           {status === "done" ? <CheckCircle2 className="w-3.5 h-3.5" /> :
                            status === "warn" ? <AlertTriangle className="w-3.5 h-3.5" /> :
                            i + 1}
                         </span>
-                        <div className="text-left">
-                          <div className={`text-[11px] leading-tight ${labelCls}`}>{s.label}</div>
-                          <div className="text-[10px] text-muted-foreground leading-tight">{s.sub}</div>
+                        <div className="text-left min-w-0">
+                          <div className={`text-[11px] leading-tight truncate ${labelCls}`}>{s.label}</div>
+                          <div className="text-[10px] text-muted-foreground leading-tight truncate">{s.sub}</div>
                         </div>
                       </button>
-                      {i < steps.length - 1 && <ArrowRight className="w-3 h-3 text-muted-foreground shrink-0" />}
+                      {i < steps.length - 1 && (
+                        <div className="flex-1 mx-3 flex items-center gap-2 min-w-[24px]">
+                          <div className={`h-px flex-1 ${connectorCls}`} />
+                          <ArrowRight className="w-3 h-3 text-muted-foreground shrink-0" />
+                          <div className={`h-px flex-1 ${connectorCls}`} />
+                        </div>
+                      )}
                     </div>
                   );
                 })}
