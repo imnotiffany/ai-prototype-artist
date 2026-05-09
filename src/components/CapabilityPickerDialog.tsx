@@ -139,23 +139,6 @@ export const CapabilityPickerDialog = ({
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold truncate">{it.name}</p>
             <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-              {isMcp && (
-                it.requiresCredential ? (
-                  isMcpConfigured(it.name) ? (
-                    <Badge variant="outline" className="text-[10px] h-4 px-1.5 gap-0.5 border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30">
-                      <CheckCircle2 className="w-2.5 h-2.5" />已配置凭据
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="text-[10px] h-4 px-1.5 gap-0.5 border-amber-300 text-amber-700 bg-amber-50/60 dark:bg-amber-950/30">
-                      <KeyRound className="w-2.5 h-2.5" />未配置凭据
-                    </Badge>
-                  )
-                ) : (
-                  <Badge variant="outline" className="text-[10px] h-4 px-1.5 gap-0.5 border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30">
-                    <ShieldCheck className="w-2.5 h-2.5" />免凭据
-                  </Badge>
-                )
-              )}
               {isSkill && (it.tags ?? []).map((t) => (
                 <Badge key={t} variant="outline" className="text-[10px] h-4 px-1.5 font-normal text-muted-foreground">
                   {t}
