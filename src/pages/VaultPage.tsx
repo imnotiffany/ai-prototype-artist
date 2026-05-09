@@ -329,9 +329,7 @@ const VaultPage = () => {
                 <div className="text-[11px] font-medium">请求头</div>
                 <p className="text-[10px] text-muted-foreground mt-0.5">发送到 MCP 服务器的额外 HTTP 请求头（如 Authorization、X-API-Key 等）</p>
               </div>
-              {headers.length === 0 ? (
-                <div className="text-[10px] text-muted-foreground">未配置自定义请求头</div>
-              ) : (
+              {headers.length > 0 && (
                 <div className="space-y-1.5">
                   {headers.map((h, i) => (
                     <div key={i} className="flex items-center gap-1.5">
