@@ -401,7 +401,35 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
     }, 800);
   };
 
+  // ── Step validation ──────────────────────────────────────────────
+  const capabilityComplete = selMCPs.length > 0 || selSkills.length > 0;
+  const promptComplete = systemPrompt.trim().length >= 20;
+  // 对外接入是可选的，但若启用了某项则必须完成连接
+  const channelsValid = (!fsConnected || (fsAppKey && fsAppSecret && fsRobotCode)) &&
+                        (!hubEnabled || hubConnected);
+  const debugComplete = debugPassed && !debugLastError;
+
+  const stepStatus = {
+    capability: capabilityComplete ? "done" : "todo",
+    prompt: capabilityComplete ? (promptComplete ? "done" : "todo") : "locked",
+    channels: capabilityComplete && promptComplete ? (channelsValid ? "done" : "warn") : "locked",
+    debug: capabilityComplete && promptComplete ? (debugComplete ? "done" : debugAttempted ? (debugLastError ? "warn" : "todo") : "todo") : "locked",
+  } as const;
+
+  const blockingReasons: { msg: string; jumpTo: string }[] = [];
+  if (!capabilityComplete) blockingReasons.push({ msg: "请至少绑定 1 个 MCP 或 Skill", jumpTo: "capability" });
+  if (!promptComplete) blockingReasons.push({ msg: "请完善系统提示词（不少于 20 字）", jumpTo: "prompt" });
+  if (!channelsValid) blockingReasons.push({ msg: "已启用的对外接入尚未完成连接，请补齐或关闭", jumpTo: "channels" });
+  if (!debugComplete) blockingReasons.push({ msg: debugLastError ? "上一次调试出现错误，请修复后重新调试" : "保存前必须在「调试」中完成至少一次成功运行", jumpTo: "debug" });
+  const canSave = blockingReasons.length === 0;
+
   const openPublish = () => {
+    if (!canSave) {
+      const first = blockingReasons[0];
+      toast({ title: "无法保存", description: first.msg, variant: "destructive" });
+      setCurrentTab(first.jumpTo);
+      return;
+    }
     handleAutoGenerateMeta();
     setPublishOpen(true);
   };
