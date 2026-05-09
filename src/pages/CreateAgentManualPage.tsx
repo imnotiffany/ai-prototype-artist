@@ -1049,135 +1049,66 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              {/* Left: Debug Assistant */}
-              <div className="border border-border rounded-lg bg-card flex flex-col h-[clamp(380px,calc(100vh-260px),560px)]">
-                <div className="px-3 h-10 shrink-0 border-b border-border flex items-center gap-1.5">
-                  <Bot className="w-3.5 h-3.5 text-primary" />
-                  <span className="text-xs font-semibold">调试助手</span>
-                  <Badge variant="outline" className="text-[10px] h-4">AI</Badge>
-                </div>
-                <div className="flex-1 overflow-auto p-4 space-y-3">
-                  {assistantMessages.length === 0 && (
-                    <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground gap-2 px-4">
-                      <Bot className="w-7 h-7 opacity-30" />
-                      <p className="text-xs">在右侧发起一轮调试后，我会主动告诉你做了哪些优化</p>
-                      <p className="text-[10px] leading-relaxed">你也可以直接和我说："帮我修改提示词"、"补充某个能力的用途"</p>
-                    </div>
-                  )}
-                  {assistantMessages.map((msg, i) => (
-                    <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                      <div className={`max-w-[85%] rounded-lg px-3 py-2 text-xs whitespace-pre-wrap leading-relaxed ${
-                        msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
-                      }`}>
-                        {msg.content}
-                        {msg.suggestion && (
-                          <div className="mt-2 pt-2 border-t border-border/60 flex items-center gap-2">
-                            {msg.suggestion.status === "pending" && (
-                              <>
-                                <Button size="sm" className="h-6 text-[11px] px-2 gap-1" onClick={() => adoptSuggestion(msg.suggestion!)}>
-                                  <CheckCircle2 className="w-3 h-3" /> 采纳
-                                </Button>
-                                <Button size="sm" variant="ghost" className="h-6 text-[11px] px-2" onClick={() => rejectSuggestion(msg.suggestion!)}>
-                                  忽略
-                                </Button>
-                              </>
-                            )}
-                            {msg.suggestion.status === "adopted" && (
-                              <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600">
-                                <CheckCircle2 className="w-3 h-3" /> 已采纳
-                              </span>
-                            )}
-                            {msg.suggestion.status === "rejected" && (
-                              <span className="text-[11px] text-muted-foreground">已忽略</span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                  {assistantThinking && (
-                    <div className="flex justify-start">
-                      <AIStatusPill stages={["分析你的反馈", "调整提示词", "生成回复"]} />
-                    </div>
-                  )}
-                </div>
-                <div className="border-t border-border p-3 flex items-center gap-2">
-                  <Input
-                    className="h-8 text-xs"
-                    placeholder='告诉我要怎么调整，例如"帮我精简提示词"'
-                    value={assistantInput}
-                    onChange={(e) => setAssistantInput(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendAssistantMessage(); } }}
-                  />
-                  <Button size="sm" className="h-8 text-xs gap-1.5" onClick={sendAssistantMessage} disabled={assistantThinking || !assistantInput.trim()}>
-                    <Send className="w-3 h-3" /> 发送
-                  </Button>
-                </div>
+            <div className="border border-border rounded-lg bg-card flex flex-col h-[clamp(380px,calc(100vh-260px),560px)]">
+              <div className="px-3 h-10 shrink-0 border-b border-border flex items-center gap-1.5">
+                <Bot className="w-3.5 h-3.5 text-primary shrink-0" />
+                <span className="text-xs font-semibold shrink-0">智能体运行</span>
+                {debugRunning && <RunningIndicator />}
               </div>
-
-              {/* Right: Agent Run with transcript / debug toggle */}
-              <div className="border border-border rounded-lg bg-card flex flex-col h-[clamp(380px,calc(100vh-260px),560px)]">
-                <div className="px-3 h-10 shrink-0 border-b border-border flex items-center gap-1.5">
-                  <Bot className="w-3.5 h-3.5 text-primary shrink-0" />
-                  <span className="text-xs font-semibold shrink-0">智能体运行</span>
-                  {debugRunning && <RunningIndicator />}
-                </div>
-                <div className="flex-1 min-h-0">
-                  <RunDualView
-                    showTranscriptSearch={false}
-                    transcriptEvents={(() => {
-                      const evs: TranscriptEvent[] = [];
-                      runMessages.forEach((m, i) => {
-                        if (m.role === "user") evs.push({ id: `u${i}`, type: "user", content: m.content });
-                        else if (m.status === "error") evs.push({ id: `e${i}`, type: "error", message: m.content });
-                        else {
-                          if (m.tool) evs.push({
-                            id: `t${i}`, type: "tools",
-                            calls: [{ id: `c${i}`, kind: "mcp", name: m.tool, summary: "调用成功", status: "success" }],
-                          });
-                          evs.push({ id: `a${i}`, type: "agent", content: m.content });
-                        }
-                      });
-                      if (runMessages.length === 0) {
-                        evs.push({ id: "empty", type: "system", message: "输入示例任务即可开始调试" });
+              <div className="flex-1 min-h-0">
+                <RunDualView
+                  showTranscriptSearch={false}
+                  transcriptEvents={(() => {
+                    const evs: TranscriptEvent[] = [];
+                    runMessages.forEach((m, i) => {
+                      if (m.role === "user") evs.push({ id: `u${i}`, type: "user", content: m.content });
+                      else if (m.status === "error") evs.push({ id: `e${i}`, type: "error", message: m.content });
+                      else {
+                        if (m.tool) evs.push({
+                          id: `t${i}`, type: "tools",
+                          calls: [{ id: `c${i}`, kind: "mcp", name: m.tool, summary: "调用成功", status: "success" }],
+                        });
+                        evs.push({ id: `a${i}`, type: "agent", content: m.content });
                       }
-                      return evs;
-                    })()}
-                    debugEvents={debugLogs.map((l) => ({
-                      id: String(l.id),
-                      ts: l.ts,
-                      type: `log.${l.level}`,
-                      data: { message: l.message, ...(l.meta ? { meta: l.meta } : {}) },
-                    }))}
-                    debugMeta={[
-                      { label: "模型", value: model },
-                      { label: "事件数", value: String(debugLogs.length) },
-                    ]}
-                  />
-                </div>
-                <div className="border-t border-border p-3 flex items-center gap-2 shrink-0">
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant={voiceRecording ? "default" : "outline"}
-                    className={`h-8 w-8 shrink-0 ${voiceRecording ? "animate-pulse" : ""}`}
-                    onClick={toggleVoice}
-                    title={voiceRecording ? "结束语音输入" : "语音输入"}
-                  >
-                    {voiceRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
-                  </Button>
-                  <Input
-                    className="h-8 text-xs"
-                    placeholder={voiceRecording ? "正在录音…再次点击麦克风结束" : "输入测试任务，回车发送"}
-                    value={debugInput}
-                    onChange={(e) => setDebugInput(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); runDebug(); } }}
-                  />
-                  <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => runDebug()} disabled={debugRunning || !debugInput.trim()}>
-                    <Send className="w-3 h-3" /> 发送
-                  </Button>
-                </div>
+                    });
+                    if (runMessages.length === 0) {
+                      evs.push({ id: "empty", type: "system", message: "输入示例任务即可开始调试" });
+                    }
+                    return evs;
+                  })()}
+                  debugEvents={debugLogs.map((l) => ({
+                    id: String(l.id),
+                    ts: l.ts,
+                    type: `log.${l.level}`,
+                    data: { message: l.message, ...(l.meta ? { meta: l.meta } : {}) },
+                  }))}
+                  debugMeta={[
+                    { label: "模型", value: model },
+                    { label: "事件数", value: String(debugLogs.length) },
+                  ]}
+                />
+              </div>
+              <div className="border-t border-border p-3 flex items-center gap-2 shrink-0">
+                <Button
+                  type="button"
+                  size="icon"
+                  variant={voiceRecording ? "default" : "outline"}
+                  className={`h-8 w-8 shrink-0 ${voiceRecording ? "animate-pulse" : ""}`}
+                  onClick={toggleVoice}
+                  title={voiceRecording ? "结束语音输入" : "语音输入"}
+                >
+                  {voiceRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                </Button>
+                <Input
+                  className="h-8 text-xs"
+                  placeholder={voiceRecording ? "正在录音…再次点击麦克风结束" : "输入测试任务，回车发送"}
+                  value={debugInput}
+                  onChange={(e) => setDebugInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); runDebug(); } }}
+                />
+                <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => runDebug()} disabled={debugRunning || !debugInput.trim()}>
+                  <Send className="w-3 h-3" /> 发送
+                </Button>
               </div>
             </div>
           </TabsContent>
