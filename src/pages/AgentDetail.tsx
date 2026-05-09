@@ -842,7 +842,7 @@ fengsheng:
                   {(() => {
                     const map = new Map<string, string[]>(); // mcp -> sub-agent names that need it
                     selSubagents.forEach((name) => {
-                      const sub = marketplaceSubagents.find((a) => a.name === name);
+                      const sub = projectSubagents.find((a) => a.name === name);
                       sub?.mcpServers.forEach((m) => {
                         if (!isMcpAvailableInVault(m)) {
                           map.set(m, [...(map.get(m) ?? []), name]);
