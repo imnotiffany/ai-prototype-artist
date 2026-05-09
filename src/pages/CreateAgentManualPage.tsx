@@ -261,6 +261,7 @@ const CreateAgentManualPage = () => {
       ]);
       pushLog("result", `[done] 推理完成 · 用时 698ms · tokens in=312 out=128`);
       setDebugRunning(false);
+      setDebugPassed(true);
       autoOptimizeAfterRun(text);
     }, 700);
   };
