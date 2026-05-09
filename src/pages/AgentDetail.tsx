@@ -676,11 +676,11 @@ fengsheng:
                     <Users className="w-3.5 h-3.5 text-primary" />子智能体
                   </h3>
                   <p className="text-[11px] text-muted-foreground mt-0.5">
-                    从智能体广场挑选已发布的智能体作为子智能体；它们继承的 Skill / MCP 会一并展示，未配置凭据的 MCP 需在「<button onClick={() => navigate("/vault")} className="text-primary hover:underline">MCP 管理</button>」中补齐
+                    从项目作品挑选已发布的智能体作为子智能体；它们继承的 Skill / MCP 会一并展示，未配置凭据的 MCP 需在「<button onClick={() => navigate("/vault")} className="text-primary hover:underline">MCP 管理</button>」中补齐
                   </p>
                 </div>
                 <CapabilityPickerDialog
-                  items={marketplaceSubagents.map((a) => ({ name: a.name, description: a.description, tags: a.category ? [a.category] : [] }))}
+                  items={projectSubagents.map((a) => ({ name: a.name, description: a.description, tags: a.category ? [a.category] : [] }))}
                   selected={selSubagents}
                   onToggle={(n) => setSelSubagents((prev) => prev.includes(n) ? prev.filter((x) => x !== n) : [...prev, n])}
                   icon={<Bot className="w-3.5 h-3.5" />}
