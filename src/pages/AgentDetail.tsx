@@ -895,20 +895,20 @@ fengsheng:
           <div className="border border-border rounded-lg overflow-hidden bg-card">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead className="w-20">来源</TableHead>
-                  <TableHead>触发人</TableHead>
-                  <TableHead>触发内容</TableHead>
-                  <TableHead className="w-44">时间</TableHead>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="w-20 h-8 py-1.5 text-[11px] font-medium text-muted-foreground">来源</TableHead>
+                  <TableHead className="w-24 h-8 py-1.5 text-[11px] font-medium text-muted-foreground">触发人</TableHead>
+                  <TableHead className="h-8 py-1.5 text-[11px] font-medium text-muted-foreground">触发内容</TableHead>
+                  <TableHead className="w-40 h-8 py-1.5 text-[11px] font-medium text-muted-foreground">时间</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {mockRuns.map((r) => (
                   <TableRow key={r.id} className="cursor-pointer" onClick={() => setActiveRun(r)}>
-                    <TableCell><Badge variant="outline" className="text-[10px] whitespace-nowrap">{r.source}</Badge></TableCell>
-                    <TableCell className="text-xs">{r.trigger}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground truncate max-w-[280px]">{r.prompt}</TableCell>
-                    <TableCell className="text-xs font-mono text-muted-foreground">{r.startedAt}</TableCell>
+                    <TableCell className="py-2"><Badge variant="outline" className="text-[10px] h-4 px-1.5 font-normal whitespace-nowrap">{r.source}</Badge></TableCell>
+                    <TableCell className="py-2 text-xs">{r.trigger}</TableCell>
+                    <TableCell className="py-2 text-xs text-muted-foreground truncate max-w-[280px]">{r.prompt}</TableCell>
+                    <TableCell className="py-2 text-[11px] font-mono text-muted-foreground">{r.startedAt}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
