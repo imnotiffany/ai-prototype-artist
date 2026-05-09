@@ -223,6 +223,7 @@ export const mockAgents: Agent[] = [
     platform: "AI技术平台", author: "张三", authorId: "01234567",
     updatedAt: "2026-04-04", downloads: 123,
     skills: ["Web Search", "Email Parser"], mcpServers: ["钉钉文档", "钉钉通讯录"],
+    subagents: ["数据查询子智能体", "报告撰写子智能体"],
     sessionCount: 89, creationType: "ai", status: "published", kind: "agent",
     versions: [
       { version: "v0.0.3", createdAt: "2026-04-04", fileSize: "12KB", downloads: 45, status: "published", creator: "张三" },
