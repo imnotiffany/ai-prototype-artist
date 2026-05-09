@@ -466,22 +466,24 @@ const AgentDetail = () => {
             )}
 
             <div className="flex items-center justify-end gap-3 px-1">
-              <div className="inline-flex items-center rounded-md border border-border bg-muted/40 p-0.5 shrink-0">
+              <div className="inline-flex items-center shrink-0 gap-0.5">
                 <button
                   onClick={() => setConfigView("form")}
-                  className={`inline-flex items-center gap-1 px-2.5 h-7 rounded text-xs transition-colors ${
-                    configView === "form" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                  title="表单视图"
+                  className={`inline-flex items-center justify-center w-6 h-6 rounded transition-colors ${
+                    configView === "form" ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
                   }`}
                 >
-                  <Layout className="w-3 h-3" />表单
+                  <Layout className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => setConfigView("code")}
-                  className={`inline-flex items-center gap-1 px-2.5 h-7 rounded text-xs transition-colors ${
-                    configView === "code" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                  title="代码视图"
+                  className={`inline-flex items-center justify-center w-6 h-6 rounded transition-colors ${
+                    configView === "code" ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
                   }`}
                 >
-                  <Code2 className="w-3 h-3" />代码
+                  <Code2 className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
