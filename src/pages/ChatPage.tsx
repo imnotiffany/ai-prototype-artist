@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Send, Square } from "lucide-react";
+import { ArrowLeft, Send, Square, Mic, MicOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +47,15 @@ const ChatPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agent?.id]);
   const [input, setInput] = useState("");
+  const [voiceRecording, setVoiceRecording] = useState(false);
+  const toggleVoice = () => {
+    if (voiceRecording) {
+      setVoiceRecording(false);
+      setInput((v) => v + (v ? " " : "") + "（语音输入示例文本）");
+    } else {
+      setVoiceRecording(true);
+    }
+  };
   const [isRunning, setIsRunning] = useState(false);
   const [stageIndex, setStageIndex] = useState(0);
   const stages = ["分析问题", "选择工具", "调用工具", "整理回答"];
@@ -379,6 +388,17 @@ const ChatPage = () => {
               disabled={isRunning}
               className="flex-1"
             />
+            {!isRunning && (
+              <Button
+                size="icon"
+                variant={voiceRecording ? "default" : "outline"}
+                onClick={toggleVoice}
+                title={voiceRecording ? "结束语音输入" : "语音输入"}
+                className={voiceRecording ? "animate-pulse" : ""}
+              >
+                {voiceRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              </Button>
+            )}
             {isRunning ? (
               <Button variant="destructive" size="icon" onClick={stop} title="停止">
                 <Square className="w-4 h-4" />

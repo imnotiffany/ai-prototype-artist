@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronRight, ChevronLeft, Sparkles, Wrench, Server, User, Calendar, Tag } from "lucide-react";
+import { ChevronRight, ChevronLeft, Sparkles, Wrench, Server, User, Calendar, Tag, Bot } from "lucide-react";
 import type { Agent } from "@/data/mockData";
 import { cn } from "@/lib/utils";
 
@@ -105,6 +105,19 @@ export const AgentInfoPanel = ({ agent, suggestions, onSuggestionClick }: Props)
           <Section icon={Wrench} title={`Skill · ${agent.skills.length}`}>
             <div className="space-y-1">
               {agent.skills.map((s) => (
+                <div key={s} className="text-[11px] text-foreground/80 px-2 py-1 rounded bg-secondary/60">
+                  {s}
+                </div>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {/* Subagents */}
+        {agent.subagents && agent.subagents.length > 0 && (
+          <Section icon={Bot} title={`子智能体 · ${agent.subagents.length}`}>
+            <div className="space-y-1">
+              {agent.subagents.map((s) => (
                 <div key={s} className="text-[11px] text-foreground/80 px-2 py-1 rounded bg-secondary/60">
                   {s}
                 </div>
