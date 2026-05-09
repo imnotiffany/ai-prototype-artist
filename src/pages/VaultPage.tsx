@@ -397,86 +397,44 @@ const VaultPage = () => {
               <TableHead className="text-xs h-9 whitespace-nowrap">名称</TableHead>
               <TableHead className="text-xs h-9 whitespace-nowrap">标识符</TableHead>
               <TableHead className="text-xs h-9 whitespace-nowrap">服务端点</TableHead>
+              <TableHead className="text-xs h-9 whitespace-nowrap w-[130px]">类型</TableHead>
               <TableHead className="text-xs h-9 whitespace-nowrap w-[110px]">凭据</TableHead>
-              <TableHead className="text-xs h-9 whitespace-nowrap w-[110px]">使用情况</TableHead>
               <TableHead className="text-xs h-9 whitespace-nowrap w-[100px]">创建时间</TableHead>
-              <TableHead className="text-xs h-9 whitespace-nowrap w-[140px]">测试连接</TableHead>
-              
             </TableRow>
           </TableHeader>
           <TableBody>
-            {mcps.map((m) => {
-              const agents = linkedAgents(m.name);
-              return (
-                <TableRow key={m.id}>
-                  <TableCell className="py-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center shrink-0">
-                        <Server className="w-3 h-3 text-primary" />
-                      </div>
-                      <span className="text-xs font-medium truncate" title={m.name}>{m.name}</span>
+            {mcps.map((m) => (
+              <TableRow key={m.id}>
+                <TableCell className="py-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center shrink-0">
+                      <Server className="w-3 h-3 text-primary" />
                     </div>
-                  </TableCell>
-                  <TableCell className="py-2 text-[11px] text-muted-foreground font-mono whitespace-nowrap">{m.identifier}</TableCell>
-                  <TableCell className="py-2 text-[11px] text-muted-foreground font-mono max-w-[240px]">
-                    <div className="flex items-center gap-1 min-w-0">
-                      <Link2 className="w-3 h-3 shrink-0" />
-                      <span className="truncate" title={m.endpoint}>{m.endpoint}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="py-2 whitespace-nowrap">
-                    {m.requiresCredential ? (
-                      <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-0 text-[10px] gap-1"><KeyRound className="w-3 h-3" />已配置</Badge>
-                    ) : (
-                      <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0 text-[10px] gap-1"><ShieldCheck className="w-3 h-3" />免凭据</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="py-2 whitespace-nowrap">
-                    {agents.length > 0 ? (
-                      <Badge variant="secondary" className="text-[11px] gap-1 font-normal">
-                        <Bot className="w-3 h-3" />
-                        {agents.length} 个智能体
-                      </Badge>
-                    ) : (
-                      <span className="text-[11px] text-muted-foreground">未使用</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="py-2 text-[11px] text-muted-foreground whitespace-nowrap">{m.createdAt}</TableCell>
-                  <TableCell className="py-2 whitespace-nowrap">
-                    {testingId === m.id ? (
-                      <Button size="sm" variant="outline" className="h-7 text-[11px] px-2 gap-1" disabled>
-                        <Loader2 className="w-3 h-3 animate-spin" />测试中
-                      </Button>
-                    ) : testResult[m.id] === "ok" ? (
-                      <button
-                        onClick={() => runTest(m.id, m.name)}
-                        className="inline-flex items-center gap-1 h-7 px-2 rounded-md bg-emerald-100 text-emerald-700 text-[11px] hover:bg-emerald-200 transition-colors"
-                        title="重新测试"
-                      >
-                        <CheckCircle2 className="w-3 h-3" />已连通
-                      </button>
-                    ) : testResult[m.id] === "fail" ? (
-                      <button
-                        onClick={() => runTest(m.id, m.name)}
-                        className="inline-flex items-center gap-1 h-7 px-2 rounded-md bg-red-100 text-red-700 text-[11px] hover:bg-red-200 transition-colors"
-                        title="重新测试"
-                      >
-                        <XCircle className="w-3 h-3" />连接失败
-                      </button>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-7 text-[11px] px-2 gap-1"
-                        onClick={() => runTest(m.id, m.name)}
-                      >
-                        <Plug className="w-3 h-3" />测试连接
-                      </Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
+                    <span className="text-xs font-medium truncate" title={m.name}>{m.name}</span>
+                  </div>
+                </TableCell>
+                <TableCell className="py-2 text-[11px] text-muted-foreground font-mono whitespace-nowrap">{m.identifier}</TableCell>
+                <TableCell className="py-2 text-[11px] text-muted-foreground font-mono max-w-[240px]">
+                  <div className="flex items-center gap-1 min-w-0">
+                    <Link2 className="w-3 h-3 shrink-0" />
+                    <span className="truncate" title={m.endpoint}>{m.endpoint}</span>
+                  </div>
+                </TableCell>
+                <TableCell className="py-2 whitespace-nowrap">
+                  <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono font-normal">
+                    {typeLabel(m.type)}
+                  </Badge>
+                </TableCell>
+                <TableCell className="py-2 whitespace-nowrap">
+                  {m.requiresCredential ? (
+                    <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-0 text-[10px] gap-1"><KeyRound className="w-3 h-3" />已配置</Badge>
+                  ) : (
+                    <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0 text-[10px] gap-1"><ShieldCheck className="w-3 h-3" />免凭据</Badge>
+                  )}
+                </TableCell>
+                <TableCell className="py-2 text-[11px] text-muted-foreground whitespace-nowrap">{m.createdAt}</TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </div>
