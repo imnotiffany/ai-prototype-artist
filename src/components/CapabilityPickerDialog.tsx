@@ -156,6 +156,11 @@ export const CapabilityPickerDialog = ({
                   </Badge>
                 )
               )}
+              {isSkill && (it.tags ?? []).map((t) => (
+                <Badge key={t} variant="outline" className="text-[10px] h-4 px-1.5 font-normal text-muted-foreground">
+                  {t}
+                </Badge>
+              ))}
             </div>
           </div>
           {isMcp ? (
