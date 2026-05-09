@@ -173,34 +173,35 @@ const AgentMarketplace = () => {
                     <ChevronDown className="w-3 h-3" />
                   </button>
                 </PopoverTrigger>
-                <PopoverContent className="p-0 w-64" align="start">
+                <PopoverContent className="p-0 w-[480px]" align="end">
                   <Command>
-                    <CommandInput placeholder="搜索分类…" className="h-8 text-xs" />
-                    <CommandList>
+                    <CommandInput placeholder="搜索分类…" className="h-9 text-xs" />
+                    <CommandList className="max-h-[320px]">
                       <CommandEmpty className="py-4 text-center text-xs text-muted-foreground">未找到分类</CommandEmpty>
-                      <CommandGroup heading="全部分类">
-                        {ranked.map((cat) => {
-                          const c = counts.get(cat) ?? 0;
-                          const active = activeCategory === cat;
-                          return (
-                            <CommandItem
-                              key={cat}
-                              value={cat}
-                              onSelect={() => {
-                                setActiveCategory(active ? null : cat);
-                                setCatPopOpen(false);
-                              }}
-                              className="text-xs flex items-center justify-between gap-2"
-                            >
-                              <span className="flex items-center gap-1.5 min-w-0">
-                                <Check className={`w-3 h-3 shrink-0 ${active ? "opacity-100 text-primary" : "opacity-0"}`} />
+                      <div className="p-2">
+                        <div className="grid grid-cols-3 gap-1.5">
+                          {ranked.map((cat) => {
+                            const active = activeCategory === cat;
+                            return (
+                              <CommandItem
+                                key={cat}
+                                value={cat}
+                                onSelect={() => {
+                                  setActiveCategory(active ? null : cat);
+                                  setCatPopOpen(false);
+                                }}
+                                className={`text-xs justify-center px-2 py-1.5 rounded-md border cursor-pointer ${
+                                  active
+                                    ? "bg-primary/10 text-primary border-primary/30 font-medium"
+                                    : "border-border text-foreground hover:bg-muted"
+                                }`}
+                              >
                                 <span className="truncate">{cat}</span>
-                              </span>
-                              <span className="text-[10px] text-muted-foreground shrink-0">{c}</span>
-                            </CommandItem>
-                          );
-                        })}
-                      </CommandGroup>
+                              </CommandItem>
+                            );
+                          })}
+                        </div>
+                      </div>
                     </CommandList>
                   </Command>
                 </PopoverContent>
