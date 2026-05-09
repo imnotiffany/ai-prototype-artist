@@ -585,7 +585,6 @@ fengsheng:
                 <Label className="text-xs">系统提示词</Label>
                 <Textarea value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)} rows={8}
                   className="mt-1.5 font-mono text-xs leading-relaxed bg-card" />
-                <p className="text-[10px] text-muted-foreground mt-1.5">告诉智能体"你是谁、要做什么、怎么回答"。</p>
               </div>
             </div>
 
