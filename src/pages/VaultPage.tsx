@@ -24,7 +24,10 @@ interface McpEntry {
   deployment: string;
   createdAt: string;
   requiresCredential: boolean;
+  type: McpType;
 }
+
+const typeLabel = (t: McpType) => (t === "studio" ? "STDIO" : t === "sse" ? "SSE" : "StreamableHTTP");
 
 // 免凭据 MCP 默认即在列表
 const freeMcps: McpEntry[] = getCredentialFreeMcps().map((r, i) => ({
@@ -38,6 +41,7 @@ const freeMcps: McpEntry[] = getCredentialFreeMcps().map((r, i) => ({
   deployment: r.deployment ?? "云端",
   createdAt: r.addedAt,
   requiresCredential: false,
+  type: r.deployment === "本地" ? "studio" : "http",
 }));
 
 const VaultPage = () => {
