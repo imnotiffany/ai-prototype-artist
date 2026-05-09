@@ -100,8 +100,8 @@ const VaultPage = () => {
   }, [marketSearch, marketTag, allMarketMcps]);
 
   const reset = () => {
-    setEndpoint(""); setName(""); setIdentifier("");
-    setHeaders([]); setTimeoutVal("30"); setSseTimeout("300"); setTab("headers");
+    setEndpoint(""); setName(""); setIdentifier(""); setDescription("");
+    setHeaders([]);
     setMcpType("http"); setStdioCommand("npx"); setStdioArgs(""); setEnvVars([]);
     setLocked(false);
   };
