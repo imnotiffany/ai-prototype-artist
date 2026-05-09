@@ -732,7 +732,7 @@ fengsheng:
                             <div className="flex items-center gap-1.5">
                               <Bot className="w-3.5 h-3.5 text-primary shrink-0" />
                               <span className="text-xs font-medium truncate">{sub.name}</span>
-                              <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-border">来自广场</Badge>
+                              <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-border">来自项目</Badge>
                             </div>
                             <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-relaxed">{sub.description}</p>
                           </div>
