@@ -702,9 +702,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 </div>
                 <CapabilityPickerDialog items={skills} selected={selSkills} onToggle={(n) => toggle(selSkills, setSelSkills, n)} icon={<Zap className="w-3.5 h-3.5" />} label="Skill" marketLink="/" trigger={<Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0"><Plus className="w-3 h-3" />添加 Skill</Button>} />
               </div>
-              {selSkills.length === 0 ? (
-                <p className="text-xs text-muted-foreground text-center py-4">尚未绑定任何 Skill。点击右上角「添加 Skill」选择。</p>
-              ) : (
+              {selSkills.length === 0 ? null : (
                 <div className="space-y-2">
                   {selSkills.map((s) => {
                     const meta = skills.find((x) => x.name === s);
