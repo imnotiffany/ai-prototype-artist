@@ -81,7 +81,7 @@ const AgentDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const initialTab = searchParams.get("tab") === "versions" ? "versions" : "debug";
+  const initialTab = searchParams.get("tab") === "config" ? "config" : "debug";
   const agent = mockAgents.find((a) => a.id === id);
 
   /* ── Saved snapshot vs current draft (for "未保存" indicator) ── */
@@ -111,13 +111,7 @@ const AgentDetail = () => {
   const [subagentGapDialogOpen, setSubagentGapDialogOpen] = useState(false);
   const [configView, setConfigView] = useState<"form" | "code">("form");
   const [savedSnapshot, setSavedSnapshot] = useState(initialSnapshot);
-  const [justSavedVersion, setJustSavedVersion] = useState<string | null>(null);
-
-  const [versions, setVersions] = useState([
-    { v: "v0.0.3", at: "2026-04-25 14:02", by: "廖奕通", note: "新增 丰景台数据查询v2", current: true },
-    { v: "v0.0.2", at: "2026-04-18 09:30", by: "廖奕通", note: "调整 system prompt 风格", current: false },
-    { v: "v0.0.1", at: "2026-04-10 16:45", by: "廖奕通", note: "初始版本", current: false },
-  ]);
+  const [justSaved, setJustSaved] = useState(false);
 
   const isDirty = useMemo(() => JSON.stringify({
     name, description, model, systemPrompt, skills: selSkills, mcpBindings, fsAppKey, fsAppSecret, fsRobotCode,
@@ -213,9 +207,6 @@ const AgentDetail = () => {
   /* ── Run history ── */
   const [activeRun, setActiveRun] = useState<RunRecord | null>(null);
 
-  /* ── Version detail dialog ── */
-  const [viewingVersion, setViewingVersion] = useState<typeof versions[0] | null>(null);
-
   /* ── 订阅 MCP 管理（Vault）配置变化，让本页绑定区实时联动 ── */
   const [, setVaultTick] = useState(0);
   useEffect(() => {
@@ -245,24 +236,11 @@ const AgentDetail = () => {
   );
 
   /* ── Config actions ── */
-  const bumpPatch = (v: string) => {
-    const m = v.replace(/^v/, "").split(".").map((n) => parseInt(n, 10) || 0);
-    while (m.length < 3) m.push(0);
-    m[2] += 1;
-    return "v" + m.join(".");
-  };
-  const nextVersion = useMemo(() => bumpPatch(versions[0]?.v ?? "v0.0.0"), [versions]);
-
   const handleSave = () => {
-    const next = nextVersion;
-    setVersions([
-      { v: next, at: new Date().toISOString().slice(0, 16).replace("T", " "), by: "廖奕通", note: "更新配置", current: true },
-      ...versions.map((v) => ({ ...v, current: false })),
-    ]);
     setSavedSnapshot({ name, description, model, systemPrompt, skills: selSkills, mcpBindings, fsAppKey, fsAppSecret, fsRobotCode });
-    setJustSavedVersion(next);
-    window.setTimeout(() => setJustSavedVersion(null), 2800);
-    toast({ title: "已保存", description: `生成新版本 ${next}` });
+    setJustSaved(true);
+    window.setTimeout(() => setJustSaved(false), 2800);
+    toast({ title: "已保存", description: "配置已更新，可点击发布上线" });
   };
 
   const handleRevert = () => {
@@ -276,11 +254,6 @@ const AgentDetail = () => {
     setFsAppSecret(savedSnapshot.fsAppSecret);
     setFsRobotCode(savedSnapshot.fsRobotCode);
     toast({ title: "已撤销修改" });
-  };
-
-  const handleRollback = (v: typeof versions[0]) => {
-    setVersions(versions.map((x) => ({ ...x, current: x.v === v.v })));
-    toast({ title: `已回滚到 ${v.v}`, description: v.note });
   };
 
   const updateMcpCred = (i: number, cred: string) =>
