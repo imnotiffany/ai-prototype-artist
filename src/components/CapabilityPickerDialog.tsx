@@ -258,33 +258,6 @@ export const CapabilityPickerDialog = ({
               </p>
             )}
           </div>
-
-          {/* 未配置区：仅 MCP */}
-          {isMcp && unconfigured.length > 0 && (
-            <>
-              <div className="flex items-center justify-between gap-2 sticky top-0 bg-background py-1 z-10 mt-2 pt-2 border-t border-border">
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-semibold text-foreground">未配置凭据</span>
-                  <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-normal border-amber-300 text-amber-700 bg-amber-50/60">
-                    {unconfigured.length}
-                  </Badge>
-                </div>
-                <Link
-                  to={mcpManageHref}
-                  onClick={() => setOpen(false)}
-                  className="text-[10px] text-primary hover:underline flex items-center gap-0.5"
-                >
-                  <Settings2 className="w-3 h-3" />前往 MCP 管理配置
-                </Link>
-              </div>
-              <p className="text-[10px] text-muted-foreground -mt-1">
-                以下 MCP 需要先在「MCP 管理 → 新增 MCP」中配置凭据，配置完成后即可在此处选用。
-              </p>
-              <div className="grid grid-cols-2 gap-2.5">
-                {unconfigured.map((it) => renderCard(it, { disabled: true }))}
-              </div>
-            </>
-          )}
         </div>
         <DialogFooter>
           <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setOpen(false)}>
