@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, RotateCcw, Rocket, Copy, Share2, ArrowDownToLine, Trash2 } from "lucide-react";
+import { Plus, RotateCcw, Rocket, Copy, Share2, ArrowDownToLine, Trash2, KeyRound, Eye, EyeOff, Copy as CopyIcon } from "lucide-react";
 import { mockAgents, type Agent } from "@/data/mockData";
 import { PublishAgentDialog } from "@/components/PublishAgentDialog";
 import { AgentRuntimeBadge, type AgentRuntimeStatus } from "@/components/AgentRuntimeBadge";
@@ -19,6 +19,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 
 const runtimeStatusFor = (id: string): AgentRuntimeStatus => {
@@ -83,11 +85,27 @@ const ProjectAgents = () => {
     setDeleteTarget(null);
   };
 
-  const mockVersionsFor = (a: Agent) => [
-    { v: "v0.0.3", at: "2026-04-25 14:02", note: "新增 丰景台数据查询v2", current: true },
-    { v: "v0.0.2", at: "2026-04-18 09:30", note: "调整 system prompt 风格" },
-    { v: "v0.0.1", at: "2026-04-10 16:45", note: "初始版本" },
-  ];
+  // API key application
+  const [apiKeyOpen, setApiKeyOpen] = useState(false);
+  const [apiKeyName, setApiKeyName] = useState("");
+  const [generatedKey, setGeneratedKey] = useState<string | null>(null);
+  const [keyVisible, setKeyVisible] = useState(false);
+
+  const handleApplyApiKey = () => {
+    if (!apiKeyName.trim()) {
+      toast({ title: "请填写 API Key 名称", variant: "destructive" });
+      return;
+    }
+    const key = "sk-" + Array.from({ length: 32 }, () => "abcdef0123456789"[Math.floor(Math.random() * 16)]).join("");
+    setGeneratedKey(key);
+  };
+
+  const closeApiKey = () => {
+    setApiKeyOpen(false);
+    setApiKeyName("");
+    setGeneratedKey(null);
+    setKeyVisible(false);
+  };
 
   const filtered = agents.filter((app) => {
     if (searchName && !app.name.toLowerCase().includes(searchName.toLowerCase())) return false;
@@ -125,6 +143,10 @@ const ProjectAgents = () => {
         <div className="flex items-center justify-between mb-5">
           <h1 className="text-lg font-semibold text-primary">项目管理</h1>
           <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs" onClick={() => setApiKeyOpen(true)}>
+              <KeyRound className="w-3.5 h-3.5" />
+              申请 API Key
+            </Button>
             <Button size="sm" className="gap-1.5 h-8 text-xs" onClick={() => navigate("/create")}>
               <Plus className="w-3.5 h-3.5" />
               创建应用
@@ -300,7 +322,6 @@ const ProjectAgents = () => {
         open={!!publishTarget}
         onOpenChange={(o) => !o && setPublishTarget(null)}
         agentName={publishTarget?.name ?? ""}
-        versions={publishTarget ? mockVersionsFor(publishTarget) : []}
         kind={publishTarget?.kind}
       />
 
@@ -338,6 +359,75 @@ const ProjectAgents = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Apply API Key dialog */}
+      <Dialog open={apiKeyOpen} onOpenChange={(o) => (o ? setApiKeyOpen(true) : closeApiKey())}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base flex items-center gap-2">
+              <KeyRound className="w-4 h-4 text-primary" />申请 API Key
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              API Key 用于在外部系统中调用本项目下已发布的应用 / 智能体。请妥善保管，密钥仅在生成时完整展示一次。
+            </DialogDescription>
+          </DialogHeader>
+          {!generatedKey ? (
+            <div className="space-y-3 py-1">
+              <div>
+                <Label className="text-xs">名称（用途备注）</Label>
+                <Input
+                  value={apiKeyName}
+                  onChange={(e) => setApiKeyName(e.target.value)}
+                  placeholder="如：CRM 系统集成"
+                  className="mt-1.5 h-9 text-xs"
+                />
+                <p className="text-[10px] text-muted-foreground mt-1.5">建议按调用方区分，便于后续审计与吊销</p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3 py-1">
+              <div className="border border-amber-300 bg-amber-50 dark:bg-amber-950/30 rounded-md px-3 py-2 text-[11px] text-amber-800 dark:text-amber-200">
+                请立即复制并保存。关闭后将无法再次查看完整 Key。
+              </div>
+              <div>
+                <Label className="text-xs">API Key</Label>
+                <div className="mt-1.5 flex items-center gap-1.5">
+                  <Input
+                    readOnly
+                    type={keyVisible ? "text" : "password"}
+                    value={generatedKey}
+                    className="h-9 text-xs font-mono"
+                  />
+                  <Button size="icon" variant="outline" className="h-9 w-9 shrink-0" onClick={() => setKeyVisible((v) => !v)}>
+                    {keyVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    className="h-9 w-9 shrink-0"
+                    onClick={() => {
+                      navigator.clipboard.writeText(generatedKey);
+                      toast({ title: "已复制到剪贴板" });
+                    }}
+                  >
+                    <CopyIcon className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            {!generatedKey ? (
+              <>
+                <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={closeApiKey}>取消</Button>
+                <Button size="sm" className="h-8 text-xs" onClick={handleApplyApiKey}>生成</Button>
+              </>
+            ) : (
+              <Button size="sm" className="h-8 text-xs" onClick={closeApiKey}>完成</Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

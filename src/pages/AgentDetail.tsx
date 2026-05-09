@@ -13,9 +13,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import {
-  ArrowLeft, MessageSquare, Send, Save, Bot, ChevronDown, ChevronRight, CheckCircle2, XCircle, Clock,
-  History, Server, Bot as BotIcon, Bug, Terminal, Loader2, Mic, MicOff, Zap, Plus, X, RotateCcw, Eye, EyeOff, Search, Settings2,
-  Brain, Wrench, Info, AlertTriangle, AlertCircle, Copy, Pencil, Rocket, KeyRound, Code2, Layout, Users,
+  ArrowLeft, MessageSquare, Send, Save, Bot, CheckCircle2, Server, Bug, Mic, MicOff, Zap, Plus, X, RotateCcw, EyeOff, Eye, Settings2,
+  AlertTriangle, Copy, Pencil, Rocket, Code2, Layout, Users,
 } from "lucide-react";
 import { mockAgents, getActiveMCPs, getActiveSkills } from "@/data/mockData";
 import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
@@ -82,7 +81,7 @@ const AgentDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const initialTab = searchParams.get("tab") === "versions" ? "versions" : "debug";
+  const initialTab = searchParams.get("tab") === "config" ? "config" : "debug";
   const agent = mockAgents.find((a) => a.id === id);
 
   /* ── Saved snapshot vs current draft (for "未保存" indicator) ── */
@@ -112,13 +111,7 @@ const AgentDetail = () => {
   const [subagentGapDialogOpen, setSubagentGapDialogOpen] = useState(false);
   const [configView, setConfigView] = useState<"form" | "code">("form");
   const [savedSnapshot, setSavedSnapshot] = useState(initialSnapshot);
-  const [justSavedVersion, setJustSavedVersion] = useState<string | null>(null);
-
-  const [versions, setVersions] = useState([
-    { v: "v0.0.3", at: "2026-04-25 14:02", by: "廖奕通", note: "新增 丰景台数据查询v2", current: true },
-    { v: "v0.0.2", at: "2026-04-18 09:30", by: "廖奕通", note: "调整 system prompt 风格", current: false },
-    { v: "v0.0.1", at: "2026-04-10 16:45", by: "廖奕通", note: "初始版本", current: false },
-  ]);
+  const [justSaved, setJustSaved] = useState(false);
 
   const isDirty = useMemo(() => JSON.stringify({
     name, description, model, systemPrompt, skills: selSkills, mcpBindings, fsAppKey, fsAppSecret, fsRobotCode,
@@ -214,9 +207,6 @@ const AgentDetail = () => {
   /* ── Run history ── */
   const [activeRun, setActiveRun] = useState<RunRecord | null>(null);
 
-  /* ── Version detail dialog ── */
-  const [viewingVersion, setViewingVersion] = useState<typeof versions[0] | null>(null);
-
   /* ── 订阅 MCP 管理（Vault）配置变化，让本页绑定区实时联动 ── */
   const [, setVaultTick] = useState(0);
   useEffect(() => {
@@ -246,24 +236,11 @@ const AgentDetail = () => {
   );
 
   /* ── Config actions ── */
-  const bumpPatch = (v: string) => {
-    const m = v.replace(/^v/, "").split(".").map((n) => parseInt(n, 10) || 0);
-    while (m.length < 3) m.push(0);
-    m[2] += 1;
-    return "v" + m.join(".");
-  };
-  const nextVersion = useMemo(() => bumpPatch(versions[0]?.v ?? "v0.0.0"), [versions]);
-
   const handleSave = () => {
-    const next = nextVersion;
-    setVersions([
-      { v: next, at: new Date().toISOString().slice(0, 16).replace("T", " "), by: "廖奕通", note: "更新配置", current: true },
-      ...versions.map((v) => ({ ...v, current: false })),
-    ]);
     setSavedSnapshot({ name, description, model, systemPrompt, skills: selSkills, mcpBindings, fsAppKey, fsAppSecret, fsRobotCode });
-    setJustSavedVersion(next);
-    window.setTimeout(() => setJustSavedVersion(null), 2800);
-    toast({ title: "已保存", description: `生成新版本 ${next}` });
+    setJustSaved(true);
+    window.setTimeout(() => setJustSaved(false), 2800);
+    toast({ title: "已保存", description: "配置已更新，可点击发布上线" });
   };
 
   const handleRevert = () => {
@@ -277,11 +254,6 @@ const AgentDetail = () => {
     setFsAppSecret(savedSnapshot.fsAppSecret);
     setFsRobotCode(savedSnapshot.fsRobotCode);
     toast({ title: "已撤销修改" });
-  };
-
-  const handleRollback = (v: typeof versions[0]) => {
-    setVersions(versions.map((x) => ({ ...x, current: x.v === v.v })));
-    toast({ title: `已回滚到 ${v.v}`, description: v.note });
   };
 
   const updateMcpCred = (i: number, cred: string) =>
@@ -344,10 +316,7 @@ const AgentDetail = () => {
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-lg font-semibold text-foreground truncate">{name}</h1>
               {agent.status === "published" ? (
-                <span className="inline-flex items-center gap-1.5 text-[11px]">
-                  <Badge variant="outline" className="text-[10px] h-5 px-1.5 border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30">已发布</Badge>
-                  <span className="font-mono text-foreground">{versions.find((v) => v.current)?.v}</span>
-                </span>
+                <Badge variant="outline" className="text-[10px] h-5 px-1.5 border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30">已发布</Badge>
               ) : (
                 <Badge variant="outline" className="text-[10px] h-5 px-1.5 text-muted-foreground">未发布</Badge>
               )}
@@ -369,13 +338,13 @@ const AgentDetail = () => {
                 <RotateCcw className="w-3 h-3 mr-1" />撤销
               </Button>
               <Button size="sm" className="h-6 px-2 text-[11px] gap-1 bg-amber-600 hover:bg-amber-700 text-white" onClick={handleSave}>
-                <Save className="w-3 h-3" />保存为 {nextVersion}
+                <Save className="w-3 h-3" />保存
               </Button>
             </div>
-          ) : justSavedVersion ? (
+          ) : justSaved ? (
             <div className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md border border-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 animate-fade-in">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              <span className="text-[11px] text-emerald-800 dark:text-emerald-200">已保存为 {justSavedVersion}</span>
+              <span className="text-[11px] text-emerald-800 dark:text-emerald-200">已保存</span>
             </div>
           ) : null}
           <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={openEditInfo}>
@@ -398,7 +367,6 @@ const AgentDetail = () => {
           <TabsTrigger value="debug" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><Bug className="w-3.5 h-3.5" />调试</TabsTrigger>
           <TabsTrigger value="config" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><Settings2 className="w-3.5 h-3.5" />配置</TabsTrigger>
           <TabsTrigger value="runs" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><MessageSquare className="w-3.5 h-3.5" />会话记录</TabsTrigger>
-          <TabsTrigger value="versions" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><History className="w-3.5 h-3.5" />版本</TabsTrigger>
         </TabsList>
 
         {/* ───────── 调试 ───────── */}
@@ -406,7 +374,7 @@ const AgentDetail = () => {
           <div className="border border-border rounded-lg px-3 py-2 bg-gradient-to-r from-primary/10 to-primary/5 mb-4">
             <p className="text-xs">
               <span className="font-medium">调试模式</span>
-              <span className="text-muted-foreground"> · 左侧调整配置，右侧验证效果，修改完毕请发布成新版本</span>
+              <span className="text-muted-foreground"> · 左侧调整配置，右侧验证效果，修改完毕请保存并发布</span>
             </p>
           </div>
 
@@ -477,7 +445,7 @@ const AgentDetail = () => {
                   <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-amber-900 dark:text-amber-200">配置已修改，尚未保存</p>
-                    <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80 mt-0.5">保存后将生成新版本 {nextVersion}，发布按钮在保存前不可用</p>
+                    <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80 mt-0.5">保存后才能发布上线，发布按钮在保存前不可用</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
@@ -485,7 +453,7 @@ const AgentDetail = () => {
                     <RotateCcw className="w-3 h-3" />撤销修改
                   </Button>
                   <Button size="sm" className="h-7 text-[11px] gap-1 bg-amber-600 hover:bg-amber-700 text-white" onClick={handleSave}>
-                    <Save className="w-3 h-3" />保存为 {nextVersion}
+                    <Save className="w-3 h-3" />保存
                   </Button>
                 </div>
               </div>
@@ -493,7 +461,7 @@ const AgentDetail = () => {
 
             <div className="flex items-center justify-between gap-3 px-1">
               <p className="text-[11px] text-muted-foreground">
-                名称、描述等基本信息请通过页面右上角的「编辑基本信息」修改，不会产生新版本。以下配置变更会生成新版本。
+                名称、描述等基本信息请通过页面右上角的「编辑基本信息」修改。以下配置变更需保存后生效。
               </p>
               <div className="inline-flex items-center rounded-md border border-border bg-muted/40 p-0.5 shrink-0">
                 <button
@@ -918,8 +886,6 @@ fengsheng:
                   <TableHead>触发人</TableHead>
                   <TableHead>触发内容</TableHead>
                   <TableHead className="w-44">时间</TableHead>
-                  <TableHead className="w-24">耗时</TableHead>
-                  <TableHead className="w-24">状态</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -929,8 +895,6 @@ fengsheng:
                     <TableCell className="text-xs">{r.trigger}</TableCell>
                     <TableCell className="text-xs text-muted-foreground truncate max-w-[280px]">{r.prompt}</TableCell>
                     <TableCell className="text-xs font-mono text-muted-foreground">{r.startedAt}</TableCell>
-                    <TableCell className="text-xs font-mono">{r.duration}</TableCell>
-                    <TableCell>{statusBadge(r.status)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -953,8 +917,6 @@ fengsheng:
                     <>
                       <span>来源：{activeRun.source}</span>
                       <span>触发人：{activeRun.trigger}</span>
-                      <span>耗时：{activeRun.duration}</span>
-                      {statusBadge(activeRun.status)}
                     </>
                   )}
                 </div>
@@ -975,111 +937,6 @@ fengsheng:
             </SheetContent>
           </Sheet>
         </TabsContent>
-
-        {/* ───────── 版本 ───────── */}
-        <TabsContent value="versions" className="mt-4">
-          <div className="border border-border rounded-lg px-4 py-3 bg-muted/40 mb-4">
-            <p className="text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">关于版本</span> · 每次点击保存，都会自动生成一个新版本。可在此查看任意历史版本快照，或选择某个版本重新发布上线。
-            </p>
-          </div>
-          <div className="border border-border rounded-lg bg-card overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-28">版本号</TableHead>
-                  <TableHead>变更说明</TableHead>
-                  <TableHead className="w-24">提交人</TableHead>
-                  <TableHead className="w-40">提交时间</TableHead>
-                  <TableHead className="w-20">状态</TableHead>
-                  <TableHead className="w-40 text-right">操作</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {versions.map((v) => {
-                  const isPublished = v.current && agent.status === "published";
-                  return (
-                  <TableRow key={v.v} className="hover:bg-muted/30">
-                    <TableCell className="font-mono text-xs">{v.v}</TableCell>
-                    <TableCell className="text-xs">{v.note}</TableCell>
-                    <TableCell className="text-xs">{v.by}</TableCell>
-                    <TableCell className="text-xs font-mono text-muted-foreground">{v.at}</TableCell>
-                    <TableCell>
-                      {isPublished ? (
-                        <Badge variant="outline" className="text-[10px] h-5 px-1.5 border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30">已发布</Badge>
-                      ) : (
-                        <span className="text-[10px] text-muted-foreground">未发布</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1" onClick={() => setViewingVersion(v)}>
-                          <Eye className="w-3 h-3" />查看
-                        </Button>
-                        {!isPublished && (
-                          <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1" onClick={() => { handleRollback(v); setPublishOpen(true); }}>
-                            <Rocket className="w-3 h-3" />发布
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
-
-          {/* Version detail dialog */}
-          <Dialog open={!!viewingVersion} onOpenChange={(o) => !o && setViewingVersion(null)}>
-            <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
-              <DialogHeader>
-                <DialogTitle className="text-sm flex items-center gap-2">
-                  版本快照
-                  <span className="font-mono text-xs">{viewingVersion?.v}</span>
-                  {viewingVersion?.current && agent.status === "published" && (
-                    <Badge variant="outline" className="text-[10px] h-5 px-1.5 border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30">已发布</Badge>
-                  )}
-                </DialogTitle>
-              </DialogHeader>
-              {viewingVersion && (
-                <div className="overflow-auto space-y-3 -mx-1 px-1">
-                  <div className="border border-border rounded-md bg-muted/30 p-3 space-y-1.5">
-                    <div className="flex justify-between text-xs"><span className="text-muted-foreground">变更说明</span><span>{viewingVersion.note}</span></div>
-                    <div className="flex justify-between text-xs"><span className="text-muted-foreground">提交人</span><span>{viewingVersion.by}</span></div>
-                    <div className="flex justify-between text-xs"><span className="text-muted-foreground">提交时间</span><span className="font-mono">{viewingVersion.at}</span></div>
-                  </div>
-                  <div>
-                    <p className="text-[11px] text-muted-foreground mb-1.5">系统提示词（快照）</p>
-                    <pre className="text-[11px] font-mono leading-relaxed bg-muted/40 border border-border rounded-md p-3 whitespace-pre-wrap break-all max-h-60 overflow-auto">{systemPrompt || "（该版本未记录提示词）"}</pre>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <p className="text-[11px] text-muted-foreground mb-1.5">绑定 MCP</p>
-                      <div className="flex flex-wrap gap-1">
-                        {mcpBindings.length ? mcpBindings.map((b) => <Badge key={b.name} variant="secondary" className="text-[10px]">{b.name}</Badge>) : <span className="text-[11px] text-muted-foreground">无</span>}
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-[11px] text-muted-foreground mb-1.5">绑定 Skill</p>
-                      <div className="flex flex-wrap gap-1">
-                        {selSkills.length ? selSkills.map((s) => <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>) : <span className="text-[11px] text-muted-foreground">无</span>}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-              <DialogFooter>
-                <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setViewingVersion(null)}>关闭</Button>
-                {viewingVersion && !(viewingVersion.current && agent.status === "published") && (
-                  <Button size="sm" className="h-8 text-xs gap-1" onClick={() => { handleRollback(viewingVersion); setViewingVersion(null); setPublishOpen(true); }}>
-                    <Rocket className="w-3 h-3" />发布此版本
-                  </Button>
-                )}
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </TabsContent>
       </Tabs>
 
       {/* Edit basic info dialog */}
@@ -1092,7 +949,7 @@ fengsheng:
           </DialogHeader>
           <div className="space-y-3 py-1">
             <p className="text-[11px] text-muted-foreground">
-              名称与描述是展示给使用者的「门面」，调整这些不会影响智能体行为，因此不会产生新版本。
+              名称与描述是展示给使用者的「门面」，调整这些不会影响智能体行为。
             </p>
             <div>
               <Label className="text-xs">名称</Label>
@@ -1115,7 +972,6 @@ fengsheng:
         open={publishOpen}
         onOpenChange={setPublishOpen}
         agentName={name}
-        versions={versions}
         kind={agent.kind}
       />
     </div>

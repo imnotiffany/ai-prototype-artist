@@ -20,7 +20,7 @@ interface Props {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   agentName: string;
-  versions: AgentVersion[];
+  versions?: AgentVersion[];
   defaultScope?: "marketplace" | "project";
   kind?: "app" | "agent";
 }
@@ -34,13 +34,12 @@ const RequiredLabel = ({ children }: { children: React.ReactNode }) => (
   </label>
 );
 
-export const PublishAgentDialog = ({ open, onOpenChange, agentName, versions, defaultScope = "marketplace", kind = "agent" }: Props) => {
+export const PublishAgentDialog = ({ open, onOpenChange, agentName, defaultScope = "marketplace", kind = "agent" }: Props) => {
   const noun = kind === "app" ? "应用" : "智能体";
   const [name, setName] = useState(agentName);
   const [desc, setDesc] = useState("");
   const [category, setCategory] = useState<string>("");
   const [scope, setScope] = useState<"marketplace" | "project">(defaultScope);
-  const [versionV, setVersionV] = useState<string>(versions.find((v) => v.current)?.v ?? versions[0]?.v ?? "");
   const [allowCopy, setAllowCopy] = useState(false);
   const [iconFile, setIconFile] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -51,11 +50,10 @@ export const PublishAgentDialog = ({ open, onOpenChange, agentName, versions, de
       setDesc("");
       setCategory("");
       setScope(defaultScope);
-      setVersionV(versions.find((v) => v.current)?.v ?? versions[0]?.v ?? "");
       setAllowCopy(false);
       setIconFile(null);
     }
-  }, [open, agentName, defaultScope, versions]);
+  }, [open, agentName, defaultScope]);
 
   const handleIconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -77,7 +75,7 @@ export const PublishAgentDialog = ({ open, onOpenChange, agentName, versions, de
     }
     toast({
       title: "已提交发布",
-      description: `${noun}「${name}」${versionV} 将发布到「${scope === "marketplace" ? "应用广场" : "项目内"}」`,
+      description: `${noun}「${name}」将发布到「${scope === "marketplace" ? "应用广场" : "项目内"}」`,
     });
     onOpenChange(false);
   };
@@ -132,24 +130,7 @@ export const PublishAgentDialog = ({ open, onOpenChange, agentName, versions, de
             </Select>
           </div>
 
-          {/* Version */}
-          <div>
-            <RequiredLabel>发布版本</RequiredLabel>
-            <Select value={versionV} onValueChange={setVersionV}>
-              <SelectTrigger className="h-10 text-sm">
-                <SelectValue placeholder="选择版本" />
-              </SelectTrigger>
-              <SelectContent>
-                {versions.map((v) => (
-                  <SelectItem key={v.v} value={v.v} className="text-sm">
-                    <span className="font-mono mr-2">{v.v}</span>
-                    <span className="text-muted-foreground">{v.note}</span>
-                    {v.current && <span className="ml-2 text-primary">· 当前</span>}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Version selection removed: editing now saves directly without version bumps */}
 
           {/* Scope */}
           <div>
