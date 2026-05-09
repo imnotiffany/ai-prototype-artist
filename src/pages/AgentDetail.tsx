@@ -668,58 +668,7 @@ fengsheng:
               </div>
             </section>
 
-            {/* 5. 丰声 NEXT 机器人 */}
-            <section className="border border-border rounded-lg bg-card">
-              <header className="px-4 py-2.5 border-b border-border">
-                <h3 className="text-sm font-semibold flex items-center gap-1.5">
-                  <MessageSquare className="w-3.5 h-3.5 text-primary" />丰声 NEXT 机器人
-                  <span className="text-[10px] px-1.5 h-4 leading-4 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 font-normal">可选</span>
-                </h3>
-                <p className="text-[11px] text-muted-foreground mt-0.5">仅在需要把智能体发布为群聊机器人（成员 @ 即可触发）时配置；不配置不影响其他渠道使用</p>
-              </header>
-              <div className="p-4 space-y-3">
-                <div>
-                  <Label className="text-xs">Client ID（AppKey） <span className="text-destructive">*</span></Label>
-                  <Input
-                    className="mt-1.5 h-8 text-xs font-mono"
-                    placeholder="企业应用 AppKey"
-                    value={fsAppKey}
-                    onChange={(e) => setFsAppKey(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs">Client Secret（AppSecret） <span className="text-destructive">*</span></Label>
-                  <div className="relative mt-1.5">
-                    <Input
-                      className="h-8 text-xs font-mono pr-9"
-                      type={fsSecretVisible ? "text" : "password"}
-                      placeholder="企业应用 AppSecret"
-                      value={fsAppSecret}
-                      onChange={(e) => setFsAppSecret(e.target.value)}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setFsSecretVisible(!fsSecretVisible)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    >
-                      {fsSecretVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                    </button>
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-xs">Robot Code <span className="text-destructive">*</span></Label>
-                  <Input
-                    className="mt-1.5 h-8 text-xs font-mono"
-                    placeholder="机器人编码"
-                    value={fsRobotCode}
-                    onChange={(e) => setFsRobotCode(e.target.value)}
-                  />
-                  <p className="text-[10px] text-muted-foreground mt-1.5">在丰声 NEXT 开发者后台「机器人管理」中获取，凭据将通过「凭据管理」加密存储</p>
-                </div>
-              </div>
-            </section>
-
-            {/* 6. 子智能体 */}
+            {/* 5. 子智能体 */}
             <section className="border border-border rounded-lg bg-card">
               <header className="px-4 py-2.5 border-b border-border flex items-center justify-between gap-3">
                 <div className="min-w-0">
@@ -829,6 +778,57 @@ fengsheng:
                     );
                   })
                 )}
+              </div>
+            </section>
+
+            {/* 6. 丰声 NEXT 机器人 */}
+            <section className="border border-border rounded-lg bg-card">
+              <header className="px-4 py-2.5 border-b border-border">
+                <h3 className="text-sm font-semibold flex items-center gap-1.5">
+                  <MessageSquare className="w-3.5 h-3.5 text-primary" />丰声 NEXT 机器人
+                  <span className="text-[10px] px-1.5 h-4 leading-4 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 font-normal">可选</span>
+                </h3>
+                <p className="text-[11px] text-muted-foreground mt-0.5">仅在需要把智能体发布为群聊机器人（成员 @ 即可触发）时配置；不配置不影响其他渠道使用</p>
+              </header>
+              <div className="p-4 space-y-3">
+                <div>
+                  <Label className="text-xs">Client ID（AppKey） <span className="text-destructive">*</span></Label>
+                  <Input
+                    className="mt-1.5 h-8 text-xs font-mono"
+                    placeholder="企业应用 AppKey"
+                    value={fsAppKey}
+                    onChange={(e) => setFsAppKey(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Client Secret（AppSecret） <span className="text-destructive">*</span></Label>
+                  <div className="relative mt-1.5">
+                    <Input
+                      className="h-8 text-xs font-mono pr-9"
+                      type={fsSecretVisible ? "text" : "password"}
+                      placeholder="企业应用 AppSecret"
+                      value={fsAppSecret}
+                      onChange={(e) => setFsAppSecret(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setFsSecretVisible(!fsSecretVisible)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {fsSecretVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs">Robot Code <span className="text-destructive">*</span></Label>
+                  <Input
+                    className="mt-1.5 h-8 text-xs font-mono"
+                    placeholder="机器人编码"
+                    value={fsRobotCode}
+                    onChange={(e) => setFsRobotCode(e.target.value)}
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-1.5">在丰声 NEXT 开发者后台「机器人管理」中获取，凭据将通过「凭据管理」加密存储</p>
+                </div>
               </div>
             </section>
 
