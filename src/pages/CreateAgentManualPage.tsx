@@ -718,25 +718,18 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 <CapabilityPickerDialog items={skills} selected={selSkills} onToggle={(n) => toggle(selSkills, setSelSkills, n)} icon={<Zap className="w-3.5 h-3.5" />} label="Skill" marketLink="/" trigger={<Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0"><Plus className="w-3 h-3" />添加 Skill</Button>} />
               </div>
               {selSkills.length === 0 ? null : (
-                <div className="space-y-2">
+                <div className="flex flex-wrap gap-2">
                   {selSkills.map((s) => {
                     const meta = skills.find((x) => x.name === s);
                     return (
-                      <div key={s} className="border border-border rounded-md p-3 flex items-center justify-between gap-3">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5">
-                            <Zap className="w-3 h-3 text-primary shrink-0" />
-                            <span className="text-xs font-medium truncate">{s}</span>
-                            {meta?.scope === "project" && (
-                              <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-border">项目</Badge>
-                            )}
-                          </div>
-                          {meta?.description && (
-                            <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-relaxed">{meta.description}</p>
-                          )}
-                        </div>
-                        <button onClick={() => toggle(selSkills, setSelSkills, s)} className="text-muted-foreground hover:text-destructive p-1 shrink-0" title="移除">
-                          <X className="w-3.5 h-3.5" />
+                      <div key={s} className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card pl-2 pr-1 py-1 text-xs" title={meta?.description}>
+                        <Zap className="w-3 h-3 text-primary shrink-0" />
+                        <span className="font-medium max-w-[160px] truncate">{s}</span>
+                        {meta?.scope === "project" && (
+                          <Badge variant="outline" className="text-[10px] h-4 px-1 border-border">项目</Badge>
+                        )}
+                        <button onClick={() => toggle(selSkills, setSelSkills, s)} className="text-muted-foreground hover:text-destructive p-0.5" title="移除">
+                          <X className="w-3 h-3" />
                         </button>
                       </div>
                     );
