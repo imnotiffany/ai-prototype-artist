@@ -97,6 +97,21 @@ const CreateAgentManualPage = () => {
   const [selSkills, setSelSkills] = useState<string[]>([]);
   const [selMCPs, setSelMCPs] = useState<string[]>([]);
   const [selSubagents, setSelSubagents] = useState<string[]>([]);
+  const [subagentGapOpen, setSubagentGapOpen] = useState(false);
+
+  // Subscribe to MCP vault store so missing-credential badges live update
+  const [, setVaultTick] = useState(0);
+  useEffect(() => {
+    const unsub = subscribeMcpStore(() => setVaultTick((t) => t + 1));
+    return () => { unsub(); };
+  }, []);
+
+  const isMcpAvailableInVault = (name: string) => {
+    const meta = mcps.find((m) => m.name === name);
+    if (!meta) return false;
+    if (!meta.requiresCredential) return true;
+    return isMcpConfigured(name);
+  };
 
   // Env
   const [persistentFs, setPersistentFs] = useState(true);
