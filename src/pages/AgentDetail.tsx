@@ -674,7 +674,7 @@ fengsheng:
               </header>
               <div className="p-4">
                 {selSkills.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-4">尚未绑定任何 Skill。点击右上角「添加 Skill」选择。</p>
+                  <p className="text-xs text-muted-foreground text-center py-4">尚未绑定任何 Skill</p>
                 ) : (
                   <div className="space-y-2">
                     {selSkills.map((s) => {
