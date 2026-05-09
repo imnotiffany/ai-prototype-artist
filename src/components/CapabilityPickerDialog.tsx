@@ -139,7 +139,7 @@ export const CapabilityPickerDialog = ({
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold truncate">{it.name}</p>
             <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-              {isSkill && (it.tags ?? []).map((t) => (
+              {!isMcp && (it.tags ?? []).map((t) => (
                 <Badge key={t} variant="outline" className="text-[10px] h-4 px-1.5 font-normal text-muted-foreground">
                   {t}
                 </Badge>
