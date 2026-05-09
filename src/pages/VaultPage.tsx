@@ -193,7 +193,7 @@ const VaultPage = () => {
   };
 
   const renderForm = () => (
-    <div className="space-y-3 max-h-[520px] overflow-auto -mx-1 px-1">
+    <div className="space-y-3 max-h-[440px] overflow-auto -mx-1 px-1">
       {locked && (
         <div className="flex items-start gap-1.5 rounded-md border border-primary/30 bg-primary/5 px-2.5 py-1.5">
           <Lock className="w-3 h-3 text-primary mt-0.5 shrink-0" />
