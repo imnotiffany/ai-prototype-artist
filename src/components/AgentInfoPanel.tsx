@@ -113,6 +113,19 @@ export const AgentInfoPanel = ({ agent, suggestions, onSuggestionClick }: Props)
           </Section>
         )}
 
+        {/* Subagents */}
+        {agent.subagents && agent.subagents.length > 0 && (
+          <Section icon={Bot} title={`子智能体 · ${agent.subagents.length}`}>
+            <div className="space-y-1">
+              {agent.subagents.map((s) => (
+                <div key={s} className="text-[11px] text-foreground/80 px-2 py-1 rounded bg-secondary/60">
+                  {s}
+                </div>
+              ))}
+            </div>
+          </Section>
+        )}
+
 
         {/* Author / Updated */}
         <Section icon={User} title="发布者">
