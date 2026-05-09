@@ -112,6 +112,7 @@ const AgentDetail = () => {
   const [subagentGapDialogOpen, setSubagentGapDialogOpen] = useState(false);
   const [configView, setConfigView] = useState<"form" | "code">("form");
   const [savedSnapshot, setSavedSnapshot] = useState(initialSnapshot);
+  const [justSavedVersion, setJustSavedVersion] = useState<string | null>(null);
 
   const [versions, setVersions] = useState([
     { v: "v0.0.3", at: "2026-04-25 14:02", by: "廖奕通", note: "新增 丰景台数据查询v2", current: true },
@@ -260,6 +261,8 @@ const AgentDetail = () => {
       ...versions.map((v) => ({ ...v, current: false })),
     ]);
     setSavedSnapshot({ name, description, model, systemPrompt, skills: selSkills, mcpBindings, fsAppKey, fsAppSecret, fsRobotCode });
+    setJustSavedVersion(next);
+    window.setTimeout(() => setJustSavedVersion(null), 2800);
     toast({ title: "已保存", description: `生成新版本 ${next}` });
   };
 
@@ -358,6 +361,23 @@ const AgentDetail = () => {
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
+          {isDirty ? (
+            <div className="inline-flex items-center gap-1.5 h-8 pl-2 pr-1 rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-950/40">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+              <span className="text-[11px] text-amber-800 dark:text-amber-200">未保存修改</span>
+              <Button size="sm" variant="ghost" className="h-6 px-2 text-[11px] text-amber-900 hover:text-amber-900 hover:bg-amber-100/80 dark:text-amber-200" onClick={handleRevert}>
+                <RotateCcw className="w-3 h-3 mr-1" />撤销
+              </Button>
+              <Button size="sm" className="h-6 px-2 text-[11px] gap-1 bg-amber-600 hover:bg-amber-700 text-white" onClick={handleSave}>
+                <Save className="w-3 h-3" />保存为 {nextVersion}
+              </Button>
+            </div>
+          ) : justSavedVersion ? (
+            <div className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md border border-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 animate-fade-in">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="text-[11px] text-emerald-800 dark:text-emerald-200">已保存为 {justSavedVersion}</span>
+            </div>
+          ) : null}
           <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={openEditInfo}>
             <Pencil className="w-3.5 h-3.5" />编辑基本信息
           </Button>
@@ -531,6 +551,26 @@ const AgentDetail = () => {
         {/* ───────── 配置 ───────── */}
         <TabsContent value="config" className="mt-4">
           <div className="space-y-4">
+            {isDirty && (
+              <div className="border-2 border-amber-400 bg-amber-50 dark:bg-amber-950/30 rounded-lg px-4 py-3 flex items-center justify-between gap-3 shadow-sm animate-fade-in">
+                <div className="flex items-center gap-2 min-w-0">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-amber-900 dark:text-amber-200">配置已修改，尚未保存</p>
+                    <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80 mt-0.5">保存后将生成新版本 {nextVersion}，发布按钮在保存前不可用</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1 text-amber-900 hover:text-amber-900 hover:bg-amber-100/80 dark:text-amber-200" onClick={handleRevert}>
+                    <RotateCcw className="w-3 h-3" />撤销修改
+                  </Button>
+                  <Button size="sm" className="h-7 text-[11px] gap-1 bg-amber-600 hover:bg-amber-700 text-white" onClick={handleSave}>
+                    <Save className="w-3 h-3" />保存为 {nextVersion}
+                  </Button>
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center justify-between gap-3 px-1">
               <p className="text-[11px] text-muted-foreground">
                 名称、描述等基本信息请通过页面右上角的「编辑基本信息」修改，不会产生新版本。以下配置变更会生成新版本。
@@ -596,34 +636,28 @@ fengsheng:
               <>
 
             {/* 2. 模型与提示词 */}
-            <section className="border border-border rounded-lg bg-card">
-              <header className="px-4 py-2.5 border-b border-border">
-                <h3 className="text-sm font-semibold">模型与提示词</h3>
-                <p className="text-[11px] text-muted-foreground mt-0.5">决定智能体的"大脑"和工作方式</p>
-              </header>
-              <div className="p-4 space-y-3">
-                <div>
-                  <Label className="text-xs">模型</Label>
-                  <Select value={model} onValueChange={setModel}>
-                    <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="claude-sonnet-4-6" className="text-xs">claude-sonnet-4-6（推荐）</SelectItem>
-                      <SelectItem value="claude-haiku-3-5" className="text-xs">claude-haiku-3-5（快速）</SelectItem>
-                      <SelectItem value="gpt-4o" className="text-xs">gpt-4o</SelectItem>
-                      <SelectItem value="gemini-2.5-pro" className="text-xs">gemini-2.5-pro</SelectItem>
-                      <SelectItem value="deepseek-v3" className="text-xs">deepseek-v3</SelectItem>
-                      <SelectItem value="qwen-max" className="text-xs">qwen-max</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="text-xs">系统提示词</Label>
-                  <Textarea value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)} rows={8}
-                    className="mt-1.5 font-mono text-xs leading-relaxed" />
-                  <p className="text-[10px] text-muted-foreground mt-1.5">告诉智能体"你是谁、要做什么、怎么回答"。</p>
-                </div>
+            <div className="px-1 space-y-3">
+              <div>
+                <Label className="text-xs">模型</Label>
+                <Select value={model} onValueChange={setModel}>
+                  <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="claude-sonnet-4-6" className="text-xs">claude-sonnet-4-6（推荐）</SelectItem>
+                    <SelectItem value="claude-haiku-3-5" className="text-xs">claude-haiku-3-5（快速）</SelectItem>
+                    <SelectItem value="gpt-4o" className="text-xs">gpt-4o</SelectItem>
+                    <SelectItem value="gemini-2.5-pro" className="text-xs">gemini-2.5-pro</SelectItem>
+                    <SelectItem value="deepseek-v3" className="text-xs">deepseek-v3</SelectItem>
+                    <SelectItem value="qwen-max" className="text-xs">qwen-max</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-            </section>
+              <div>
+                <Label className="text-xs">系统提示词</Label>
+                <Textarea value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)} rows={8}
+                  className="mt-1.5 font-mono text-xs leading-relaxed bg-card" />
+                <p className="text-[10px] text-muted-foreground mt-1.5">告诉智能体"你是谁、要做什么、怎么回答"。</p>
+              </div>
+            </div>
 
             {/* 3. MCP 绑定 */}
             <section className="border border-border rounded-lg bg-card">
