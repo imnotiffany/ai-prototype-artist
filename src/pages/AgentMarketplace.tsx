@@ -1,10 +1,12 @@
-import { useState } from "react";
-import { Search, Clock, MessageSquare, Globe, Zap, Plus } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Search, Clock, MessageSquare, Globe, Zap, Plus, ChevronDown, Check } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { mockAgents, SKILL_CATEGORIES, type Agent } from "@/data/mockData";
 
 type KindFilter = "all" | "app" | "agent";
@@ -21,6 +23,7 @@ const AgentMarketplace = () => {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [kindFilter, setKindFilter] = useState<KindFilter>("all");
   const [sortBy, setSortBy] = useState<"latest" | "downloads">("latest");
+  const [catPopOpen, setCatPopOpen] = useState(false);
 
   const allPublished = mockAgents.filter(
     (a) => a.status === "published" && a.publishScope === scopeTab
@@ -110,66 +113,138 @@ const AgentMarketplace = () => {
       </div>
 
       {/* Category filters + sort/kind controls */}
-      <div className="flex items-center gap-1.5 mb-5 px-6 flex-wrap">
-        <button
-          onClick={() => setActiveCategory(null)}
-          className={`px-3 py-1 rounded text-xs transition-colors ${
-            !activeCategory
-              ? "text-primary font-medium border-b-2 border-primary"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          全部分类
-        </button>
-        {SKILL_CATEGORIES.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
-            className={`px-3 py-1 rounded text-xs transition-colors ${
-              activeCategory === cat
-                ? "text-primary font-medium border-b-2 border-primary"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
+      {(() => {
+        const counts = new Map<string, number>();
+        allPublished.forEach((a) => {
+          if (a.category) counts.set(a.category, (counts.get(a.category) ?? 0) + 1);
+        });
+        const ranked = ([...SKILL_CATEGORIES] as string[]).sort(
+          (a, b) => (counts.get(b) ?? 0) - (counts.get(a) ?? 0)
+        );
+        const VISIBLE = 7;
+        const visible = ranked.slice(0, VISIBLE);
+        const overflow = ranked.slice(VISIBLE);
+        // Promote selected category into the visible row if it's currently hidden
+        if (activeCategory && !visible.includes(activeCategory) && overflow.includes(activeCategory)) {
+          visible.push(activeCategory);
+        }
+        const totalCount = allPublished.length;
+        const overflowSelectedCount = activeCategory && overflow.includes(activeCategory) ? 1 : 0;
 
-        {/* Right cluster: sort + kind filter */}
-        <div className="ml-auto flex items-center gap-3 text-xs">
-          <div className="flex items-center gap-1 text-muted-foreground">
+        return (
+          <div className="flex items-center gap-1.5 mb-5 px-6 flex-wrap">
             <button
-              onClick={() => setSortBy("latest")}
-              className={`px-2 py-0.5 rounded ${sortBy === "latest" ? "text-primary font-medium" : "hover:text-foreground"}`}
+              onClick={() => setActiveCategory(null)}
+              className={`px-2.5 py-1 rounded-full text-xs transition-colors border ${
+                !activeCategory
+                  ? "bg-primary/10 text-primary border-primary/30 font-medium"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted"
+              }`}
             >
-              最新
+              全部 <span className="opacity-60">({totalCount})</span>
             </button>
-            <span className="text-border">|</span>
-            <button
-              onClick={() => setSortBy("downloads")}
-              className={`px-2 py-0.5 rounded ${sortBy === "downloads" ? "text-primary font-medium" : "hover:text-foreground"}`}
-            >
-              使用量
-            </button>
+            {visible.map((cat) => {
+              const c = counts.get(cat) ?? 0;
+              const active = activeCategory === cat;
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(active ? null : cat)}
+                  className={`px-2.5 py-1 rounded-full text-xs transition-colors border ${
+                    active
+                      ? "bg-primary/10 text-primary border-primary/30 font-medium"
+                      : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted"
+                  }`}
+                >
+                  {cat} {c > 0 && <span className="opacity-60">({c})</span>}
+                </button>
+              );
+            })}
+            {overflow.length > 0 && (
+              <Popover open={catPopOpen} onOpenChange={setCatPopOpen}>
+                <PopoverTrigger asChild>
+                  <button
+                    className={`px-2.5 py-1 rounded-full text-xs transition-colors border inline-flex items-center gap-1 ${
+                      overflowSelectedCount > 0
+                        ? "bg-primary/10 text-primary border-primary/30 font-medium"
+                        : "border-dashed border-border text-muted-foreground hover:text-foreground hover:bg-muted"
+                    }`}
+                  >
+                    更多分类
+                    <ChevronDown className="w-3 h-3" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="p-0 w-64" align="start">
+                  <Command>
+                    <CommandInput placeholder="搜索分类…" className="h-8 text-xs" />
+                    <CommandList>
+                      <CommandEmpty className="py-4 text-center text-xs text-muted-foreground">未找到分类</CommandEmpty>
+                      <CommandGroup heading="全部分类">
+                        {ranked.map((cat) => {
+                          const c = counts.get(cat) ?? 0;
+                          const active = activeCategory === cat;
+                          return (
+                            <CommandItem
+                              key={cat}
+                              value={cat}
+                              onSelect={() => {
+                                setActiveCategory(active ? null : cat);
+                                setCatPopOpen(false);
+                              }}
+                              className="text-xs flex items-center justify-between gap-2"
+                            >
+                              <span className="flex items-center gap-1.5 min-w-0">
+                                <Check className={`w-3 h-3 shrink-0 ${active ? "opacity-100 text-primary" : "opacity-0"}`} />
+                                <span className="truncate">{cat}</span>
+                              </span>
+                              <span className="text-[10px] text-muted-foreground shrink-0">{c}</span>
+                            </CommandItem>
+                          );
+                        })}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            )}
+
+            {/* Right cluster: sort + kind filter */}
+            <div className="ml-auto flex items-center gap-3 text-xs">
+              <div className="flex items-center gap-1 text-muted-foreground">
+                <button
+                  onClick={() => setSortBy("latest")}
+                  className={`px-2 py-0.5 rounded ${sortBy === "latest" ? "text-primary font-medium" : "hover:text-foreground"}`}
+                >
+                  最新
+                </button>
+                <span className="text-border">|</span>
+                <button
+                  onClick={() => setSortBy("downloads")}
+                  className={`px-2 py-0.5 rounded ${sortBy === "downloads" ? "text-primary font-medium" : "hover:text-foreground"}`}
+                >
+                  使用量
+                </button>
+              </div>
+              <div className="h-4 w-px bg-border" />
+              <div className="inline-flex items-center bg-muted rounded-md p-0.5">
+                {kindTabs.map((t) => (
+                  <button
+                    key={t.value}
+                    onClick={() => setKindFilter(t.value)}
+                    className={`px-2.5 py-0.5 text-xs rounded transition-colors ${
+                      kindFilter === t.value
+                        ? "bg-background text-foreground shadow-sm font-medium"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="h-4 w-px bg-border" />
-          <div className="inline-flex items-center bg-muted rounded-md p-0.5">
-            {kindTabs.map((t) => (
-              <button
-                key={t.value}
-                onClick={() => setKindFilter(t.value)}
-                className={`px-2.5 py-0.5 text-xs rounded transition-colors ${
-                  kindFilter === t.value
-                    ? "bg-background text-foreground shadow-sm font-medium"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+        );
+      })()}
 
       {/* Agent grid */}
       <div className="px-6 pb-8">
