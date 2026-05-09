@@ -124,6 +124,15 @@ const CreateAgentManualPage = () => {
   const [fsSecretVisible, setFsSecretVisible] = useState(false);
   const [fsConnected, setFsConnected] = useState(false);
 
+  // Agent Hub publishing (optional)
+  const [hubEnabled, setHubEnabled] = useState(false);
+  const [hubProject, setHubProject] = useState("");
+  const [hubVisibility, setHubVisibility] = useState<"team" | "org" | "public">("team");
+  const [hubConnected, setHubConnected] = useState(false);
+
+  // Controlled tab (so we can jump users between steps)
+  const [currentTab, setCurrentTab] = useState("capability");
+
   // Debug — three streams: assistant chat (left), agent run (right), runtime logs (right bottom)
   type PromptSuggestion = { id: string; addition: string; summaryNote: string; status: "pending" | "adopted" | "rejected" };
   type ChatMsg = { role: "user" | "assistant"; content: string; suggestion?: PromptSuggestion };
