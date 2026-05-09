@@ -153,6 +153,8 @@ const VaultPage = () => {
       toast({ title: "MCP 已添加", description: `${name} 已加入 MCP 管理` });
     }
     setCreateOpen(false);
+    setMarketFormOpen(false);
+    setMarketFormItem(null);
     setEditingId(null);
     reset();
   };
