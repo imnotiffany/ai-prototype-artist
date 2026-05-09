@@ -53,6 +53,9 @@ const VaultPage = () => {
   const mcps = useMemo(() => [...credMcps, ...freeMcps], [credMcps]);
 
   const [createOpen, setCreateOpen] = useState(false);
+  // 来自 MCP 广场的独立配置弹窗
+  const [marketFormOpen, setMarketFormOpen] = useState(false);
+  const [marketFormItem, setMarketFormItem] = useState<{ id: string; name: string } | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<McpEntry | null>(null);
   const [testingId, setTestingId] = useState<string | null>(null);
