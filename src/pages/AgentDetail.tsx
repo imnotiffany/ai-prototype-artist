@@ -865,6 +865,16 @@ fengsheng:
                   />
                   <p className="text-[10px] text-muted-foreground mt-1.5">在丰声 NEXT 开发者后台「机器人管理」中获取，凭据将通过「凭据管理」加密存储</p>
                 </div>
+                <div className="flex justify-end pt-1">
+                  <Button
+                    size="sm"
+                    className="h-8 text-xs gap-1.5"
+                    disabled={!fsAppKey.trim() || !fsAppSecret.trim() || !fsRobotCode.trim()}
+                    onClick={() => toast({ title: "已连接丰声 NEXT 机器人", description: `Robot Code：${fsRobotCode}` })}
+                  >
+                    <Zap className="w-3.5 h-3.5" />连接
+                  </Button>
+                </div>
               </div>
             </section>
 
