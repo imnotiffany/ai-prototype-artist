@@ -110,6 +110,7 @@ const AgentDetail = () => {
   const [selSubagents, setSelSubagents] = useState<string[]>(["数据查询子智能体", "报告撰写子智能体"]);
   const [subagentGapDialogOpen, setSubagentGapDialogOpen] = useState(false);
   const [configView, setConfigView] = useState<"form" | "code">("form");
+  const [codeFormat, setCodeFormat] = useState<"yaml" | "json">("yaml");
   const [savedSnapshot, setSavedSnapshot] = useState(initialSnapshot);
   const [justSaved, setJustSaved] = useState(false);
 
@@ -497,29 +498,8 @@ const AgentDetail = () => {
               </div>
             </div>
 
-            {configView === "code" ? (
-              <section className="border border-border rounded-lg bg-card">
-                <header className="px-4 py-2.5 border-b border-border flex items-center justify-between">
-                  <div>
-                    <h3 className="text-sm font-semibold flex items-center gap-1.5"><Code2 className="w-3.5 h-3.5 text-primary" />配置代码</h3>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">以 YAML 形式查看完整配置，便于版本对比与导出</p>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-7 text-xs gap-1"
-                    onClick={() => {
-                      navigator.clipboard.writeText(
-                        `name: ${name}\nmodel: ${model}\nsystem_prompt: |\n  ${systemPrompt.split("\n").join("\n  ")}\nskills:\n${selSkills.map((s) => `  - ${s}`).join("\n") || "  []"}\nmcp_bindings:\n${mcpBindings.map((b) => `  - name: ${b.name}\n    credential: ${b.credential || "(未绑定)"}`).join("\n") || "  []"}\nsub_agents:\n${selSubagents.map((s) => `  - ${s}`).join("\n") || "  []"}\nfengsheng:\n  client_id: ${fsAppKey || "(未配置)"}\n  robot_code: ${fsRobotCode || "(未配置)"}`
-                      );
-                      toast({ title: "已复制配置到剪贴板" });
-                    }}
-                  >
-                    <Copy className="w-3 h-3" />复制
-                  </Button>
-                </header>
-                <pre className="text-[11px] font-mono leading-relaxed p-4 whitespace-pre-wrap break-all max-h-[640px] overflow-auto">
-{`name: ${name}
+            {configView === "code" ? (() => {
+              const yamlText = `name: ${name}
 model: ${model}
 system_prompt: |
   ${systemPrompt.split("\n").join("\n  ")}
@@ -531,10 +511,58 @@ sub_agents:
 ${selSubagents.map((s) => `  - ${s}`).join("\n") || "  []"}
 fengsheng:
   client_id: ${fsAppKey || "(未配置)"}
-  robot_code: ${fsRobotCode || "(未配置)"}`}
-                </pre>
-              </section>
-            ) : (
+  robot_code: ${fsRobotCode || "(未配置)"}`;
+              const jsonText = JSON.stringify({
+                name,
+                model,
+                system_prompt: systemPrompt,
+                skills: selSkills,
+                mcp_bindings: mcpBindings.map((b) => ({ name: b.name, credential: b.credential || null })),
+                sub_agents: selSubagents,
+                fengsheng: {
+                  client_id: fsAppKey || null,
+                  robot_code: fsRobotCode || null,
+                },
+              }, null, 2);
+              const text = codeFormat === "yaml" ? yamlText : jsonText;
+              return (
+                <section className="border border-border rounded-lg bg-card">
+                  <header className="px-4 py-2.5 border-b border-border flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-semibold flex items-center gap-1.5"><Code2 className="w-3.5 h-3.5 text-primary" />配置代码</h3>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">查看完整配置，便于版本对比与导出</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <div className="inline-flex items-center gap-0.5 rounded-md bg-muted/50 p-0.5">
+                        {(["yaml", "json"] as const).map((f) => (
+                          <button
+                            key={f}
+                            onClick={() => setCodeFormat(f)}
+                            className={`px-2 h-6 rounded text-[11px] font-mono uppercase transition-colors ${
+                              codeFormat === f ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                            }`}
+                          >
+                            {f}
+                          </button>
+                        ))}
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-xs gap-1"
+                        onClick={() => {
+                          navigator.clipboard.writeText(text);
+                          toast({ title: "已复制配置到剪贴板" });
+                        }}
+                      >
+                        <Copy className="w-3 h-3" />复制
+                      </Button>
+                    </div>
+                  </header>
+                  <pre className="text-[11px] font-mono leading-relaxed p-4 whitespace-pre-wrap break-all max-h-[640px] overflow-auto">{text}</pre>
+                </section>
+              );
+            })() : (
               <>
 
             {/* 2. 模型与提示词 */}
@@ -557,7 +585,6 @@ fengsheng:
                 <Label className="text-xs">系统提示词</Label>
                 <Textarea value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)} rows={8}
                   className="mt-1.5 font-mono text-xs leading-relaxed bg-card" />
-                <p className="text-[10px] text-muted-foreground mt-1.5">告诉智能体"你是谁、要做什么、怎么回答"。</p>
               </div>
             </div>
 
@@ -586,9 +613,7 @@ fengsheng:
               </header>
               <div className="p-4">
                 {mcpBindings.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-4">
-                    尚未绑定任何 MCP。如目标 MCP 不在列表中，请先到「<button onClick={() => navigate("/vault")} className="text-primary hover:underline">MCP 管理</button>」中添加并配置凭据。
-                  </p>
+                  <p className="text-xs text-muted-foreground text-center py-4">尚未绑定任何 MCP</p>
                 ) : (
                   <div className="space-y-2">
                     {mcpBindings.map((b, i) => {
@@ -649,7 +674,7 @@ fengsheng:
               </header>
               <div className="p-4">
                 {selSkills.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-4">尚未绑定任何 Skill。点击右上角「添加 Skill」选择。</p>
+                  <p className="text-xs text-muted-foreground text-center py-4">尚未绑定任何 Skill</p>
                 ) : (
                   <div className="space-y-2">
                     {selSkills.map((s) => {
@@ -725,7 +750,7 @@ fengsheng:
                 })()}
 
                 {selSubagents.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-4">尚未配置子智能体。点击右上角「添加子智能体」从项目选择。</p>
+                  <p className="text-xs text-muted-foreground text-center py-4">尚未配置子智能体</p>
                 ) : (
                   selSubagents.map((name) => {
                     const sub = projectSubagents.find((a) => a.name === name);
@@ -839,6 +864,16 @@ fengsheng:
                     onChange={(e) => setFsRobotCode(e.target.value)}
                   />
                   <p className="text-[10px] text-muted-foreground mt-1.5">在丰声 NEXT 开发者后台「机器人管理」中获取，凭据将通过「凭据管理」加密存储</p>
+                </div>
+                <div className="flex justify-end pt-1">
+                  <Button
+                    size="sm"
+                    className="h-8 text-xs gap-1.5"
+                    disabled={!fsAppKey.trim() || !fsAppSecret.trim() || !fsRobotCode.trim()}
+                    onClick={() => toast({ title: "已连接丰声 NEXT 机器人", description: `Robot Code：${fsRobotCode}` })}
+                  >
+                    <Zap className="w-3.5 h-3.5" />连接
+                  </Button>
                 </div>
               </div>
             </section>
