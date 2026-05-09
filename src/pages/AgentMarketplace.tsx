@@ -1,10 +1,12 @@
-import { useState } from "react";
-import { Search, Clock, MessageSquare, Globe, Zap, Plus } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Search, Clock, MessageSquare, Globe, Zap, Plus, ChevronDown, Check } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { mockAgents, SKILL_CATEGORIES, type Agent } from "@/data/mockData";
 
 type KindFilter = "all" | "app" | "agent";
