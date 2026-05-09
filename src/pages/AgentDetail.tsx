@@ -580,7 +580,7 @@ ${selSkills.map((s) => `  - ${s}`).join("\n") || "  []"}
 mcp_bindings:
 ${mcpBindings.map((b) => `  - name: ${b.name}\n    credential: ${b.credential || "(未绑定)"}`).join("\n") || "  []"}
 sub_agents:
-${subAgents.map((s) => `  - name: ${s.name}\n    role: ${s.role}\n    trigger: ${s.trigger}`).join("\n") || "  []"}
+${selSubagents.map((s) => `  - ${s}`).join("\n") || "  []"}
 fengsheng:
   client_id: ${fsAppKey || "(未配置)"}
   robot_code: ${fsRobotCode || "(未配置)"}`}
