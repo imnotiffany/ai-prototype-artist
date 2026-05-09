@@ -597,26 +597,6 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
         })()}
 
         <Tabs value={currentTab} onValueChange={setCurrentTab}>
-          <TabsList className="grid grid-cols-4 h-9">
-            <TabsTrigger value="capability" className="text-xs gap-1.5">
-              能力配置
-              {stepStatus.capability === "done" && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}
-            </TabsTrigger>
-            <TabsTrigger value="prompt" className="text-xs gap-1.5">
-              系统提示词
-              {stepStatus.prompt === "done" && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}
-            </TabsTrigger>
-            <TabsTrigger value="channels" className="text-xs gap-1.5">
-              对外接入
-              <span className="text-[10px] px-1 h-3.5 leading-[14px] rounded bg-muted text-muted-foreground font-normal">可选</span>
-              {stepStatus.channels === "warn" && <AlertTriangle className="w-3 h-3 text-amber-500" />}
-            </TabsTrigger>
-            <TabsTrigger value="debug" className="text-xs gap-1.5">
-              调试
-              {stepStatus.debug === "done" && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}
-              {stepStatus.debug === "warn" && <AlertTriangle className="w-3 h-3 text-amber-500" />}
-            </TabsTrigger>
-          </TabsList>
 
           {/* Capability: 基座模型 + MCP + Skill + Subagent */}
           <TabsContent value="capability" className="mt-4 space-y-4">
