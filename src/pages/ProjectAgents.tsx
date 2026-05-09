@@ -85,28 +85,6 @@ const ProjectAgents = () => {
     setDeleteTarget(null);
   };
 
-  // API key application
-  const [apiKeyOpen, setApiKeyOpen] = useState(false);
-  const [apiKeyName, setApiKeyName] = useState("");
-  const [generatedKey, setGeneratedKey] = useState<string | null>(null);
-  const [keyVisible, setKeyVisible] = useState(false);
-
-  const handleApplyApiKey = () => {
-    if (!apiKeyName.trim()) {
-      toast({ title: "请填写 API Key 名称", variant: "destructive" });
-      return;
-    }
-    const key = "sk-" + Array.from({ length: 32 }, () => "abcdef0123456789"[Math.floor(Math.random() * 16)]).join("");
-    setGeneratedKey(key);
-  };
-
-  const closeApiKey = () => {
-    setApiKeyOpen(false);
-    setApiKeyName("");
-    setGeneratedKey(null);
-    setKeyVisible(false);
-  };
-
   const filtered = agents.filter((app) => {
     if (searchName && !app.name.toLowerCase().includes(searchName.toLowerCase())) return false;
     if (categoryFilter !== "all" && app.category !== categoryFilter) return false;
