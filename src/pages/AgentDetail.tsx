@@ -356,6 +356,9 @@ const AgentDetail = () => {
               <span className="text-[11px] text-emerald-800 dark:text-emerald-200">已保存</span>
             </div>
           ) : null}
+          <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={() => setApiKeyOpen(true)}>
+            <KeyRound className="w-3.5 h-3.5" />申请 API Key
+          </Button>
           <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={openEditInfo}>
             <Pencil className="w-3.5 h-3.5" />编辑基本信息
           </Button>
