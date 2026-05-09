@@ -654,7 +654,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 <CapabilityPickerDialog items={mcps} selected={selMCPs} onToggle={(n) => toggle(selMCPs, setSelMCPs, n)} icon={<Server className="w-3.5 h-3.5" />} label="MCP" marketLink="/" deployBadge={(n) => mcps.find((m) => m.name === n)?.deployment ?? "云端"} trigger={<Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0"><Plus className="w-3 h-3" />添加 MCP</Button>} />
               </div>
               {selMCPs.length === 0 ? null : (
-                <div className="space-y-2">
+                <div className="flex flex-wrap gap-2">
                   {selMCPs.map((mcpName) => {
                     const mcpMeta = mcps.find((m) => m.name === mcpName);
                     const needsCred = !!mcpMeta?.requiresCredential;
@@ -662,48 +662,45 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                     const current = mcpCredentialMap[mcpName] ?? (creds.length === 1 ? creds[0].id : "");
                     const credMissing = needsCred && !current;
                     return (
-                      <div key={mcpName} className={`border rounded-md p-3 space-y-2 ${credMissing ? "border-amber-300 bg-amber-50/40 dark:bg-amber-950/20" : "border-border"}`}>
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-medium flex items-center gap-1.5">
-                            <Server className="w-3 h-3 text-primary" />{mcpName}
-                            {!needsCred && (
-                              <Badge variant="outline" className="border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30 text-[10px] h-4 px-1.5">免凭据</Badge>
-                            )}
-                            {credMissing && (
-                              <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-0 text-[10px] h-4 gap-1">
-                                <AlertTriangle className="w-2.5 h-2.5" />未绑定凭据
-                              </Badge>
-                            )}
-                          </span>
-                          <button onClick={() => toggle(selMCPs, setSelMCPs, mcpName)} className="text-muted-foreground hover:text-destructive p-1" title="移除">
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                      <div key={mcpName} className={`inline-flex items-center gap-1.5 rounded-md border pl-2 pr-1 py-1 text-xs ${credMissing ? "border-amber-300 bg-amber-50/40 dark:bg-amber-950/20" : "border-border bg-card"}`}>
+                        <Server className="w-3 h-3 text-primary shrink-0" />
+                        <span className="font-medium max-w-[140px] truncate">{mcpName}</span>
                         {needsCred && (
-                          <div className="flex items-center gap-2">
-                            <Label className="text-[11px] text-muted-foreground shrink-0">凭据</Label>
-                            {creds.length === 0 ? (
-                              <>
-                                <span className="text-[11px] text-amber-600 dark:text-amber-500 flex-1">该 MCP 暂无可用凭据</span>
-                                <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => navigate("/vault")}>
-                                  前往凭据管理 <ExternalLink className="w-3 h-3" />
-                                </Button>
-                              </>
-                            ) : (
-                              <>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <button className={`inline-flex items-center gap-0.5 text-[10px] px-1 py-0.5 rounded ${credMissing ? "text-amber-700 hover:bg-amber-100" : "text-emerald-700 hover:bg-emerald-100"}`} title="凭据">
+                                {credMissing ? <AlertTriangle className="w-2.5 h-2.5" /> : <KeyRound className="w-2.5 h-2.5" />}
+                                {credMissing ? "未绑定" : "已绑定"}
+                              </button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-64 p-3" align="start">
+                              <Label className="text-[11px] text-muted-foreground">选择凭据</Label>
+                              {creds.length === 0 ? (
+                                <div className="mt-2 space-y-2">
+                                  <p className="text-[11px] text-amber-600">该 MCP 暂无可用凭据</p>
+                                  <Button size="sm" variant="outline" className="h-7 text-xs gap-1 w-full" onClick={() => navigate("/vault")}>
+                                    前往凭据管理 <ExternalLink className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                              ) : (
                                 <Select value={current} onValueChange={(v) => setMcpCredentialMap({ ...mcpCredentialMap, [mcpName]: v })}>
-                                  <SelectTrigger className="h-7 text-xs"><SelectValue placeholder="选择凭据" /></SelectTrigger>
+                                  <SelectTrigger className="h-7 text-xs mt-1.5"><SelectValue placeholder="选择凭据" /></SelectTrigger>
                                   <SelectContent>
                                     {creds.map((c) => (
-                                      <SelectItem key={c.id} value={c.id} className="text-xs">{c.name} <span className="text-muted-foreground ml-1">({c.type})</span></SelectItem>
+                                      <SelectItem key={c.id} value={c.id} className="text-xs">{c.name}</SelectItem>
                                     ))}
                                   </SelectContent>
                                 </Select>
-                                <Button size="sm" variant="ghost" className="h-7 text-[10px]" onClick={() => navigate("/vault")}>凭据管理</Button>
-                              </>
-                            )}
-                          </div>
+                              )}
+                            </PopoverContent>
+                          </Popover>
                         )}
+                        {!needsCred && (
+                          <Badge variant="outline" className="border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30 text-[10px] h-4 px-1">免凭据</Badge>
+                        )}
+                        <button onClick={() => toggle(selMCPs, setSelMCPs, mcpName)} className="text-muted-foreground hover:text-destructive p-0.5" title="移除">
+                          <X className="w-3 h-3" />
+                        </button>
                       </div>
                     );
                   })}
