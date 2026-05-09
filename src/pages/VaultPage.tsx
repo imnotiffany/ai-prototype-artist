@@ -25,6 +25,13 @@ interface McpEntry {
   createdAt: string;
   requiresCredential: boolean;
   type: McpType;
+  /** 是否来自 MCP 广场（true 时部分字段不可编辑） */
+  fromMarket?: boolean;
+  description?: string;
+  headers?: { key: string; value: string }[];
+  stdioCommand?: string;
+  stdioArgs?: string;
+  envVars?: { key: string; value: string }[];
 }
 
 const typeLabel = (t: McpType) => (t === "studio" ? "STDIO" : t === "sse" ? "SSE" : "StreamableHTTP");
