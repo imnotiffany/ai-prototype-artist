@@ -768,9 +768,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   </div>
                 );
               })()}
-              {selSubagents.length === 0 ? (
-                <p className="text-xs text-muted-foreground text-center py-4">尚未绑定任何子智能体。点击右上角「添加子智能体」从广场选择。</p>
-              ) : (
+              {selSubagents.length === 0 ? null : (
                 <div className="space-y-2">
                   {selSubagents.map((name) => {
                     const sub = subagents.find((a) => a.name === name);
