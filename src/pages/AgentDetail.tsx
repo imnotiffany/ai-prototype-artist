@@ -711,15 +711,29 @@ fengsheng:
                 {selSkills.length === 0 ? (
                   <p className="text-xs text-muted-foreground text-center py-4">尚未绑定任何 Skill。点击右上角「添加 Skill」选择。</p>
                 ) : (
-                  <div className="flex flex-wrap gap-2">
-                    {selSkills.map((s) => (
-                      <Badge key={s} variant="secondary" className="text-xs gap-1 pl-2.5 pr-1 py-1">
-                        {s}
-                        <button onClick={() => toggleSkill(s)} className="ml-1 p-0.5 rounded hover:bg-muted-foreground/20">
-                          <X className="w-3 h-3" />
-                        </button>
-                      </Badge>
-                    ))}
+                  <div className="space-y-2">
+                    {selSkills.map((s) => {
+                      const meta = getActiveSkills().find((x) => x.name === s);
+                      return (
+                        <div key={s} className="border border-border rounded-md p-3 flex items-center justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5">
+                              <Zap className="w-3 h-3 text-primary shrink-0" />
+                              <span className="text-xs font-medium truncate">{s}</span>
+                              {meta?.scope === "project" && (
+                                <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-border">项目</Badge>
+                              )}
+                            </div>
+                            {meta?.description && (
+                              <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-relaxed">{meta.description}</p>
+                            )}
+                          </div>
+                          <button onClick={() => toggleSkill(s)} className="text-muted-foreground hover:text-destructive p-1 shrink-0" title="移除">
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
