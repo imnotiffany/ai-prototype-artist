@@ -21,6 +21,15 @@ const AgentMarketplace = () => {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [kindFilter, setKindFilter] = useState<KindFilter>("all");
   const [sortBy, setSortBy] = useState<"latest" | "downloads">("latest");
+  const [voiceRecording, setVoiceRecording] = useState(false);
+  const toggleVoice = () => {
+    if (voiceRecording) {
+      setVoiceRecording(false);
+      setSearch((v) => v + (v ? " " : "") + "（语音输入示例文本）");
+    } else {
+      setVoiceRecording(true);
+    }
+  };
 
   const allPublished = mockAgents.filter(
     (a) => a.status === "published" && a.publishScope === scopeTab
