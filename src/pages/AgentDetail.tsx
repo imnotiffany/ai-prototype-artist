@@ -636,34 +636,28 @@ fengsheng:
               <>
 
             {/* 2. 模型与提示词 */}
-            <section className="border border-border rounded-lg bg-card">
-              <header className="px-4 py-2.5 border-b border-border">
-                <h3 className="text-sm font-semibold">模型与提示词</h3>
-                <p className="text-[11px] text-muted-foreground mt-0.5">决定智能体的"大脑"和工作方式</p>
-              </header>
-              <div className="p-4 space-y-3">
-                <div>
-                  <Label className="text-xs">模型</Label>
-                  <Select value={model} onValueChange={setModel}>
-                    <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="claude-sonnet-4-6" className="text-xs">claude-sonnet-4-6（推荐）</SelectItem>
-                      <SelectItem value="claude-haiku-3-5" className="text-xs">claude-haiku-3-5（快速）</SelectItem>
-                      <SelectItem value="gpt-4o" className="text-xs">gpt-4o</SelectItem>
-                      <SelectItem value="gemini-2.5-pro" className="text-xs">gemini-2.5-pro</SelectItem>
-                      <SelectItem value="deepseek-v3" className="text-xs">deepseek-v3</SelectItem>
-                      <SelectItem value="qwen-max" className="text-xs">qwen-max</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="text-xs">系统提示词</Label>
-                  <Textarea value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)} rows={8}
-                    className="mt-1.5 font-mono text-xs leading-relaxed" />
-                  <p className="text-[10px] text-muted-foreground mt-1.5">告诉智能体"你是谁、要做什么、怎么回答"。</p>
-                </div>
+            <div className="px-1 space-y-3">
+              <div>
+                <Label className="text-xs">模型</Label>
+                <Select value={model} onValueChange={setModel}>
+                  <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="claude-sonnet-4-6" className="text-xs">claude-sonnet-4-6（推荐）</SelectItem>
+                    <SelectItem value="claude-haiku-3-5" className="text-xs">claude-haiku-3-5（快速）</SelectItem>
+                    <SelectItem value="gpt-4o" className="text-xs">gpt-4o</SelectItem>
+                    <SelectItem value="gemini-2.5-pro" className="text-xs">gemini-2.5-pro</SelectItem>
+                    <SelectItem value="deepseek-v3" className="text-xs">deepseek-v3</SelectItem>
+                    <SelectItem value="qwen-max" className="text-xs">qwen-max</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-            </section>
+              <div>
+                <Label className="text-xs">系统提示词</Label>
+                <Textarea value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)} rows={8}
+                  className="mt-1.5 font-mono text-xs leading-relaxed bg-card" />
+                <p className="text-[10px] text-muted-foreground mt-1.5">告诉智能体"你是谁、要做什么、怎么回答"。</p>
+              </div>
+            </div>
 
             {/* 3. MCP 绑定 */}
             <section className="border border-border rounded-lg bg-card">
