@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Clock, MessageSquare, Globe, Zap, Plus, Mic, MicOff } from "lucide-react";
+import { Search, Clock, MessageSquare, Globe, Zap, Plus } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
