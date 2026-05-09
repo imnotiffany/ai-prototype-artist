@@ -174,7 +174,7 @@ const AgentMarketplace = () => {
                     <ChevronDown className="w-3 h-3" />
                   </button>
                 </PopoverTrigger>
-                <PopoverContent className="p-0 w-56" align="end">
+                <PopoverContent className="p-0 w-36" align="end">
                   <Command>
                     <CommandInput placeholder="搜索分类…" className="h-8 text-xs" />
                     <CommandList className="max-h-[280px]">
