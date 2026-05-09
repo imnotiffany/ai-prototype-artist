@@ -550,12 +550,93 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
       </div>
 
       <div className="max-w-6xl mx-auto px-6 py-5">
-        <Tabs defaultValue="capability">
+        {/* 步骤指引 */}
+        {(() => {
+          const steps: { key: string; label: string; sub: string }[] = [
+            { key: "capability", label: "1. 能力配置", sub: "选择模型 / MCP / Skill" },
+            { key: "prompt", label: "2. 系统提示词", sub: "定义角色与工作方式" },
+            { key: "channels", label: "3. 对外接入", sub: "丰声 NEXT / Agent Hub（可选）" },
+            { key: "debug", label: "4. 调试并保存", sub: "至少一次成功运行后才能保存" },
+          ];
+          return (
+            <div className="mb-4 rounded-lg border border-border bg-card p-3">
+              <div className="flex items-center gap-2 overflow-x-auto">
+                {steps.map((s, i) => {
+                  const status = (stepStatus as Record<string, string>)[s.key] ?? "todo";
+                  const active = currentTab === s.key;
+                  const dotCls =
+                    status === "done" ? "bg-emerald-500 text-white border-emerald-500" :
+                    status === "warn" ? "bg-amber-500 text-white border-amber-500" :
+                    status === "locked" ? "bg-muted text-muted-foreground border-border" :
+                    active ? "bg-primary text-primary-foreground border-primary" :
+                    "bg-background text-foreground border-border";
+                  const labelCls =
+                    status === "locked" ? "text-muted-foreground" :
+                    active ? "text-foreground font-medium" : "text-foreground";
+                  return (
+                    <div key={s.key} className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setCurrentTab(s.key)}
+                        disabled={status === "locked"}
+                        className="flex items-center gap-2 group"
+                      >
+                        <span className={`w-6 h-6 rounded-full border flex items-center justify-center text-[11px] ${dotCls}`}>
+                          {status === "done" ? <CheckCircle2 className="w-3.5 h-3.5" /> :
+                           status === "warn" ? <AlertTriangle className="w-3.5 h-3.5" /> :
+                           i + 1}
+                        </span>
+                        <div className="text-left">
+                          <div className={`text-[11px] leading-tight ${labelCls}`}>{s.label}</div>
+                          <div className="text-[10px] text-muted-foreground leading-tight">{s.sub}</div>
+                        </div>
+                      </button>
+                      {i < steps.length - 1 && <ArrowRight className="w-3 h-3 text-muted-foreground shrink-0" />}
+                    </div>
+                  );
+                })}
+              </div>
+              {!canSave && (
+                <div className="mt-3 pt-3 border-t border-border flex items-start gap-2">
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
+                  <div className="text-[11px] text-muted-foreground flex-1 min-w-0">
+                    <span className="text-foreground font-medium">保存前需完成以下事项：</span>
+                    <ul className="mt-1 space-y-0.5">
+                      {blockingReasons.map((r, i) => (
+                        <li key={i} className="flex items-center gap-1.5">
+                          <span className="w-1 h-1 rounded-full bg-amber-500" />
+                          <span>{r.msg}</span>
+                          <button onClick={() => setCurrentTab(r.jumpTo)} className="text-primary hover:underline ml-1">前往</button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
+        <Tabs value={currentTab} onValueChange={setCurrentTab}>
           <TabsList className="grid grid-cols-4 h-9">
-            <TabsTrigger value="capability" className="text-xs">能力配置</TabsTrigger>
-            <TabsTrigger value="prompt" className="text-xs">系统提示词</TabsTrigger>
-            <TabsTrigger value="fengsheng" className="text-xs gap-1.5">丰声 NEXT<span className="text-[10px] px-1 h-3.5 leading-[14px] rounded bg-muted text-muted-foreground font-normal">可选</span></TabsTrigger>
-            <TabsTrigger value="debug" className="text-xs">调试</TabsTrigger>
+            <TabsTrigger value="capability" className="text-xs gap-1.5">
+              能力配置
+              {stepStatus.capability === "done" && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}
+            </TabsTrigger>
+            <TabsTrigger value="prompt" className="text-xs gap-1.5">
+              系统提示词
+              {stepStatus.prompt === "done" && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}
+            </TabsTrigger>
+            <TabsTrigger value="channels" className="text-xs gap-1.5">
+              对外接入
+              <span className="text-[10px] px-1 h-3.5 leading-[14px] rounded bg-muted text-muted-foreground font-normal">可选</span>
+              {stepStatus.channels === "warn" && <AlertTriangle className="w-3 h-3 text-amber-500" />}
+            </TabsTrigger>
+            <TabsTrigger value="debug" className="text-xs gap-1.5">
+              调试
+              {stepStatus.debug === "done" && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}
+              {stepStatus.debug === "warn" && <AlertTriangle className="w-3 h-3 text-amber-500" />}
+            </TabsTrigger>
           </TabsList>
 
           {/* Capability: 基座模型 + MCP + Skill + Subagent */}
