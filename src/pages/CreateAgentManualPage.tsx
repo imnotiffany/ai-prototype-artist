@@ -596,23 +596,6 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   );
                 })}
               </div>
-              {!canSave && (
-                <div className="mt-3 pt-3 border-t border-border flex items-start gap-2">
-                  <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
-                  <div className="text-[11px] text-muted-foreground flex-1 min-w-0">
-                    <span className="text-foreground font-medium">保存前需完成以下事项：</span>
-                    <ul className="mt-1 space-y-0.5">
-                      {blockingReasons.map((r, i) => (
-                        <li key={i} className="flex items-center gap-1.5">
-                          <span className="w-1 h-1 rounded-full bg-amber-500" />
-                          <span>{r.msg}</span>
-                          <button onClick={() => setCurrentTab(r.jumpTo)} className="text-primary hover:underline ml-1">前往</button>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              )}
             </div>
           );
         })()}
