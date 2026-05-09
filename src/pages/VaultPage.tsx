@@ -430,8 +430,8 @@ const VaultPage = () => {
             免凭据 MCP 已默认接入；需凭据 MCP 请通过「新增 MCP」配置凭据后启用
           </p>
         </div>
-        <Button onClick={openCreate} className="gap-1.5">
-          <Plus className="w-4 h-4" />
+        <Button size="sm" onClick={openCreate} className="h-8 text-xs gap-1.5">
+          <Plus className="w-3.5 h-3.5" />
           新增 MCP
         </Button>
       </div>
