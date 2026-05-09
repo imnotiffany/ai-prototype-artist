@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { mockAgents, categories, type Agent } from "@/data/mockData";
+import { mockAgents, SKILL_CATEGORIES, type Agent } from "@/data/mockData";
 
 type KindFilter = "all" | "app" | "agent";
 
@@ -121,7 +121,7 @@ const AgentMarketplace = () => {
         >
           全部分类
         </button>
-        {categories.map((cat) => (
+        {SKILL_CATEGORIES.map((cat) => (
           <button
             key={cat}
             onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}

@@ -258,7 +258,7 @@ export const mockAgents: Agent[] = [
   {
     id: "4", name: "运维监控助手", avatar: "🖥️",
     description: "自动化运维监控智能体，实时分析系统日志与指标，自动告警并给出修复建议",
-    category: "自动运维", tags: ["自动运维", "监控", "告警"],
+    category: "运维支持", tags: ["自动运维", "监控", "告警"],
     platform: "基础架构部", author: "赵六", authorId: "01234570",
     updatedAt: "2026-04-12", downloads: 87,
     skills: ["Log Analyzer", "Alert Manager"], mcpServers: ["智水-MCP服务", "丰景台"],
@@ -327,7 +327,7 @@ export const mockAgents: Agent[] = [
   {
     id: "p4", name: "JSON万能工具箱", avatar: "🟢",
     description: "集JSON格式检查、格式化、差异对比和转表格于一体的高效处理工具",
-    category: "技术研发", tags: ["技术研发", "工具"],
+    category: "研究分析", tags: ["技术研发", "工具"],
     platform: "AI技术平台", author: "廖奕通", authorId: "01441970",
     updatedAt: "2026-04-01", downloads: 56,
     skills: ["File Processor"], mcpServers: [],
@@ -339,7 +339,7 @@ export const mockAgents: Agent[] = [
   {
     id: "p5", name: "Prompt精炼大师", avatar: "🅿️",
     description: "智能润色优化你的Prompt，使其更完整、更有逻辑，支持中英文输出切换",
-    category: "技术研发", tags: ["技术研发", "Prompt"],
+    category: "研究分析", tags: ["技术研发", "Prompt"],
     platform: "AI技术平台", author: "廖奕通", authorId: "01441970",
     updatedAt: "2026-03-31", downloads: 78,
     skills: ["Content Generation", "Translation Engine"], mcpServers: [],
@@ -361,7 +361,7 @@ export const mockAgents: Agent[] = [
   {
     id: "p7", name: "实时文字转语音", avatar: "🎵",
     description: "实时文字转语音，支持多种音色和语速调整",
-    category: "精选应用", tags: ["精选应用", "语音"],
+    category: "其他", tags: ["精选应用", "语音"],
     platform: "AI技术平台", author: "张毅超", authorId: "01422596",
     updatedAt: "2026-03-25", downloads: 145,
     skills: [], mcpServers: [],
