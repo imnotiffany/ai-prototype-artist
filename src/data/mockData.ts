@@ -39,6 +39,8 @@ export interface Agent {
   downloads: number;
   skills: string[];
   mcpServers: string[];
+  /** 子智能体名称列表（可引用其他智能体） */
+  subagents?: string[];
   sessionCount: number;
   versions: Version[];
   creationType: "ai" | "upload";
