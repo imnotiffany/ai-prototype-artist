@@ -48,7 +48,7 @@ export const CapabilityPickerDialog = ({
 }: Props) => {
   const isMcp = label === "MCP";
   const isSkill = label === "Skill";
-  const hasSkillScopes = isSkill && items.some((i) => i.scope);
+  const hasScopes = !isMcp && items.some((i) => i.scope);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [skillScope, setSkillScope] = useState<"market" | "project">("market");
