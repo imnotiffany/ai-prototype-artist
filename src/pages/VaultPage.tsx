@@ -334,11 +334,10 @@ const VaultPage = () => {
                         ) : (
                           <Button
                             size="sm"
-                            variant="outline"
                             className="h-7 text-[11px] px-2 shrink-0 gap-1"
-                            onClick={() => { setCredTarget(it); setCredToken(""); }}
+                            onClick={() => startAddFromMarket(it)}
                           >
-                            <KeyRound className="w-3 h-3" />配置凭据
+                            <Plus className="w-3 h-3" />添加
                           </Button>
                         )}
                       </div>
