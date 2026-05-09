@@ -444,43 +444,42 @@ const VaultPage = () => {
               <TableHead className="text-xs h-9 whitespace-nowrap">标识符</TableHead>
               <TableHead className="text-xs h-9 whitespace-nowrap">服务端点</TableHead>
               <TableHead className="text-xs h-9 whitespace-nowrap w-[130px]">类型</TableHead>
-              <TableHead className="text-xs h-9 whitespace-nowrap w-[110px]">凭据</TableHead>
               <TableHead className="text-xs h-9 whitespace-nowrap w-[100px]">创建时间</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {mcps.map((m) => (
-              <TableRow key={m.id}>
-                <TableCell className="py-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center shrink-0">
-                      <Server className="w-3 h-3 text-primary" />
+            {mcps.map((m) => {
+              const editable = m.requiresCredential; // 免凭据条目不可编辑
+              return (
+                <TableRow
+                  key={m.id}
+                  className={editable ? "cursor-pointer" : ""}
+                  onClick={editable ? () => openEdit(m) : undefined}
+                >
+                  <TableCell className="py-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center shrink-0">
+                        <Server className="w-3 h-3 text-primary" />
+                      </div>
+                      <span className="text-xs font-medium truncate" title={m.name}>{m.name}</span>
                     </div>
-                    <span className="text-xs font-medium truncate" title={m.name}>{m.name}</span>
-                  </div>
-                </TableCell>
-                <TableCell className="py-2 text-[11px] text-muted-foreground font-mono whitespace-nowrap">{m.identifier}</TableCell>
-                <TableCell className="py-2 text-[11px] text-muted-foreground font-mono max-w-[240px]">
-                  <div className="flex items-center gap-1 min-w-0">
-                    <Link2 className="w-3 h-3 shrink-0" />
-                    <span className="truncate" title={m.endpoint}>{m.endpoint}</span>
-                  </div>
-                </TableCell>
-                <TableCell className="py-2 whitespace-nowrap">
-                  <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono font-normal">
-                    {typeLabel(m.type)}
-                  </Badge>
-                </TableCell>
-                <TableCell className="py-2 whitespace-nowrap">
-                  {m.requiresCredential ? (
-                    <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-0 text-[10px] gap-1"><KeyRound className="w-3 h-3" />已配置</Badge>
-                  ) : (
-                    <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0 text-[10px] gap-1"><ShieldCheck className="w-3 h-3" />免凭据</Badge>
-                  )}
-                </TableCell>
-                <TableCell className="py-2 text-[11px] text-muted-foreground whitespace-nowrap">{m.createdAt}</TableCell>
-              </TableRow>
-            ))}
+                  </TableCell>
+                  <TableCell className="py-2 text-[11px] text-muted-foreground font-mono whitespace-nowrap">{m.identifier}</TableCell>
+                  <TableCell className="py-2 text-[11px] text-muted-foreground font-mono max-w-[240px]">
+                    <div className="flex items-center gap-1 min-w-0">
+                      <Link2 className="w-3 h-3 shrink-0" />
+                      <span className="truncate" title={m.endpoint}>{m.endpoint}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-2 whitespace-nowrap">
+                    <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono font-normal">
+                      {typeLabel(m.type)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="py-2 text-[11px] text-muted-foreground whitespace-nowrap">{m.createdAt}</TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>
