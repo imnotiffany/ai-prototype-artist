@@ -90,21 +90,13 @@ const AgentMarketplace = () => {
       {/* Search bar */}
       <div className="flex items-center justify-center gap-2 mb-4 px-6">
         <div className="relative w-full max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder={voiceRecording ? "正在录音…再次点击麦克风结束" : "搜索应用或智能体"}
+            placeholder="搜索应用或智能体"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-9 text-xs pl-9 pr-10"
+            className="h-9 text-xs pr-9"
           />
-          <button
-            type="button"
-            onClick={toggleVoice}
-            title={voiceRecording ? "结束语音输入" : "语音输入"}
-            className={`absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded flex items-center justify-center ${voiceRecording ? "bg-primary text-primary-foreground animate-pulse" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}
-          >
-            {voiceRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
-          </button>
         </div>
         <Button
           size="sm"
