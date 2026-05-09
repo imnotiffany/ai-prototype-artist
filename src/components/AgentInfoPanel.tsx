@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronRight, ChevronLeft, Sparkles, Wrench, Server, User, Calendar, Tag } from "lucide-react";
+import { ChevronRight, ChevronLeft, Sparkles, Wrench, Server, User, Calendar, Tag, Bot } from "lucide-react";
 import type { Agent } from "@/data/mockData";
 import { cn } from "@/lib/utils";
 
