@@ -128,22 +128,46 @@ export const sharedResources: Resource[] = [
 ];
 
 /* ── Helper: get active resources as picker items ── */
+/** Skill 分类标签（统一分类，单选其一） */
+export const SKILL_CATEGORIES = [
+  "文档处理",
+  "数据分析",
+  "编程开发",
+  "内容创作",
+  "企业办公",
+  "前端开发",
+  "后端开发",
+  "产品经理",
+  "测试开发",
+  "算法工程",
+  "运维支持",
+  "研究分析",
+  "视觉设计",
+  "市场营销",
+  "营运规划",
+  "财务分析",
+  "人力资源",
+  "国际业务",
+  "智水平台",
+  "其他",
+] as const;
+
 const SKILL_TAGS: Record<string, string[]> = {
-  "Web Search": ["搜索"],
-  "Code Analysis": ["研发"],
-  "Email Parser": ["办公"],
-  "Translation Engine": ["翻译"],
-  "Content Generation": ["内容"],
-  "SQL Generator": ["数据", "研发"],
-  "File Processor": ["数据"],
-  "Data Visualizer": ["数据"],
-  "Security Scanner": ["安全"],
-  "Log Analyzer": ["运维"],
-  "Alert Manager": ["运维"],
-  "SEO Optimizer": ["内容"],
-  "Schema Analyzer": ["数据", "研发"],
-  "灵慧 Skill": ["办公", "搜索"],
-  "钉钉 Skill": ["办公"],
+  "Web Search": ["研究分析"],
+  "Code Analysis": ["编程开发"],
+  "Email Parser": ["企业办公"],
+  "Translation Engine": ["国际业务"],
+  "Content Generation": ["内容创作"],
+  "SQL Generator": ["数据分析"],
+  "File Processor": ["文档处理"],
+  "Data Visualizer": ["数据分析"],
+  "Security Scanner": ["运维支持"],
+  "Log Analyzer": ["运维支持"],
+  "Alert Manager": ["运维支持"],
+  "SEO Optimizer": ["市场营销"],
+  "Schema Analyzer": ["后端开发"],
+  "灵慧 Skill": ["企业办公"],
+  "钉钉 Skill": ["企业办公"],
 };
 
 export const getActiveSkills = () =>
