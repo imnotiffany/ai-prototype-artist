@@ -613,9 +613,7 @@ fengsheng:
               </header>
               <div className="p-4">
                 {mcpBindings.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-4">
-                    尚未绑定任何 MCP。如目标 MCP 不在列表中，请先到「<button onClick={() => navigate("/vault")} className="text-primary hover:underline">MCP 管理</button>」中添加并配置凭据。
-                  </p>
+                  <p className="text-xs text-muted-foreground text-center py-4">尚未绑定任何 MCP</p>
                 ) : (
                   <div className="space-y-2">
                     {mcpBindings.map((b, i) => {
