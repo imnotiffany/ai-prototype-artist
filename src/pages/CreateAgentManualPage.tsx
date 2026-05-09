@@ -746,7 +746,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   <p className="text-[10px] text-muted-foreground mt-0.5">从智能体广场挑选已发布的智能体作为子智能体，主智能体可调度它们协同完成任务（可选）</p>
                 </div>
                 <CapabilityPickerDialog
-                  items={subagents.map((a) => ({ name: a.name, description: a.description }))}
+                  items={subagents.map((a) => ({ name: a.name, description: a.description, scope: a.scope }))}
                   selected={selSubagents}
                   onToggle={(n) => toggle(selSubagents, setSelSubagents, n)}
                   icon={<Bot className="w-3.5 h-3.5" />}
