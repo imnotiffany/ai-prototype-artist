@@ -562,7 +562,7 @@ const AgentDetail = () => {
                     className="h-7 text-xs gap-1"
                     onClick={() => {
                       navigator.clipboard.writeText(
-                        `name: ${name}\nmodel: ${model}\nsystem_prompt: |\n  ${systemPrompt.split("\n").join("\n  ")}\nskills:\n${selSkills.map((s) => `  - ${s}`).join("\n") || "  []"}\nmcp_bindings:\n${mcpBindings.map((b) => `  - name: ${b.name}\n    credential: ${b.credential || "(未绑定)"}`).join("\n") || "  []"}\nsub_agents:\n${subAgents.map((s) => `  - name: ${s.name}\n    role: ${s.role}\n    trigger: ${s.trigger}`).join("\n") || "  []"}\nfengsheng:\n  client_id: ${fsAppKey || "(未配置)"}\n  robot_code: ${fsRobotCode || "(未配置)"}`
+                        `name: ${name}\nmodel: ${model}\nsystem_prompt: |\n  ${systemPrompt.split("\n").join("\n  ")}\nskills:\n${selSkills.map((s) => `  - ${s}`).join("\n") || "  []"}\nmcp_bindings:\n${mcpBindings.map((b) => `  - name: ${b.name}\n    credential: ${b.credential || "(未绑定)"}`).join("\n") || "  []"}\nsub_agents:\n${selSubagents.map((s) => `  - ${s}`).join("\n") || "  []"}\nfengsheng:\n  client_id: ${fsAppKey || "(未配置)"}\n  robot_code: ${fsRobotCode || "(未配置)"}`
                       );
                       toast({ title: "已复制配置到剪贴板" });
                     }}
