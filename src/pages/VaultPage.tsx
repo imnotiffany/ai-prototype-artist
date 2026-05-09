@@ -243,9 +243,29 @@ const VaultPage = () => {
         />
       </div>
 
-      {/* 3. 类型 */}
+      {/* 3. 简介 */}
       <div>
-        <Label className="text-[11px] font-medium">类型</Label>
+        <Label className="text-[11px] font-medium flex items-center gap-1">
+          简介
+          {locked && <Lock className="w-2.5 h-2.5 text-muted-foreground" />}
+        </Label>
+        <p className="text-[10px] text-muted-foreground mt-0.5">一句话说明该 MCP 的用途，便于在列表中识别</p>
+        <Textarea
+          className="mt-1 text-xs bg-muted/30 min-h-[60px]"
+          value={description}
+          readOnly={locked}
+          disabled={locked}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="例如 提供钉钉文档的读写与搜索能力"
+        />
+      </div>
+
+      {/* 4. 类型 */}
+      <div>
+        <Label className="text-[11px] font-medium flex items-center gap-1">
+          类型
+          {locked && <Lock className="w-2.5 h-2.5 text-muted-foreground" />}
+        </Label>
         <p className="text-[10px] text-muted-foreground mt-0.5">不同类型对应不同的接入与配置格式</p>
         <div className="mt-1.5 flex items-center gap-5">
           {([
@@ -255,28 +275,16 @@ const VaultPage = () => {
           ] as { v: McpType; label: string }[]).map((opt) => {
             const active = mcpType === opt.v;
             return (
-              <label key={opt.v} className="flex items-center gap-1.5 cursor-pointer text-xs">
+              <label key={opt.v} className={`flex items-center gap-1.5 text-xs ${locked ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}>
                 <span className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-colors ${active ? "border-primary" : "border-muted-foreground/40"}`}>
                   {active && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
                 </span>
-                <input type="radio" name="mcp-type" className="sr-only" checked={active} onChange={() => setMcpType(opt.v)} />
+                <input type="radio" name="mcp-type" className="sr-only" checked={active} disabled={locked} onChange={() => !locked && setMcpType(opt.v)} />
                 <span className={active ? "text-foreground" : "text-muted-foreground"}>{opt.label}</span>
               </label>
             );
           })}
         </div>
-      </div>
-
-      {/* 4. 简介 */}
-      <div>
-        <Label className="text-[11px] font-medium">简介</Label>
-        <p className="text-[10px] text-muted-foreground mt-0.5">一句话说明该 MCP 的用途，便于在列表中识别</p>
-        <Textarea
-          className="mt-1 text-xs bg-muted/30 min-h-[60px]"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="例如 提供钉钉文档的读写与搜索能力"
-        />
       </div>
 
       {/* 5. 其他内容（按类型） */}
