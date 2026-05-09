@@ -139,23 +139,6 @@ export const CapabilityPickerDialog = ({
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold truncate">{it.name}</p>
             <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-              {isMcp && (
-                it.requiresCredential ? (
-                  isMcpConfigured(it.name) ? (
-                    <Badge variant="outline" className="text-[10px] h-4 px-1.5 gap-0.5 border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30">
-                      <CheckCircle2 className="w-2.5 h-2.5" />已配置凭据
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="text-[10px] h-4 px-1.5 gap-0.5 border-amber-300 text-amber-700 bg-amber-50/60 dark:bg-amber-950/30">
-                      <KeyRound className="w-2.5 h-2.5" />未配置凭据
-                    </Badge>
-                  )
-                ) : (
-                  <Badge variant="outline" className="text-[10px] h-4 px-1.5 gap-0.5 border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30">
-                    <ShieldCheck className="w-2.5 h-2.5" />免凭据
-                  </Badge>
-                )
-              )}
               {isSkill && (it.tags ?? []).map((t) => (
                 <Badge key={t} variant="outline" className="text-[10px] h-4 px-1.5 font-normal text-muted-foreground">
                   {t}
@@ -267,49 +250,14 @@ export const CapabilityPickerDialog = ({
         </div>
 
         <div className="overflow-auto -mx-1 px-1 space-y-3">
-          {/* 可选区：免凭据 + 已配置 */}
-          {isMcp && (
-            <div className="flex items-center gap-2 sticky top-0 bg-background py-1 z-10">
-              <span className="text-[11px] font-semibold text-foreground">可选</span>
-              <Badge variant="secondary" className="text-[10px] h-4 px-1.5 font-normal">{sortedAvailable.length}</Badge>
-              <span className="text-[10px] text-muted-foreground">免凭据 / 已配置凭据</span>
-            </div>
-          )}
           <div className="grid grid-cols-2 gap-2.5">
             {sortedAvailable.map((it) => renderCard(it, { disabled: false }))}
             {sortedAvailable.length === 0 && (
               <p className="col-span-2 text-center text-xs text-muted-foreground py-6">
-                暂无{isMcp ? "可选 MCP" : `匹配的 ${label}`}
+                暂无{isMcp ? "可选 MCP，请先在「MCP 管理」中配置" : `匹配的 ${label}`}
               </p>
             )}
           </div>
-
-          {/* 未配置区：仅 MCP */}
-          {isMcp && unconfigured.length > 0 && (
-            <>
-              <div className="flex items-center justify-between gap-2 sticky top-0 bg-background py-1 z-10 mt-2 pt-2 border-t border-border">
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-semibold text-foreground">未配置凭据</span>
-                  <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-normal border-amber-300 text-amber-700 bg-amber-50/60">
-                    {unconfigured.length}
-                  </Badge>
-                </div>
-                <Link
-                  to={mcpManageHref}
-                  onClick={() => setOpen(false)}
-                  className="text-[10px] text-primary hover:underline flex items-center gap-0.5"
-                >
-                  <Settings2 className="w-3 h-3" />前往 MCP 管理配置
-                </Link>
-              </div>
-              <p className="text-[10px] text-muted-foreground -mt-1">
-                以下 MCP 需要先在「MCP 管理 → 新增 MCP」中配置凭据，配置完成后即可在此处选用。
-              </p>
-              <div className="grid grid-cols-2 gap-2.5">
-                {unconfigured.map((it) => renderCard(it, { disabled: true }))}
-              </div>
-            </>
-          )}
         </div>
         <DialogFooter>
           <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setOpen(false)}>
