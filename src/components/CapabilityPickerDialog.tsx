@@ -68,26 +68,26 @@ export const CapabilityPickerDialog = ({
     setOpen(o);
   };
 
-  // Skill 标签集合（按当前 scope 过滤）
+  // 标签集合（按当前 scope 过滤）— 适用于 Skill 与子智能体
   const availableTags = useMemo(() => {
-    if (!isSkill) return [] as string[];
+    if (isMcp) return [] as string[];
     const set = new Set<string>();
     items.forEach((it) => {
       if (hasScopes && (it.scope ?? "market") !== skillScope) return;
       (it.tags ?? []).forEach((t) => set.add(t));
     });
     return Array.from(set).sort();
-  }, [isSkill, items, hasScopes, skillScope]);
+  }, [isMcp, items, hasScopes, skillScope]);
 
   // 切换 scope 时若当前标签不在新范围内，重置
   useEffect(() => {
-    if (!isSkill) return;
+    if (isMcp) return;
     if (skillTag !== "__all__" && !availableTags.includes(skillTag)) setSkillTag("__all__");
-  }, [isSkill, availableTags, skillTag]);
+  }, [isMcp, availableTags, skillTag]);
 
   const filtered = items.filter((it) => {
     if (hasScopes && (it.scope ?? "market") !== skillScope) return false;
-    if (isSkill && skillTag !== "__all__" && !(it.tags ?? []).includes(skillTag)) return false;
+    if (!isMcp && skillTag !== "__all__" && !(it.tags ?? []).includes(skillTag)) return false;
     const q = search.toLowerCase();
     return it.name.toLowerCase().includes(q) || it.description.toLowerCase().includes(q);
   });
@@ -139,7 +139,7 @@ export const CapabilityPickerDialog = ({
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold truncate">{it.name}</p>
             <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-              {isSkill && (it.tags ?? []).map((t) => (
+              {!isMcp && (it.tags ?? []).map((t) => (
                 <Badge key={t} variant="outline" className="text-[10px] h-4 px-1.5 font-normal text-muted-foreground">
                   {t}
                 </Badge>
@@ -219,7 +219,7 @@ export const CapabilityPickerDialog = ({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          {isSkill && availableTags.length > 0 && (
+          {!isMcp && availableTags.length > 0 && (
             <Select value={skillTag} onValueChange={setSkillTag}>
               <SelectTrigger className="h-8 w-[140px] text-xs shrink-0 gap-1">
                 <Tag className="w-3 h-3 text-muted-foreground" />

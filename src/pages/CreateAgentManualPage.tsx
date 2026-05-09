@@ -1033,22 +1033,6 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
 
           {/* Debug */}
           <TabsContent value="debug" className="mt-4 space-y-4">
-            <div className="border border-border rounded-lg px-4 py-3 bg-gradient-to-r from-primary/10 to-primary/5 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                <Bug className="w-4 h-4 text-primary shrink-0" />
-                <p className="text-xs">
-                  <span className="font-medium">调试智能体</span>
-                  <span className="text-muted-foreground"> · 左侧与调试 AI 沟通配置；右侧直接与智能体对话验证</span>
-                </p>
-              </div>
-              {debugChanges.length > 0 && (
-                <Badge variant="secondary" className="text-[10px] gap-1">
-                  <CheckCircle2 className="w-3 h-3" />
-                  调试期已优化 {debugChanges.length} 项
-                </Badge>
-              )}
-            </div>
-
             <div className="border border-border rounded-lg bg-card flex flex-col h-[clamp(380px,calc(100vh-260px),560px)]">
               <div className="px-3 h-10 shrink-0 border-b border-border flex items-center gap-1.5">
                 <Bot className="w-3.5 h-3.5 text-primary shrink-0" />
@@ -1071,9 +1055,6 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                         evs.push({ id: `a${i}`, type: "agent", content: m.content });
                       }
                     });
-                    if (runMessages.length === 0) {
-                      evs.push({ id: "empty", type: "system", message: "输入示例任务即可开始调试" });
-                    }
                     return evs;
                   })()}
                   debugEvents={debugLogs.map((l) => ({
