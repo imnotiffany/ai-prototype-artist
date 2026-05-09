@@ -121,7 +121,7 @@ const AgentMarketplace = () => {
         >
           全部分类
         </button>
-        {categories.map((cat) => (
+        {SKILL_CATEGORIES.map((cat) => (
           <button
             key={cat}
             onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
