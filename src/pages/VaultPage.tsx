@@ -148,23 +148,15 @@ const VaultPage = () => {
     reset();
   };
 
-  const submitCredential = () => {
-    if (!credTarget) return;
-    if (!credToken.trim()) return toast({ title: "请填写凭据", variant: "destructive" });
-    const id = `m_${Date.now()}`;
-    setCredMcps((arr) => [{
-      id,
-      name: credTarget.name,
-      identifier: credTarget.id,
-      endpoint: `https://mcp.example.com/${credTarget.provider ?? "svc"}/${credTarget.id}/http`,
-      deployment: credTarget.deployment ?? "Remote",
-      createdAt: new Date().toISOString().slice(0, 10),
-      requiresCredential: true,
-    }, ...arr]);
-    setMcpConfigured(credTarget.name, true);
-    toast({ title: "凭据已配置", description: `${credTarget.name} 已加入 MCP 管理，可在拼装时选用` });
-    setCredTarget(null);
-    setCredToken("");
+  const startAddFromMarket = (it: { id: string; name: string; provider?: string; deployment?: string }) => {
+    reset();
+    setLocked(true);
+    setCreateMode("manual");
+    setName(it.name);
+    setIdentifier(it.id);
+    setEndpoint(`https://mcp.example.com/${it.provider ?? "svc"}/${it.id}/http`);
+    setMcpType("http");
+    setTab("headers");
   };
 
   const confirmDelete = () => {
