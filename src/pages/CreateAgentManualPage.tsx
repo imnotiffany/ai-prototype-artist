@@ -235,6 +235,8 @@ const CreateAgentManualPage = () => {
     setRunMessages((m) => [...m, { role: "user", content: text }]);
     setDebugInput("");
     setDebugRunning(true);
+    setDebugAttempted(true);
+    setDebugLastError(false);
 
     const tool = selMCPs[0] || selSkills[0] || "内置推理";
     pushLog("info", `[session] 接收用户输入`, `text="${text}"`);
