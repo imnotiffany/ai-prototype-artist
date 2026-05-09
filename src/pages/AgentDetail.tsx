@@ -360,12 +360,6 @@ const AgentDetail = () => {
 
         {/* ───────── 调试 ───────── */}
         <TabsContent value="debug" className="mt-4">
-          <div className="border border-border rounded-lg px-3 py-2 bg-gradient-to-r from-primary/10 to-primary/5 mb-4">
-            <p className="text-xs">
-              <span className="font-medium">调试模式</span>
-              <span className="text-muted-foreground"> · 左侧调整配置，右侧验证效果，修改完毕请保存并发布</span>
-            </p>
-          </div>
 
           <div className="border border-border rounded-lg bg-card flex flex-col h-[640px]">
             <div className="px-3 h-10 shrink-0 border-b border-border flex items-center gap-1.5">
