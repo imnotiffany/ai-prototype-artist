@@ -750,7 +750,7 @@ fengsheng:
                 })()}
 
                 {selSubagents.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-4">尚未配置子智能体。点击右上角「添加子智能体」从项目选择。</p>
+                  <p className="text-xs text-muted-foreground text-center py-4">尚未配置子智能体</p>
                 ) : (
                   selSubagents.map((name) => {
                     const sub = projectSubagents.find((a) => a.name === name);
