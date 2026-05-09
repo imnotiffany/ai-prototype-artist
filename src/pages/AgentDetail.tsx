@@ -62,7 +62,7 @@ const buildMockTranscript = (userPrompt: string): TranscriptEvent[] => [
   },
   { id: "a1", type: "agent",
     content: "已汇总完成，华东区 ¥1.2M（环比 +8%）、华南区 ¥0.9M（+3%）、华北区 ¥0.7M（-2%）。\n\n报告已生成 → 销售周报_20260429.md" },
-  { id: "s1", type: "system", message: "会话结束 · 用时 6.5s · 1552 tokens" },
+  { id: "s1", type: "system", message: "会话结束 · 1552 tokens" },
 ];
 
 const mockDebugEvents: DebugEvent[] = [
@@ -330,18 +330,7 @@ const AgentDetail = () => {
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          {isDirty ? (
-            <div className="inline-flex items-center gap-1.5 h-8 pl-2 pr-1 rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-950/40">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-              <span className="text-[11px] text-amber-800 dark:text-amber-200">未保存修改</span>
-              <Button size="sm" variant="ghost" className="h-6 px-2 text-[11px] text-amber-900 hover:text-amber-900 hover:bg-amber-100/80 dark:text-amber-200" onClick={handleRevert}>
-                <RotateCcw className="w-3 h-3 mr-1" />撤销
-              </Button>
-              <Button size="sm" className="h-6 px-2 text-[11px] gap-1 bg-amber-600 hover:bg-amber-700 text-white" onClick={handleSave}>
-                <Save className="w-3 h-3" />保存
-              </Button>
-            </div>
-          ) : justSaved ? (
+          {justSaved && !isDirty ? (
             <div className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md border border-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 animate-fade-in">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
               <span className="text-[11px] text-emerald-800 dark:text-emerald-200">已保存</span>
@@ -371,12 +360,6 @@ const AgentDetail = () => {
 
         {/* ───────── 调试 ───────── */}
         <TabsContent value="debug" className="mt-4">
-          <div className="border border-border rounded-lg px-3 py-2 bg-gradient-to-r from-primary/10 to-primary/5 mb-4">
-            <p className="text-xs">
-              <span className="font-medium">调试模式</span>
-              <span className="text-muted-foreground"> · 左侧调整配置，右侧验证效果，修改完毕请保存并发布</span>
-            </p>
-          </div>
 
           <div className="border border-border rounded-lg bg-card flex flex-col h-[640px]">
             <div className="px-3 h-10 shrink-0 border-b border-border flex items-center gap-1.5">
@@ -459,10 +442,7 @@ const AgentDetail = () => {
               </div>
             )}
 
-            <div className="flex items-center justify-between gap-3 px-1">
-              <p className="text-[11px] text-muted-foreground">
-                名称、描述等基本信息请通过页面右上角的「编辑基本信息」修改。以下配置变更需保存后生效。
-              </p>
+            <div className="flex items-center justify-end gap-3 px-1">
               <div className="inline-flex items-center rounded-md border border-border bg-muted/40 p-0.5 shrink-0">
                 <button
                   onClick={() => setConfigView("form")}
