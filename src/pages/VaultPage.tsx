@@ -437,7 +437,7 @@ const VaultPage = () => {
 
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-[560px] p-5">
+        <DialogContent className={createMode === "market" && !editingId ? "max-w-[920px] p-5" : "max-w-[560px] p-5"}>
           <DialogHeader className="space-y-1">
             <DialogTitle className="text-sm">{editingId ? "编辑 MCP 服务" : "新增 MCP"}</DialogTitle>
             <DialogDescription className="text-[11px]">
@@ -453,56 +453,73 @@ const VaultPage = () => {
               </TabsList>
             )}
 
-            <TabsContent value="market" className="mt-0 space-y-2">
-              <div className="relative">
-                <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  className="h-8 text-xs pl-8 bg-muted/30"
-                  placeholder="搜索 MCP 名称或功能描述"
-                  value={marketSearch}
-                  onChange={(e) => setMarketSearch(e.target.value)}
-                />
+            <TabsContent value="market" className="mt-0 space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="relative flex-1">
+                  <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    className="h-9 text-xs pl-8 bg-muted/30"
+                    placeholder="搜索 MCP 名称或功能描述"
+                    value={marketSearch}
+                    onChange={(e) => setMarketSearch(e.target.value)}
+                  />
+                </div>
+                <button className="text-xs text-primary hover:underline whitespace-nowrap shrink-0">
+                  前往 MCP 管理
+                </button>
               </div>
-              <div className="max-h-[420px] overflow-auto -mx-1 px-1 space-y-2">
+
+              <div className="flex items-center gap-2 text-xs">
+                <span className="font-medium">可选</span>
+                <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-normal">{marketList.length}</Badge>
+                <span className="text-muted-foreground">需凭据</span>
+              </div>
+
+              <div className="max-h-[460px] overflow-auto -mx-1 px-1">
                 {marketList.length === 0 ? (
                   <p className="text-center text-[11px] text-muted-foreground py-8">未找到匹配的 MCP</p>
-                ) : marketList.map((it) => {
-                  const done = isMcpConfigured(it.name);
-                  return (
-                    <div
-                      key={it.id}
-                      className={`border rounded-lg p-2.5 transition-colors ${done ? "border-emerald-300/60 bg-emerald-50/40 dark:bg-emerald-950/10" : "border-border bg-card"}`}
-                    >
-                      <div className="flex items-start gap-2">
-                        <div className={`w-7 h-7 rounded flex items-center justify-center shrink-0 ${done ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground"}`}>
-                          <Server className="w-3.5 h-3.5" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5">
-                            <p className="text-xs font-semibold truncate">{it.name}</p>
-                            <Badge variant="outline" className="text-[10px] h-4 px-1.5 gap-0.5 border-amber-300 text-amber-700 bg-amber-50/60">
-                              <KeyRound className="w-2.5 h-2.5" />需凭据
-                            </Badge>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3">
+                    {marketList.map((it) => {
+                      const done = isMcpConfigured(it.name);
+                      return (
+                        <div
+                          key={it.id}
+                          className={`border rounded-lg p-3 transition-colors flex flex-col ${done ? "border-emerald-300/60 bg-emerald-50/40 dark:bg-emerald-950/10" : "border-border bg-card"}`}
+                        >
+                          <div className="flex items-start gap-2">
+                            <div className={`w-8 h-8 rounded flex items-center justify-center shrink-0 ${done ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground"}`}>
+                              <Server className="w-4 h-4" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-semibold truncate" title={it.name}>{it.name}</p>
+                              <Badge variant="outline" className="mt-1 text-[10px] h-4 px-1.5 gap-0.5 border-amber-300 text-amber-700 bg-amber-50/60">
+                                <KeyRound className="w-2.5 h-2.5" />需凭据
+                              </Badge>
+                            </div>
                           </div>
-                          <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">{it.description}</p>
+                          <p className="text-[11px] text-muted-foreground line-clamp-2 mt-2 min-h-[32px]">{it.description}</p>
+                          <div className="flex items-center justify-between mt-3 pt-2 border-t border-border/60">
+                            <button className="text-[11px] text-primary hover:underline">查看详情</button>
+                            {done ? (
+                              <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0 text-[10px] gap-1">
+                                <CheckCircle2 className="w-3 h-3" />已配置
+                              </Badge>
+                            ) : (
+                              <Button
+                                size="sm"
+                                className="h-7 text-[11px] px-3"
+                                onClick={() => startAddFromMarket(it)}
+                              >
+                                添加
+                              </Button>
+                            )}
+                          </div>
                         </div>
-                        {done ? (
-                          <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0 text-[10px] gap-1 shrink-0 mt-1">
-                            <CheckCircle2 className="w-3 h-3" />已配置
-                          </Badge>
-                        ) : (
-                          <Button
-                            size="sm"
-                            className="h-7 text-[11px] px-2 shrink-0 gap-1"
-                            onClick={() => startAddFromMarket(it)}
-                          >
-                            <Plus className="w-3 h-3" />添加
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </TabsContent>
 
