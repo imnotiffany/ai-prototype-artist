@@ -401,9 +401,8 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
   // ── Step validation ──────────────────────────────────────────────
   const capabilityComplete = selMCPs.length > 0 || selSkills.length > 0;
   const promptComplete = systemPrompt.trim().length >= 20;
-  // 对外接入是可选的，但若启用了某项则必须完成连接
-  const channelsValid = (!fsConnected || (fsAppKey && fsAppSecret && fsRobotCode)) &&
-                        (!hubEnabled || hubConnected);
+  // 对外接入是可选的，但若启用了丰声 NEXT 必须完成连接（Agent Hub 仅是开关）
+  const channelsValid = !fsConnected || (!!fsAppKey && !!fsAppSecret && !!fsRobotCode);
   const debugComplete = debugPassed && !debugLastError;
 
   const stepStatus = {
