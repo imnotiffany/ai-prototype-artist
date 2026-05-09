@@ -145,6 +145,13 @@ const VaultPage = () => {
     setEndpoint(m.endpoint);
     setName(m.name);
     setIdentifier(m.identifier);
+    setDescription(m.description ?? "");
+    setMcpType(m.type);
+    setHeaders(m.headers ?? []);
+    setStdioCommand(m.stdioCommand ?? "npx");
+    setStdioArgs(m.stdioArgs ?? "");
+    setEnvVars(m.envVars ?? []);
+    setLocked(!!m.fromMarket);
     setCreateOpen(true);
   };
 
@@ -162,11 +169,25 @@ const VaultPage = () => {
     }
 
     if (editingId) {
-      setCredMcps((arr) => arr.map((m) => m.id === editingId ? { ...m, endpoint, name, identifier } : m));
+      setCredMcps((arr) => arr.map((m) => m.id === editingId ? {
+        ...m,
+        // 来自广场的不允许覆盖锁定字段
+        ...(m.fromMarket ? {} : { name, identifier, description, type: mcpType }),
+        endpoint,
+        headers,
+        stdioCommand,
+        stdioArgs,
+        envVars,
+      } : m));
       toast({ title: "MCP 已更新", description: `${name} 已保存` });
     } else {
       const id = `m_${Date.now()}`;
-      setCredMcps((arr) => [{ id, name, identifier, endpoint, deployment: "Remote", createdAt: new Date().toISOString().slice(0, 10), requiresCredential: true, type: mcpType }, ...arr]);
+      setCredMcps((arr) => [{
+        id, name, identifier, endpoint, deployment: "Remote",
+        createdAt: new Date().toISOString().slice(0, 10),
+        requiresCredential: true, type: mcpType,
+        fromMarket: locked, description, headers, stdioCommand, stdioArgs, envVars,
+      }, ...arr]);
       setMcpConfigured(name, true);
       toast({ title: "MCP 已添加", description: `${name} 已加入 MCP 管理` });
     }
