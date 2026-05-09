@@ -6,14 +6,14 @@ const menuSections = [
   {
     label: "工作台",
     items: [
-      { name: "新建项目", path: "/create", icon: Plus },
+      { name: "新建作品", path: "/create", icon: Plus },
       { name: "作品广场", path: "/", icon: Compass },
     ],
   },
   {
     label: "管理",
     items: [
-      { name: "项目管理", path: "/project-agents", icon: FolderOpen },
+      { name: "作品管理", path: "/project-agents", icon: FolderOpen },
       { name: "MCP 管理", path: "/vault", icon: Server },
     ],
   },

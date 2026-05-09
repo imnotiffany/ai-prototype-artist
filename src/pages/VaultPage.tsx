@@ -25,6 +25,13 @@ interface McpEntry {
   createdAt: string;
   requiresCredential: boolean;
   type: McpType;
+  /** 是否来自 MCP 广场（true 时部分字段不可编辑） */
+  fromMarket?: boolean;
+  description?: string;
+  headers?: { key: string; value: string }[];
+  stdioCommand?: string;
+  stdioArgs?: string;
+  envVars?: { key: string; value: string }[];
 }
 
 const typeLabel = (t: McpType) => (t === "studio" ? "STDIO" : t === "sse" ? "SSE" : "StreamableHTTP");
@@ -138,6 +145,13 @@ const VaultPage = () => {
     setEndpoint(m.endpoint);
     setName(m.name);
     setIdentifier(m.identifier);
+    setDescription(m.description ?? "");
+    setMcpType(m.type);
+    setHeaders(m.headers ?? []);
+    setStdioCommand(m.stdioCommand ?? "npx");
+    setStdioArgs(m.stdioArgs ?? "");
+    setEnvVars(m.envVars ?? []);
+    setLocked(!!m.fromMarket);
     setCreateOpen(true);
   };
 
@@ -155,11 +169,25 @@ const VaultPage = () => {
     }
 
     if (editingId) {
-      setCredMcps((arr) => arr.map((m) => m.id === editingId ? { ...m, endpoint, name, identifier } : m));
+      setCredMcps((arr) => arr.map((m) => m.id === editingId ? {
+        ...m,
+        // 来自广场的不允许覆盖锁定字段
+        ...(m.fromMarket ? {} : { name, identifier, description, type: mcpType }),
+        endpoint,
+        headers,
+        stdioCommand,
+        stdioArgs,
+        envVars,
+      } : m));
       toast({ title: "MCP 已更新", description: `${name} 已保存` });
     } else {
       const id = `m_${Date.now()}`;
-      setCredMcps((arr) => [{ id, name, identifier, endpoint, deployment: "Remote", createdAt: new Date().toISOString().slice(0, 10), requiresCredential: true, type: mcpType }, ...arr]);
+      setCredMcps((arr) => [{
+        id, name, identifier, endpoint, deployment: "Remote",
+        createdAt: new Date().toISOString().slice(0, 10),
+        requiresCredential: true, type: mcpType,
+        fromMarket: locked, description, headers, stdioCommand, stdioArgs, envVars,
+      }, ...arr]);
       setMcpConfigured(name, true);
       toast({ title: "MCP 已添加", description: `${name} 已加入 MCP 管理` });
     }
@@ -416,43 +444,42 @@ const VaultPage = () => {
               <TableHead className="text-xs h-9 whitespace-nowrap">标识符</TableHead>
               <TableHead className="text-xs h-9 whitespace-nowrap">服务端点</TableHead>
               <TableHead className="text-xs h-9 whitespace-nowrap w-[130px]">类型</TableHead>
-              <TableHead className="text-xs h-9 whitespace-nowrap w-[110px]">凭据</TableHead>
               <TableHead className="text-xs h-9 whitespace-nowrap w-[100px]">创建时间</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {mcps.map((m) => (
-              <TableRow key={m.id}>
-                <TableCell className="py-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center shrink-0">
-                      <Server className="w-3 h-3 text-primary" />
+            {mcps.map((m) => {
+              const editable = m.requiresCredential; // 免凭据条目不可编辑
+              return (
+                <TableRow
+                  key={m.id}
+                  className={editable ? "cursor-pointer" : ""}
+                  onClick={editable ? () => openEdit(m) : undefined}
+                >
+                  <TableCell className="py-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center shrink-0">
+                        <Server className="w-3 h-3 text-primary" />
+                      </div>
+                      <span className="text-xs font-medium truncate" title={m.name}>{m.name}</span>
                     </div>
-                    <span className="text-xs font-medium truncate" title={m.name}>{m.name}</span>
-                  </div>
-                </TableCell>
-                <TableCell className="py-2 text-[11px] text-muted-foreground font-mono whitespace-nowrap">{m.identifier}</TableCell>
-                <TableCell className="py-2 text-[11px] text-muted-foreground font-mono max-w-[240px]">
-                  <div className="flex items-center gap-1 min-w-0">
-                    <Link2 className="w-3 h-3 shrink-0" />
-                    <span className="truncate" title={m.endpoint}>{m.endpoint}</span>
-                  </div>
-                </TableCell>
-                <TableCell className="py-2 whitespace-nowrap">
-                  <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono font-normal">
-                    {typeLabel(m.type)}
-                  </Badge>
-                </TableCell>
-                <TableCell className="py-2 whitespace-nowrap">
-                  {m.requiresCredential ? (
-                    <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-0 text-[10px] gap-1"><KeyRound className="w-3 h-3" />已配置</Badge>
-                  ) : (
-                    <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0 text-[10px] gap-1"><ShieldCheck className="w-3 h-3" />免凭据</Badge>
-                  )}
-                </TableCell>
-                <TableCell className="py-2 text-[11px] text-muted-foreground whitespace-nowrap">{m.createdAt}</TableCell>
-              </TableRow>
-            ))}
+                  </TableCell>
+                  <TableCell className="py-2 text-[11px] text-muted-foreground font-mono whitespace-nowrap">{m.identifier}</TableCell>
+                  <TableCell className="py-2 text-[11px] text-muted-foreground font-mono max-w-[240px]">
+                    <div className="flex items-center gap-1 min-w-0">
+                      <Link2 className="w-3 h-3 shrink-0" />
+                      <span className="truncate" title={m.endpoint}>{m.endpoint}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-2 whitespace-nowrap">
+                    <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono font-normal">
+                      {typeLabel(m.type)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="py-2 text-[11px] text-muted-foreground whitespace-nowrap">{m.createdAt}</TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>

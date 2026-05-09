@@ -117,11 +117,11 @@ const ProjectAgents = () => {
       <div className="max-w-[1200px] mx-auto px-6 py-6 animate-fade-in">
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
-          <h1 className="text-lg font-semibold text-primary">项目管理</h1>
+          <h1 className="text-lg font-semibold text-primary">作品管理</h1>
           <div className="flex items-center gap-2">
             <Button size="sm" className="gap-1.5 h-8 text-xs" onClick={() => navigate("/create")}>
               <Plus className="w-3.5 h-3.5" />
-              创建应用
+              创建作品
             </Button>
           </div>
         </div>
