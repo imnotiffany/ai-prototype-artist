@@ -58,11 +58,11 @@ const VaultPage = () => {
   const [testingId, setTestingId] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<Record<string, "ok" | "fail">>({});
 
-  // 凭据配置子弹窗
-  const [credTarget, setCredTarget] = useState<{ id: string; name: string; provider?: string; deployment?: string } | null>(null);
-  const [credToken, setCredToken] = useState("");
+  // 字段锁定（来自 MCP 广场添加时，地址/名称/标识不可改）
+  const [locked, setLocked] = useState(false);
 
   // 手动创建表单
+  const [mcpType, setMcpType] = useState<McpType>("http");
   const [endpoint, setEndpoint] = useState("");
   const [name, setName] = useState("");
   const [identifier, setIdentifier] = useState("");
@@ -72,6 +72,10 @@ const VaultPage = () => {
   const [tab, setTab] = useState<"headers" | "config">("headers");
   const [createMode, setCreateMode] = useState<"market" | "manual">("market");
   const [marketSearch, setMarketSearch] = useState("");
+  // Studio 专用
+  const [stdioCommand, setStdioCommand] = useState("npx");
+  const [stdioArgs, setStdioArgs] = useState("");
+  const [envVars, setEnvVars] = useState<{ key: string; value: string }[]>([]);
 
   // 市场列表 = 所有需凭据的 MCP
   const marketList = useMemo(() => {
@@ -84,6 +88,8 @@ const VaultPage = () => {
   const reset = () => {
     setEndpoint(""); setName(""); setIdentifier("");
     setHeaders([]); setTimeoutVal("30"); setSseTimeout("300"); setTab("headers");
+    setMcpType("http"); setStdioCommand("npx"); setStdioArgs(""); setEnvVars([]);
+    setLocked(false);
   };
 
   const linkedAgents = (mcpName: string) =>
