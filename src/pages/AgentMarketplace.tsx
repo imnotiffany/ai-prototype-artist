@@ -174,35 +174,29 @@ const AgentMarketplace = () => {
                     <ChevronDown className="w-3 h-3" />
                   </button>
                 </PopoverTrigger>
-                <PopoverContent className="p-0 w-[480px]" align="end">
+                <PopoverContent className="p-0 w-56" align="end">
                   <Command>
-                    <CommandInput placeholder="搜索分类…" className="h-9 text-xs" />
-                    <CommandList className="max-h-[320px]">
+                    <CommandInput placeholder="搜索分类…" className="h-8 text-xs" />
+                    <CommandList className="max-h-[280px]">
                       <CommandEmpty className="py-4 text-center text-xs text-muted-foreground">未找到分类</CommandEmpty>
-                      <div className="p-2">
-                        <div className="grid grid-cols-3 gap-1.5">
-                          {ranked.map((cat) => {
-                            const active = activeCategory === cat;
-                            return (
-                              <CommandItem
-                                key={cat}
-                                value={cat}
-                                onSelect={() => {
-                                  setActiveCategory(active ? null : cat);
-                                  setCatPopOpen(false);
-                                }}
-                                className={`text-xs justify-center px-2 py-1.5 rounded-md border cursor-pointer ${
-                                  active
-                                    ? "bg-primary/10 text-primary border-primary/30 font-medium"
-                                    : "border-border text-foreground hover:bg-muted"
-                                }`}
-                              >
-                                <span className="truncate">{cat}</span>
-                              </CommandItem>
-                            );
-                          })}
-                        </div>
-                      </div>
+                      {ranked.map((cat) => {
+                        const active = activeCategory === cat;
+                        return (
+                          <CommandItem
+                            key={cat}
+                            value={cat}
+                            onSelect={() => {
+                              setActiveCategory(active ? null : cat);
+                              setCatPopOpen(false);
+                            }}
+                            className={`text-xs px-2.5 py-1.5 cursor-pointer ${
+                              active ? "text-primary font-medium" : "text-foreground"
+                            }`}
+                          >
+                            {cat}
+                          </CommandItem>
+                        );
+                      })}
                     </CommandList>
                   </Command>
                 </PopoverContent>
@@ -239,7 +233,7 @@ const AgentMarketplace = () => {
                   onClick={() => setSortBy("downloads")}
                   className={`px-2 py-0.5 rounded ${sortBy === "downloads" ? "text-primary font-medium" : "hover:text-foreground"}`}
                 >
-                  使用量
+                  最热
                 </button>
               </div>
             </div>
