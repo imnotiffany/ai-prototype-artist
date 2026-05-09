@@ -442,10 +442,7 @@ const AgentDetail = () => {
               </div>
             )}
 
-            <div className="flex items-center justify-between gap-3 px-1">
-              <p className="text-[11px] text-muted-foreground">
-                名称、描述等基本信息请通过页面右上角的「编辑基本信息」修改。以下配置变更需保存后生效。
-              </p>
+            <div className="flex items-center justify-end gap-3 px-1">
               <div className="inline-flex items-center rounded-md border border-border bg-muted/40 p-0.5 shrink-0">
                 <button
                   onClick={() => setConfigView("form")}
