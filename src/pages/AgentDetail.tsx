@@ -361,6 +361,23 @@ const AgentDetail = () => {
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
+          {isDirty ? (
+            <div className="inline-flex items-center gap-1.5 h-8 pl-2 pr-1 rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-950/40">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+              <span className="text-[11px] text-amber-800 dark:text-amber-200">未保存修改</span>
+              <Button size="sm" variant="ghost" className="h-6 px-2 text-[11px] text-amber-900 hover:text-amber-900 hover:bg-amber-100/80 dark:text-amber-200" onClick={handleRevert}>
+                <RotateCcw className="w-3 h-3 mr-1" />撤销
+              </Button>
+              <Button size="sm" className="h-6 px-2 text-[11px] gap-1 bg-amber-600 hover:bg-amber-700 text-white" onClick={handleSave}>
+                <Save className="w-3 h-3" />保存为 {nextVersion}
+              </Button>
+            </div>
+          ) : justSavedVersion ? (
+            <div className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md border border-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 animate-fade-in">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="text-[11px] text-emerald-800 dark:text-emerald-200">已保存为 {justSavedVersion}</span>
+            </div>
+          ) : null}
           <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={openEditInfo}>
             <Pencil className="w-3.5 h-3.5" />编辑基本信息
           </Button>
