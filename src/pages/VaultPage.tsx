@@ -366,16 +366,30 @@ const VaultPage = () => {
             <div>
               <Label className="text-[11px] font-medium">类型</Label>
               <p className="text-[10px] text-muted-foreground mt-0.5">不同类型对应不同的接入与配置格式</p>
-              <Select value={mcpType} onValueChange={(v) => setMcpType(v as McpType)}>
-                <SelectTrigger className="mt-1 h-8 text-xs bg-muted/30">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="studio" className="text-xs">Studio（本地命令）</SelectItem>
-                  <SelectItem value="sse" className="text-xs">SSE（Server-Sent Events）</SelectItem>
-                  <SelectItem value="http" className="text-xs">Streamable HTTP</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="mt-1.5 flex items-center gap-5">
+                {([
+                  { v: "studio", label: "STDIO" },
+                  { v: "sse", label: "SSE" },
+                  { v: "http", label: "StreamableHTTP" },
+                ] as { v: McpType; label: string }[]).map((opt) => {
+                  const active = mcpType === opt.v;
+                  return (
+                    <label key={opt.v} className="flex items-center gap-1.5 cursor-pointer text-xs">
+                      <span className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-colors ${active ? "border-primary" : "border-muted-foreground/40"}`}>
+                        {active && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
+                      </span>
+                      <input
+                        type="radio"
+                        name="mcp-type"
+                        className="sr-only"
+                        checked={active}
+                        onChange={() => setMcpType(opt.v)}
+                      />
+                      <span className={active ? "text-foreground" : "text-muted-foreground"}>{opt.label}</span>
+                    </label>
+                  );
+                })}
+              </div>
             </div>
 
             {mcpType !== "studio" && (
