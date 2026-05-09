@@ -151,19 +151,6 @@ export const PublishAgentDialog = ({ open, onOpenChange, agentName, defaultScope
             </RadioGroup>
           </div>
 
-          {/* Allow copy */}
-          <div>
-            <label className="block text-sm text-foreground mb-2">允许他人复制</label>
-            <Switch
-              checked={allowCopy}
-              onCheckedChange={setAllowCopy}
-              disabled={scope !== "marketplace"}
-            />
-            <p className="text-xs text-muted-foreground mt-2">
-              开启后，其他用户可以将此{noun}复制到自己的项目中
-            </p>
-          </div>
-
           {/* App Icon */}
           <div>
             <RequiredLabel>{noun}图标</RequiredLabel>
