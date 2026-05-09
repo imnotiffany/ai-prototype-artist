@@ -124,6 +124,15 @@ const CreateAgentManualPage = () => {
   const [fsSecretVisible, setFsSecretVisible] = useState(false);
   const [fsConnected, setFsConnected] = useState(false);
 
+  // Agent Hub publishing (optional)
+  const [hubEnabled, setHubEnabled] = useState(false);
+  const [hubProject, setHubProject] = useState("");
+  const [hubVisibility, setHubVisibility] = useState<"team" | "org" | "public">("team");
+  const [hubConnected, setHubConnected] = useState(false);
+
+  // Controlled tab (so we can jump users between steps)
+  const [currentTab, setCurrentTab] = useState("capability");
+
   // Debug — three streams: assistant chat (left), agent run (right), runtime logs (right bottom)
   type PromptSuggestion = { id: string; addition: string; summaryNote: string; status: "pending" | "adopted" | "rejected" };
   type ChatMsg = { role: "user" | "assistant"; content: string; suggestion?: PromptSuggestion };
@@ -135,6 +144,12 @@ const CreateAgentManualPage = () => {
   const [runMessages, setRunMessages] = useState<RunMsg[]>([]);
   const [debugRunning, setDebugRunning] = useState(false);
   const [voiceRecording, setVoiceRecording] = useState(false);
+
+  // Mandatory debug gating
+  const [debugPassed, setDebugPassed] = useState(false);
+  const [debugAttempted, setDebugAttempted] = useState(false);
+  const [debugLastError, setDebugLastError] = useState(false);
+
 
   // Track all changes auto-applied during debugging — surfaced at save time
   type DebugChange = { ts: string; summary: string; field: "prompt" | "binding" | "model" | "credential" };
@@ -220,6 +235,8 @@ const CreateAgentManualPage = () => {
     setRunMessages((m) => [...m, { role: "user", content: text }]);
     setDebugInput("");
     setDebugRunning(true);
+    setDebugAttempted(true);
+    setDebugLastError(false);
 
     const tool = selMCPs[0] || selSkills[0] || "内置推理";
     pushLog("info", `[session] 接收用户输入`, `text="${text}"`);
@@ -244,6 +261,7 @@ const CreateAgentManualPage = () => {
       ]);
       pushLog("result", `[done] 推理完成 · 用时 698ms · tokens in=312 out=128`);
       setDebugRunning(false);
+      setDebugPassed(true);
       autoOptimizeAfterRun(text);
     }, 700);
   };
@@ -383,7 +401,35 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
     }, 800);
   };
 
+  // ── Step validation ──────────────────────────────────────────────
+  const capabilityComplete = selMCPs.length > 0 || selSkills.length > 0;
+  const promptComplete = systemPrompt.trim().length >= 20;
+  // 对外接入是可选的，但若启用了某项则必须完成连接
+  const channelsValid = (!fsConnected || (fsAppKey && fsAppSecret && fsRobotCode)) &&
+                        (!hubEnabled || hubConnected);
+  const debugComplete = debugPassed && !debugLastError;
+
+  const stepStatus = {
+    capability: capabilityComplete ? "done" : "todo",
+    prompt: capabilityComplete ? (promptComplete ? "done" : "todo") : "locked",
+    channels: capabilityComplete && promptComplete ? (channelsValid ? "done" : "warn") : "locked",
+    debug: capabilityComplete && promptComplete ? (debugComplete ? "done" : debugAttempted ? (debugLastError ? "warn" : "todo") : "todo") : "locked",
+  } as const;
+
+  const blockingReasons: { msg: string; jumpTo: string }[] = [];
+  if (!capabilityComplete) blockingReasons.push({ msg: "请至少绑定 1 个 MCP 或 Skill", jumpTo: "capability" });
+  if (!promptComplete) blockingReasons.push({ msg: "请完善系统提示词（不少于 20 字）", jumpTo: "prompt" });
+  if (!channelsValid) blockingReasons.push({ msg: "已启用的对外接入尚未完成连接，请补齐或关闭", jumpTo: "channels" });
+  if (!debugComplete) blockingReasons.push({ msg: debugLastError ? "上一次调试出现错误，请修复后重新调试" : "保存前必须在「调试」中完成至少一次成功运行", jumpTo: "debug" });
+  const canSave = blockingReasons.length === 0;
+
   const openPublish = () => {
+    if (!canSave) {
+      const first = blockingReasons[0];
+      toast({ title: "无法保存", description: first.msg, variant: "destructive" });
+      setCurrentTab(first.jumpTo);
+      return;
+    }
     handleAutoGenerateMeta();
     setPublishOpen(true);
   };
@@ -490,7 +536,13 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
             <FileCode className="w-3.5 h-3.5" />
             查看配置文档
           </Button>
-          <Button size="sm" className="h-8 text-xs gap-1.5" onClick={openPublish}>
+          <Button
+            size="sm"
+            className="h-8 text-xs gap-1.5"
+            onClick={openPublish}
+            disabled={!canSave}
+            title={canSave ? "保存为新版本" : blockingReasons[0]?.msg}
+          >
             <Save className="w-3.5 h-3.5" />
             保存
           </Button>
@@ -498,12 +550,93 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
       </div>
 
       <div className="max-w-6xl mx-auto px-6 py-5">
-        <Tabs defaultValue="capability">
+        {/* 步骤指引 */}
+        {(() => {
+          const steps: { key: string; label: string; sub: string }[] = [
+            { key: "capability", label: "1. 能力配置", sub: "选择模型 / MCP / Skill" },
+            { key: "prompt", label: "2. 系统提示词", sub: "定义角色与工作方式" },
+            { key: "channels", label: "3. 对外接入", sub: "丰声 NEXT / Agent Hub（可选）" },
+            { key: "debug", label: "4. 调试并保存", sub: "至少一次成功运行后才能保存" },
+          ];
+          return (
+            <div className="mb-4 rounded-lg border border-border bg-card p-3">
+              <div className="flex items-center gap-2 overflow-x-auto">
+                {steps.map((s, i) => {
+                  const status = (stepStatus as Record<string, string>)[s.key] ?? "todo";
+                  const active = currentTab === s.key;
+                  const dotCls =
+                    status === "done" ? "bg-emerald-500 text-white border-emerald-500" :
+                    status === "warn" ? "bg-amber-500 text-white border-amber-500" :
+                    status === "locked" ? "bg-muted text-muted-foreground border-border" :
+                    active ? "bg-primary text-primary-foreground border-primary" :
+                    "bg-background text-foreground border-border";
+                  const labelCls =
+                    status === "locked" ? "text-muted-foreground" :
+                    active ? "text-foreground font-medium" : "text-foreground";
+                  return (
+                    <div key={s.key} className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setCurrentTab(s.key)}
+                        disabled={status === "locked"}
+                        className="flex items-center gap-2 group"
+                      >
+                        <span className={`w-6 h-6 rounded-full border flex items-center justify-center text-[11px] ${dotCls}`}>
+                          {status === "done" ? <CheckCircle2 className="w-3.5 h-3.5" /> :
+                           status === "warn" ? <AlertTriangle className="w-3.5 h-3.5" /> :
+                           i + 1}
+                        </span>
+                        <div className="text-left">
+                          <div className={`text-[11px] leading-tight ${labelCls}`}>{s.label}</div>
+                          <div className="text-[10px] text-muted-foreground leading-tight">{s.sub}</div>
+                        </div>
+                      </button>
+                      {i < steps.length - 1 && <ArrowRight className="w-3 h-3 text-muted-foreground shrink-0" />}
+                    </div>
+                  );
+                })}
+              </div>
+              {!canSave && (
+                <div className="mt-3 pt-3 border-t border-border flex items-start gap-2">
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
+                  <div className="text-[11px] text-muted-foreground flex-1 min-w-0">
+                    <span className="text-foreground font-medium">保存前需完成以下事项：</span>
+                    <ul className="mt-1 space-y-0.5">
+                      {blockingReasons.map((r, i) => (
+                        <li key={i} className="flex items-center gap-1.5">
+                          <span className="w-1 h-1 rounded-full bg-amber-500" />
+                          <span>{r.msg}</span>
+                          <button onClick={() => setCurrentTab(r.jumpTo)} className="text-primary hover:underline ml-1">前往</button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
+        <Tabs value={currentTab} onValueChange={setCurrentTab}>
           <TabsList className="grid grid-cols-4 h-9">
-            <TabsTrigger value="capability" className="text-xs">能力配置</TabsTrigger>
-            <TabsTrigger value="prompt" className="text-xs">系统提示词</TabsTrigger>
-            <TabsTrigger value="fengsheng" className="text-xs gap-1.5">丰声 NEXT<span className="text-[10px] px-1 h-3.5 leading-[14px] rounded bg-muted text-muted-foreground font-normal">可选</span></TabsTrigger>
-            <TabsTrigger value="debug" className="text-xs">调试</TabsTrigger>
+            <TabsTrigger value="capability" className="text-xs gap-1.5">
+              能力配置
+              {stepStatus.capability === "done" && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}
+            </TabsTrigger>
+            <TabsTrigger value="prompt" className="text-xs gap-1.5">
+              系统提示词
+              {stepStatus.prompt === "done" && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}
+            </TabsTrigger>
+            <TabsTrigger value="channels" className="text-xs gap-1.5">
+              对外接入
+              <span className="text-[10px] px-1 h-3.5 leading-[14px] rounded bg-muted text-muted-foreground font-normal">可选</span>
+              {stepStatus.channels === "warn" && <AlertTriangle className="w-3 h-3 text-amber-500" />}
+            </TabsTrigger>
+            <TabsTrigger value="debug" className="text-xs gap-1.5">
+              调试
+              {stepStatus.debug === "done" && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}
+              {stepStatus.debug === "warn" && <AlertTriangle className="w-3 h-3 text-amber-500" />}
+            </TabsTrigger>
           </TabsList>
 
           {/* Capability: 基座模型 + MCP + Skill + Subagent */}
@@ -634,11 +767,95 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               )}
             </div>
 
+            <div className="flex justify-end">
+              <Button
+                size="sm"
+                className="h-8 text-xs gap-1.5"
+                disabled={!capabilityComplete}
+                onClick={() => setCurrentTab("prompt")}
+                title={capabilityComplete ? "下一步：系统提示词" : "请至少绑定 1 个 MCP 或 Skill"}
+              >
+                下一步：系统提示词 <ArrowRight className="w-3 h-3" />
+              </Button>
+            </div>
+
+          </TabsContent>
+
+          {/* Prompt */}
+          <TabsContent value="prompt" className="mt-4">
+            <div className="border border-border rounded-lg p-5 bg-card">
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div>
+                  <Label className="text-xs">系统提示词</Label>
+                  <p className="text-[10px] text-muted-foreground">定义智能体身份、行为约束和输出格式</p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs gap-1.5 border-primary/40 text-primary hover:bg-primary/10 hover:text-primary"
+                  onClick={handleAutoGeneratePrompt}
+                  disabled={generatingPrompt}
+                >
+                  {generatingPrompt ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand className="w-3 h-3" />}
+                  AI 自动生成
+                </Button>
+              </div>
+              <Textarea className="font-mono text-xs leading-relaxed" rows={18} value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)} />
+              <div className="flex items-center justify-between mt-2">
+                <p className="text-[10px] text-muted-foreground">
+                  {systemPrompt.length} 字符 · 将根据已绑定的 {selSkills.length} 个 Skill 与 {selMCPs.length} 个 MCP 生成
+                </p>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 text-xs gap-1"
+                  onClick={() => {
+                    if (systemPrompt.trim() && !window.confirm("将用提示词脚手架覆盖当前内容，是否继续？")) return;
+                    setSystemPrompt(promptScaffold);
+                    toast({
+                      title: "已导入提示词脚手架",
+                      description: "按段落把 < > 占位符替换为你 Agent 的实际信息",
+                    });
+                  }}
+                >
+                  <FileEdit className="w-3 h-3" />
+                  使用提示词脚手架
+                </Button>
+              </div>
+            </div>
+            <div className="flex justify-between mt-3">
+              <Button size="sm" variant="ghost" className="h-8 text-xs gap-1" onClick={() => setCurrentTab("capability")}>
+                <ArrowLeft className="w-3 h-3" /> 上一步
+              </Button>
+              <Button
+                size="sm"
+                className="h-8 text-xs gap-1.5"
+                disabled={!promptComplete}
+                onClick={() => setCurrentTab("channels")}
+                title={promptComplete ? "下一步：对外接入" : "请完善系统提示词（不少于 20 字）"}
+              >
+                下一步：对外接入 <ArrowRight className="w-3 h-3" />
+              </Button>
+            </div>
+          </TabsContent>
+
+          {/* 对外接入：子智能体 + 丰声 NEXT + Agent Hub */}
+          <TabsContent value="channels" className="mt-4 space-y-4">
+            <div className="border border-dashed border-border rounded-lg px-4 py-3 bg-muted/30 flex items-start gap-2.5">
+              <Info className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-medium">对外接入与协作（全部可选）</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+                  组合 <span className="font-medium">子智能体</span> 让主智能体调度其他 Agent 协同；接入 <span className="font-medium">丰声 NEXT</span> 发布为群聊机器人；发布到 <span className="font-medium">Agent Hub</span> 获得可视化运行监控。不需要可全部跳过，智能体仍可正常使用。
+                </p>
+              </div>
+            </div>
+
             {/* 子智能体绑定 */}
             <div className="border border-border rounded-lg p-5 bg-card">
               <div className="flex items-center justify-between mb-3">
                 <div>
-                  <Label className="text-xs">子智能体绑定</Label>
+                  <Label className="text-xs flex items-center gap-1.5"><Bot className="w-3.5 h-3.5 text-primary" />子智能体</Label>
                   <p className="text-[10px] text-muted-foreground mt-0.5">从智能体广场挑选已发布的智能体作为子智能体，主智能体可调度它们协同完成任务</p>
                 </div>
                 <CapabilityPickerDialog
@@ -739,7 +956,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               )}
             </div>
 
-            {/* 子智能体缺口配置 - 独立弹窗，避免在主表单堆叠 */}
+            {/* 子智能体缺口配置 - 独立弹窗 */}
             <Dialog open={subagentGapOpen} onOpenChange={setSubagentGapOpen}>
               <DialogContent className="max-w-lg">
                 <DialogHeader>
@@ -778,73 +995,17 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               </DialogContent>
             </Dialog>
 
-          </TabsContent>
-
-          {/* Prompt */}
-          <TabsContent value="prompt" className="mt-4">
-            <div className="border border-border rounded-lg p-5 bg-card">
-              <div className="flex items-start justify-between gap-3 mb-2">
-                <div>
-                  <Label className="text-xs">系统提示词</Label>
-                  <p className="text-[10px] text-muted-foreground">定义智能体身份、行为约束和输出格式</p>
+            {/* 丰声 NEXT 群聊机器人 */}
+            <div className="border border-border rounded-lg bg-card">
+              <div className="px-5 py-3 border-b border-border flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-xs font-semibold flex items-center gap-1.5">
+                    <MessageSquare className="w-3.5 h-3.5 text-primary" />
+                    丰声 NEXT 群聊机器人
+                    <Badge variant="outline" className="text-[10px] h-4 px-1.5 text-muted-foreground">可选</Badge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">把智能体接入丰声 NEXT 群聊（基于 Function Calling），成员 @ 机器人即可触发</p>
                 </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-7 text-xs gap-1.5 border-primary/40 text-primary hover:bg-primary/10 hover:text-primary"
-                  onClick={handleAutoGeneratePrompt}
-                  disabled={generatingPrompt}
-                >
-                  {generatingPrompt ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand className="w-3 h-3" />}
-                  AI 自动生成
-                </Button>
-              </div>
-              <Textarea className="font-mono text-xs leading-relaxed" rows={18} value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)} />
-              <div className="flex items-center justify-between mt-2">
-                <p className="text-[10px] text-muted-foreground">
-                  {systemPrompt.length} 字符 · 将根据已绑定的 {selSkills.length} 个 Skill 与 {selMCPs.length} 个 MCP 生成
-                </p>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 text-xs gap-1"
-                  onClick={() => {
-                    if (systemPrompt.trim() && !window.confirm("将用提示词脚手架覆盖当前内容，是否继续？")) return;
-                    setSystemPrompt(promptScaffold);
-                    toast({
-                      title: "已导入提示词脚手架",
-                      description: "按段落把 < > 占位符替换为你 Agent 的实际信息",
-                    });
-                  }}
-                >
-                  <FileEdit className="w-3 h-3" />
-                  使用提示词脚手架
-                </Button>
-              </div>
-            </div>
-          </TabsContent>
-
-          {/* FengSheng NEXT Bot */}
-          <TabsContent value="fengsheng" className="mt-4 space-y-4">
-            <div className="border border-dashed border-amber-300 rounded-lg px-4 py-3 bg-amber-50/50 dark:bg-amber-950/20 flex items-start gap-2.5">
-              <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs font-medium">丰声 NEXT 群聊机器人接入</span>
-                  <span className="text-[10px] px-1.5 h-4 leading-4 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">可选项</span>
-                </div>
-                <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
-                  仅在需要把智能体发布为群聊机器人（成员 @ 即可触发）时配置。不需要的话可直接跳过此栏目，智能体仍可正常使用。
-                </p>
-              </div>
-            </div>
-
-            <div className="border border-border rounded-lg p-5 bg-card space-y-4">
-              <div className="flex items-center justify-between">
-                <h4 className="text-xs font-semibold flex items-center gap-1.5">
-                  <KeyRound className="w-3.5 h-3.5" />
-                  应用凭证
-                </h4>
                 <Badge
                   variant="outline"
                   className={`text-[10px] gap-1 ${fsConnected ? "text-emerald-600 border-emerald-600/40 bg-emerald-500/10" : "text-muted-foreground"}`}
@@ -853,84 +1014,119 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   {fsConnected ? "已连接" : "未连接"}
                 </Badge>
               </div>
-
-              <div>
-                <Label className="text-xs">
-                  Client ID（AppKey） <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  className="mt-1.5 h-8 text-xs font-mono"
-                  placeholder="企业应用 AppKey"
-                  value={fsAppKey}
-                  onChange={(e) => setFsAppKey(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs">
-                  Client Secret（AppSecret） <span className="text-destructive">*</span>
-                </Label>
-                <div className="relative mt-1.5">
-                  <Input
-                    className="h-8 text-xs font-mono pr-9"
-                    type={fsSecretVisible ? "text" : "password"}
-                    placeholder="企业应用 AppSecret"
-                    value={fsAppSecret}
-                    onChange={(e) => setFsAppSecret(e.target.value)}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setFsSecretVisible(!fsSecretVisible)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
-                    {fsSecretVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                  </button>
+              <div className="p-5 space-y-3">
+                <div>
+                  <Label className="text-xs">Client ID（AppKey）</Label>
+                  <Input className="mt-1.5 h-8 text-xs font-mono" placeholder="企业应用 AppKey" value={fsAppKey} onChange={(e) => setFsAppKey(e.target.value)} />
                 </div>
-              </div>
-
-              <div>
-                <Label className="text-xs">
-                  Robot Code <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  className="mt-1.5 h-8 text-xs font-mono"
-                  placeholder="机器人编码"
-                  value={fsRobotCode}
-                  onChange={(e) => setFsRobotCode(e.target.value)}
-                />
-                <p className="text-[10px] text-muted-foreground mt-1.5">
-                  在丰声 NEXT 开发者后台「机器人管理」中获取，凭据将通过「凭据金库」加密存储
-                </p>
-              </div>
-
-              <div className="flex justify-end pt-1">
-                <Button
-                  size="sm"
-                  variant={fsConnected ? "outline" : "default"}
-                  className="h-8 text-xs gap-1.5"
-                  onClick={() => {
-                    if (!fsAppKey || !fsAppSecret || !fsRobotCode) {
-                      toast({ title: "请先填写完整的应用凭证", variant: "destructive" });
-                      return;
-                    }
-                    setFsConnected(true);
-                    toast({ title: "丰声 NEXT 机器人已连接", description: `Robot ${fsRobotCode}` });
-                  }}
-                >
-                  {fsConnected ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Link2 className="w-3.5 h-3.5" />}
-                  {fsConnected ? "已连接" : "连接"}
-                </Button>
+                <div>
+                  <Label className="text-xs">Client Secret（AppSecret）</Label>
+                  <div className="relative mt-1.5">
+                    <Input className="h-8 text-xs font-mono pr-9" type={fsSecretVisible ? "text" : "password"} placeholder="企业应用 AppSecret" value={fsAppSecret} onChange={(e) => setFsAppSecret(e.target.value)} />
+                    <button type="button" onClick={() => setFsSecretVisible(!fsSecretVisible)} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                      {fsSecretVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs">Robot Code</Label>
+                  <Input className="mt-1.5 h-8 text-xs font-mono" placeholder="机器人编码" value={fsRobotCode} onChange={(e) => setFsRobotCode(e.target.value)} />
+                </div>
+                <div className="flex justify-end pt-1">
+                  <Button
+                    size="sm"
+                    variant={fsConnected ? "outline" : "default"}
+                    className="h-8 text-xs gap-1.5"
+                    onClick={() => {
+                      if (!fsAppKey || !fsAppSecret || !fsRobotCode) {
+                        toast({ title: "请先填写完整的应用凭证", variant: "destructive" });
+                        return;
+                      }
+                      setFsConnected(true);
+                      toast({ title: "丰声 NEXT 机器人已连接", description: `Robot ${fsRobotCode}` });
+                    }}
+                  >
+                    {fsConnected ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Link2 className="w-3.5 h-3.5" />}
+                    {fsConnected ? "已连接" : "连接"}
+                  </Button>
+                </div>
               </div>
             </div>
 
-            <div className="border border-border rounded-lg p-5 bg-card space-y-3">
-              <h4 className="text-xs font-semibold">接入说明</h4>
-              <ol className="text-[11px] text-muted-foreground space-y-1.5 list-decimal pl-4 leading-relaxed">
-                <li>登录丰声 NEXT 开发者后台，创建企业内部应用并开通「机器人」能力</li>
-                <li>复制应用的 AppKey、AppSecret 与 Robot Code，粘贴至上方对应字段</li>
-                <li>点击「连接」校验凭证，校验通过后保存并发布智能体</li>
-                <li>在目标群聊中添加该机器人，即可通过 @ 机器人触发对话</li>
-              </ol>
+            {/* Agent Hub 发布 */}
+            <div className="border border-border rounded-lg bg-card">
+              <div className="px-5 py-3 border-b border-border flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-xs font-semibold flex items-center gap-1.5">
+                    <FolderKanban className="w-3.5 h-3.5 text-primary" />
+                    Agent Hub
+                    <Badge variant="outline" className="text-[10px] h-4 px-1.5 text-muted-foreground">可选</Badge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">发布到 Agent Hub，获得运行状态、调用次数、错误率等可视化监控面板</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch checked={hubEnabled} onCheckedChange={(v) => { setHubEnabled(v); if (!v) setHubConnected(false); }} />
+                  <Badge
+                    variant="outline"
+                    className={`text-[10px] gap-1 ${hubConnected ? "text-emerald-600 border-emerald-600/40 bg-emerald-500/10" : "text-muted-foreground"}`}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full ${hubConnected ? "bg-emerald-500" : "bg-muted-foreground/50"}`} />
+                    {hubConnected ? "已发布" : hubEnabled ? "未发布" : "未启用"}
+                  </Badge>
+                </div>
+              </div>
+              {hubEnabled && (
+                <div className="p-5 space-y-3">
+                  <div>
+                    <Label className="text-xs">所属项目空间</Label>
+                    <Input className="mt-1.5 h-8 text-xs" placeholder="例如：销售运营" value={hubProject} onChange={(e) => setHubProject(e.target.value)} />
+                  </div>
+                  <div>
+                    <Label className="text-xs">可见范围</Label>
+                    <Select value={hubVisibility} onValueChange={(v: "team" | "org" | "public") => setHubVisibility(v)}>
+                      <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="team" className="text-xs">仅团队成员可见</SelectItem>
+                        <SelectItem value="org" className="text-xs">组织内可见</SelectItem>
+                        <SelectItem value="public" className="text-xs">公开</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex justify-end pt-1">
+                    <Button
+                      size="sm"
+                      variant={hubConnected ? "outline" : "default"}
+                      className="h-8 text-xs gap-1.5"
+                      onClick={() => {
+                        if (!hubProject.trim()) {
+                          toast({ title: "请填写所属项目空间", variant: "destructive" });
+                          return;
+                        }
+                        setHubConnected(true);
+                        toast({ title: "已发布到 Agent Hub", description: `${hubProject} · ${hubVisibility}` });
+                      }}
+                    >
+                      {hubConnected ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Rocket className="w-3.5 h-3.5" />}
+                      {hubConnected ? "已发布" : "发布到 Agent Hub"}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-between mt-3">
+              <Button size="sm" variant="ghost" className="h-8 text-xs gap-1" onClick={() => setCurrentTab("prompt")}>
+                <ArrowLeft className="w-3 h-3" /> 上一步
+              </Button>
+              <Button
+                size="sm"
+                className="h-8 text-xs gap-1.5"
+                disabled={!channelsValid}
+                onClick={() => setCurrentTab("debug")}
+                title={channelsValid ? "下一步：调试" : "已启用的接入项尚未完成连接"}
+              >
+                下一步：调试 <ArrowRight className="w-3 h-3" />
+              </Button>
             </div>
           </TabsContent>
 
