@@ -464,38 +464,6 @@ const VaultPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* 配置凭据子弹窗 */}
-      <Dialog open={!!credTarget} onOpenChange={(o) => !o && setCredTarget(null)}>
-        <DialogContent className="max-w-[420px] p-5">
-          <DialogHeader className="space-y-1">
-            <DialogTitle className="text-sm flex items-center gap-1.5">
-              <KeyRound className="w-3.5 h-3.5 text-amber-600" />
-              配置凭据
-            </DialogTitle>
-            <DialogDescription className="text-[11px]">
-              为「{credTarget?.name}」填写访问凭据，配置完成后该 MCP 将进入管理列表，可在智能体拼装中直接选用
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div>
-              <Label className="text-[11px] font-medium">访问 Token</Label>
-              <p className="text-[10px] text-muted-foreground mt-0.5">由服务提供方颁发的 Bearer Token / API Key</p>
-              <Input
-                className="mt-1 h-8 text-xs bg-muted/30 font-mono"
-                type="password"
-                value={credToken}
-                onChange={(e) => setCredToken(e.target.value)}
-                placeholder="粘贴凭据"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setCredTarget(null)}>取消</Button>
-            <Button size="sm" className="h-8 text-xs" onClick={submitCredential} disabled={!credToken.trim()}>完成配置</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
