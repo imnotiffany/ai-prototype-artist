@@ -238,6 +238,12 @@ const AgentDetail = () => {
   };
   const vaultAvailableMcps = getActiveMCPs().filter((m) => isMcpAvailableInVault(m.name));
 
+  /** 智能体广场上、可作为子智能体被引用的 agent（排除当前智能体自身，避免循环） */
+  const marketplaceSubagents = useMemo(
+    () => mockAgents.filter((a) => a.kind === "agent" && a.publishScope === "marketplace" && a.id !== id),
+    [id]
+  );
+
   /* ── Config actions ── */
   const bumpPatch = (v: string) => {
     const m = v.replace(/^v/, "").split(".").map((n) => parseInt(n, 10) || 0);
