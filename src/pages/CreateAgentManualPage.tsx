@@ -971,9 +971,9 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
             <div className="border border-dashed border-border rounded-lg px-4 py-3 bg-muted/30 flex items-start gap-2.5">
               <Info className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-medium">对外接入与协作（全部可选）</p>
+                <p className="text-xs font-medium">对外接入（全部可选）</p>
                 <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
-                  组合 <span className="font-medium">子智能体</span> 让主智能体调度其他 Agent 协同；接入 <span className="font-medium">丰声 NEXT</span> 发布为群聊机器人；发布到 <span className="font-medium">Agent Hub</span> 获得可视化运行监控。不需要可全部跳过，智能体仍可正常使用。
+                  接入 <span className="font-medium">丰声 NEXT</span> 发布为群聊机器人；发布到 <span className="font-medium">Agent Hub</span> 获得可视化运行监控。不需要可全部跳过，智能体仍可正常使用。
                 </p>
               </div>
             </div>
