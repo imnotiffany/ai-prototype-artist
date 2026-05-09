@@ -250,8 +250,8 @@ const AgentDetail = () => {
   const vaultAvailableMcps = getActiveMCPs().filter((m) => isMcpAvailableInVault(m.name));
 
   /** 智能体广场上、可作为子智能体被引用的 agent（排除当前智能体自身，避免循环） */
-  const marketplaceSubagents = useMemo(
-    () => mockAgents.filter((a) => a.kind === "agent" && a.publishScope === "marketplace" && a.id !== id),
+  const projectSubagents = useMemo(
+    () => mockAgents.filter((a) => a.kind === "agent" && a.publishScope === "project" && a.id !== id),
     [id]
   );
 
@@ -676,11 +676,11 @@ fengsheng:
                     <Users className="w-3.5 h-3.5 text-primary" />子智能体
                   </h3>
                   <p className="text-[11px] text-muted-foreground mt-0.5">
-                    从智能体广场挑选已发布的智能体作为子智能体；它们继承的 Skill / MCP 会一并展示，未配置凭据的 MCP 需在「<button onClick={() => navigate("/vault")} className="text-primary hover:underline">MCP 管理</button>」中补齐
+                    从项目作品挑选已发布的智能体作为子智能体；它们继承的 Skill / MCP 会一并展示，未配置凭据的 MCP 需在「<button onClick={() => navigate("/vault")} className="text-primary hover:underline">MCP 管理</button>」中补齐
                   </p>
                 </div>
                 <CapabilityPickerDialog
-                  items={marketplaceSubagents.map((a) => ({ name: a.name, description: a.description, tags: a.category ? [a.category] : [] }))}
+                  items={projectSubagents.map((a) => ({ name: a.name, description: a.description, tags: a.category ? [a.category] : [] }))}
                   selected={selSubagents}
                   onToggle={(n) => setSelSubagents((prev) => prev.includes(n) ? prev.filter((x) => x !== n) : [...prev, n])}
                   icon={<Bot className="w-3.5 h-3.5" />}
@@ -694,7 +694,7 @@ fengsheng:
                   // 汇总所有子智能体里"未在 Vault 配置凭据"的 MCP
                   const allMissing = new Set<string>();
                   selSubagents.forEach((name) => {
-                    const sub = marketplaceSubagents.find((a) => a.name === name);
+                    const sub = projectSubagents.find((a) => a.name === name);
                     sub?.mcpServers.forEach((m) => { if (!isMcpAvailableInVault(m)) allMissing.add(m); });
                   });
                   if (allMissing.size === 0) return null;
@@ -714,10 +714,10 @@ fengsheng:
                 })()}
 
                 {selSubagents.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-4">尚未配置子智能体。点击右上角「添加子智能体」从广场选择。</p>
+                  <p className="text-xs text-muted-foreground text-center py-4">尚未配置子智能体。点击右上角「添加子智能体」从项目选择。</p>
                 ) : (
                   selSubagents.map((name) => {
-                    const sub = marketplaceSubagents.find((a) => a.name === name);
+                    const sub = projectSubagents.find((a) => a.name === name);
                     if (!sub) return (
                       <div key={name} className="border border-border rounded-md p-3 flex items-center justify-between">
                         <span className="text-xs flex items-center gap-1.5"><Bot className="w-3 h-3 text-primary" />{name}</span>
@@ -732,7 +732,7 @@ fengsheng:
                             <div className="flex items-center gap-1.5">
                               <Bot className="w-3.5 h-3.5 text-primary shrink-0" />
                               <span className="text-xs font-medium truncate">{sub.name}</span>
-                              <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-border">来自广场</Badge>
+                              <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-border">来自项目</Badge>
                             </div>
                             <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-relaxed">{sub.description}</p>
                           </div>
@@ -842,7 +842,7 @@ fengsheng:
                   {(() => {
                     const map = new Map<string, string[]>(); // mcp -> sub-agent names that need it
                     selSubagents.forEach((name) => {
-                      const sub = marketplaceSubagents.find((a) => a.name === name);
+                      const sub = projectSubagents.find((a) => a.name === name);
                       sub?.mcpServers.forEach((m) => {
                         if (!isMcpAvailableInVault(m)) {
                           map.set(m, [...(map.get(m) ?? []), name]);
