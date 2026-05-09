@@ -207,10 +207,10 @@ const AgentMarketplace = () => {
                   </Command>
                 </PopoverContent>
               </Popover>
-            )}
+            </div>
 
-            {/* Right cluster: sort + kind filter */}
-            <div className="ml-auto flex items-center gap-3 text-xs">
+            {/* Second row: kind filter (left) + sort (right) */}
+            <div className="flex items-center gap-3 text-xs">
               <div className="flex items-center gap-1 text-muted-foreground">
                 <button
                   onClick={() => setSortBy("latest")}
