@@ -886,8 +886,6 @@ fengsheng:
                   <TableHead>触发人</TableHead>
                   <TableHead>触发内容</TableHead>
                   <TableHead className="w-44">时间</TableHead>
-                  <TableHead className="w-24">耗时</TableHead>
-                  <TableHead className="w-24">状态</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -897,8 +895,6 @@ fengsheng:
                     <TableCell className="text-xs">{r.trigger}</TableCell>
                     <TableCell className="text-xs text-muted-foreground truncate max-w-[280px]">{r.prompt}</TableCell>
                     <TableCell className="text-xs font-mono text-muted-foreground">{r.startedAt}</TableCell>
-                    <TableCell className="text-xs font-mono">{r.duration}</TableCell>
-                    <TableCell>{statusBadge(r.status)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -921,8 +917,6 @@ fengsheng:
                     <>
                       <span>来源：{activeRun.source}</span>
                       <span>触发人：{activeRun.trigger}</span>
-                      <span>耗时：{activeRun.duration}</span>
-                      {statusBadge(activeRun.status)}
                     </>
                   )}
                 </div>
@@ -943,111 +937,6 @@ fengsheng:
             </SheetContent>
           </Sheet>
         </TabsContent>
-
-        {/* ───────── 版本 ───────── */}
-        <TabsContent value="versions" className="mt-4">
-          <div className="border border-border rounded-lg px-4 py-3 bg-muted/40 mb-4">
-            <p className="text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">关于版本</span> · 每次点击保存，都会自动生成一个新版本。可在此查看任意历史版本快照，或选择某个版本重新发布上线。
-            </p>
-          </div>
-          <div className="border border-border rounded-lg bg-card overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-28">版本号</TableHead>
-                  <TableHead>变更说明</TableHead>
-                  <TableHead className="w-24">提交人</TableHead>
-                  <TableHead className="w-40">提交时间</TableHead>
-                  <TableHead className="w-20">状态</TableHead>
-                  <TableHead className="w-40 text-right">操作</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {versions.map((v) => {
-                  const isPublished = v.current && agent.status === "published";
-                  return (
-                  <TableRow key={v.v} className="hover:bg-muted/30">
-                    <TableCell className="font-mono text-xs">{v.v}</TableCell>
-                    <TableCell className="text-xs">{v.note}</TableCell>
-                    <TableCell className="text-xs">{v.by}</TableCell>
-                    <TableCell className="text-xs font-mono text-muted-foreground">{v.at}</TableCell>
-                    <TableCell>
-                      {isPublished ? (
-                        <Badge variant="outline" className="text-[10px] h-5 px-1.5 border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30">已发布</Badge>
-                      ) : (
-                        <span className="text-[10px] text-muted-foreground">未发布</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1" onClick={() => setViewingVersion(v)}>
-                          <Eye className="w-3 h-3" />查看
-                        </Button>
-                        {!isPublished && (
-                          <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1" onClick={() => { handleRollback(v); setPublishOpen(true); }}>
-                            <Rocket className="w-3 h-3" />发布
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
-
-          {/* Version detail dialog */}
-          <Dialog open={!!viewingVersion} onOpenChange={(o) => !o && setViewingVersion(null)}>
-            <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
-              <DialogHeader>
-                <DialogTitle className="text-sm flex items-center gap-2">
-                  版本快照
-                  <span className="font-mono text-xs">{viewingVersion?.v}</span>
-                  {viewingVersion?.current && agent.status === "published" && (
-                    <Badge variant="outline" className="text-[10px] h-5 px-1.5 border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30">已发布</Badge>
-                  )}
-                </DialogTitle>
-              </DialogHeader>
-              {viewingVersion && (
-                <div className="overflow-auto space-y-3 -mx-1 px-1">
-                  <div className="border border-border rounded-md bg-muted/30 p-3 space-y-1.5">
-                    <div className="flex justify-between text-xs"><span className="text-muted-foreground">变更说明</span><span>{viewingVersion.note}</span></div>
-                    <div className="flex justify-between text-xs"><span className="text-muted-foreground">提交人</span><span>{viewingVersion.by}</span></div>
-                    <div className="flex justify-between text-xs"><span className="text-muted-foreground">提交时间</span><span className="font-mono">{viewingVersion.at}</span></div>
-                  </div>
-                  <div>
-                    <p className="text-[11px] text-muted-foreground mb-1.5">系统提示词（快照）</p>
-                    <pre className="text-[11px] font-mono leading-relaxed bg-muted/40 border border-border rounded-md p-3 whitespace-pre-wrap break-all max-h-60 overflow-auto">{systemPrompt || "（该版本未记录提示词）"}</pre>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <p className="text-[11px] text-muted-foreground mb-1.5">绑定 MCP</p>
-                      <div className="flex flex-wrap gap-1">
-                        {mcpBindings.length ? mcpBindings.map((b) => <Badge key={b.name} variant="secondary" className="text-[10px]">{b.name}</Badge>) : <span className="text-[11px] text-muted-foreground">无</span>}
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-[11px] text-muted-foreground mb-1.5">绑定 Skill</p>
-                      <div className="flex flex-wrap gap-1">
-                        {selSkills.length ? selSkills.map((s) => <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>) : <span className="text-[11px] text-muted-foreground">无</span>}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-              <DialogFooter>
-                <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setViewingVersion(null)}>关闭</Button>
-                {viewingVersion && !(viewingVersion.current && agent.status === "published") && (
-                  <Button size="sm" className="h-8 text-xs gap-1" onClick={() => { handleRollback(viewingVersion); setViewingVersion(null); setPublishOpen(true); }}>
-                    <Rocket className="w-3 h-3" />发布此版本
-                  </Button>
-                )}
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </TabsContent>
       </Tabs>
 
       {/* Edit basic info dialog */}
@@ -1060,7 +949,7 @@ fengsheng:
           </DialogHeader>
           <div className="space-y-3 py-1">
             <p className="text-[11px] text-muted-foreground">
-              名称与描述是展示给使用者的「门面」，调整这些不会影响智能体行为，因此不会产生新版本。
+              名称与描述是展示给使用者的「门面」，调整这些不会影响智能体行为。
             </p>
             <div>
               <Label className="text-xs">名称</Label>
@@ -1083,7 +972,6 @@ fengsheng:
         open={publishOpen}
         onOpenChange={setPublishOpen}
         agentName={name}
-        versions={versions}
         kind={agent.kind}
       />
     </div>
