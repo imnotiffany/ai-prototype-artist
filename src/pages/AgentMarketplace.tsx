@@ -233,7 +233,7 @@ const AgentMarketplace = () => {
                   onClick={() => setSortBy("downloads")}
                   className={`px-2 py-0.5 rounded ${sortBy === "downloads" ? "text-primary font-medium" : "hover:text-foreground"}`}
                 >
-                  使用量
+                  最热
                 </button>
               </div>
             </div>
