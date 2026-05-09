@@ -258,7 +258,7 @@ export const mockAgents: Agent[] = [
   {
     id: "4", name: "运维监控助手", avatar: "🖥️",
     description: "自动化运维监控智能体，实时分析系统日志与指标，自动告警并给出修复建议",
-    category: "自动运维", tags: ["自动运维", "监控", "告警"],
+    category: "运维支持", tags: ["自动运维", "监控", "告警"],
     platform: "基础架构部", author: "赵六", authorId: "01234570",
     updatedAt: "2026-04-12", downloads: 87,
     skills: ["Log Analyzer", "Alert Manager"], mcpServers: ["智水-MCP服务", "丰景台"],
