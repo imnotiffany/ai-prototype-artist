@@ -48,7 +48,7 @@ export const CapabilityPickerDialog = ({
 }: Props) => {
   const isMcp = label === "MCP";
   const isSkill = label === "Skill";
-  const hasSkillScopes = isSkill && items.some((i) => i.scope);
+  const hasScopes = !isMcp && items.some((i) => i.scope);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [skillScope, setSkillScope] = useState<"market" | "project">("market");
@@ -73,11 +73,11 @@ export const CapabilityPickerDialog = ({
     if (!isSkill) return [] as string[];
     const set = new Set<string>();
     items.forEach((it) => {
-      if (hasSkillScopes && (it.scope ?? "market") !== skillScope) return;
+      if (hasScopes && (it.scope ?? "market") !== skillScope) return;
       (it.tags ?? []).forEach((t) => set.add(t));
     });
     return Array.from(set).sort();
-  }, [isSkill, items, hasSkillScopes, skillScope]);
+  }, [isSkill, items, hasScopes, skillScope]);
 
   // 切换 scope 时若当前标签不在新范围内，重置
   useEffect(() => {
@@ -86,7 +86,7 @@ export const CapabilityPickerDialog = ({
   }, [isSkill, availableTags, skillTag]);
 
   const filtered = items.filter((it) => {
-    if (hasSkillScopes && (it.scope ?? "market") !== skillScope) return false;
+    if (hasScopes && (it.scope ?? "market") !== skillScope) return false;
     if (isSkill && skillTag !== "__all__" && !(it.tags ?? []).includes(skillTag)) return false;
     const q = search.toLowerCase();
     return it.name.toLowerCase().includes(q) || it.description.toLowerCase().includes(q);
@@ -221,11 +221,11 @@ export const CapabilityPickerDialog = ({
             <Badge variant="secondary" className="text-[10px] font-normal">已选 {selected.length}</Badge>
           </DialogTitle>
         </DialogHeader>
-        {hasSkillScopes && (
+        {hasScopes && (
           <Tabs value={skillScope} onValueChange={(v) => setSkillScope(v as "market" | "project")}>
             <TabsList className="h-8">
-              <TabsTrigger value="market" className="text-xs h-6 px-3">市场 Skill <span className="ml-1 text-muted-foreground">({marketCount})</span></TabsTrigger>
-              <TabsTrigger value="project" className="text-xs h-6 px-3">项目 Skill <span className="ml-1 text-muted-foreground">({projectCount})</span></TabsTrigger>
+              <TabsTrigger value="market" className="text-xs h-6 px-3">市场 {label} <span className="ml-1 text-muted-foreground">({marketCount})</span></TabsTrigger>
+              <TabsTrigger value="project" className="text-xs h-6 px-3">项目 {label} <span className="ml-1 text-muted-foreground">({projectCount})</span></TabsTrigger>
             </TabsList>
           </Tabs>
         )}
@@ -250,18 +250,7 @@ export const CapabilityPickerDialog = ({
               </SelectContent>
             </Select>
           )}
-          {hasSkillScopes && skillScope === "project" ? (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs shrink-0 gap-1"
-              onClick={() => window.open(skillUploadUrl, "_blank")}
-              title="跳转到项目 Skill 页面上传安装包"
-            >
-              <Upload className="w-3 h-3" />
-              上传 Skill 安装包
-            </Button>
-          ) : isMcp ? (
+          {isMcp ? (
             <Button asChild variant="ghost" size="sm" className="h-8 text-xs shrink-0">
               <Link to={mcpManageHref} onClick={() => setOpen(false)}>{marketLabel}</Link>
             </Button>
@@ -276,11 +265,6 @@ export const CapabilityPickerDialog = ({
             </Button>
           )}
         </div>
-        {hasSkillScopes && skillScope === "project" && (
-          <p className="text-[10px] text-muted-foreground -mt-1">
-            项目 Skill 仅当前项目可见。如需上传新的 Skill 安装包，请前往「项目 Skill」页面。
-          </p>
-        )}
 
         <div className="overflow-auto -mx-1 px-1 space-y-3">
           {/* 可选区：免凭据 + 已配置 */}

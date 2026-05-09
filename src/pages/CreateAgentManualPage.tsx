@@ -62,7 +62,15 @@ const promptScaffold = `# 角色与目标
 
 const skills = getActiveSkills();
 const mcps = getActiveMCPs();
-const subagents = mockAgents.filter((a) => a.kind === "agent" && a.publishScope === "marketplace");
+const subagents = mockAgents
+  .filter((a) => a.kind === "agent" && (a.publishScope === "marketplace" || a.status === "project"))
+  .map((a) => ({
+    name: a.name,
+    description: a.description,
+    skills: a.skills,
+    mcpServers: a.mcpServers,
+    scope: (a.publishScope === "marketplace" ? "market" : "project") as "market" | "project",
+  }));
 
 const CreateAgentManualPage = () => {
   const navigate = useNavigate();
@@ -646,7 +654,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 <CapabilityPickerDialog items={mcps} selected={selMCPs} onToggle={(n) => toggle(selMCPs, setSelMCPs, n)} icon={<Server className="w-3.5 h-3.5" />} label="MCP" marketLink="/" deployBadge={(n) => mcps.find((m) => m.name === n)?.deployment ?? "云端"} trigger={<Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0"><Plus className="w-3 h-3" />添加 MCP</Button>} />
               </div>
               {selMCPs.length === 0 ? null : (
-                <div className="space-y-2">
+                <div className="flex flex-wrap gap-2">
                   {selMCPs.map((mcpName) => {
                     const mcpMeta = mcps.find((m) => m.name === mcpName);
                     const needsCred = !!mcpMeta?.requiresCredential;
@@ -654,48 +662,45 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                     const current = mcpCredentialMap[mcpName] ?? (creds.length === 1 ? creds[0].id : "");
                     const credMissing = needsCred && !current;
                     return (
-                      <div key={mcpName} className={`border rounded-md p-3 space-y-2 ${credMissing ? "border-amber-300 bg-amber-50/40 dark:bg-amber-950/20" : "border-border"}`}>
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-medium flex items-center gap-1.5">
-                            <Server className="w-3 h-3 text-primary" />{mcpName}
-                            {!needsCred && (
-                              <Badge variant="outline" className="border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30 text-[10px] h-4 px-1.5">免凭据</Badge>
-                            )}
-                            {credMissing && (
-                              <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-0 text-[10px] h-4 gap-1">
-                                <AlertTriangle className="w-2.5 h-2.5" />未绑定凭据
-                              </Badge>
-                            )}
-                          </span>
-                          <button onClick={() => toggle(selMCPs, setSelMCPs, mcpName)} className="text-muted-foreground hover:text-destructive p-1" title="移除">
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                      <div key={mcpName} className={`inline-flex items-center gap-1.5 rounded-md border pl-2 pr-1 py-1 text-xs ${credMissing ? "border-amber-300 bg-amber-50/40 dark:bg-amber-950/20" : "border-border bg-card"}`}>
+                        <Server className="w-3 h-3 text-primary shrink-0" />
+                        <span className="font-medium max-w-[140px] truncate">{mcpName}</span>
                         {needsCred && (
-                          <div className="flex items-center gap-2">
-                            <Label className="text-[11px] text-muted-foreground shrink-0">凭据</Label>
-                            {creds.length === 0 ? (
-                              <>
-                                <span className="text-[11px] text-amber-600 dark:text-amber-500 flex-1">该 MCP 暂无可用凭据</span>
-                                <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => navigate("/vault")}>
-                                  前往凭据管理 <ExternalLink className="w-3 h-3" />
-                                </Button>
-                              </>
-                            ) : (
-                              <>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <button className={`inline-flex items-center gap-0.5 text-[10px] px-1 py-0.5 rounded ${credMissing ? "text-amber-700 hover:bg-amber-100" : "text-emerald-700 hover:bg-emerald-100"}`} title="凭据">
+                                {credMissing ? <AlertTriangle className="w-2.5 h-2.5" /> : <KeyRound className="w-2.5 h-2.5" />}
+                                {credMissing ? "未绑定" : "已绑定"}
+                              </button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-64 p-3" align="start">
+                              <Label className="text-[11px] text-muted-foreground">选择凭据</Label>
+                              {creds.length === 0 ? (
+                                <div className="mt-2 space-y-2">
+                                  <p className="text-[11px] text-amber-600">该 MCP 暂无可用凭据</p>
+                                  <Button size="sm" variant="outline" className="h-7 text-xs gap-1 w-full" onClick={() => navigate("/vault")}>
+                                    前往凭据管理 <ExternalLink className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                              ) : (
                                 <Select value={current} onValueChange={(v) => setMcpCredentialMap({ ...mcpCredentialMap, [mcpName]: v })}>
-                                  <SelectTrigger className="h-7 text-xs"><SelectValue placeholder="选择凭据" /></SelectTrigger>
+                                  <SelectTrigger className="h-7 text-xs mt-1.5"><SelectValue placeholder="选择凭据" /></SelectTrigger>
                                   <SelectContent>
                                     {creds.map((c) => (
-                                      <SelectItem key={c.id} value={c.id} className="text-xs">{c.name} <span className="text-muted-foreground ml-1">({c.type})</span></SelectItem>
+                                      <SelectItem key={c.id} value={c.id} className="text-xs">{c.name}</SelectItem>
                                     ))}
                                   </SelectContent>
                                 </Select>
-                                <Button size="sm" variant="ghost" className="h-7 text-[10px]" onClick={() => navigate("/vault")}>凭据管理</Button>
-                              </>
-                            )}
-                          </div>
+                              )}
+                            </PopoverContent>
+                          </Popover>
                         )}
+                        {!needsCred && (
+                          <Badge variant="outline" className="border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30 text-[10px] h-4 px-1">免凭据</Badge>
+                        )}
+                        <button onClick={() => toggle(selMCPs, setSelMCPs, mcpName)} className="text-muted-foreground hover:text-destructive p-0.5" title="移除">
+                          <X className="w-3 h-3" />
+                        </button>
                       </div>
                     );
                   })}
@@ -713,25 +718,18 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 <CapabilityPickerDialog items={skills} selected={selSkills} onToggle={(n) => toggle(selSkills, setSelSkills, n)} icon={<Zap className="w-3.5 h-3.5" />} label="Skill" marketLink="/" trigger={<Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0"><Plus className="w-3 h-3" />添加 Skill</Button>} />
               </div>
               {selSkills.length === 0 ? null : (
-                <div className="space-y-2">
+                <div className="flex flex-wrap gap-2">
                   {selSkills.map((s) => {
                     const meta = skills.find((x) => x.name === s);
                     return (
-                      <div key={s} className="border border-border rounded-md p-3 flex items-center justify-between gap-3">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5">
-                            <Zap className="w-3 h-3 text-primary shrink-0" />
-                            <span className="text-xs font-medium truncate">{s}</span>
-                            {meta?.scope === "project" && (
-                              <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-border">项目</Badge>
-                            )}
-                          </div>
-                          {meta?.description && (
-                            <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-relaxed">{meta.description}</p>
-                          )}
-                        </div>
-                        <button onClick={() => toggle(selSkills, setSelSkills, s)} className="text-muted-foreground hover:text-destructive p-1 shrink-0" title="移除">
-                          <X className="w-3.5 h-3.5" />
+                      <div key={s} className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card pl-2 pr-1 py-1 text-xs" title={meta?.description}>
+                        <Zap className="w-3 h-3 text-primary shrink-0" />
+                        <span className="font-medium max-w-[160px] truncate">{s}</span>
+                        {meta?.scope === "project" && (
+                          <Badge variant="outline" className="text-[10px] h-4 px-1 border-border">项目</Badge>
+                        )}
+                        <button onClick={() => toggle(selSkills, setSelSkills, s)} className="text-muted-foreground hover:text-destructive p-0.5" title="移除">
+                          <X className="w-3 h-3" />
                         </button>
                       </div>
                     );
@@ -748,7 +746,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   <p className="text-[10px] text-muted-foreground mt-0.5">从智能体广场挑选已发布的智能体作为子智能体，主智能体可调度它们协同完成任务（可选）</p>
                 </div>
                 <CapabilityPickerDialog
-                  items={subagents.map((a) => ({ name: a.name, description: a.description }))}
+                  items={subagents.map((a) => ({ name: a.name, description: a.description, scope: a.scope }))}
                   selected={selSubagents}
                   onToggle={(n) => toggle(selSubagents, setSelSubagents, n)}
                   icon={<Bot className="w-3.5 h-3.5" />}
@@ -779,63 +777,26 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 );
               })()}
               {selSubagents.length === 0 ? null : (
-                <div className="space-y-2">
+                <div className="flex flex-wrap gap-2">
                   {selSubagents.map((name) => {
                     const sub = subagents.find((a) => a.name === name);
-                    if (!sub) return (
-                      <div key={name} className="border border-border rounded-md p-3 flex items-center justify-between">
-                        <span className="text-xs flex items-center gap-1.5"><Bot className="w-3 h-3 text-primary" />{name}</span>
-                        <button onClick={() => toggle(selSubagents, setSelSubagents, name)} className="text-muted-foreground hover:text-destructive p-1"><X className="w-3.5 h-3.5" /></button>
-                      </div>
-                    );
-                    const missingMcps = sub.mcpServers.filter((m) => !isMcpAvailableInVault(m));
+                    const missingMcps = sub ? sub.mcpServers.filter((m) => !isMcpAvailableInVault(m)) : [];
+                    const hasMissing = missingMcps.length > 0;
                     return (
-                      <div key={name} className="border border-border rounded-md p-3 space-y-2">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-1.5">
-                              <Bot className="w-3.5 h-3.5 text-primary shrink-0" />
-                              <span className="text-xs font-medium truncate">{sub.name}</span>
-                              <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-border">来自广场</Badge>
-                            </div>
-                            <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-relaxed">{sub.description}</p>
-                          </div>
-                          <button onClick={() => toggle(selSubagents, setSelSubagents, name)} className="text-muted-foreground hover:text-destructive p-1 shrink-0" title="移除"><X className="w-3.5 h-3.5" /></button>
-                        </div>
-                        {(sub.skills.length > 0 || sub.mcpServers.length > 0) && (
-                          <div className="border-t border-border pt-2 space-y-1.5">
-                            {sub.mcpServers.length > 0 && (
-                              <div className="flex items-start gap-2 flex-wrap">
-                                <span className="text-[10px] text-muted-foreground shrink-0 mt-0.5">继承 MCP</span>
-                                {sub.mcpServers.map((m) => {
-                                  const ok = isMcpAvailableInVault(m);
-                                  return (
-                                    <Badge key={m} variant="outline" className={`text-[10px] h-4 px-1.5 gap-1 ${ok ? "border-emerald-300 text-emerald-700 bg-emerald-50/60" : "border-amber-300 text-amber-700 bg-amber-50/60"}`}>
-                                      <Server className="w-2.5 h-2.5" />{m}
-                                      {!ok && <AlertTriangle className="w-2.5 h-2.5" />}
-                                    </Badge>
-                                  );
-                                })}
-                              </div>
-                            )}
-                            {sub.skills.length > 0 && (
-                              <div className="flex items-start gap-2 flex-wrap">
-                                <span className="text-[10px] text-muted-foreground shrink-0 mt-0.5">继承 Skill</span>
-                                {sub.skills.map((s) => (
-                                  <Badge key={s} variant="outline" className="text-[10px] h-4 px-1.5 gap-1 border-border">
-                                    <Zap className="w-2.5 h-2.5" />{s}
-                                  </Badge>
-                                ))}
-                              </div>
-                            )}
-                            {missingMcps.length > 0 && (
-                              <p className="text-[10px] text-amber-700 dark:text-amber-400 flex items-center gap-1">
-                                <AlertTriangle className="w-2.5 h-2.5" />
-                                {missingMcps.length} 个 MCP 尚未配置凭据，需在 MCP 管理中补齐
-                              </p>
-                            )}
-                          </div>
+                      <div key={name} className={`inline-flex items-center gap-1.5 rounded-md border pl-2 pr-1 py-1 text-xs ${hasMissing ? "border-amber-300 bg-amber-50/40 dark:bg-amber-950/20" : "border-border bg-card"}`} title={sub?.description}>
+                        <Bot className="w-3 h-3 text-primary shrink-0" />
+                        <span className="font-medium max-w-[160px] truncate">{name}</span>
+                        {sub?.scope === "project" && (
+                          <Badge variant="outline" className="text-[10px] h-4 px-1 border-border">项目</Badge>
                         )}
+                        {hasMissing && (
+                          <span className="inline-flex items-center gap-0.5 text-[10px] text-amber-700">
+                            <AlertTriangle className="w-2.5 h-2.5" />{missingMcps.length} 个 MCP 缺凭据
+                          </span>
+                        )}
+                        <button onClick={() => toggle(selSubagents, setSelSubagents, name)} className="text-muted-foreground hover:text-destructive p-0.5" title="移除">
+                          <X className="w-3 h-3" />
+                        </button>
                       </div>
                     );
                   })}
@@ -1088,135 +1049,66 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              {/* Left: Debug Assistant */}
-              <div className="border border-border rounded-lg bg-card flex flex-col h-[clamp(380px,calc(100vh-260px),560px)]">
-                <div className="px-3 h-10 shrink-0 border-b border-border flex items-center gap-1.5">
-                  <Bot className="w-3.5 h-3.5 text-primary" />
-                  <span className="text-xs font-semibold">调试助手</span>
-                  <Badge variant="outline" className="text-[10px] h-4">AI</Badge>
-                </div>
-                <div className="flex-1 overflow-auto p-4 space-y-3">
-                  {assistantMessages.length === 0 && (
-                    <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground gap-2 px-4">
-                      <Bot className="w-7 h-7 opacity-30" />
-                      <p className="text-xs">在右侧发起一轮调试后，我会主动告诉你做了哪些优化</p>
-                      <p className="text-[10px] leading-relaxed">你也可以直接和我说："帮我修改提示词"、"补充某个能力的用途"</p>
-                    </div>
-                  )}
-                  {assistantMessages.map((msg, i) => (
-                    <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                      <div className={`max-w-[85%] rounded-lg px-3 py-2 text-xs whitespace-pre-wrap leading-relaxed ${
-                        msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
-                      }`}>
-                        {msg.content}
-                        {msg.suggestion && (
-                          <div className="mt-2 pt-2 border-t border-border/60 flex items-center gap-2">
-                            {msg.suggestion.status === "pending" && (
-                              <>
-                                <Button size="sm" className="h-6 text-[11px] px-2 gap-1" onClick={() => adoptSuggestion(msg.suggestion!)}>
-                                  <CheckCircle2 className="w-3 h-3" /> 采纳
-                                </Button>
-                                <Button size="sm" variant="ghost" className="h-6 text-[11px] px-2" onClick={() => rejectSuggestion(msg.suggestion!)}>
-                                  忽略
-                                </Button>
-                              </>
-                            )}
-                            {msg.suggestion.status === "adopted" && (
-                              <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600">
-                                <CheckCircle2 className="w-3 h-3" /> 已采纳
-                              </span>
-                            )}
-                            {msg.suggestion.status === "rejected" && (
-                              <span className="text-[11px] text-muted-foreground">已忽略</span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                  {assistantThinking && (
-                    <div className="flex justify-start">
-                      <AIStatusPill stages={["分析你的反馈", "调整提示词", "生成回复"]} />
-                    </div>
-                  )}
-                </div>
-                <div className="border-t border-border p-3 flex items-center gap-2">
-                  <Input
-                    className="h-8 text-xs"
-                    placeholder='告诉我要怎么调整，例如"帮我精简提示词"'
-                    value={assistantInput}
-                    onChange={(e) => setAssistantInput(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendAssistantMessage(); } }}
-                  />
-                  <Button size="sm" className="h-8 text-xs gap-1.5" onClick={sendAssistantMessage} disabled={assistantThinking || !assistantInput.trim()}>
-                    <Send className="w-3 h-3" /> 发送
-                  </Button>
-                </div>
+            <div className="border border-border rounded-lg bg-card flex flex-col h-[clamp(380px,calc(100vh-260px),560px)]">
+              <div className="px-3 h-10 shrink-0 border-b border-border flex items-center gap-1.5">
+                <Bot className="w-3.5 h-3.5 text-primary shrink-0" />
+                <span className="text-xs font-semibold shrink-0">智能体运行</span>
+                {debugRunning && <RunningIndicator />}
               </div>
-
-              {/* Right: Agent Run with transcript / debug toggle */}
-              <div className="border border-border rounded-lg bg-card flex flex-col h-[clamp(380px,calc(100vh-260px),560px)]">
-                <div className="px-3 h-10 shrink-0 border-b border-border flex items-center gap-1.5">
-                  <Bot className="w-3.5 h-3.5 text-primary shrink-0" />
-                  <span className="text-xs font-semibold shrink-0">智能体运行</span>
-                  {debugRunning && <RunningIndicator />}
-                </div>
-                <div className="flex-1 min-h-0">
-                  <RunDualView
-                    showTranscriptSearch={false}
-                    transcriptEvents={(() => {
-                      const evs: TranscriptEvent[] = [];
-                      runMessages.forEach((m, i) => {
-                        if (m.role === "user") evs.push({ id: `u${i}`, type: "user", content: m.content });
-                        else if (m.status === "error") evs.push({ id: `e${i}`, type: "error", message: m.content });
-                        else {
-                          if (m.tool) evs.push({
-                            id: `t${i}`, type: "tools",
-                            calls: [{ id: `c${i}`, kind: "mcp", name: m.tool, summary: "调用成功", status: "success" }],
-                          });
-                          evs.push({ id: `a${i}`, type: "agent", content: m.content });
-                        }
-                      });
-                      if (runMessages.length === 0) {
-                        evs.push({ id: "empty", type: "system", message: "输入示例任务即可开始调试" });
+              <div className="flex-1 min-h-0">
+                <RunDualView
+                  showTranscriptSearch={false}
+                  transcriptEvents={(() => {
+                    const evs: TranscriptEvent[] = [];
+                    runMessages.forEach((m, i) => {
+                      if (m.role === "user") evs.push({ id: `u${i}`, type: "user", content: m.content });
+                      else if (m.status === "error") evs.push({ id: `e${i}`, type: "error", message: m.content });
+                      else {
+                        if (m.tool) evs.push({
+                          id: `t${i}`, type: "tools",
+                          calls: [{ id: `c${i}`, kind: "mcp", name: m.tool, summary: "调用成功", status: "success" }],
+                        });
+                        evs.push({ id: `a${i}`, type: "agent", content: m.content });
                       }
-                      return evs;
-                    })()}
-                    debugEvents={debugLogs.map((l) => ({
-                      id: String(l.id),
-                      ts: l.ts,
-                      type: `log.${l.level}`,
-                      data: { message: l.message, ...(l.meta ? { meta: l.meta } : {}) },
-                    }))}
-                    debugMeta={[
-                      { label: "模型", value: model },
-                      { label: "事件数", value: String(debugLogs.length) },
-                    ]}
-                  />
-                </div>
-                <div className="border-t border-border p-3 flex items-center gap-2 shrink-0">
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant={voiceRecording ? "default" : "outline"}
-                    className={`h-8 w-8 shrink-0 ${voiceRecording ? "animate-pulse" : ""}`}
-                    onClick={toggleVoice}
-                    title={voiceRecording ? "结束语音输入" : "语音输入"}
-                  >
-                    {voiceRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
-                  </Button>
-                  <Input
-                    className="h-8 text-xs"
-                    placeholder={voiceRecording ? "正在录音…再次点击麦克风结束" : "输入测试任务，回车发送"}
-                    value={debugInput}
-                    onChange={(e) => setDebugInput(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); runDebug(); } }}
-                  />
-                  <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => runDebug()} disabled={debugRunning || !debugInput.trim()}>
-                    <Send className="w-3 h-3" /> 发送
-                  </Button>
-                </div>
+                    });
+                    if (runMessages.length === 0) {
+                      evs.push({ id: "empty", type: "system", message: "输入示例任务即可开始调试" });
+                    }
+                    return evs;
+                  })()}
+                  debugEvents={debugLogs.map((l) => ({
+                    id: String(l.id),
+                    ts: l.ts,
+                    type: `log.${l.level}`,
+                    data: { message: l.message, ...(l.meta ? { meta: l.meta } : {}) },
+                  }))}
+                  debugMeta={[
+                    { label: "模型", value: model },
+                    { label: "事件数", value: String(debugLogs.length) },
+                  ]}
+                />
+              </div>
+              <div className="border-t border-border p-3 flex items-center gap-2 shrink-0">
+                <Button
+                  type="button"
+                  size="icon"
+                  variant={voiceRecording ? "default" : "outline"}
+                  className={`h-8 w-8 shrink-0 ${voiceRecording ? "animate-pulse" : ""}`}
+                  onClick={toggleVoice}
+                  title={voiceRecording ? "结束语音输入" : "语音输入"}
+                >
+                  {voiceRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                </Button>
+                <Input
+                  className="h-8 text-xs"
+                  placeholder={voiceRecording ? "正在录音…再次点击麦克风结束" : "输入测试任务，回车发送"}
+                  value={debugInput}
+                  onChange={(e) => setDebugInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); runDebug(); } }}
+                />
+                <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => runDebug()} disabled={debugRunning || !debugInput.trim()}>
+                  <Send className="w-3 h-3" /> 发送
+                </Button>
               </div>
             </div>
           </TabsContent>
