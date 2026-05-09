@@ -714,10 +714,10 @@ fengsheng:
                 })()}
 
                 {selSubagents.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-4">尚未配置子智能体。点击右上角「添加子智能体」从广场选择。</p>
+                  <p className="text-xs text-muted-foreground text-center py-4">尚未配置子智能体。点击右上角「添加子智能体」从项目选择。</p>
                 ) : (
                   selSubagents.map((name) => {
-                    const sub = marketplaceSubagents.find((a) => a.name === name);
+                    const sub = projectSubagents.find((a) => a.name === name);
                     if (!sub) return (
                       <div key={name} className="border border-border rounded-md p-3 flex items-center justify-between">
                         <span className="text-xs flex items-center gap-1.5"><Bot className="w-3 h-3 text-primary" />{name}</span>
