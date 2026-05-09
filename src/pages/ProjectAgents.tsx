@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, RotateCcw, Rocket, Copy, Share2, ArrowDownToLine, Trash2 } from "lucide-react";
+import { Plus, RotateCcw, Rocket, Copy, Share2, ArrowDownToLine, Trash2, KeyRound, Eye, EyeOff, Copy as CopyIcon } from "lucide-react";
 import { mockAgents, type Agent } from "@/data/mockData";
 import { PublishAgentDialog } from "@/components/PublishAgentDialog";
 import { AgentRuntimeBadge, type AgentRuntimeStatus } from "@/components/AgentRuntimeBadge";
@@ -19,6 +19,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 
 const runtimeStatusFor = (id: string): AgentRuntimeStatus => {
@@ -83,11 +85,27 @@ const ProjectAgents = () => {
     setDeleteTarget(null);
   };
 
-  const mockVersionsFor = (a: Agent) => [
-    { v: "v0.0.3", at: "2026-04-25 14:02", note: "新增 丰景台数据查询v2", current: true },
-    { v: "v0.0.2", at: "2026-04-18 09:30", note: "调整 system prompt 风格" },
-    { v: "v0.0.1", at: "2026-04-10 16:45", note: "初始版本" },
-  ];
+  // API key application
+  const [apiKeyOpen, setApiKeyOpen] = useState(false);
+  const [apiKeyName, setApiKeyName] = useState("");
+  const [generatedKey, setGeneratedKey] = useState<string | null>(null);
+  const [keyVisible, setKeyVisible] = useState(false);
+
+  const handleApplyApiKey = () => {
+    if (!apiKeyName.trim()) {
+      toast({ title: "请填写 API Key 名称", variant: "destructive" });
+      return;
+    }
+    const key = "sk-" + Array.from({ length: 32 }, () => "abcdef0123456789"[Math.floor(Math.random() * 16)]).join("");
+    setGeneratedKey(key);
+  };
+
+  const closeApiKey = () => {
+    setApiKeyOpen(false);
+    setApiKeyName("");
+    setGeneratedKey(null);
+    setKeyVisible(false);
+  };
 
   const filtered = agents.filter((app) => {
     if (searchName && !app.name.toLowerCase().includes(searchName.toLowerCase())) return false;
