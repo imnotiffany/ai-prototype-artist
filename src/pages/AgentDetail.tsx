@@ -680,7 +680,7 @@ fengsheng:
                   </p>
                 </div>
                 <CapabilityPickerDialog
-                  items={marketplaceSubagents.map((a) => ({ name: a.name, description: a.description }))}
+                  items={marketplaceSubagents.map((a) => ({ name: a.name, description: a.description, tags: a.category ? [a.category] : [] }))}
                   selected={selSubagents}
                   onToggle={(n) => setSelSubagents((prev) => prev.includes(n) ? prev.filter((x) => x !== n) : [...prev, n])}
                   icon={<Bot className="w-3.5 h-3.5" />}
