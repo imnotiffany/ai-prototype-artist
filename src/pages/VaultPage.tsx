@@ -127,12 +127,18 @@ const VaultPage = () => {
     setCreateOpen(true);
   };
 
-  const canSave = endpoint.trim() && name.trim() && identifier.trim();
+  const canSave =
+    name.trim() && identifier.trim() &&
+    (mcpType === "studio" ? stdioCommand.trim() : endpoint.trim());
 
   const handleSave = () => {
-    if (!endpoint.trim()) return toast({ title: "请填写服务地址", variant: "destructive" });
     if (!name.trim()) return toast({ title: "请填写显示名称", variant: "destructive" });
     if (!identifier.trim()) return toast({ title: "请填写英文标识", variant: "destructive" });
+    if (mcpType === "studio") {
+      if (!stdioCommand.trim()) return toast({ title: "请填写启动命令", variant: "destructive" });
+    } else if (!endpoint.trim()) {
+      return toast({ title: "请填写服务地址", variant: "destructive" });
+    }
 
     if (editingId) {
       setCredMcps((arr) => arr.map((m) => m.id === editingId ? { ...m, endpoint, name, identifier } : m));
