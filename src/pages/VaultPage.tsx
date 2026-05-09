@@ -463,19 +463,28 @@ const VaultPage = () => {
             )}
 
             <TabsContent value="market" className="mt-0 space-y-3">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <div className="relative flex-1">
                   <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
                   <Input
-                    className="h-9 text-xs pl-8 bg-muted/30"
+                    className="h-8 text-xs pl-8 bg-muted/30"
                     placeholder="搜索 MCP 名称或功能描述"
                     value={marketSearch}
                     onChange={(e) => setMarketSearch(e.target.value)}
                   />
                 </div>
-                <button className="text-xs text-primary hover:underline whitespace-nowrap shrink-0">
-                  前往 MCP 管理
-                </button>
+                <Select value={marketTag} onValueChange={setMarketTag}>
+                  <SelectTrigger className="h-8 w-[130px] text-xs shrink-0 gap-1">
+                    <Tag className="w-3 h-3 text-muted-foreground" />
+                    <SelectValue placeholder="标签" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__all__" className="text-xs">全部标签</SelectItem>
+                    {marketTags.map((t) => (
+                      <SelectItem key={t} value={t} className="text-xs">{t}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="flex items-center gap-2 text-xs">
@@ -484,11 +493,11 @@ const VaultPage = () => {
                 <span className="text-muted-foreground">需凭据</span>
               </div>
 
-              <div className="max-h-[460px] overflow-auto -mx-1 px-1">
+              <div className="max-h-[400px] overflow-auto -mx-1 px-1">
                 {marketList.length === 0 ? (
                   <p className="text-center text-[11px] text-muted-foreground py-8">未找到匹配的 MCP</p>
                 ) : (
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2.5">
                     {marketList.map((it) => {
                       const done = isMcpConfigured(it.name);
                       return (
