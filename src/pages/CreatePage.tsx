@@ -94,27 +94,51 @@ const CreatePage = () => {
           {activeTab === "agent" && (
             <div className="p-4 space-y-3">
               <div className="grid grid-cols-2 gap-2.5">
-                <div className="relative text-left rounded-lg border border-dashed border-border bg-muted/30 p-3 opacity-70 cursor-not-allowed">
+                <button
+                  type="button"
+                  onClick={() => setAgentMode("auto")}
+                  className={`text-left rounded-lg border p-3 transition-colors ${
+                    agentMode === "auto"
+                      ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+                      : "border-border bg-card hover:border-primary/40"
+                  }`}
+                >
                   <div className="flex items-center gap-1.5 mb-1">
-                    <Wand className="w-3.5 h-3.5 text-muted-foreground" />
-                    <span className="text-xs font-medium text-muted-foreground">自动组装</span>
-                    <Badge variant="secondary" className="text-[10px] h-4 px-1.5 ml-auto">即将上线</Badge>
+                    <Wand className={`w-3.5 h-3.5 ${agentMode === "auto" ? "text-primary" : "text-muted-foreground"}`} />
+                    <span className="text-xs font-medium text-foreground">自动组装</span>
+                    <Badge variant="outline" className="text-[10px] h-4 px-1.5 ml-auto">推荐</Badge>
                   </div>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
                     输入需求一句话描述，AI 自动检索匹配 MCP / Skill / 子智能体 并生成智能体
                   </p>
-                </div>
-                <div className="text-left rounded-lg border border-primary bg-primary/5 ring-1 ring-primary/30 p-3">
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAgentMode("manual")}
+                  className={`text-left rounded-lg border p-3 transition-colors ${
+                    agentMode === "manual"
+                      ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+                      : "border-border bg-card hover:border-primary/40"
+                  }`}
+                >
                   <div className="flex items-center gap-1.5 mb-1">
-                    <SlidersHorizontal className="w-3.5 h-3.5 text-primary" />
+                    <SlidersHorizontal className={`w-3.5 h-3.5 ${agentMode === "manual" ? "text-primary" : "text-muted-foreground"}`} />
                     <span className="text-xs font-medium text-foreground">手动组装</span>
-                    <Badge variant="outline" className="text-[10px] h-4 px-1.5 ml-auto">当前可用</Badge>
                   </div>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
                     自行配置模型、提示词、MCP / Skill、子智能体，并对接至丰声 NEXT 机器人
                   </p>
-                </div>
+                </button>
               </div>
+              {agentMode === "auto" && (
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="描述你想要创建的智能体，例如：一个小红书爬虫助手"
+                  rows={3}
+                  className="w-full resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none leading-relaxed border-t border-border pt-3"
+                />
+              )}
             </div>
           )}
 
@@ -124,9 +148,17 @@ const CreatePage = () => {
               size="sm"
               className="gap-1.5 text-xs h-8 px-4"
               onClick={handleCreate}
-              disabled={activeTab === "agent" ? false : !description.trim()}
+              disabled={
+                activeTab === "agent"
+                  ? agentMode === "auto" && !description.trim()
+                  : !description.trim()
+              }
             >
-              {activeTab === "agent" ? "进入手动组装" : "立即创建"}
+              {activeTab === "agent"
+                ? agentMode === "auto"
+                  ? "立即生成"
+                  : "进入手动组装"
+                : "立即创建"}
               <ArrowRight className="w-3.5 h-3.5" />
             </Button>
           </div>
