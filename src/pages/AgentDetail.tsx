@@ -112,6 +112,7 @@ const AgentDetail = () => {
   const [subagentGapDialogOpen, setSubagentGapDialogOpen] = useState(false);
   const [configView, setConfigView] = useState<"form" | "code">("form");
   const [savedSnapshot, setSavedSnapshot] = useState(initialSnapshot);
+  const [justSavedVersion, setJustSavedVersion] = useState<string | null>(null);
 
   const [versions, setVersions] = useState([
     { v: "v0.0.3", at: "2026-04-25 14:02", by: "廖奕通", note: "新增 丰景台数据查询v2", current: true },
