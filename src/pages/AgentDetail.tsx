@@ -694,7 +694,7 @@ fengsheng:
                   // 汇总所有子智能体里"未在 Vault 配置凭据"的 MCP
                   const allMissing = new Set<string>();
                   selSubagents.forEach((name) => {
-                    const sub = marketplaceSubagents.find((a) => a.name === name);
+                    const sub = projectSubagents.find((a) => a.name === name);
                     sub?.mcpServers.forEach((m) => { if (!isMcpAvailableInVault(m)) allMissing.add(m); });
                   });
                   if (allMissing.size === 0) return null;
