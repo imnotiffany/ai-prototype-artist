@@ -579,13 +579,13 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                         disabled={status === "locked"}
                         className="flex items-center gap-2 group min-w-0 shrink-0"
                       >
-                        <span className={`w-6 h-6 rounded-full border flex items-center justify-center text-[11px] shrink-0 ${dotCls}`}>
+                        <span className={`w-6 h-6 rounded-full border flex items-center justify-center text-[11px] shrink-0 ${dotCls} ${active ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""}`}>
                           {status === "done" ? <CheckCircle2 className="w-3.5 h-3.5" /> :
                            status === "warn" ? <AlertTriangle className="w-3.5 h-3.5" /> :
                            i + 1}
                         </span>
                         <div className="text-left min-w-0">
-                          <div className={`text-[11px] leading-tight truncate ${labelCls}`}>{s.label}</div>
+                          <div className={`text-[11px] leading-tight truncate ${active ? "text-primary font-semibold" : labelCls}`}>{s.label}</div>
                           <div className="text-[10px] text-muted-foreground leading-tight truncate">{s.sub}</div>
                         </div>
                       </button>
