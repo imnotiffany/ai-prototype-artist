@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Pencil, Trash2, Server, AlertTriangle, Bot, Plug, Loader2, CheckCircle2, XCircle, Link2, X, Search, KeyRound, ShieldCheck, Lock } from "lucide-react";
+import { Plus, Pencil, Trash2, Server, AlertTriangle, Bot, Plug, Loader2, CheckCircle2, XCircle, Link2, X, Search, KeyRound, ShieldCheck, Lock, Tag } from "lucide-react";
 
 type McpType = "studio" | "sse" | "http";
 import { sharedResources, mockAgents, getCredentialFreeMcps, getCredentialRequiredMcps } from "@/data/mockData";
@@ -79,18 +79,27 @@ const VaultPage = () => {
   const [tab, setTab] = useState<"headers" | "config">("headers");
   const [createMode, setCreateMode] = useState<"market" | "manual">("market");
   const [marketSearch, setMarketSearch] = useState("");
+  const [marketTag, setMarketTag] = useState<string>("__all__");
   // Studio 专用
   const [stdioCommand, setStdioCommand] = useState("npx");
   const [stdioArgs, setStdioArgs] = useState("");
   const [envVars, setEnvVars] = useState<{ key: string; value: string }[]>([]);
 
   // 市场列表 = 所有需凭据的 MCP
+  const allMarketMcps = useMemo(() => getCredentialRequiredMcps(), []);
+  const marketTags = useMemo(() => {
+    const set = new Set<string>();
+    allMarketMcps.forEach((m) => set.add(m.tag));
+    return Array.from(set).sort();
+  }, [allMarketMcps]);
   const marketList = useMemo(() => {
     const q = marketSearch.toLowerCase();
-    return getCredentialRequiredMcps().filter(
-      (r) => r.name.toLowerCase().includes(q) || r.description.toLowerCase().includes(q),
+    return allMarketMcps.filter(
+      (r) =>
+        (marketTag === "__all__" || r.tag === marketTag) &&
+        (r.name.toLowerCase().includes(q) || r.description.toLowerCase().includes(q)),
     );
-  }, [marketSearch]);
+  }, [marketSearch, marketTag, allMarketMcps]);
 
   const reset = () => {
     setEndpoint(""); setName(""); setIdentifier("");
@@ -184,7 +193,7 @@ const VaultPage = () => {
   };
 
   const renderForm = () => (
-    <div className="space-y-3 max-h-[520px] overflow-auto -mx-1 px-1">
+    <div className="space-y-3 max-h-[440px] overflow-auto -mx-1 px-1">
       {locked && (
         <div className="flex items-start gap-1.5 rounded-md border border-primary/30 bg-primary/5 px-2.5 py-1.5">
           <Lock className="w-3 h-3 text-primary mt-0.5 shrink-0" />
@@ -437,7 +446,7 @@ const VaultPage = () => {
 
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className={createMode === "market" && !editingId ? "max-w-[920px] p-5" : "max-w-[560px] p-5"}>
+        <DialogContent className={createMode === "market" && !editingId ? "max-w-[760px] p-4" : "max-w-[520px] p-4"}>
           <DialogHeader className="space-y-1">
             <DialogTitle className="text-sm">{editingId ? "编辑 MCP 服务" : "新增 MCP"}</DialogTitle>
             <DialogDescription className="text-[11px]">
@@ -454,19 +463,28 @@ const VaultPage = () => {
             )}
 
             <TabsContent value="market" className="mt-0 space-y-3">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <div className="relative flex-1">
                   <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
                   <Input
-                    className="h-9 text-xs pl-8 bg-muted/30"
+                    className="h-8 text-xs pl-8 bg-muted/30"
                     placeholder="搜索 MCP 名称或功能描述"
                     value={marketSearch}
                     onChange={(e) => setMarketSearch(e.target.value)}
                   />
                 </div>
-                <button className="text-xs text-primary hover:underline whitespace-nowrap shrink-0">
-                  前往 MCP 管理
-                </button>
+                <Select value={marketTag} onValueChange={setMarketTag}>
+                  <SelectTrigger className="h-8 w-[130px] text-xs shrink-0 gap-1">
+                    <Tag className="w-3 h-3 text-muted-foreground" />
+                    <SelectValue placeholder="标签" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__all__" className="text-xs">全部标签</SelectItem>
+                    {marketTags.map((t) => (
+                      <SelectItem key={t} value={t} className="text-xs">{t}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="flex items-center gap-2 text-xs">
@@ -475,11 +493,11 @@ const VaultPage = () => {
                 <span className="text-muted-foreground">需凭据</span>
               </div>
 
-              <div className="max-h-[460px] overflow-auto -mx-1 px-1">
+              <div className="max-h-[400px] overflow-auto -mx-1 px-1">
                 {marketList.length === 0 ? (
                   <p className="text-center text-[11px] text-muted-foreground py-8">未找到匹配的 MCP</p>
                 ) : (
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2.5">
                     {marketList.map((it) => {
                       const done = isMcpConfigured(it.name);
                       return (
@@ -493,9 +511,14 @@ const VaultPage = () => {
                             </div>
                             <div className="min-w-0 flex-1">
                               <p className="text-xs font-semibold truncate" title={it.name}>{it.name}</p>
-                              <Badge variant="outline" className="mt-1 text-[10px] h-4 px-1.5 gap-0.5 border-amber-300 text-amber-700 bg-amber-50/60">
-                                <KeyRound className="w-2.5 h-2.5" />需凭据
-                              </Badge>
+                              <div className="flex items-center gap-1 mt-1 flex-wrap">
+                                <Badge variant="outline" className="text-[10px] h-4 px-1.5 gap-0.5 border-amber-300 text-amber-700 bg-amber-50/60">
+                                  <KeyRound className="w-2.5 h-2.5" />需凭据
+                                </Badge>
+                                <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-normal text-muted-foreground">
+                                  {it.tag}
+                                </Badge>
+                              </div>
                             </div>
                           </div>
                           <p className="text-[11px] text-muted-foreground line-clamp-2 mt-2 min-h-[32px]">{it.description}</p>
@@ -543,7 +566,7 @@ const VaultPage = () => {
 
       {/* 来自 MCP 广场的独立配置弹窗 */}
       <Dialog open={marketFormOpen} onOpenChange={(o) => { if (!o) { setMarketFormOpen(false); setMarketFormItem(null); reset(); } }}>
-        <DialogContent className="max-w-[560px] p-5">
+        <DialogContent className="max-w-[520px] p-4">
           <DialogHeader className="space-y-1">
             <DialogTitle className="text-sm">配置 MCP{marketFormItem ? ` · ${marketFormItem.name}` : ""}</DialogTitle>
             <DialogDescription className="text-[11px]">

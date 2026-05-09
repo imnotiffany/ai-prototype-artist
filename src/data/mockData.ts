@@ -178,11 +178,29 @@ export const getActiveMCPs = () =>
     .filter((r) => r.type === "mcp" && r.status === "active")
     .map((r) => ({ name: r.name, description: r.description, provider: r.provider, deployment: r.deployment, requiresCredential: !!r.requiresCredential }));
 
+/** MCP 分类标签（与 Skill 分类共用同一组） */
+const MCP_TAGS: Record<string, string> = {
+  lh4: "文档处理",
+  lh8: "数据分析",
+  lh10: "视觉设计",
+  lh11: "编程开发",
+  lh12: "企业办公",
+  dd1: "企业办公",
+  dd2: "企业办公",
+  dd3: "企业办公",
+  dd4: "文档处理",
+  dd5: "人力资源",
+  dd6: "企业办公",
+  dd7: "企业办公",
+  dd8: "企业办公",
+  dd9: "营运规划",
+};
+
 /** 所有需要凭据的 MCP（用于 MCP 管理 → 新增 MCP → 市场列表） */
 export const getCredentialRequiredMcps = () =>
   sharedResources
     .filter((r) => r.type === "mcp" && r.status === "active" && r.requiresCredential)
-    .map((r) => ({ id: r.id, name: r.name, description: r.description, provider: r.provider, deployment: r.deployment }));
+    .map((r) => ({ id: r.id, name: r.name, description: r.description, provider: r.provider, deployment: r.deployment, tag: MCP_TAGS[r.id] ?? "其他" }));
 
 /** 所有免凭据 MCP（默认即出现在 MCP 管理列表） */
 export const getCredentialFreeMcps = () =>
