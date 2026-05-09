@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { Tag } from "lucide-react";
 import { CheckCircle2, ExternalLink, Plus, KeyRound, Upload, ShieldCheck, Settings2 } from "lucide-react";
 import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 
@@ -18,6 +20,8 @@ export interface PickerItem {
   requiresCredential?: boolean;
   /** Skill 专用：来源范围 */
   scope?: "market" | "project";
+  /** Skill 专用：标签 */
+  tags?: string[];
 }
 
 interface Props {
@@ -48,6 +52,7 @@ export const CapabilityPickerDialog = ({
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [skillScope, setSkillScope] = useState<"market" | "project">("market");
+  const [skillTag, setSkillTag] = useState<string>("__all__");
   const [orderSnapshot, setOrderSnapshot] = useState<string[]>([]);
 
   // 订阅 MCP 凭据 store，使「未配置 → 已配置」状态变更后立即反映
@@ -63,8 +68,26 @@ export const CapabilityPickerDialog = ({
     setOpen(o);
   };
 
+  // Skill 标签集合（按当前 scope 过滤）
+  const availableTags = useMemo(() => {
+    if (!isSkill) return [] as string[];
+    const set = new Set<string>();
+    items.forEach((it) => {
+      if (hasSkillScopes && (it.scope ?? "market") !== skillScope) return;
+      (it.tags ?? []).forEach((t) => set.add(t));
+    });
+    return Array.from(set).sort();
+  }, [isSkill, items, hasSkillScopes, skillScope]);
+
+  // 切换 scope 时若当前标签不在新范围内，重置
+  useEffect(() => {
+    if (!isSkill) return;
+    if (skillTag !== "__all__" && !availableTags.includes(skillTag)) setSkillTag("__all__");
+  }, [isSkill, availableTags, skillTag]);
+
   const filtered = items.filter((it) => {
     if (hasSkillScopes && (it.scope ?? "market") !== skillScope) return false;
+    if (isSkill && skillTag !== "__all__" && !(it.tags ?? []).includes(skillTag)) return false;
     const q = search.toLowerCase();
     return it.name.toLowerCase().includes(q) || it.description.toLowerCase().includes(q);
   });
@@ -133,6 +156,11 @@ export const CapabilityPickerDialog = ({
                   </Badge>
                 )
               )}
+              {isSkill && (it.tags ?? []).map((t) => (
+                <Badge key={t} variant="outline" className="text-[10px] h-4 px-1.5 font-normal text-muted-foreground">
+                  {t}
+                </Badge>
+              ))}
             </div>
           </div>
           {isMcp ? (
@@ -208,6 +236,20 @@ export const CapabilityPickerDialog = ({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+          {isSkill && availableTags.length > 0 && (
+            <Select value={skillTag} onValueChange={setSkillTag}>
+              <SelectTrigger className="h-8 w-[140px] text-xs shrink-0 gap-1">
+                <Tag className="w-3 h-3 text-muted-foreground" />
+                <SelectValue placeholder="标签" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__" className="text-xs">全部标签</SelectItem>
+                {availableTags.map((t) => (
+                  <SelectItem key={t} value={t} className="text-xs">{t}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           {hasSkillScopes && skillScope === "project" ? (
             <Button
               variant="outline"

@@ -128,8 +128,26 @@ export const sharedResources: Resource[] = [
 ];
 
 /* ── Helper: get active resources as picker items ── */
+const SKILL_TAGS: Record<string, string[]> = {
+  "Web Search": ["搜索"],
+  "Code Analysis": ["研发"],
+  "Email Parser": ["办公"],
+  "Translation Engine": ["翻译"],
+  "Content Generation": ["内容"],
+  "SQL Generator": ["数据", "研发"],
+  "File Processor": ["数据"],
+  "Data Visualizer": ["数据"],
+  "Security Scanner": ["安全"],
+  "Log Analyzer": ["运维"],
+  "Alert Manager": ["运维"],
+  "SEO Optimizer": ["内容"],
+  "Schema Analyzer": ["数据", "研发"],
+  "灵慧 Skill": ["办公", "搜索"],
+  "钉钉 Skill": ["办公"],
+};
+
 export const getActiveSkills = () =>
-  sharedResources.filter((r) => r.type === "skill" && r.status === "active").map((r) => ({ name: r.name, description: r.description, scope: r.scope ?? "market" }));
+  sharedResources.filter((r) => r.type === "skill" && r.status === "active").map((r) => ({ name: r.name, description: r.description, scope: r.scope ?? "market", tags: SKILL_TAGS[r.name] ?? [] }));
 
 export const getActiveMCPs = () =>
   sharedResources
