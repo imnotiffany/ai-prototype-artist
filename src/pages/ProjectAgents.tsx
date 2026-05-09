@@ -121,10 +121,6 @@ const ProjectAgents = () => {
         <div className="flex items-center justify-between mb-5">
           <h1 className="text-lg font-semibold text-primary">项目管理</h1>
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs" onClick={() => setApiKeyOpen(true)}>
-              <KeyRound className="w-3.5 h-3.5" />
-              申请 API Key
-            </Button>
             <Button size="sm" className="gap-1.5 h-8 text-xs" onClick={() => navigate("/create")}>
               <Plus className="w-3.5 h-3.5" />
               创建应用
