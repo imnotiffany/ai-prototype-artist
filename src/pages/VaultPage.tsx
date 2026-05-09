@@ -152,7 +152,7 @@ const VaultPage = () => {
       toast({ title: "MCP 已更新", description: `${name} 已保存` });
     } else {
       const id = `m_${Date.now()}`;
-      setCredMcps((arr) => [{ id, name, identifier, endpoint, deployment: "Remote", createdAt: new Date().toISOString().slice(0, 10), requiresCredential: true }, ...arr]);
+      setCredMcps((arr) => [{ id, name, identifier, endpoint, deployment: "Remote", createdAt: new Date().toISOString().slice(0, 10), requiresCredential: true, type: mcpType }, ...arr]);
       setMcpConfigured(name, true);
       toast({ title: "MCP 已添加", description: `${name} 已加入 MCP 管理` });
     }
