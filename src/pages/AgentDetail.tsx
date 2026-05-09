@@ -210,7 +210,11 @@ const AgentDetail = () => {
   /* ── 订阅 MCP 管理（Vault）配置变化，让本页绑定区实时联动 ── */
   const [, setVaultTick] = useState(0);
 
-  // 申请 API Key（每个智能体独立）
+  // 申请 API Key（每个智能体独立，可申请多个）
+  type ApiKeyRecord = { id: string; name: string; masked: string; creator: string; createdAt: string };
+  const [apiKeys, setApiKeys] = useState<ApiKeyRecord[]>([
+    { id: "ak-demo-1", name: "CRM 系统集成", masked: "sk-a3f7…9b2c", creator: "张三", createdAt: "2026-04-20 14:32" },
+  ]);
   const [apiKeyOpen, setApiKeyOpen] = useState(false);
   const [apiKeyName, setApiKeyName] = useState("");
   const [generatedKey, setGeneratedKey] = useState<string | null>(null);
@@ -222,6 +226,13 @@ const AgentDetail = () => {
     }
     const key = "sk-" + Array.from({ length: 32 }, () => "abcdef0123456789"[Math.floor(Math.random() * 16)]).join("");
     setGeneratedKey(key);
+    const masked = `${key.slice(0, 7)}…${key.slice(-4)}`;
+    const now = new Date();
+    const ts = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    setApiKeys((prev) => [
+      { id: `ak-${Date.now()}`, name: apiKeyName.trim(), masked, creator: "当前用户", createdAt: ts },
+      ...prev,
+    ]);
   };
   const closeApiKey = () => {
     setApiKeyOpen(false);
