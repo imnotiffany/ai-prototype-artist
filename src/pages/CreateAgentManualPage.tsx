@@ -145,6 +145,12 @@ const CreateAgentManualPage = () => {
   const [debugRunning, setDebugRunning] = useState(false);
   const [voiceRecording, setVoiceRecording] = useState(false);
 
+  // Mandatory debug gating
+  const [debugPassed, setDebugPassed] = useState(false);
+  const [debugAttempted, setDebugAttempted] = useState(false);
+  const [debugLastError, setDebugLastError] = useState(false);
+
+
   // Track all changes auto-applied during debugging — surfaced at save time
   type DebugChange = { ts: string; summary: string; field: "prompt" | "binding" | "model" | "credential" };
   const [debugChanges, setDebugChanges] = useState<DebugChange[]>([]);
