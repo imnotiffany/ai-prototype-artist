@@ -989,47 +989,56 @@ fengsheng:
 
         {/* ───────── API Key ───────── */}
         <TabsContent value="apikey" className="mt-4">
-          <div className="border border-border rounded-lg bg-card">
-            <div className="px-4 py-2.5 border-b border-border flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <h3 className="text-sm font-semibold flex items-center gap-1.5">
-                  <KeyRound className="w-3.5 h-3.5 text-primary" />API Key
-                </h3>
-                <p className="text-[11px] text-muted-foreground mt-0.5">
-                  调用「{name}」的鉴权凭据。可申请多个，按调用方区分。完整密钥仅在生成时展示一次，列表只展示首尾片段。
-                </p>
+          <section className="border border-border rounded-lg bg-card overflow-hidden">
+            <header className="px-4 py-3 border-b border-border flex items-center justify-between gap-3">
+              <div className="min-w-0 flex items-center gap-2">
+                <div className="w-7 h-7 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <KeyRound className="w-3.5 h-3.5" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-sm font-semibold leading-tight">API Key</h3>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                    完整密钥仅在生成时展示一次，列表只展示首尾片段
+                  </p>
+                </div>
               </div>
-              <Button size="sm" className="h-7 text-xs gap-1 shrink-0" onClick={() => setApiKeyOpen(true)}>
+              <Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0" onClick={() => setApiKeyOpen(true)}>
                 <Plus className="w-3 h-3" />申请 API Key
               </Button>
-            </div>
+            </header>
             {apiKeys.length === 0 ? (
-              <p className="text-xs text-muted-foreground text-center py-8">尚未申请任何 API Key</p>
+              <div className="py-12 flex flex-col items-center gap-2 text-muted-foreground">
+                <KeyRound className="w-6 h-6 opacity-40" />
+                <p className="text-xs">尚未申请任何 API Key</p>
+              </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead className="w-12 h-8 py-1.5 text-[11px] font-medium text-muted-foreground">序号</TableHead>
-                    <TableHead className="h-8 py-1.5 text-[11px] font-medium text-muted-foreground">名称</TableHead>
-                    <TableHead className="h-8 py-1.5 text-[11px] font-medium text-muted-foreground">API Key</TableHead>
-                    <TableHead className="w-24 h-8 py-1.5 text-[11px] font-medium text-muted-foreground">创建人</TableHead>
-                    <TableHead className="w-36 h-8 py-1.5 text-[11px] font-medium text-muted-foreground">创建时间</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {apiKeys.map((k, i) => (
-                    <TableRow key={k.id} className="hover:bg-muted/40">
-                      <TableCell className="py-2 text-xs text-muted-foreground">{i + 1}</TableCell>
-                      <TableCell className="py-2 text-xs">{k.name}</TableCell>
-                      <TableCell className="py-2 text-[11px] font-mono text-muted-foreground">{k.masked}</TableCell>
-                      <TableCell className="py-2 text-xs">{k.creator}</TableCell>
-                      <TableCell className="py-2 text-[11px] font-mono text-muted-foreground">{k.createdAt}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <ul className="divide-y divide-border">
+                {apiKeys.map((k) => (
+                  <li key={k.id} className="px-4 py-3 flex items-center gap-4 hover:bg-muted/30 transition-colors">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium truncate">{k.name}</span>
+                      </div>
+                      <div className="mt-1 flex items-center gap-3 text-[11px] text-muted-foreground">
+                        <span>创建人 · {k.creator}</span>
+                        <span className="font-mono">{k.createdAt}</span>
+                      </div>
+                    </div>
+                    <code className="text-[11px] font-mono px-2 py-1 rounded-md bg-muted/60 text-foreground/80 shrink-0">
+                      {k.masked}
+                    </code>
+                    <button
+                      onClick={() => setApiKeys((prev) => prev.filter((x) => x.id !== k.id))}
+                      className="text-muted-foreground hover:text-destructive p-1 shrink-0"
+                      title="吊销"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
             )}
-          </div>
+          </section>
         </TabsContent>
       </Tabs>
 
