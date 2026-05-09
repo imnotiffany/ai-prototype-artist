@@ -121,7 +121,7 @@ const AgentMarketplace = () => {
         const ranked = ([...SKILL_CATEGORIES] as string[]).sort(
           (a, b) => (counts.get(b) ?? 0) - (counts.get(a) ?? 0)
         );
-        const VISIBLE = 7;
+        const VISIBLE = 12;
         const visible = ranked.slice(0, VISIBLE);
         const overflow = ranked.slice(VISIBLE);
         // Promote selected category into the visible row if it's currently hidden
