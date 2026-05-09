@@ -261,6 +261,8 @@ const AgentDetail = () => {
       ...versions.map((v) => ({ ...v, current: false })),
     ]);
     setSavedSnapshot({ name, description, model, systemPrompt, skills: selSkills, mcpBindings, fsAppKey, fsAppSecret, fsRobotCode });
+    setJustSavedVersion(next);
+    window.setTimeout(() => setJustSavedVersion(null), 2800);
     toast({ title: "已保存", description: `生成新版本 ${next}` });
   };
 
