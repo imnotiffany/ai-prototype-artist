@@ -777,63 +777,26 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 );
               })()}
               {selSubagents.length === 0 ? null : (
-                <div className="space-y-2">
+                <div className="flex flex-wrap gap-2">
                   {selSubagents.map((name) => {
                     const sub = subagents.find((a) => a.name === name);
-                    if (!sub) return (
-                      <div key={name} className="border border-border rounded-md p-3 flex items-center justify-between">
-                        <span className="text-xs flex items-center gap-1.5"><Bot className="w-3 h-3 text-primary" />{name}</span>
-                        <button onClick={() => toggle(selSubagents, setSelSubagents, name)} className="text-muted-foreground hover:text-destructive p-1"><X className="w-3.5 h-3.5" /></button>
-                      </div>
-                    );
-                    const missingMcps = sub.mcpServers.filter((m) => !isMcpAvailableInVault(m));
+                    const missingMcps = sub ? sub.mcpServers.filter((m) => !isMcpAvailableInVault(m)) : [];
+                    const hasMissing = missingMcps.length > 0;
                     return (
-                      <div key={name} className="border border-border rounded-md p-3 space-y-2">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-1.5">
-                              <Bot className="w-3.5 h-3.5 text-primary shrink-0" />
-                              <span className="text-xs font-medium truncate">{sub.name}</span>
-                              <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-border">来自广场</Badge>
-                            </div>
-                            <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-relaxed">{sub.description}</p>
-                          </div>
-                          <button onClick={() => toggle(selSubagents, setSelSubagents, name)} className="text-muted-foreground hover:text-destructive p-1 shrink-0" title="移除"><X className="w-3.5 h-3.5" /></button>
-                        </div>
-                        {(sub.skills.length > 0 || sub.mcpServers.length > 0) && (
-                          <div className="border-t border-border pt-2 space-y-1.5">
-                            {sub.mcpServers.length > 0 && (
-                              <div className="flex items-start gap-2 flex-wrap">
-                                <span className="text-[10px] text-muted-foreground shrink-0 mt-0.5">继承 MCP</span>
-                                {sub.mcpServers.map((m) => {
-                                  const ok = isMcpAvailableInVault(m);
-                                  return (
-                                    <Badge key={m} variant="outline" className={`text-[10px] h-4 px-1.5 gap-1 ${ok ? "border-emerald-300 text-emerald-700 bg-emerald-50/60" : "border-amber-300 text-amber-700 bg-amber-50/60"}`}>
-                                      <Server className="w-2.5 h-2.5" />{m}
-                                      {!ok && <AlertTriangle className="w-2.5 h-2.5" />}
-                                    </Badge>
-                                  );
-                                })}
-                              </div>
-                            )}
-                            {sub.skills.length > 0 && (
-                              <div className="flex items-start gap-2 flex-wrap">
-                                <span className="text-[10px] text-muted-foreground shrink-0 mt-0.5">继承 Skill</span>
-                                {sub.skills.map((s) => (
-                                  <Badge key={s} variant="outline" className="text-[10px] h-4 px-1.5 gap-1 border-border">
-                                    <Zap className="w-2.5 h-2.5" />{s}
-                                  </Badge>
-                                ))}
-                              </div>
-                            )}
-                            {missingMcps.length > 0 && (
-                              <p className="text-[10px] text-amber-700 dark:text-amber-400 flex items-center gap-1">
-                                <AlertTriangle className="w-2.5 h-2.5" />
-                                {missingMcps.length} 个 MCP 尚未配置凭据，需在 MCP 管理中补齐
-                              </p>
-                            )}
-                          </div>
+                      <div key={name} className={`inline-flex items-center gap-1.5 rounded-md border pl-2 pr-1 py-1 text-xs ${hasMissing ? "border-amber-300 bg-amber-50/40 dark:bg-amber-950/20" : "border-border bg-card"}`} title={sub?.description}>
+                        <Bot className="w-3 h-3 text-primary shrink-0" />
+                        <span className="font-medium max-w-[160px] truncate">{name}</span>
+                        {sub?.scope === "project" && (
+                          <Badge variant="outline" className="text-[10px] h-4 px-1 border-border">项目</Badge>
                         )}
+                        {hasMissing && (
+                          <span className="inline-flex items-center gap-0.5 text-[10px] text-amber-700">
+                            <AlertTriangle className="w-2.5 h-2.5" />{missingMcps.length} 个 MCP 缺凭据
+                          </span>
+                        )}
+                        <button onClick={() => toggle(selSubagents, setSelSubagents, name)} className="text-muted-foreground hover:text-destructive p-0.5" title="移除">
+                          <X className="w-3 h-3" />
+                        </button>
                       </div>
                     );
                   })}
