@@ -303,9 +303,7 @@ const VaultPage = () => {
                 <div className="text-[11px] font-medium">环境变量</div>
                 <p className="text-[10px] text-muted-foreground mt-0.5">启动命令时注入的环境变量（如 API Key、Token 等）</p>
               </div>
-              {envVars.length === 0 ? (
-                <div className="text-[10px] text-muted-foreground">未配置环境变量</div>
-              ) : (
+              {envVars.length > 0 && (
                 <div className="space-y-1.5">
                   {envVars.map((h, i) => (
                     <div key={i} className="flex items-center gap-1.5">
