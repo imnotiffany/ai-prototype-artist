@@ -47,6 +47,15 @@ const ChatPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agent?.id]);
   const [input, setInput] = useState("");
+  const [voiceRecording, setVoiceRecording] = useState(false);
+  const toggleVoice = () => {
+    if (voiceRecording) {
+      setVoiceRecording(false);
+      setInput((v) => v + (v ? " " : "") + "（语音输入示例文本）");
+    } else {
+      setVoiceRecording(true);
+    }
+  };
   const [isRunning, setIsRunning] = useState(false);
   const [stageIndex, setStageIndex] = useState(0);
   const stages = ["分析问题", "选择工具", "调用工具", "整理回答"];
