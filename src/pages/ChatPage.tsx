@@ -388,6 +388,17 @@ const ChatPage = () => {
               disabled={isRunning}
               className="flex-1"
             />
+            {!isRunning && (
+              <Button
+                size="icon"
+                variant={voiceRecording ? "default" : "outline"}
+                onClick={toggleVoice}
+                title={voiceRecording ? "结束语音输入" : "语音输入"}
+                className={voiceRecording ? "animate-pulse" : ""}
+              >
+                {voiceRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              </Button>
+            )}
             {isRunning ? (
               <Button variant="destructive" size="icon" onClick={stop} title="停止">
                 <Square className="w-4 h-4" />
