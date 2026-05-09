@@ -21,13 +21,18 @@ const CreatePage = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabKey>("agent");
   const [description, setDescription] = useState("");
+  const [agentMode, setAgentMode] = useState<"auto" | "manual">("auto");
 
   const myAgents = getMyAgents().slice(0, 3);
   const hotAgents = getRecentAgents().slice(0, 3);
 
   const handleCreate = () => {
     if (activeTab === "agent") {
-      navigate("/create-agent-manual");
+      if (agentMode === "auto") {
+        navigate("/create-agent", { state: { description } });
+      } else {
+        navigate("/create-agent-manual");
+      }
     } else if (activeTab === "web") {
       navigate("/create-web");
     }
