@@ -170,14 +170,14 @@ const VaultPage = () => {
     reset();
   };
 
-  const startAddFromMarket = (it: { id: string; name: string; provider?: string; deployment?: string }) => {
+  const startAddFromMarket = (it: { id: string; name: string; provider?: string; deployment?: string; description?: string }) => {
     reset();
     setLocked(true);
     setName(it.name);
     setIdentifier(it.id);
+    setDescription(it.description ?? "");
     setEndpoint(`https://mcp.example.com/${it.provider ?? "svc"}/${it.id}/http`);
     setMcpType("http");
-    setTab("headers");
     setMarketFormItem({ id: it.id, name: it.name });
     setMarketFormOpen(true);
   };
