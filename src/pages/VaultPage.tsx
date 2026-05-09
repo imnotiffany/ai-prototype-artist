@@ -566,7 +566,7 @@ const VaultPage = () => {
 
       {/* 来自 MCP 广场的独立配置弹窗 */}
       <Dialog open={marketFormOpen} onOpenChange={(o) => { if (!o) { setMarketFormOpen(false); setMarketFormItem(null); reset(); } }}>
-        <DialogContent className="max-w-[560px] p-5">
+        <DialogContent className="max-w-[520px] p-4">
           <DialogHeader className="space-y-1">
             <DialogTitle className="text-sm">配置 MCP{marketFormItem ? ` · ${marketFormItem.name}` : ""}</DialogTitle>
             <DialogDescription className="text-[11px]">
