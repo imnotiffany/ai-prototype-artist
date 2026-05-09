@@ -18,6 +18,8 @@ export interface PickerItem {
   requiresCredential?: boolean;
   /** Skill 专用：来源范围 */
   scope?: "market" | "project";
+  /** Skill 专用：标签 */
+  tags?: string[];
 }
 
 interface Props {
