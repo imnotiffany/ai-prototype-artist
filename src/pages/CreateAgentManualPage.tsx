@@ -124,11 +124,8 @@ const CreateAgentManualPage = () => {
   const [fsSecretVisible, setFsSecretVisible] = useState(false);
   const [fsConnected, setFsConnected] = useState(false);
 
-  // Agent Hub publishing (optional)
+  // Agent Hub publishing (optional) — 仅控制是否发布到 Hub 进行可视化监控
   const [hubEnabled, setHubEnabled] = useState(false);
-  const [hubProject, setHubProject] = useState("");
-  const [hubVisibility, setHubVisibility] = useState<"team" | "org" | "public">("team");
-  const [hubConnected, setHubConnected] = useState(false);
 
   // Controlled tab (so we can jump users between steps)
   const [currentTab, setCurrentTab] = useState("capability");
