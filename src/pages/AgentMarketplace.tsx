@@ -141,10 +141,9 @@ const AgentMarketplace = () => {
                   : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
             >
-              全部 <span className="opacity-60">({totalCount})</span>
+              全部
             </button>
             {visible.map((cat) => {
-              const c = counts.get(cat) ?? 0;
               const active = activeCategory === cat;
               return (
                 <button
@@ -156,7 +155,7 @@ const AgentMarketplace = () => {
                       : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted"
                   }`}
                 >
-                  {cat} {c > 0 && <span className="opacity-60">({c})</span>}
+                  {cat}
                 </button>
               );
             })}
