@@ -1055,9 +1055,6 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                         evs.push({ id: `a${i}`, type: "agent", content: m.content });
                       }
                     });
-                    if (runMessages.length === 0) {
-                      evs.push({ id: "empty", type: "system", message: "输入示例任务即可开始调试" });
-                    }
                     return evs;
                   })()}
                   debugEvents={debugLogs.map((l) => ({
