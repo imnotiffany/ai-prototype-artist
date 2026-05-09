@@ -207,6 +207,7 @@ const AgentMarketplace = () => {
                   </Command>
                 </PopoverContent>
               </Popover>
+            )}
             </div>
 
             {/* Second row: kind filter (left) + sort (right) */}
