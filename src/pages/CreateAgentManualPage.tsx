@@ -591,13 +591,29 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               {selSkills.length === 0 ? (
                 <p className="text-xs text-muted-foreground text-center py-4">尚未绑定任何 Skill。点击右上角「添加 Skill」选择。</p>
               ) : (
-                <div className="space-y-1.5">
-                  {selSkills.map((s) => (
-                    <div key={s} className="flex items-center justify-between border border-border rounded px-3 py-1.5 text-xs">
-                      <span className="flex items-center gap-1.5"><Zap className="w-3 h-3 text-primary" />{s}</span>
-                      <button onClick={() => toggle(selSkills, setSelSkills, s)} className="text-muted-foreground hover:text-destructive"><X className="w-3 h-3" /></button>
-                    </div>
-                  ))}
+                <div className="space-y-2">
+                  {selSkills.map((s) => {
+                    const meta = skills.find((x) => x.name === s);
+                    return (
+                      <div key={s} className="border border-border rounded-md p-3 flex items-center justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5">
+                            <Zap className="w-3 h-3 text-primary shrink-0" />
+                            <span className="text-xs font-medium truncate">{s}</span>
+                            {meta?.scope === "project" && (
+                              <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-border">项目</Badge>
+                            )}
+                          </div>
+                          {meta?.description && (
+                            <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-relaxed">{meta.description}</p>
+                          )}
+                        </div>
+                        <button onClick={() => toggle(selSkills, setSelSkills, s)} className="text-muted-foreground hover:text-destructive p-1 shrink-0" title="移除">
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
