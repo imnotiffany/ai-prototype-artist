@@ -536,7 +536,13 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
             <FileCode className="w-3.5 h-3.5" />
             查看配置文档
           </Button>
-          <Button size="sm" className="h-8 text-xs gap-1.5" onClick={openPublish}>
+          <Button
+            size="sm"
+            className="h-8 text-xs gap-1.5"
+            onClick={openPublish}
+            disabled={!canSave}
+            title={canSave ? "保存为新版本" : blockingReasons[0]?.msg}
+          >
             <Save className="w-3.5 h-3.5" />
             保存
           </Button>
