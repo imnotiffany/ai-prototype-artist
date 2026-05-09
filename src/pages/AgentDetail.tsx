@@ -795,73 +795,154 @@ fengsheng:
                   <h3 className="text-sm font-semibold flex items-center gap-1.5">
                     <Users className="w-3.5 h-3.5 text-primary" />子智能体
                   </h3>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">为主智能体配置可调用的子智能体，由主智能体根据任务动态分发</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    从智能体广场挑选已发布的智能体作为子智能体；它们继承的 Skill / MCP 会一并展示，未配置凭据的 MCP 需在「<button onClick={() => navigate("/vault")} className="text-primary hover:underline">MCP 管理</button>」中补齐
+                  </p>
                 </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-7 text-xs gap-1 shrink-0"
-                  onClick={() =>
-                    setSubAgents((prev) => [
-                      ...prev,
-                      { id: `sa-${Date.now()}`, name: "新子智能体", role: "", trigger: "" },
-                    ])
-                  }
-                >
-                  <Plus className="w-3 h-3" />添加子智能体
-                </Button>
+                <CapabilityPickerDialog
+                  items={marketplaceSubagents.map((a) => ({ name: a.name, description: a.description }))}
+                  selected={selSubagents}
+                  onToggle={(n) => setSelSubagents((prev) => prev.includes(n) ? prev.filter((x) => x !== n) : [...prev, n])}
+                  icon={<Bot className="w-3.5 h-3.5" />}
+                  label="子智能体"
+                  marketLink="/"
+                  trigger={<Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0"><Plus className="w-3 h-3" />添加子智能体</Button>}
+                />
               </header>
               <div className="p-4 space-y-3">
-                {subAgents.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-4">尚未配置子智能体。点击右上角「添加子智能体」。</p>
-                ) : (
-                  subAgents.map((sa, i) => (
-                    <div key={sa.id} className="border border-border rounded-md p-3 space-y-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <Input
-                          value={sa.name}
-                          onChange={(e) =>
-                            setSubAgents((prev) => prev.map((s, idx) => (idx === i ? { ...s, name: e.target.value } : s)))
-                          }
-                          placeholder="子智能体名称"
-                          className="h-7 text-xs font-medium"
-                        />
-                        <button
-                          onClick={() => setSubAgents((prev) => prev.filter((_, idx) => idx !== i))}
-                          className="text-muted-foreground hover:text-destructive p-1 shrink-0"
-                          title="移除"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
+                {(() => {
+                  // 汇总所有子智能体里"未在 Vault 配置凭据"的 MCP
+                  const allMissing = new Set<string>();
+                  selSubagents.forEach((name) => {
+                    const sub = marketplaceSubagents.find((a) => a.name === name);
+                    sub?.mcpServers.forEach((m) => { if (!isMcpAvailableInVault(m)) allMissing.add(m); });
+                  });
+                  if (allMissing.size === 0) return null;
+                  return (
+                    <div className="border border-amber-300 bg-amber-50/60 dark:bg-amber-950/20 rounded-md px-3 py-2 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                        <span className="text-[11px] text-amber-800 dark:text-amber-300 truncate">
+                          有 {allMissing.size} 个子智能体依赖的 MCP 尚未在 MCP 管理中配置凭据
+                        </span>
                       </div>
-                      <div>
-                        <Label className="text-[11px] text-muted-foreground">职责描述</Label>
-                        <Textarea
-                          value={sa.role}
-                          onChange={(e) =>
-                            setSubAgents((prev) => prev.map((s, idx) => (idx === i ? { ...s, role: e.target.value } : s)))
-                          }
-                          rows={2}
-                          placeholder="该子智能体负责的具体任务"
-                          className="mt-1 text-xs"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-[11px] text-muted-foreground">调用触发条件</Label>
-                        <Input
-                          value={sa.trigger}
-                          onChange={(e) =>
-                            setSubAgents((prev) => prev.map((s, idx) => (idx === i ? { ...s, trigger: e.target.value } : s)))
-                          }
-                          placeholder="主智能体在何种条件下调用该子智能体"
-                          className="mt-1 h-7 text-xs"
-                        />
-                      </div>
+                      <Button size="sm" variant="outline" className="h-7 text-[11px] border-amber-300 text-amber-700 hover:bg-amber-100 shrink-0" onClick={() => setSubagentGapDialogOpen(true)}>
+                        查看并配置
+                      </Button>
                     </div>
-                  ))
+                  );
+                })()}
+
+                {selSubagents.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-4">尚未配置子智能体。点击右上角「添加子智能体」从广场选择。</p>
+                ) : (
+                  selSubagents.map((name) => {
+                    const sub = marketplaceSubagents.find((a) => a.name === name);
+                    if (!sub) return (
+                      <div key={name} className="border border-border rounded-md p-3 flex items-center justify-between">
+                        <span className="text-xs flex items-center gap-1.5"><Bot className="w-3 h-3 text-primary" />{name}</span>
+                        <button onClick={() => setSelSubagents((prev) => prev.filter((x) => x !== name))} className="text-muted-foreground hover:text-destructive p-1"><X className="w-3.5 h-3.5" /></button>
+                      </div>
+                    );
+                    const missingMcps = sub.mcpServers.filter((m) => !isMcpAvailableInVault(m));
+                    return (
+                      <div key={name} className="border border-border rounded-md p-3 space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5">
+                              <Bot className="w-3.5 h-3.5 text-primary shrink-0" />
+                              <span className="text-xs font-medium truncate">{sub.name}</span>
+                              <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-border">来自广场</Badge>
+                            </div>
+                            <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-relaxed">{sub.description}</p>
+                          </div>
+                          <button onClick={() => setSelSubagents((prev) => prev.filter((x) => x !== name))} className="text-muted-foreground hover:text-destructive p-1 shrink-0" title="移除">
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        {(sub.skills.length > 0 || sub.mcpServers.length > 0) && (
+                          <div className="border-t border-border pt-2 space-y-1.5">
+                            {sub.mcpServers.length > 0 && (
+                              <div className="flex items-start gap-2 flex-wrap">
+                                <span className="text-[10px] text-muted-foreground shrink-0 mt-0.5">继承 MCP</span>
+                                {sub.mcpServers.map((m) => {
+                                  const ok = isMcpAvailableInVault(m);
+                                  return (
+                                    <Badge key={m} variant="outline" className={`text-[10px] h-4 px-1.5 gap-1 ${ok ? "border-emerald-300 text-emerald-700 bg-emerald-50/60" : "border-amber-300 text-amber-700 bg-amber-50/60"}`}>
+                                      <Server className="w-2.5 h-2.5" />{m}
+                                      {!ok && <AlertTriangle className="w-2.5 h-2.5" />}
+                                    </Badge>
+                                  );
+                                })}
+                              </div>
+                            )}
+                            {sub.skills.length > 0 && (
+                              <div className="flex items-start gap-2 flex-wrap">
+                                <span className="text-[10px] text-muted-foreground shrink-0 mt-0.5">继承 Skill</span>
+                                {sub.skills.map((s) => (
+                                  <Badge key={s} variant="outline" className="text-[10px] h-4 px-1.5 gap-1 border-border">
+                                    <Zap className="w-2.5 h-2.5" />{s}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+                            {missingMcps.length > 0 && (
+                              <p className="text-[10px] text-amber-700 dark:text-amber-400 flex items-center gap-1">
+                                <AlertTriangle className="w-2.5 h-2.5" />
+                                {missingMcps.length} 个 MCP 尚未配置凭据，需在 MCP 管理中补齐
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
                 )}
               </div>
             </section>
+
+            {/* 子智能体缺口配置 - 独立弹窗，避免在主表单中堆叠 */}
+            <Dialog open={subagentGapDialogOpen} onOpenChange={setSubagentGapDialogOpen}>
+              <DialogContent className="max-w-lg">
+                <DialogHeader>
+                  <DialogTitle className="text-sm">补齐子智能体所需 MCP 凭据</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-2 max-h-[60vh] overflow-auto">
+                  {(() => {
+                    const map = new Map<string, string[]>(); // mcp -> sub-agent names that need it
+                    selSubagents.forEach((name) => {
+                      const sub = marketplaceSubagents.find((a) => a.name === name);
+                      sub?.mcpServers.forEach((m) => {
+                        if (!isMcpAvailableInVault(m)) {
+                          map.set(m, [...(map.get(m) ?? []), name]);
+                        }
+                      });
+                    });
+                    if (map.size === 0) {
+                      return <p className="text-xs text-muted-foreground py-4 text-center">所有依赖 MCP 已就绪</p>;
+                    }
+                    return Array.from(map.entries()).map(([mcp, owners]) => (
+                      <div key={mcp} className="border border-border rounded-md p-3 flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <Server className="w-3 h-3 text-primary shrink-0" />
+                            <span className="text-xs font-medium truncate">{mcp}</span>
+                            <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-0 text-[10px] h-4">未配置</Badge>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground mt-0.5 truncate">被以下子智能体使用：{owners.join("、")}</p>
+                        </div>
+                        <Button size="sm" variant="outline" className="h-7 text-[11px] shrink-0" onClick={() => { setSubagentGapDialogOpen(false); navigate("/vault"); }}>
+                          前往配置
+                        </Button>
+                      </div>
+                    ));
+                  })()}
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setSubagentGapDialogOpen(false)}>关闭</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
               </>
             )}
           </div>
