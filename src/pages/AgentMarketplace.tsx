@@ -122,7 +122,7 @@ const AgentMarketplace = () => {
           onClick={() => navigate("/create")}
         >
           <Plus className="w-3.5 h-3.5" />
-          新建项目
+          新建作品
         </Button>
       </div>
 
