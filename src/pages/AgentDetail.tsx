@@ -210,7 +210,11 @@ const AgentDetail = () => {
   /* ── 订阅 MCP 管理（Vault）配置变化，让本页绑定区实时联动 ── */
   const [, setVaultTick] = useState(0);
 
-  // 申请 API Key（每个智能体独立）
+  // 申请 API Key（每个智能体独立，可申请多个）
+  type ApiKeyRecord = { id: string; name: string; masked: string; creator: string; createdAt: string };
+  const [apiKeys, setApiKeys] = useState<ApiKeyRecord[]>([
+    { id: "ak-demo-1", name: "CRM 系统集成", masked: "sk-a3f7…9b2c", creator: "张三", createdAt: "2026-04-20 14:32" },
+  ]);
   const [apiKeyOpen, setApiKeyOpen] = useState(false);
   const [apiKeyName, setApiKeyName] = useState("");
   const [generatedKey, setGeneratedKey] = useState<string | null>(null);
@@ -222,6 +226,13 @@ const AgentDetail = () => {
     }
     const key = "sk-" + Array.from({ length: 32 }, () => "abcdef0123456789"[Math.floor(Math.random() * 16)]).join("");
     setGeneratedKey(key);
+    const masked = `${key.slice(0, 7)}…${key.slice(-4)}`;
+    const now = new Date();
+    const ts = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    setApiKeys((prev) => [
+      { id: `ak-${Date.now()}`, name: apiKeyName.trim(), masked, creator: "当前用户", createdAt: ts },
+      ...prev,
+    ]);
   };
   const closeApiKey = () => {
     setApiKeyOpen(false);
@@ -356,9 +367,6 @@ const AgentDetail = () => {
               <span className="text-[11px] text-emerald-800 dark:text-emerald-200">已保存</span>
             </div>
           ) : null}
-          <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={() => setApiKeyOpen(true)}>
-            <KeyRound className="w-3.5 h-3.5" />申请 API Key
-          </Button>
           <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={openEditInfo}>
             <Pencil className="w-3.5 h-3.5" />编辑基本信息
           </Button>
@@ -379,6 +387,7 @@ const AgentDetail = () => {
           <TabsTrigger value="debug" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><Bug className="w-3.5 h-3.5" />调试</TabsTrigger>
           <TabsTrigger value="config" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><Settings2 className="w-3.5 h-3.5" />配置</TabsTrigger>
           <TabsTrigger value="runs" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><MessageSquare className="w-3.5 h-3.5" />会话记录</TabsTrigger>
+          <TabsTrigger value="apikey" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><KeyRound className="w-3.5 h-3.5" />API Key</TabsTrigger>
         </TabsList>
 
         {/* ───────── 调试 ───────── */}
@@ -886,20 +895,20 @@ fengsheng:
           <div className="border border-border rounded-lg overflow-hidden bg-card">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead className="w-20">来源</TableHead>
-                  <TableHead>触发人</TableHead>
-                  <TableHead>触发内容</TableHead>
-                  <TableHead className="w-44">时间</TableHead>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="w-20 h-8 py-1.5 text-[11px] font-medium text-muted-foreground">来源</TableHead>
+                  <TableHead className="w-24 h-8 py-1.5 text-[11px] font-medium text-muted-foreground">触发人</TableHead>
+                  <TableHead className="h-8 py-1.5 text-[11px] font-medium text-muted-foreground">触发内容</TableHead>
+                  <TableHead className="w-40 h-8 py-1.5 text-[11px] font-medium text-muted-foreground">时间</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {mockRuns.map((r) => (
                   <TableRow key={r.id} className="cursor-pointer" onClick={() => setActiveRun(r)}>
-                    <TableCell><Badge variant="outline" className="text-[10px] whitespace-nowrap">{r.source}</Badge></TableCell>
-                    <TableCell className="text-xs">{r.trigger}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground truncate max-w-[280px]">{r.prompt}</TableCell>
-                    <TableCell className="text-xs font-mono text-muted-foreground">{r.startedAt}</TableCell>
+                    <TableCell className="py-2"><Badge variant="outline" className="text-[10px] h-4 px-1.5 font-normal whitespace-nowrap">{r.source}</Badge></TableCell>
+                    <TableCell className="py-2 text-xs">{r.trigger}</TableCell>
+                    <TableCell className="py-2 text-xs text-muted-foreground truncate max-w-[280px]">{r.prompt}</TableCell>
+                    <TableCell className="py-2 text-[11px] font-mono text-muted-foreground">{r.startedAt}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -941,6 +950,51 @@ fengsheng:
               </div>
             </SheetContent>
           </Sheet>
+        </TabsContent>
+
+        {/* ───────── API Key ───────── */}
+        <TabsContent value="apikey" className="mt-4">
+          <div className="border border-border rounded-lg bg-card">
+            <div className="px-4 py-2.5 border-b border-border flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <h3 className="text-sm font-semibold flex items-center gap-1.5">
+                  <KeyRound className="w-3.5 h-3.5 text-primary" />API Key
+                </h3>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  调用「{name}」的鉴权凭据。可申请多个，按调用方区分。完整密钥仅在生成时展示一次，列表只展示首尾片段。
+                </p>
+              </div>
+              <Button size="sm" className="h-7 text-xs gap-1 shrink-0" onClick={() => setApiKeyOpen(true)}>
+                <Plus className="w-3 h-3" />申请 API Key
+              </Button>
+            </div>
+            {apiKeys.length === 0 ? (
+              <p className="text-xs text-muted-foreground text-center py-8">尚未申请任何 API Key</p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="w-12 h-8 py-1.5 text-[11px] font-medium text-muted-foreground">序号</TableHead>
+                    <TableHead className="h-8 py-1.5 text-[11px] font-medium text-muted-foreground">名称</TableHead>
+                    <TableHead className="h-8 py-1.5 text-[11px] font-medium text-muted-foreground">API Key</TableHead>
+                    <TableHead className="w-24 h-8 py-1.5 text-[11px] font-medium text-muted-foreground">创建人</TableHead>
+                    <TableHead className="w-36 h-8 py-1.5 text-[11px] font-medium text-muted-foreground">创建时间</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {apiKeys.map((k, i) => (
+                    <TableRow key={k.id} className="hover:bg-muted/40">
+                      <TableCell className="py-2 text-xs text-muted-foreground">{i + 1}</TableCell>
+                      <TableCell className="py-2 text-xs">{k.name}</TableCell>
+                      <TableCell className="py-2 text-[11px] font-mono text-muted-foreground">{k.masked}</TableCell>
+                      <TableCell className="py-2 text-xs">{k.creator}</TableCell>
+                      <TableCell className="py-2 text-[11px] font-mono text-muted-foreground">{k.createdAt}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </div>
         </TabsContent>
       </Tabs>
 
