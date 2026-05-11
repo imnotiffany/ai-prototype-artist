@@ -780,8 +780,7 @@ const CreateAgentPage = () => {
               setMessages((prev) =>
                 prev.map((m) => m.id === responseId ? { ...m, content: fullText, isStreaming: false } : m)
               );
-              // 流式完成后追加装配汇总卡片
-              setMessages((prev) => [...prev, { id: uid(), role: "system", content: "", type: "assembly-summary" }]);
+              // 装配结果直接体现在右侧「配置」面板，无需在对话流插入汇总卡片
               setIsThinking(false);
               setThinkingStartedAt(null);
             } else {
