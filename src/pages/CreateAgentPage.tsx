@@ -682,6 +682,7 @@ const CreateAgentPage = () => {
 
   /* ── Send: create or refine agent ── */
   const handleSend = () => {
+    // 注意：autoStart 时 input 在上一个 tick 由 setInput 写入
     if (!input.trim() || isThinking) return;
     const userMsg = input.trim();
     const attachments = [
