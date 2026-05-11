@@ -1200,13 +1200,11 @@ const CreateAgentPage = () => {
                   </button>
                 </div>
               )}
-              {/* Publish button */}
-              {agentCreated && (
-                <Button size="sm" className="h-7 text-[11px] gap-1.5 px-3" onClick={() => setPublishOpen(true)}>
-                  <Rocket className="w-3 h-3" />
-                  发布
-                </Button>
-              )}
+              {/* Save button — 始终展示，点击弹出确认卡片 */}
+              <Button size="sm" className="h-7 text-[11px] gap-1.5 px-3" onClick={() => setPublishOpen(true)}>
+                <Save className="w-3 h-3" />
+                保存
+              </Button>
             </div>
           </div>
 
