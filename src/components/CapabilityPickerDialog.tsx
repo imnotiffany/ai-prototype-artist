@@ -48,10 +48,11 @@ export const CapabilityPickerDialog = ({
 }: Props) => {
   const isMcp = label === "MCP";
   const isSkill = label === "Skill";
-  const hasScopes = !isMcp && items.some((i) => i.scope);
+  const isSubagent = label === "子智能体";
+  const hasScopes = !isMcp && !isSubagent && items.some((i) => i.scope);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [skillScope, setSkillScope] = useState<"market" | "project">("market");
+  const [skillScope, setSkillScope] = useState<"market" | "project">(isSubagent ? "project" : "market");
   const [skillTag, setSkillTag] = useState<string>("__all__");
   const [orderSnapshot, setOrderSnapshot] = useState<string[]>([]);
 
