@@ -3,7 +3,7 @@ import { useNavigate, useLocation, Link } from "react-router-dom";
 import {
   Send, ChevronRight, CheckCircle2, Copy, Loader2, ChevronDown, Code2, Settings2,
   Zap, Server, Plus, X, Rocket, Package, Bot, ScrollText, MessageSquare, Bug,
-  History, FormInput, KeyRound, Link2, Eye, EyeOff, AlertCircle, ExternalLink, Save, Sparkles,
+  History, FormInput, KeyRound, Link2, Eye, EyeOff, AlertCircle, ExternalLink, Save, Sparkles, RefreshCw,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
@@ -20,7 +20,7 @@ import { toast } from "@/hooks/use-toast";
 import { AIStatusPill } from "@/components/AIStatusPill";
 import { ToolCallGroup, type ToolCall } from "@/components/ToolCallCard";
 import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
-import { mcpRequiresCredential, mockCredentials } from "@/data/mockData";
+import { mcpRequiresCredential, mockCredentials, categories } from "@/data/mockData";
 import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { AlertTriangle, FolderKanban } from "lucide-react";
 
@@ -417,21 +417,24 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
           {config.skills.length === 0 ? (
             <p className="text-xs text-muted-foreground">暂无技能</p>
           ) : (
-            <div className="space-y-1.5">
-              {config.skills.map((s, i) => {
+            <div className="flex flex-wrap gap-2">
+              {config.skills.map((s) => {
                 const meta = availableSkills.find((x) => x.name === s);
                 return (
-                  <div key={i} className="flex items-center gap-2 border border-border rounded-lg px-3 py-2">
-                    <Zap className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs text-foreground truncate">{s}</p>
-                      {meta?.description && (
-                        <p className="text-[10px] text-muted-foreground line-clamp-1">{meta.description}</p>
-                      )}
-                    </div>
+                  <div
+                    key={s}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card pl-2 pr-1 py-1 text-xs"
+                    title={meta?.description}
+                  >
+                    <Zap className="w-3 h-3 text-primary shrink-0" />
+                    <span className="font-medium max-w-[160px] truncate">{s}</span>
+                    {meta?.scope === "project" && (
+                      <Badge variant="outline" className="text-[10px] h-4 px-1 border-border">项目</Badge>
+                    )}
                     <button
-                      onClick={() => onConfigChange({ ...config, skills: config.skills.filter((_, j) => j !== i) })}
-                      className="text-muted-foreground hover:text-destructive shrink-0"
+                      onClick={() => onConfigChange({ ...config, skills: config.skills.filter((x) => x !== s) })}
+                      className="text-muted-foreground hover:text-destructive p-0.5"
+                      title="移除"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -462,19 +465,27 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
           {config.subagents.length === 0 ? (
             <p className="text-xs text-muted-foreground">暂无子智能体</p>
           ) : (
-            <div className="space-y-1.5">
-              {config.subagents.map((s, i) => (
-                <div key={i} className="flex items-center gap-2 border border-border rounded-lg px-3 py-2">
-                  <Bot className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                  <span className="text-xs text-foreground flex-1 truncate">{s}</span>
-                  <button
-                    onClick={() => onConfigChange({ ...config, subagents: config.subagents.filter((_, j) => j !== i) })}
-                    className="text-muted-foreground hover:text-destructive shrink-0"
+            <div className="flex flex-wrap gap-2">
+              {config.subagents.map((s) => {
+                const meta = availableSubagents.find((x) => x.name === s);
+                return (
+                  <div
+                    key={s}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card pl-2 pr-1 py-1 text-xs"
+                    title={meta?.description}
                   >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
+                    <Bot className="w-3 h-3 text-primary shrink-0" />
+                    <span className="font-medium max-w-[160px] truncate">{s}</span>
+                    <button
+                      onClick={() => onConfigChange({ ...config, subagents: config.subagents.filter((x) => x !== s) })}
+                      className="text-muted-foreground hover:text-destructive p-0.5"
+                      title="移除"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
@@ -769,9 +780,19 @@ const CreateAgentPage = () => {
   // Save 确认卡片字段（仿手动组装）
   const [saveName, setSaveName] = useState("");
   const [saveDesc, setSaveDesc] = useState("");
-  const [saveCategory, setSaveCategory] = useState("通用");
+  const [saveCategory, setSaveCategory] = useState(categories[0]);
   const [saveAllowCopy, setSaveAllowCopy] = useState(true);
   const [savePublishToHub, setSavePublishToHub] = useState(false);
+  const [avatarSeed, setAvatarSeed] = useState(() => Math.random().toString(36).slice(2, 10));
+  const [generatingAvatar, setGeneratingAvatar] = useState(false);
+  const avatarUrl = `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${encodeURIComponent(avatarSeed)}&backgroundColor=dbeafe,fde68a,bbf7d0,fecaca,e9d5ff`;
+  const regenerateAvatar = () => {
+    setGeneratingAvatar(true);
+    setTimeout(() => {
+      setAvatarSeed(Math.random().toString(36).slice(2, 10) + Date.now().toString(36));
+      setGeneratingAvatar(false);
+    }, 600);
+  };
 
   // Attachments for chat input
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
@@ -1331,6 +1352,24 @@ const CreateAgentPage = () => {
           </DialogHeader>
           <div className="space-y-3 py-1">
             <div>
+              <Label className="text-xs">头像</Label>
+              <div className="mt-1.5 flex items-center gap-3">
+                <div className="w-14 h-14 rounded-lg border border-border bg-muted/40 overflow-hidden flex items-center justify-center shrink-0">
+                  {generatingAvatar ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                  ) : (
+                    <img src={avatarUrl} alt="智能体头像" className="w-full h-full object-cover" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={regenerateAvatar} disabled={generatingAvatar}>
+                    <RefreshCw className={`w-3 h-3 ${generatingAvatar ? "animate-spin" : ""}`} />
+                    {generatingAvatar ? "生成中…" : "AI 重新生成"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <div>
               <Label className="text-xs">名称 <span className="text-destructive">*</span></Label>
               <Input
                 className="mt-1.5 h-8 text-xs"
@@ -1354,7 +1393,7 @@ const CreateAgentPage = () => {
               <Select value={saveCategory} onValueChange={setSaveCategory}>
                 <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {["通用", "研发效能", "数据分析", "客户支持", "运营营销"].map((c) => (
+                  {categories.map((c) => (
                     <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>
                   ))}
                 </SelectContent>
