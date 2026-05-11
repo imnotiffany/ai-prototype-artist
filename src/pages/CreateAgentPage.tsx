@@ -619,6 +619,8 @@ const AssemblySummaryCard = ({
 /* ── Main Component ── */
 const CreateAgentPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const initialState = (location.state ?? {}) as { description?: string; autoStart?: boolean };
   const [configViewMode, setConfigViewMode] = useState<"structured" | "raw">("structured");
   const [rightTab, setRightTab] = useState<"config" | "preview" | "logs">("config");
   const [input, setInput] = useState("");
