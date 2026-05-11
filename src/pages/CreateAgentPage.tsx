@@ -752,7 +752,7 @@ const CreateAgentPage = () => {
 
           // Stream assistant response
           const responseId = uid();
-          const fullText = `智能体草稿已生成！\n\n**配置摘要：**\n- 模型：${newConfig.model}\n- 技能：${newConfig.skills.length > 0 ? newConfig.skills.join("、") : "无"}\n- MCP：${newConfig.mcpServers.length > 0 ? newConfig.mcpServers.join("、") : "无"}\n\n你可以在右侧「配置」面板查看和编辑详细配置，或切换到「调试」面板发送消息测试智能体。\n\n如果需要修改，直接告诉我即可。`;
+          const fullText = `智能体草稿已生成！\n\n**配置摘要：**\n- 模型：${newConfig.model}\n- 技能：${newConfig.skills.length > 0 ? newConfig.skills.join("、") : "无"}\n- MCP：${newConfig.mcpServers.length > 0 ? newConfig.mcpServers.join("、") : "无"}\n\n下方卡片中可继续添加 MCP / Skill / 子智能体，需要凭据的 MCP 请点击「去 MCP 配置」。`;
 
           setMessages((prev) => [...prev, { id: responseId, role: "assistant", content: "", isStreaming: true }]);
           let charIndex = 0;
@@ -763,6 +763,8 @@ const CreateAgentPage = () => {
               setMessages((prev) =>
                 prev.map((m) => m.id === responseId ? { ...m, content: fullText, isStreaming: false } : m)
               );
+              // 流式完成后追加装配汇总卡片
+              setMessages((prev) => [...prev, { id: uid(), role: "system", content: "", type: "assembly-summary" }]);
               setIsThinking(false);
               setThinkingStartedAt(null);
             } else {
