@@ -26,10 +26,12 @@ interface Message {
   id: string;
   role: "user" | "assistant" | "system";
   content: string;
-  type?: "question" | "confirm" | "api-call" | "text" | "assembly" | "tool-calls";
+  type?: "question" | "confirm" | "api-call" | "text" | "assembly" | "tool-calls" | "clarify" | "assembly-summary";
   attachments?: { type: "skill" | "mcp"; name: string }[];
   toolCalls?: ToolCall[];
   isStreaming?: boolean;
+  /** clarify 类型：澄清问题列表 */
+  clarifyQuestions?: string[];
 }
 
 interface PreviewMessage {
