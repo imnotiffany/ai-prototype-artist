@@ -128,8 +128,12 @@ const assembleAgent = (
 ): AgentConfig => {
   // Merge manually selected + NLP-detected
   const { detectedSkills, detectedMCPs } = detectFromText(description);
-  const allSkills = [...new Set([...skills, ...detectedSkills])];
-  const allMCPs = [...new Set([...mcps, ...detectedMCPs])];
+  // Demo 阶段：无论输入什么，都默认绑定一组 Skill / MCP / 子智能体，方便演示
+  const demoSkills = availableSkills.slice(0, 3).map((s) => s.name);
+  const demoMCPs = availableMCPs.slice(0, 2).map((m) => m.name);
+  const demoSubagents = availableSubagents.slice(0, 2).map((s) => s.name);
+  const allSkills = [...new Set([...skills, ...detectedSkills, ...demoSkills])];
+  const allMCPs = [...new Set([...mcps, ...detectedMCPs, ...demoMCPs])];
 
   const lower = description.toLowerCase();
   let model = "claude-sonnet-4-6";
