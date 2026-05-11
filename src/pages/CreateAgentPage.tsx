@@ -89,6 +89,12 @@ const defaultConfig: AgentConfig = {
 import { getActiveSkills, getActiveMCPs } from "@/data/mockData";
 const availableSkills = getActiveSkills();
 const availableMCPs = getActiveMCPs();
+const availableSubagents = availableSkills.slice(0, 8).map((s) => ({
+  name: `${s.name} 子智能体`,
+  description: `基于「${s.name}」封装的子智能体，可被主智能体调用`,
+  scope: "market" as const,
+  tags: s.tags ?? [],
+}));
 
 const versions = ["v0.0.1", "v0.0.2", "v0.0.3"];
 
