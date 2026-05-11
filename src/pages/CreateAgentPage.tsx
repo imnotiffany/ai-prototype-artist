@@ -12,14 +12,17 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
 import { AIStatusPill } from "@/components/AIStatusPill";
 import { ToolCallGroup, type ToolCall } from "@/components/ToolCallCard";
 import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
-import { mcpRequiresCredential } from "@/data/mockData";
+import { mcpRequiresCredential, mockCredentials } from "@/data/mockData";
 import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
+import { AlertTriangle, FolderKanban } from "lucide-react";
 
 /* ── Types ── */
 interface Message {
@@ -223,16 +226,7 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
   return (
     <div className="flex-1 overflow-auto">
       <div className="divide-y divide-border">
-        {/* Name */}
-        <div className="px-5 py-4">
-          <label className="text-xs font-medium text-muted-foreground mb-2 block">名称</label>
-          <Input
-            value={config.name}
-            onChange={(e) => onConfigChange({ ...config, name: e.target.value })}
-            className="h-8 text-sm"
-            placeholder="智能体名称"
-          />
-        </div>
+        {/* 名称在「保存」时弹出确认卡片中编辑，配置区不展示 */}
 
         {/* Version 在自动创建调试页固定为 v0.0.1，隐藏切换器 */}
         <div className="px-5 py-4">
@@ -332,26 +326,67 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
               </Collapsible>
             </div>
           ))}
-          {/* MCP Servers */}
+          {/* MCP Servers — 仿手动组装：chip + 凭据 popover */}
           {config.mcpServers.length > 0 && (
-            <div className="space-y-1.5 mt-2">
-              {config.mcpServers.map((mcp, i) => {
-                const needs = mcpRequiresCredential(mcp);
-                const pending = needs && !isMcpConfigured(mcp);
+            <div className="flex flex-wrap gap-2 mt-3">
+              {config.mcpServers.map((mcpName, i) => {
+                const needsCred = mcpRequiresCredential(mcpName);
+                const creds = mockCredentials.filter((c) => c.mcpServer === mcpName);
+                const bound = needsCred && (isMcpConfigured(mcpName) || creds.length > 0);
+                const credMissing = needsCred && !bound;
                 return (
-                  <div key={i} className="flex items-center gap-2 border border-border rounded-lg px-3 py-2">
-                    {pending
-                      ? <span className="w-1.5 h-1.5 rounded-full bg-destructive shrink-0" title="待配置凭据" />
-                      : <Server className="w-3.5 h-3.5 text-muted-foreground" />}
-                    <span className="text-xs text-foreground flex-1 truncate">{mcp}</span>
-                    {pending && (
-                      <Link to="/vault" className="text-[10px] text-primary hover:underline flex items-center gap-0.5">
-                        去 MCP 配置 <ExternalLink className="w-2.5 h-2.5" />
-                      </Link>
+                  <div
+                    key={i}
+                    className={`inline-flex items-center gap-1.5 rounded-md border pl-2 pr-1 py-1 text-xs ${
+                      credMissing ? "border-amber-300 bg-amber-50/40 dark:bg-amber-950/20" : "border-border bg-card"
+                    }`}
+                  >
+                    <Server className="w-3 h-3 text-primary shrink-0" />
+                    <span className="font-medium max-w-[140px] truncate">{mcpName}</span>
+                    {needsCred ? (
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button
+                            className={`inline-flex items-center gap-0.5 text-[10px] px-1 py-0.5 rounded ${
+                              credMissing ? "text-amber-700 hover:bg-amber-100" : "text-emerald-700 hover:bg-emerald-100"
+                            }`}
+                            title="凭据"
+                          >
+                            {credMissing ? <AlertTriangle className="w-2.5 h-2.5" /> : <KeyRound className="w-2.5 h-2.5" />}
+                            {credMissing ? "未绑定" : "已绑定"}
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-64 p-3" align="start">
+                          <Label className="text-[11px] text-muted-foreground">选择凭据</Label>
+                          {creds.length === 0 ? (
+                            <div className="mt-2 space-y-2">
+                              <p className="text-[11px] text-amber-600">该 MCP 暂无可用凭据</p>
+                              <Link
+                                to="/vault"
+                                className="inline-flex items-center justify-center gap-1 h-7 px-2 rounded border border-border text-xs hover:bg-muted w-full"
+                              >
+                                前往凭据管理 <ExternalLink className="w-3 h-3" />
+                              </Link>
+                            </div>
+                          ) : (
+                            <Select defaultValue={creds[0].id}>
+                              <SelectTrigger className="h-7 text-xs mt-1.5"><SelectValue placeholder="选择凭据" /></SelectTrigger>
+                              <SelectContent>
+                                {creds.map((c) => (
+                                  <SelectItem key={c.id} value={c.id} className="text-xs">{c.name}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                        </PopoverContent>
+                      </Popover>
+                    ) : (
+                      <Badge variant="outline" className="border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30 text-[10px] h-4 px-1">免凭据</Badge>
                     )}
                     <button
                       onClick={() => onConfigChange({ ...config, mcpServers: config.mcpServers.filter((_, j) => j !== i) })}
-                      className="text-muted-foreground hover:text-destructive"
+                      className="text-muted-foreground hover:text-destructive p-0.5"
+                      title="移除"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -731,6 +766,12 @@ const CreateAgentPage = () => {
   }));
   const [agentCreated, setAgentCreated] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
+  // Save 确认卡片字段（仿手动组装）
+  const [saveName, setSaveName] = useState("");
+  const [saveDesc, setSaveDesc] = useState("");
+  const [saveCategory, setSaveCategory] = useState("通用");
+  const [saveAllowCopy, setSaveAllowCopy] = useState(true);
+  const [savePublishToHub, setSavePublishToHub] = useState(false);
 
   // Attachments for chat input
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
@@ -1165,13 +1206,19 @@ const CreateAgentPage = () => {
                   </button>
                 </div>
               )}
-              {/* Publish button */}
-              {agentCreated && (
-                <Button size="sm" className="h-7 text-[11px] gap-1.5 px-3" onClick={() => setPublishOpen(true)}>
-                  <Rocket className="w-3 h-3" />
-                  发布
-                </Button>
-              )}
+              {/* Save button — 始终展示，点击弹出确认卡片 */}
+              <Button
+                size="sm"
+                className="h-7 text-[11px] gap-1.5 px-3"
+                onClick={() => {
+                  setSaveName((prev) => prev || agentConfig.name || "");
+                  setSaveDesc((prev) => prev || initialState.description || "");
+                  setPublishOpen(true);
+                }}
+              >
+                <Save className="w-3 h-3" />
+                保存
+              </Button>
             </div>
           </div>
 
@@ -1270,41 +1317,86 @@ const CreateAgentPage = () => {
         </ResizablePanel>
       </ResizablePanelGroup>
 
-      {/* Publish Dialog */}
+      {/* Save Dialog — 仿手动组装的保存确认卡片 */}
       <Dialog open={publishOpen} onOpenChange={setPublishOpen}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-base">发布智能体</DialogTitle>
+            <DialogTitle className="text-sm flex items-center gap-1.5">
+              <FolderKanban className="w-4 h-4 text-primary" />
+              保存到项目管理
+            </DialogTitle>
+            <DialogDescription className="text-[11px]">
+              确认基础信息后保存为新版本（{agentConfig.version}）。如需发布，请在项目管理或详情页右上角的「发布」按钮中操作。
+            </DialogDescription>
           </DialogHeader>
-          <p className="text-xs text-muted-foreground">
-            选择发布方式，将 <span className="font-medium text-foreground">{agentConfig.name || "我的智能体"}</span> 发布到平台。
-          </p>
-          <div className="grid gap-3 py-2">
-            <button
-              onClick={() => handlePublish("marketplace")}
-              className="flex items-center gap-3 border border-border rounded-lg p-4 text-left hover:border-primary/50 hover:bg-primary/5 transition-colors"
-            >
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                <Package className="w-5 h-5 text-primary" />
-              </div>
+          <div className="space-y-3 py-1">
+            <div>
+              <Label className="text-xs">名称 <span className="text-destructive">*</span></Label>
+              <Input
+                className="mt-1.5 h-8 text-xs"
+                value={saveName}
+                onChange={(e) => setSaveName(e.target.value)}
+                placeholder="例如：财务月报助手"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">简介</Label>
+              <Textarea
+                className="mt-1.5 text-xs"
+                rows={3}
+                value={saveDesc}
+                onChange={(e) => setSaveDesc(e.target.value)}
+                placeholder="一句话描述智能体能力"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">分类</Label>
+              <Select value={saveCategory} onValueChange={setSaveCategory}>
+                <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {["通用", "研发效能", "数据分析", "客户支持", "运营营销"].map((c) => (
+                    <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center justify-between border border-border rounded-lg px-3 py-2">
               <div>
-                <p className="text-sm font-medium text-foreground">发布到应用广场</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">作为独立应用发布，其他用户可以直接使用</p>
+                <p className="text-xs text-foreground">支持复制</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">允许其他成员复制本智能体作为模板</p>
               </div>
-            </button>
-            <button
-              onClick={() => handlePublish("agent")}
-              className="flex items-center gap-3 border border-border rounded-lg p-4 text-left hover:border-primary/50 hover:bg-primary/5 transition-colors"
-            >
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                <Bot className="w-5 h-5 text-primary" />
-              </div>
+              <Switch checked={saveAllowCopy} onCheckedChange={setSaveAllowCopy} />
+            </div>
+            <div className="flex items-center justify-between border border-border rounded-lg px-3 py-2">
               <div>
-                <p className="text-sm font-medium text-foreground">发布为项目智能体</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">添加到项目智能体列表，供团队内部使用</p>
+                <p className="text-xs text-foreground">同步发布到 Agent Hub</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">开启后保存即同步发布，并提供运行监控</p>
               </div>
-            </button>
+              <Switch checked={savePublishToHub} onCheckedChange={setSavePublishToHub} />
+            </div>
           </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setPublishOpen(false)}>取消</Button>
+            <Button
+              size="sm"
+              className="h-8 text-xs gap-1.5"
+              onClick={() => {
+                if (!saveName.trim()) {
+                  toast({ title: "请填写智能体名称", variant: "destructive" });
+                  return;
+                }
+                setAgentConfig({ ...agentConfig, name: saveName.trim() });
+                setAgentCreated(true);
+                setPublishOpen(false);
+                toast({
+                  title: "已保存到项目管理",
+                  description: `${saveName.trim()} · ${saveCategory}${savePublishToHub ? "（已同步发布到 Agent Hub）" : ""}`,
+                });
+              }}
+            >
+              <Save className="w-3 h-3" /> 保存
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
