@@ -428,6 +428,194 @@ const RawConfigView = ({ config }: { config: AgentConfig }) => {
   );
 };
 
+/* ── Assembly Summary Card (auto-装配后的汇总卡片) ── */
+const AssemblySummaryCard = ({
+  config,
+  onAddSkill,
+  onAddMcp,
+  onAddSubagent,
+  onSave,
+  onDebug,
+}: {
+  config: AgentConfig;
+  onAddSkill: (name: string) => void;
+  onAddMcp: (name: string) => void;
+  onAddSubagent: (name: string) => void;
+  onSave: () => void;
+  onDebug: () => void;
+}) => {
+  // 订阅凭据 store，配置完成后自动刷新
+  const [, setTick] = useState(0);
+  useEffect(() => subscribeMcpStore(() => setTick((t) => t + 1)), []);
+
+  const skillItems = getActiveSkills();
+  const mcpItems = getActiveMCPs();
+  // 子智能体可选项 mock：从 active skills 借用名字简化，可后续替换
+  const subagentItems = skillItems.slice(0, 6).map((s) => ({ name: `${s.name} 子智能体`, description: `基于「${s.name}」封装的子智能体`, scope: "market" as const }));
+
+  const pending = config.mcpServers.filter((m) => mcpRequiresCredential(m) && !isMcpConfigured(m));
+  const ready = config.mcpServers.filter((m) => !pending.includes(m));
+  const total = config.skills.length + config.mcpServers.length;
+  const downscale = total > 8;
+
+  return (
+    <div className="space-y-2.5">
+      {/* Downscale 提示条 */}
+      {downscale && (
+        <div className="flex items-start gap-2 rounded-md border border-amber-300/60 bg-amber-50 px-3 py-2 text-[11px] text-amber-900 dark:bg-amber-950/30 dark:text-amber-200 dark:border-amber-800/60">
+          <Sparkles className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            为保证响应速度，已为你精简到核心能力（{total} 项）。
+            <button className="ml-1 underline hover:no-underline" onClick={() => toast({ title: "查看被精简的能力", description: "（mock）将展示剔除项与原因" })}>
+              查看被精简项
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 基础信息 */}
+      <div className="border border-border rounded-lg p-3 bg-card">
+        <div className="flex items-center gap-1.5 mb-2">
+          <Settings2 className="w-3.5 h-3.5 text-primary" />
+          <span className="text-xs font-semibold text-foreground">基础信息</span>
+          <Badge variant="outline" className="text-[10px] h-4 px-1.5 ml-auto">{config.version}</Badge>
+        </div>
+        <div className="grid grid-cols-2 gap-2 text-[11px]">
+          <div><span className="text-muted-foreground">名称：</span><span className="text-foreground">{config.name || "—"}</span></div>
+          <div><span className="text-muted-foreground">模型：</span><span className="text-foreground">{config.model}</span></div>
+        </div>
+      </div>
+
+      {/* System Prompt 折叠 */}
+      <details className="border border-border rounded-lg bg-card group">
+        <summary className="flex items-center gap-1.5 px-3 py-2 cursor-pointer text-xs font-semibold text-foreground list-none">
+          <ScrollText className="w-3.5 h-3.5 text-primary" />
+          System Prompt
+          <ChevronDown className="w-3 h-3 ml-auto group-open:rotate-180 transition-transform" />
+        </summary>
+        <pre className="px-3 pb-3 text-[10px] text-muted-foreground whitespace-pre-wrap font-mono leading-relaxed border-t border-border pt-2">
+          {config.systemPrompt.slice(0, 600)}{config.systemPrompt.length > 600 && "…"}
+        </pre>
+      </details>
+
+      {/* MCP 装配 */}
+      <div className="border border-border rounded-lg p-3 bg-card">
+        <div className="flex items-center gap-1.5 mb-2">
+          <Server className="w-3.5 h-3.5 text-primary" />
+          <span className="text-xs font-semibold text-foreground">MCP 服务</span>
+          <Badge variant="outline" className="text-[10px] h-4 px-1.5">{config.mcpServers.length}</Badge>
+          {pending.length > 0 && (
+            <Badge className="text-[10px] h-4 px-1.5 bg-destructive/10 text-destructive border-destructive/30">{pending.length} 待配置</Badge>
+          )}
+          <div className="ml-auto">
+            <CapabilityPickerDialog
+              items={mcpItems}
+              selected={config.mcpServers}
+              onToggle={onAddMcp}
+              icon={<Server className="w-3.5 h-3.5" />}
+              label="MCP"
+              marketLink="/vault"
+            />
+          </div>
+        </div>
+        {config.mcpServers.length === 0 ? (
+          <p className="text-[11px] text-muted-foreground py-1">未匹配到 MCP，可手动添加</p>
+        ) : (
+          <ul className="space-y-1">
+            {ready.map((m) => (
+              <li key={m} className="flex items-center gap-2 text-[11px] py-1">
+                <CheckCircle2 className="w-3 h-3 text-primary shrink-0" />
+                <span className="text-foreground truncate">{m}</span>
+                <span className="text-[10px] text-muted-foreground ml-auto">{mcpRequiresCredential(m) ? "已配置" : "开箱即用"}</span>
+              </li>
+            ))}
+            {pending.map((m) => (
+              <li key={m} className="flex items-center gap-2 text-[11px] py-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-destructive shrink-0" />
+                <span className="text-foreground truncate">{m}</span>
+                <Link
+                  to="/vault"
+                  className="ml-auto text-[10px] text-primary hover:underline flex items-center gap-0.5"
+                  title="前往 MCP 管理配置凭据"
+                >
+                  去 MCP 配置 <ExternalLink className="w-2.5 h-2.5" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Skill 装配 */}
+      <div className="border border-border rounded-lg p-3 bg-card">
+        <div className="flex items-center gap-1.5 mb-2">
+          <Zap className="w-3.5 h-3.5 text-primary" />
+          <span className="text-xs font-semibold text-foreground">Skill</span>
+          <Badge variant="outline" className="text-[10px] h-4 px-1.5">{config.skills.length}</Badge>
+          <div className="ml-auto">
+            <CapabilityPickerDialog
+              items={skillItems}
+              selected={config.skills}
+              onToggle={onAddSkill}
+              icon={<Zap className="w-3.5 h-3.5" />}
+              label="Skill"
+              marketLink="https://ai.sf-express.com/project/enter/skill-app/skills"
+            />
+          </div>
+        </div>
+        {config.skills.length === 0 ? (
+          <p className="text-[11px] text-muted-foreground py-1">未匹配到 Skill，可手动添加</p>
+        ) : (
+          <ul className="space-y-1">
+            {config.skills.map((s) => (
+              <li key={s} className="flex items-center gap-2 text-[11px] py-1">
+                <CheckCircle2 className="w-3 h-3 text-primary shrink-0" />
+                <span className="text-foreground truncate">{s}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* 子智能体（默认展开） */}
+      <div className="border border-border rounded-lg p-3 bg-card">
+        <div className="flex items-center gap-1.5 mb-2">
+          <Bot className="w-3.5 h-3.5 text-primary" />
+          <span className="text-xs font-semibold text-foreground">子智能体</span>
+          <Badge variant="outline" className="text-[10px] h-4 px-1.5">0</Badge>
+          <div className="ml-auto">
+            <CapabilityPickerDialog
+              items={subagentItems}
+              selected={[]}
+              onToggle={onAddSubagent}
+              icon={<Bot className="w-3.5 h-3.5" />}
+              label="子智能体"
+              marketLink="/"
+            />
+          </div>
+        </div>
+        <p className="text-[11px] text-muted-foreground py-1">AI 暂未推荐子智能体，可手动添加</p>
+      </div>
+
+      {/* 操作按钮 */}
+      <div className="flex items-center gap-2 pt-1">
+        <Button size="sm" className="h-8 text-xs gap-1.5 flex-1" onClick={onSave}>
+          <Save className="w-3.5 h-3.5" /> 保存
+        </Button>
+        <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5 flex-1" onClick={onDebug}>
+          <Bug className="w-3.5 h-3.5" /> 立即调试
+        </Button>
+      </div>
+      {pending.length > 0 && (
+        <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+          <AlertCircle className="w-3 h-3 text-destructive" />
+          仍有 {pending.length} 项 MCP 凭据未配置，配置完成前无法发布到广场
+        </p>
+      )}
+    </div>
+  );
+};
+
 /* ── Main Component ── */
 const CreateAgentPage = () => {
   const navigate = useNavigate();
