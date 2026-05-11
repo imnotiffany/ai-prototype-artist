@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import {
   Send, ChevronRight, CheckCircle2, Copy, Loader2, ChevronDown, Code2, Settings2,
   Zap, Server, Plus, X, Rocket, Package, Bot, ScrollText, MessageSquare, Bug,
-  History, FormInput, KeyRound, Link2, Eye, EyeOff,
+  History, FormInput, KeyRound, Link2, Eye, EyeOff, AlertCircle, ExternalLink, Save, Sparkles,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
@@ -17,16 +17,21 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { toast } from "@/hooks/use-toast";
 import { AIStatusPill } from "@/components/AIStatusPill";
 import { ToolCallGroup, type ToolCall } from "@/components/ToolCallCard";
+import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
+import { mcpRequiresCredential } from "@/data/mockData";
+import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 
 /* ── Types ── */
 interface Message {
   id: string;
   role: "user" | "assistant" | "system";
   content: string;
-  type?: "question" | "confirm" | "api-call" | "text" | "assembly" | "tool-calls";
+  type?: "question" | "confirm" | "api-call" | "text" | "assembly" | "tool-calls" | "clarify" | "assembly-summary";
   attachments?: { type: "skill" | "mcp"; name: string }[];
   toolCalls?: ToolCall[];
   isStreaming?: boolean;
+  /** clarify 类型：澄清问题列表 */
+  clarifyQuestions?: string[];
 }
 
 interface PreviewMessage {
@@ -211,19 +216,13 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
           />
         </div>
 
-        {/* Version */}
+        {/* Version 在自动创建调试页固定为 v0.0.1，隐藏切换器 */}
         <div className="px-5 py-4">
           <label className="text-xs font-medium text-muted-foreground mb-2 block">Version</label>
-          <Select value={config.version} onValueChange={(v) => onConfigChange({ ...config, version: v })}>
-            <SelectTrigger className="h-8 text-xs w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {versions.map((v) => (
-                <SelectItem key={v} value={v} className="text-xs">{`Version: ${v}`}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="h-8 px-3 flex items-center text-xs text-foreground bg-muted/30 rounded border border-border">
+            {config.version}
+            <span className="ml-auto text-[10px] text-muted-foreground">首次创建固定版本</span>
+          </div>
         </div>
 
         {/* Model */}
@@ -429,9 +428,199 @@ const RawConfigView = ({ config }: { config: AgentConfig }) => {
   );
 };
 
+/* ── Assembly Summary Card (auto-装配后的汇总卡片) ── */
+const AssemblySummaryCard = ({
+  config,
+  onAddSkill,
+  onAddMcp,
+  onAddSubagent,
+  onSave,
+  onDebug,
+}: {
+  config: AgentConfig;
+  onAddSkill: (name: string) => void;
+  onAddMcp: (name: string) => void;
+  onAddSubagent: (name: string) => void;
+  onSave: () => void;
+  onDebug: () => void;
+}) => {
+  // 订阅凭据 store，配置完成后自动刷新
+  const [, setTick] = useState(0);
+  useEffect(() => subscribeMcpStore(() => setTick((t) => t + 1)), []);
+
+  const skillItems = getActiveSkills();
+  const mcpItems = getActiveMCPs();
+  // 子智能体可选项 mock：从 active skills 借用名字简化，可后续替换
+  const subagentItems = skillItems.slice(0, 6).map((s) => ({ name: `${s.name} 子智能体`, description: `基于「${s.name}」封装的子智能体`, scope: "market" as const }));
+
+  const pending = config.mcpServers.filter((m) => mcpRequiresCredential(m) && !isMcpConfigured(m));
+  const ready = config.mcpServers.filter((m) => !pending.includes(m));
+  const total = config.skills.length + config.mcpServers.length;
+  const downscale = total > 8;
+
+  return (
+    <div className="space-y-2.5">
+      {/* Downscale 提示条 */}
+      {downscale && (
+        <div className="flex items-start gap-2 rounded-md border border-amber-300/60 bg-amber-50 px-3 py-2 text-[11px] text-amber-900 dark:bg-amber-950/30 dark:text-amber-200 dark:border-amber-800/60">
+          <Sparkles className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            为保证响应速度，已为你精简到核心能力（{total} 项）。
+            <button className="ml-1 underline hover:no-underline" onClick={() => toast({ title: "查看被精简的能力", description: "（mock）将展示剔除项与原因" })}>
+              查看被精简项
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 基础信息 */}
+      <div className="border border-border rounded-lg p-3 bg-card">
+        <div className="flex items-center gap-1.5 mb-2">
+          <Settings2 className="w-3.5 h-3.5 text-primary" />
+          <span className="text-xs font-semibold text-foreground">基础信息</span>
+          <Badge variant="outline" className="text-[10px] h-4 px-1.5 ml-auto">{config.version}</Badge>
+        </div>
+        <div className="grid grid-cols-2 gap-2 text-[11px]">
+          <div><span className="text-muted-foreground">名称：</span><span className="text-foreground">{config.name || "—"}</span></div>
+          <div><span className="text-muted-foreground">模型：</span><span className="text-foreground">{config.model}</span></div>
+        </div>
+      </div>
+
+      {/* System Prompt 折叠 */}
+      <details className="border border-border rounded-lg bg-card group">
+        <summary className="flex items-center gap-1.5 px-3 py-2 cursor-pointer text-xs font-semibold text-foreground list-none">
+          <ScrollText className="w-3.5 h-3.5 text-primary" />
+          System Prompt
+          <ChevronDown className="w-3 h-3 ml-auto group-open:rotate-180 transition-transform" />
+        </summary>
+        <pre className="px-3 pb-3 text-[10px] text-muted-foreground whitespace-pre-wrap font-mono leading-relaxed border-t border-border pt-2">
+          {config.systemPrompt.slice(0, 600)}{config.systemPrompt.length > 600 && "…"}
+        </pre>
+      </details>
+
+      {/* MCP 装配 */}
+      <div className="border border-border rounded-lg p-3 bg-card">
+        <div className="flex items-center gap-1.5 mb-2">
+          <Server className="w-3.5 h-3.5 text-primary" />
+          <span className="text-xs font-semibold text-foreground">MCP 服务</span>
+          <Badge variant="outline" className="text-[10px] h-4 px-1.5">{config.mcpServers.length}</Badge>
+          {pending.length > 0 && (
+            <Badge className="text-[10px] h-4 px-1.5 bg-destructive/10 text-destructive border-destructive/30">{pending.length} 待配置</Badge>
+          )}
+          <div className="ml-auto">
+            <CapabilityPickerDialog
+              items={mcpItems}
+              selected={config.mcpServers}
+              onToggle={onAddMcp}
+              icon={<Server className="w-3.5 h-3.5" />}
+              label="MCP"
+              marketLink="/vault"
+            />
+          </div>
+        </div>
+        {config.mcpServers.length === 0 ? (
+          <p className="text-[11px] text-muted-foreground py-1">未匹配到 MCP，可手动添加</p>
+        ) : (
+          <ul className="space-y-1">
+            {ready.map((m) => (
+              <li key={m} className="flex items-center gap-2 text-[11px] py-1">
+                <CheckCircle2 className="w-3 h-3 text-primary shrink-0" />
+                <span className="text-foreground truncate">{m}</span>
+                <span className="text-[10px] text-muted-foreground ml-auto">{mcpRequiresCredential(m) ? "已配置" : "开箱即用"}</span>
+              </li>
+            ))}
+            {pending.map((m) => (
+              <li key={m} className="flex items-center gap-2 text-[11px] py-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-destructive shrink-0" />
+                <span className="text-foreground truncate">{m}</span>
+                <Link
+                  to="/vault"
+                  className="ml-auto text-[10px] text-primary hover:underline flex items-center gap-0.5"
+                  title="前往 MCP 管理配置凭据"
+                >
+                  去 MCP 配置 <ExternalLink className="w-2.5 h-2.5" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Skill 装配 */}
+      <div className="border border-border rounded-lg p-3 bg-card">
+        <div className="flex items-center gap-1.5 mb-2">
+          <Zap className="w-3.5 h-3.5 text-primary" />
+          <span className="text-xs font-semibold text-foreground">Skill</span>
+          <Badge variant="outline" className="text-[10px] h-4 px-1.5">{config.skills.length}</Badge>
+          <div className="ml-auto">
+            <CapabilityPickerDialog
+              items={skillItems}
+              selected={config.skills}
+              onToggle={onAddSkill}
+              icon={<Zap className="w-3.5 h-3.5" />}
+              label="Skill"
+              marketLink="https://ai.sf-express.com/project/enter/skill-app/skills"
+            />
+          </div>
+        </div>
+        {config.skills.length === 0 ? (
+          <p className="text-[11px] text-muted-foreground py-1">未匹配到 Skill，可手动添加</p>
+        ) : (
+          <ul className="space-y-1">
+            {config.skills.map((s) => (
+              <li key={s} className="flex items-center gap-2 text-[11px] py-1">
+                <CheckCircle2 className="w-3 h-3 text-primary shrink-0" />
+                <span className="text-foreground truncate">{s}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* 子智能体（默认展开） */}
+      <div className="border border-border rounded-lg p-3 bg-card">
+        <div className="flex items-center gap-1.5 mb-2">
+          <Bot className="w-3.5 h-3.5 text-primary" />
+          <span className="text-xs font-semibold text-foreground">子智能体</span>
+          <Badge variant="outline" className="text-[10px] h-4 px-1.5">0</Badge>
+          <div className="ml-auto">
+            <CapabilityPickerDialog
+              items={subagentItems}
+              selected={[]}
+              onToggle={onAddSubagent}
+              icon={<Bot className="w-3.5 h-3.5" />}
+              label="子智能体"
+              marketLink="/"
+            />
+          </div>
+        </div>
+        <p className="text-[11px] text-muted-foreground py-1">AI 暂未推荐子智能体，可手动添加</p>
+      </div>
+
+      {/* 操作按钮 */}
+      <div className="flex items-center gap-2 pt-1">
+        <Button size="sm" className="h-8 text-xs gap-1.5 flex-1" onClick={onSave}>
+          <Save className="w-3.5 h-3.5" /> 保存
+        </Button>
+        <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5 flex-1" onClick={onDebug}>
+          <Bug className="w-3.5 h-3.5" /> 立即调试
+        </Button>
+      </div>
+      {pending.length > 0 && (
+        <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+          <AlertCircle className="w-3 h-3 text-destructive" />
+          仍有 {pending.length} 项 MCP 凭据未配置，配置完成前无法发布到广场
+        </p>
+      )}
+    </div>
+  );
+};
+
 /* ── Main Component ── */
 const CreateAgentPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const initialState = (location.state ?? {}) as { description?: string; autoStart?: boolean };
   const [configViewMode, setConfigViewMode] = useState<"structured" | "raw">("structured");
   const [rightTab, setRightTab] = useState<"config" | "preview" | "logs">("config");
   const [input, setInput] = useState("");
@@ -470,6 +659,20 @@ const CreateAgentPage = () => {
   useEffect(() => { scrollToBottom(leftScrollRef); }, [messages, scrollToBottom]);
   useEffect(() => { scrollToBottom(rightScrollRef); }, [previewMessages, debugEvents, scrollToBottom]);
 
+  // 自动开始：来自 CreatePage 的「立即生成」入口
+  const autoStartedRef = useRef(false);
+  useEffect(() => {
+    if (autoStartedRef.current) return;
+    if (initialState.autoStart && initialState.description?.trim()) {
+      autoStartedRef.current = true;
+      setInput(initialState.description.trim());
+      // 下一个 tick 触发发送
+      setTimeout(() => { handleSendRef.current?.(); }, 50);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const handleSendRef = useRef<() => void>();
+
   const toggleSkill = (name: string) => {
     setSelectedSkills((prev) => prev.includes(name) ? prev.filter((s) => s !== name) : [...prev, name]);
   };
@@ -479,6 +682,7 @@ const CreateAgentPage = () => {
 
   /* ── Send: create or refine agent ── */
   const handleSend = () => {
+    // 注意：autoStart 时 input 在上一个 tick 由 setInput 写入
     if (!input.trim() || isThinking) return;
     const userMsg = input.trim();
     const attachments = [
@@ -565,7 +769,7 @@ const CreateAgentPage = () => {
 
           // Stream assistant response
           const responseId = uid();
-          const fullText = `智能体草稿已生成！\n\n**配置摘要：**\n- 模型：${newConfig.model}\n- 技能：${newConfig.skills.length > 0 ? newConfig.skills.join("、") : "无"}\n- MCP：${newConfig.mcpServers.length > 0 ? newConfig.mcpServers.join("、") : "无"}\n\n你可以在右侧「配置」面板查看和编辑详细配置，或切换到「调试」面板发送消息测试智能体。\n\n如果需要修改，直接告诉我即可。`;
+          const fullText = `智能体草稿已生成！\n\n**配置摘要：**\n- 模型：${newConfig.model}\n- 技能：${newConfig.skills.length > 0 ? newConfig.skills.join("、") : "无"}\n- MCP：${newConfig.mcpServers.length > 0 ? newConfig.mcpServers.join("、") : "无"}\n\n下方卡片中可继续添加 MCP / Skill / 子智能体，需要凭据的 MCP 请点击「去 MCP 配置」。`;
 
           setMessages((prev) => [...prev, { id: responseId, role: "assistant", content: "", isStreaming: true }]);
           let charIndex = 0;
@@ -576,6 +780,8 @@ const CreateAgentPage = () => {
               setMessages((prev) =>
                 prev.map((m) => m.id === responseId ? { ...m, content: fullText, isStreaming: false } : m)
               );
+              // 流式完成后追加装配汇总卡片
+              setMessages((prev) => [...prev, { id: uid(), role: "system", content: "", type: "assembly-summary" }]);
               setIsThinking(false);
               setThinkingStartedAt(null);
             } else {
@@ -636,8 +842,8 @@ const CreateAgentPage = () => {
       }
     }, streamDelay);
   };
+  handleSendRef.current = handleSend;
 
-  /* ── Preview send (debug chat) ── */
   const handlePreviewSend = () => {
     if (!previewInput.trim() || isAgentRunning) return;
     const msg = previewInput.trim();
@@ -727,6 +933,15 @@ const CreateAgentPage = () => {
                   </div>
                 ) : msg.type === "tool-calls" && msg.toolCalls ? (
                   <ToolCallGroup calls={msg.toolCalls} />
+                ) : msg.type === "assembly-summary" ? (
+                  <AssemblySummaryCard
+                    config={agentConfig}
+                    onAddSkill={(name) => setAgentConfig((c) => c.skills.includes(name) ? { ...c, skills: c.skills.filter((s) => s !== name) } : { ...c, skills: [...c.skills, name] })}
+                    onAddMcp={(name) => setAgentConfig((c) => c.mcpServers.includes(name) ? { ...c, mcpServers: c.mcpServers.filter((s) => s !== name) } : { ...c, mcpServers: [...c.mcpServers, name] })}
+                    onAddSubagent={(name) => toast({ title: "已添加子智能体", description: name })}
+                    onSave={() => toast({ title: "已保存", description: `${agentConfig.name || "我的智能体"} 已保存` })}
+                    onDebug={() => setRightTab("preview")}
+                  />
                 ) : msg.type === "assembly" ? (
                   <div className="flex items-center gap-2 text-xs text-muted-foreground py-1">
                     <Loader2 className="w-3.5 h-3.5 animate-spin text-primary shrink-0" />

@@ -29,7 +29,7 @@ const CreatePage = () => {
   const handleCreate = () => {
     if (activeTab === "agent") {
       if (agentMode === "auto") {
-        navigate("/create-agent", { state: { description } });
+        navigate("/create-agent", { state: { description, autoStart: true } });
       } else {
         navigate("/create-agent-manual");
       }
