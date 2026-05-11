@@ -417,21 +417,24 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
           {config.skills.length === 0 ? (
             <p className="text-xs text-muted-foreground">暂无技能</p>
           ) : (
-            <div className="space-y-1.5">
-              {config.skills.map((s, i) => {
+            <div className="flex flex-wrap gap-2">
+              {config.skills.map((s) => {
                 const meta = availableSkills.find((x) => x.name === s);
                 return (
-                  <div key={i} className="flex items-center gap-2 border border-border rounded-lg px-3 py-2">
-                    <Zap className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs text-foreground truncate">{s}</p>
-                      {meta?.description && (
-                        <p className="text-[10px] text-muted-foreground line-clamp-1">{meta.description}</p>
-                      )}
-                    </div>
+                  <div
+                    key={s}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card pl-2 pr-1 py-1 text-xs"
+                    title={meta?.description}
+                  >
+                    <Zap className="w-3 h-3 text-primary shrink-0" />
+                    <span className="font-medium max-w-[160px] truncate">{s}</span>
+                    {meta?.scope === "project" && (
+                      <Badge variant="outline" className="text-[10px] h-4 px-1 border-border">项目</Badge>
+                    )}
                     <button
-                      onClick={() => onConfigChange({ ...config, skills: config.skills.filter((_, j) => j !== i) })}
-                      className="text-muted-foreground hover:text-destructive shrink-0"
+                      onClick={() => onConfigChange({ ...config, skills: config.skills.filter((x) => x !== s) })}
+                      className="text-muted-foreground hover:text-destructive p-0.5"
+                      title="移除"
                     >
                       <X className="w-3 h-3" />
                     </button>
