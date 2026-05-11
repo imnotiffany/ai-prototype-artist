@@ -20,7 +20,7 @@ import { toast } from "@/hooks/use-toast";
 import { AIStatusPill } from "@/components/AIStatusPill";
 import { ToolCallGroup, type ToolCall } from "@/components/ToolCallCard";
 import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
-import { mcpRequiresCredential, mockCredentials } from "@/data/mockData";
+import { mcpRequiresCredential, mockCredentials, categories } from "@/data/mockData";
 import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { AlertTriangle, FolderKanban } from "lucide-react";
 
