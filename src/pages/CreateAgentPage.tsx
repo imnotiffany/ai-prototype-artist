@@ -659,6 +659,20 @@ const CreateAgentPage = () => {
   useEffect(() => { scrollToBottom(leftScrollRef); }, [messages, scrollToBottom]);
   useEffect(() => { scrollToBottom(rightScrollRef); }, [previewMessages, debugEvents, scrollToBottom]);
 
+  // 自动开始：来自 CreatePage 的「立即生成」入口
+  const autoStartedRef = useRef(false);
+  useEffect(() => {
+    if (autoStartedRef.current) return;
+    if (initialState.autoStart && initialState.description?.trim()) {
+      autoStartedRef.current = true;
+      setInput(initialState.description.trim());
+      // 下一个 tick 触发发送
+      setTimeout(() => { handleSendRef.current?.(); }, 50);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const handleSendRef = useRef<() => void>();
+
   const toggleSkill = (name: string) => {
     setSelectedSkills((prev) => prev.includes(name) ? prev.filter((s) => s !== name) : [...prev, name]);
   };
