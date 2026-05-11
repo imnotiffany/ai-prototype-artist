@@ -465,19 +465,27 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
           {config.subagents.length === 0 ? (
             <p className="text-xs text-muted-foreground">暂无子智能体</p>
           ) : (
-            <div className="space-y-1.5">
-              {config.subagents.map((s, i) => (
-                <div key={i} className="flex items-center gap-2 border border-border rounded-lg px-3 py-2">
-                  <Bot className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                  <span className="text-xs text-foreground flex-1 truncate">{s}</span>
-                  <button
-                    onClick={() => onConfigChange({ ...config, subagents: config.subagents.filter((_, j) => j !== i) })}
-                    className="text-muted-foreground hover:text-destructive shrink-0"
+            <div className="flex flex-wrap gap-2">
+              {config.subagents.map((s) => {
+                const meta = availableSubagents.find((x) => x.name === s);
+                return (
+                  <div
+                    key={s}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card pl-2 pr-1 py-1 text-xs"
+                    title={meta?.description}
                   >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
+                    <Bot className="w-3 h-3 text-primary shrink-0" />
+                    <span className="font-medium max-w-[160px] truncate">{s}</span>
+                    <button
+                      onClick={() => onConfigChange({ ...config, subagents: config.subagents.filter((x) => x !== s) })}
+                      className="text-muted-foreground hover:text-destructive p-0.5"
+                      title="移除"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
