@@ -48,10 +48,11 @@ export const CapabilityPickerDialog = ({
 }: Props) => {
   const isMcp = label === "MCP";
   const isSkill = label === "Skill";
-  const hasScopes = !isMcp && items.some((i) => i.scope);
+  const isSubagent = label === "子智能体";
+  const hasScopes = !isMcp && !isSubagent && items.some((i) => i.scope);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [skillScope, setSkillScope] = useState<"market" | "project">("market");
+  const [skillScope, setSkillScope] = useState<"market" | "project">(isSubagent ? "project" : "market");
   const [skillTag, setSkillTag] = useState<string>("__all__");
   const [orderSnapshot, setOrderSnapshot] = useState<string[]>([]);
 
@@ -87,6 +88,7 @@ export const CapabilityPickerDialog = ({
 
   const filtered = items.filter((it) => {
     if (hasScopes && (it.scope ?? "market") !== skillScope) return false;
+    if (isSubagent && (it.scope ?? "market") !== "project") return false;
     if (!isMcp && skillTag !== "__all__" && !(it.tags ?? []).includes(skillTag)) return false;
     const q = search.toLowerCase();
     return it.name.toLowerCase().includes(q) || it.description.toLowerCase().includes(q);
@@ -237,7 +239,7 @@ export const CapabilityPickerDialog = ({
             <Button asChild variant="ghost" size="sm" className="h-8 text-xs shrink-0">
               <Link to={mcpManageHref} onClick={() => setOpen(false)}>{marketLabel}</Link>
             </Button>
-          ) : (
+          ) : isSubagent ? null : (
             <Button
               variant="ghost"
               size="sm"
