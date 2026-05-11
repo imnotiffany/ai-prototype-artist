@@ -152,7 +152,7 @@ const assembleAgent = (
     ],
     skills: allSkills,
     mcpServers: allMCPs,
-    subagents: [],
+    subagents: demoSubagents,
     fengsheng: { enabled: false, appKey: "", appSecret: "", robotCode: "", connected: false },
   };
 };
