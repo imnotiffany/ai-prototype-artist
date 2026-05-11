@@ -766,6 +766,12 @@ const CreateAgentPage = () => {
   }));
   const [agentCreated, setAgentCreated] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
+  // Save 确认卡片字段（仿手动组装）
+  const [saveName, setSaveName] = useState("");
+  const [saveDesc, setSaveDesc] = useState("");
+  const [saveCategory, setSaveCategory] = useState("通用");
+  const [saveAllowCopy, setSaveAllowCopy] = useState(true);
+  const [savePublishToHub, setSavePublishToHub] = useState(false);
 
   // Attachments for chat input
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
