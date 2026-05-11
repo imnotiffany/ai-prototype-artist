@@ -81,6 +81,7 @@ const defaultConfig: AgentConfig = {
   ],
   skills: [],
   mcpServers: [],
+  subagents: [],
   fengsheng: { enabled: false, appKey: "", appSecret: "", robotCode: "", connected: false },
 };
 
