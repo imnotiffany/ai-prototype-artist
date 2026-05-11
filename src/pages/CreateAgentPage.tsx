@@ -930,15 +930,6 @@ const CreateAgentPage = () => {
                   </div>
                 ) : msg.type === "tool-calls" && msg.toolCalls ? (
                   <ToolCallGroup calls={msg.toolCalls} />
-                ) : msg.type === "assembly-summary" ? (
-                  <AssemblySummaryCard
-                    config={agentConfig}
-                    onAddSkill={(name) => setAgentConfig((c) => c.skills.includes(name) ? { ...c, skills: c.skills.filter((s) => s !== name) } : { ...c, skills: [...c.skills, name] })}
-                    onAddMcp={(name) => setAgentConfig((c) => c.mcpServers.includes(name) ? { ...c, mcpServers: c.mcpServers.filter((s) => s !== name) } : { ...c, mcpServers: [...c.mcpServers, name] })}
-                    onAddSubagent={(name) => toast({ title: "已添加子智能体", description: name })}
-                    onSave={() => toast({ title: "已保存", description: `${agentConfig.name || "我的智能体"} 已保存` })}
-                    onDebug={() => setRightTab("preview")}
-                  />
                 ) : msg.type === "assembly" ? (
                   <div className="flex items-center gap-2 text-xs text-muted-foreground py-1">
                     <Loader2 className="w-3.5 h-3.5 animate-spin text-primary shrink-0" />
