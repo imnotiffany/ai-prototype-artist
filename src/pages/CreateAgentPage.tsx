@@ -61,6 +61,7 @@ interface AgentConfig {
   tools: { name: string; id: string; permissions: number; permissionPolicy: string }[];
   skills: string[];
   mcpServers: string[];
+  subagents: string[];
   fengsheng: {
     enabled: boolean;
     appKey: string;
@@ -80,6 +81,7 @@ const defaultConfig: AgentConfig = {
   ],
   skills: [],
   mcpServers: [],
+  subagents: [],
   fengsheng: { enabled: false, appKey: "", appSecret: "", robotCode: "", connected: false },
 };
 
@@ -87,6 +89,12 @@ const defaultConfig: AgentConfig = {
 import { getActiveSkills, getActiveMCPs } from "@/data/mockData";
 const availableSkills = getActiveSkills();
 const availableMCPs = getActiveMCPs();
+const availableSubagents = availableSkills.slice(0, 8).map((s) => ({
+  name: `${s.name} 子智能体`,
+  description: `基于「${s.name}」封装的子智能体，可被主智能体调用`,
+  scope: "market" as const,
+  tags: s.tags ?? [],
+}));
 
 const versions = ["v0.0.1", "v0.0.2", "v0.0.3"];
 
@@ -140,6 +148,7 @@ const assembleAgent = (
     ],
     skills: allSkills,
     mcpServers: allMCPs,
+    subagents: [],
     fengsheng: { enabled: false, appKey: "", appSecret: "", robotCode: "", connected: false },
   };
 };
@@ -261,7 +270,21 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
 
         {/* MCPs and tools */}
         <div className="px-5 py-4">
-          <label className="text-xs font-medium text-muted-foreground mb-3 block">MCPs and tools</label>
+          <div className="flex items-center justify-between mb-3">
+            <label className="text-xs font-medium text-muted-foreground">MCP 服务</label>
+            <CapabilityPickerDialog
+              items={availableMCPs}
+              selected={config.mcpServers}
+              onToggle={(name) => onConfigChange(
+                config.mcpServers.includes(name)
+                  ? { ...config, mcpServers: config.mcpServers.filter((s) => s !== name) }
+                  : { ...config, mcpServers: [...config.mcpServers, name] }
+              )}
+              icon={<Server className="w-3.5 h-3.5" />}
+              label="MCP"
+              marketLink="/vault"
+            />
+          </div>
           {config.tools.map((tool, i) => (
             <div key={i} className="border border-border rounded-lg p-3 mb-2">
               <div className="flex items-center gap-2.5">
@@ -303,25 +326,50 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
           {/* MCP Servers */}
           {config.mcpServers.length > 0 && (
             <div className="space-y-1.5 mt-2">
-              {config.mcpServers.map((mcp, i) => (
-                <div key={i} className="flex items-center gap-2 border border-border rounded-lg px-3 py-2">
-                  <Server className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span className="text-xs text-foreground flex-1">{mcp}</span>
-                  <button
-                    onClick={() => onConfigChange({ ...config, mcpServers: config.mcpServers.filter((_, j) => j !== i) })}
-                    className="text-muted-foreground hover:text-destructive"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
+              {config.mcpServers.map((mcp, i) => {
+                const needs = mcpRequiresCredential(mcp);
+                const pending = needs && !isMcpConfigured(mcp);
+                return (
+                  <div key={i} className="flex items-center gap-2 border border-border rounded-lg px-3 py-2">
+                    {pending
+                      ? <span className="w-1.5 h-1.5 rounded-full bg-destructive shrink-0" title="待配置凭据" />
+                      : <Server className="w-3.5 h-3.5 text-muted-foreground" />}
+                    <span className="text-xs text-foreground flex-1 truncate">{mcp}</span>
+                    {pending && (
+                      <Link to="/vault" className="text-[10px] text-primary hover:underline flex items-center gap-0.5">
+                        去 MCP 配置 <ExternalLink className="w-2.5 h-2.5" />
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => onConfigChange({ ...config, mcpServers: config.mcpServers.filter((_, j) => j !== i) })}
+                      className="text-muted-foreground hover:text-destructive"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
 
         {/* Skills */}
         <div className="px-5 py-4">
-          <label className="text-xs font-medium text-muted-foreground mb-2 block">Skills</label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs font-medium text-muted-foreground">Skill</label>
+            <CapabilityPickerDialog
+              items={availableSkills}
+              selected={config.skills}
+              onToggle={(name) => onConfigChange(
+                config.skills.includes(name)
+                  ? { ...config, skills: config.skills.filter((s) => s !== name) }
+                  : { ...config, skills: [...config.skills, name] }
+              )}
+              icon={<Zap className="w-3.5 h-3.5" />}
+              label="Skill"
+              marketLink="https://ai.sf-express.com/project/enter/skill-app/skills"
+            />
+          </div>
           {config.skills.length === 0 ? (
             <p className="text-xs text-muted-foreground">暂无技能</p>
           ) : (
@@ -346,6 +394,43 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
                   </div>
                 );
               })}
+            </div>
+          )}
+        </div>
+
+        {/* 子智能体 */}
+        <div className="px-5 py-4">
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs font-medium text-muted-foreground">子智能体</label>
+            <CapabilityPickerDialog
+              items={availableSubagents}
+              selected={config.subagents}
+              onToggle={(name) => onConfigChange(
+                config.subagents.includes(name)
+                  ? { ...config, subagents: config.subagents.filter((s) => s !== name) }
+                  : { ...config, subagents: [...config.subagents, name] }
+              )}
+              icon={<Bot className="w-3.5 h-3.5" />}
+              label="子智能体"
+              marketLink="/"
+            />
+          </div>
+          {config.subagents.length === 0 ? (
+            <p className="text-xs text-muted-foreground">暂无子智能体</p>
+          ) : (
+            <div className="space-y-1.5">
+              {config.subagents.map((s, i) => (
+                <div key={i} className="flex items-center gap-2 border border-border rounded-lg px-3 py-2">
+                  <Bot className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                  <span className="text-xs text-foreground flex-1 truncate">{s}</span>
+                  <button
+                    onClick={() => onConfigChange({ ...config, subagents: config.subagents.filter((_, j) => j !== i) })}
+                    className="text-muted-foreground hover:text-destructive shrink-0"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -780,8 +865,7 @@ const CreateAgentPage = () => {
               setMessages((prev) =>
                 prev.map((m) => m.id === responseId ? { ...m, content: fullText, isStreaming: false } : m)
               );
-              // 流式完成后追加装配汇总卡片
-              setMessages((prev) => [...prev, { id: uid(), role: "system", content: "", type: "assembly-summary" }]);
+              // 装配结果直接体现在右侧「配置」面板，无需在对话流插入汇总卡片
               setIsThinking(false);
               setThinkingStartedAt(null);
             } else {
@@ -910,13 +994,11 @@ const CreateAgentPage = () => {
     });
   };
 
-  const rightTabs = agentCreated
-    ? [
-        { key: "preview" as const, label: "在线体验", icon: MessageSquare },
-        { key: "config" as const, label: "配置", icon: FormInput },
-        { key: "logs" as const, label: "会话记录", icon: History },
-      ]
-    : [{ key: "config" as const, label: "配置", icon: FormInput }];
+  const rightTabs = [
+    { key: "config" as const, label: "配置", icon: FormInput },
+    { key: "preview" as const, label: "对话视图", icon: MessageSquare },
+    { key: "logs" as const, label: "调试视图", icon: History },
+  ];
 
   return (
     <div className="flex flex-col h-full animate-fade-in">
@@ -933,15 +1015,6 @@ const CreateAgentPage = () => {
                   </div>
                 ) : msg.type === "tool-calls" && msg.toolCalls ? (
                   <ToolCallGroup calls={msg.toolCalls} />
-                ) : msg.type === "assembly-summary" ? (
-                  <AssemblySummaryCard
-                    config={agentConfig}
-                    onAddSkill={(name) => setAgentConfig((c) => c.skills.includes(name) ? { ...c, skills: c.skills.filter((s) => s !== name) } : { ...c, skills: [...c.skills, name] })}
-                    onAddMcp={(name) => setAgentConfig((c) => c.mcpServers.includes(name) ? { ...c, mcpServers: c.mcpServers.filter((s) => s !== name) } : { ...c, mcpServers: [...c.mcpServers, name] })}
-                    onAddSubagent={(name) => toast({ title: "已添加子智能体", description: name })}
-                    onSave={() => toast({ title: "已保存", description: `${agentConfig.name || "我的智能体"} 已保存` })}
-                    onDebug={() => setRightTab("preview")}
-                  />
                 ) : msg.type === "assembly" ? (
                   <div className="flex items-center gap-2 text-xs text-muted-foreground py-1">
                     <Loader2 className="w-3.5 h-3.5 animate-spin text-primary shrink-0" />
