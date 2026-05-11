@@ -264,7 +264,21 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
 
         {/* MCPs and tools */}
         <div className="px-5 py-4">
-          <label className="text-xs font-medium text-muted-foreground mb-3 block">MCPs and tools</label>
+          <div className="flex items-center justify-between mb-3">
+            <label className="text-xs font-medium text-muted-foreground">MCP 服务</label>
+            <CapabilityPickerDialog
+              items={availableMCPs}
+              selected={config.mcpServers}
+              onToggle={(name) => onConfigChange(
+                config.mcpServers.includes(name)
+                  ? { ...config, mcpServers: config.mcpServers.filter((s) => s !== name) }
+                  : { ...config, mcpServers: [...config.mcpServers, name] }
+              )}
+              icon={<Server className="w-3.5 h-3.5" />}
+              label="MCP"
+              marketLink="/vault"
+            />
+          </div>
           {config.tools.map((tool, i) => (
             <div key={i} className="border border-border rounded-lg p-3 mb-2">
               <div className="flex items-center gap-2.5">
@@ -306,25 +320,50 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
           {/* MCP Servers */}
           {config.mcpServers.length > 0 && (
             <div className="space-y-1.5 mt-2">
-              {config.mcpServers.map((mcp, i) => (
-                <div key={i} className="flex items-center gap-2 border border-border rounded-lg px-3 py-2">
-                  <Server className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span className="text-xs text-foreground flex-1">{mcp}</span>
-                  <button
-                    onClick={() => onConfigChange({ ...config, mcpServers: config.mcpServers.filter((_, j) => j !== i) })}
-                    className="text-muted-foreground hover:text-destructive"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
+              {config.mcpServers.map((mcp, i) => {
+                const needs = mcpRequiresCredential(mcp);
+                const pending = needs && !isMcpConfigured(mcp);
+                return (
+                  <div key={i} className="flex items-center gap-2 border border-border rounded-lg px-3 py-2">
+                    {pending
+                      ? <span className="w-1.5 h-1.5 rounded-full bg-destructive shrink-0" title="待配置凭据" />
+                      : <Server className="w-3.5 h-3.5 text-muted-foreground" />}
+                    <span className="text-xs text-foreground flex-1 truncate">{mcp}</span>
+                    {pending && (
+                      <Link to="/vault" className="text-[10px] text-primary hover:underline flex items-center gap-0.5">
+                        去 MCP 配置 <ExternalLink className="w-2.5 h-2.5" />
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => onConfigChange({ ...config, mcpServers: config.mcpServers.filter((_, j) => j !== i) })}
+                      className="text-muted-foreground hover:text-destructive"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
 
         {/* Skills */}
         <div className="px-5 py-4">
-          <label className="text-xs font-medium text-muted-foreground mb-2 block">Skills</label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs font-medium text-muted-foreground">Skill</label>
+            <CapabilityPickerDialog
+              items={availableSkills}
+              selected={config.skills}
+              onToggle={(name) => onConfigChange(
+                config.skills.includes(name)
+                  ? { ...config, skills: config.skills.filter((s) => s !== name) }
+                  : { ...config, skills: [...config.skills, name] }
+              )}
+              icon={<Zap className="w-3.5 h-3.5" />}
+              label="Skill"
+              marketLink="https://ai.sf-express.com/project/enter/skill-app/skills"
+            />
+          </div>
           {config.skills.length === 0 ? (
             <p className="text-xs text-muted-foreground">暂无技能</p>
           ) : (
@@ -349,6 +388,43 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
                   </div>
                 );
               })}
+            </div>
+          )}
+        </div>
+
+        {/* 子智能体 */}
+        <div className="px-5 py-4">
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs font-medium text-muted-foreground">子智能体</label>
+            <CapabilityPickerDialog
+              items={availableSubagents}
+              selected={config.subagents}
+              onToggle={(name) => onConfigChange(
+                config.subagents.includes(name)
+                  ? { ...config, subagents: config.subagents.filter((s) => s !== name) }
+                  : { ...config, subagents: [...config.subagents, name] }
+              )}
+              icon={<Bot className="w-3.5 h-3.5" />}
+              label="子智能体"
+              marketLink="/"
+            />
+          </div>
+          {config.subagents.length === 0 ? (
+            <p className="text-xs text-muted-foreground">暂无子智能体</p>
+          ) : (
+            <div className="space-y-1.5">
+              {config.subagents.map((s, i) => (
+                <div key={i} className="flex items-center gap-2 border border-border rounded-lg px-3 py-2">
+                  <Bot className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                  <span className="text-xs text-foreground flex-1 truncate">{s}</span>
+                  <button
+                    onClick={() => onConfigChange({ ...config, subagents: config.subagents.filter((_, j) => j !== i) })}
+                    className="text-muted-foreground hover:text-destructive shrink-0"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
             </div>
           )}
         </div>
