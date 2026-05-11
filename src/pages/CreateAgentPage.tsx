@@ -85,6 +85,11 @@ const defaultConfig: AgentConfig = {
   fengsheng: { enabled: false, appKey: "", appSecret: "", robotCode: "", connected: false },
 };
 
+// Demo 默认绑定（无论用户输入什么，都先帮 Ta 装好这几个）
+const DEMO_DEFAULT_SKILLS_COUNT = 3;
+const DEMO_DEFAULT_MCPS_COUNT = 2;
+const DEMO_DEFAULT_SUBAGENTS_COUNT = 2;
+
 /* ── Available Skills & MCPs (from shared resource library) ── */
 import { getActiveSkills, getActiveMCPs } from "@/data/mockData";
 const availableSkills = getActiveSkills();
