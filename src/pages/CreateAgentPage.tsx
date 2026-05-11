@@ -326,26 +326,67 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
               </Collapsible>
             </div>
           ))}
-          {/* MCP Servers */}
+          {/* MCP Servers — 仿手动组装：chip + 凭据 popover */}
           {config.mcpServers.length > 0 && (
-            <div className="space-y-1.5 mt-2">
-              {config.mcpServers.map((mcp, i) => {
-                const needs = mcpRequiresCredential(mcp);
-                const pending = needs && !isMcpConfigured(mcp);
+            <div className="flex flex-wrap gap-2 mt-3">
+              {config.mcpServers.map((mcpName, i) => {
+                const needsCred = mcpRequiresCredential(mcpName);
+                const creds = mockCredentials.filter((c) => c.mcpServer === mcpName);
+                const bound = needsCred && (isMcpConfigured(mcpName) || creds.length > 0);
+                const credMissing = needsCred && !bound;
                 return (
-                  <div key={i} className="flex items-center gap-2 border border-border rounded-lg px-3 py-2">
-                    {pending
-                      ? <span className="w-1.5 h-1.5 rounded-full bg-destructive shrink-0" title="待配置凭据" />
-                      : <Server className="w-3.5 h-3.5 text-muted-foreground" />}
-                    <span className="text-xs text-foreground flex-1 truncate">{mcp}</span>
-                    {pending && (
-                      <Link to="/vault" className="text-[10px] text-primary hover:underline flex items-center gap-0.5">
-                        去 MCP 配置 <ExternalLink className="w-2.5 h-2.5" />
-                      </Link>
+                  <div
+                    key={i}
+                    className={`inline-flex items-center gap-1.5 rounded-md border pl-2 pr-1 py-1 text-xs ${
+                      credMissing ? "border-amber-300 bg-amber-50/40 dark:bg-amber-950/20" : "border-border bg-card"
+                    }`}
+                  >
+                    <Server className="w-3 h-3 text-primary shrink-0" />
+                    <span className="font-medium max-w-[140px] truncate">{mcpName}</span>
+                    {needsCred ? (
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button
+                            className={`inline-flex items-center gap-0.5 text-[10px] px-1 py-0.5 rounded ${
+                              credMissing ? "text-amber-700 hover:bg-amber-100" : "text-emerald-700 hover:bg-emerald-100"
+                            }`}
+                            title="凭据"
+                          >
+                            {credMissing ? <AlertTriangle className="w-2.5 h-2.5" /> : <KeyRound className="w-2.5 h-2.5" />}
+                            {credMissing ? "未绑定" : "已绑定"}
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-64 p-3" align="start">
+                          <Label className="text-[11px] text-muted-foreground">选择凭据</Label>
+                          {creds.length === 0 ? (
+                            <div className="mt-2 space-y-2">
+                              <p className="text-[11px] text-amber-600">该 MCP 暂无可用凭据</p>
+                              <Link
+                                to="/vault"
+                                className="inline-flex items-center justify-center gap-1 h-7 px-2 rounded border border-border text-xs hover:bg-muted w-full"
+                              >
+                                前往凭据管理 <ExternalLink className="w-3 h-3" />
+                              </Link>
+                            </div>
+                          ) : (
+                            <Select defaultValue={creds[0].id}>
+                              <SelectTrigger className="h-7 text-xs mt-1.5"><SelectValue placeholder="选择凭据" /></SelectTrigger>
+                              <SelectContent>
+                                {creds.map((c) => (
+                                  <SelectItem key={c.id} value={c.id} className="text-xs">{c.name}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                        </PopoverContent>
+                      </Popover>
+                    ) : (
+                      <Badge variant="outline" className="border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30 text-[10px] h-4 px-1">免凭据</Badge>
                     )}
                     <button
                       onClick={() => onConfigChange({ ...config, mcpServers: config.mcpServers.filter((_, j) => j !== i) })}
-                      className="text-muted-foreground hover:text-destructive"
+                      className="text-muted-foreground hover:text-destructive p-0.5"
+                      title="移除"
                     >
                       <X className="w-3 h-3" />
                     </button>
