@@ -1317,41 +1317,86 @@ const CreateAgentPage = () => {
         </ResizablePanel>
       </ResizablePanelGroup>
 
-      {/* Publish Dialog */}
+      {/* Save Dialog — 仿手动组装的保存确认卡片 */}
       <Dialog open={publishOpen} onOpenChange={setPublishOpen}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-base">发布智能体</DialogTitle>
+            <DialogTitle className="text-sm flex items-center gap-1.5">
+              <FolderKanban className="w-4 h-4 text-primary" />
+              保存到项目管理
+            </DialogTitle>
+            <DialogDescription className="text-[11px]">
+              确认基础信息后保存为新版本（{agentConfig.version}）。如需发布，请在项目管理或详情页右上角的「发布」按钮中操作。
+            </DialogDescription>
           </DialogHeader>
-          <p className="text-xs text-muted-foreground">
-            选择发布方式，将 <span className="font-medium text-foreground">{agentConfig.name || "我的智能体"}</span> 发布到平台。
-          </p>
-          <div className="grid gap-3 py-2">
-            <button
-              onClick={() => handlePublish("marketplace")}
-              className="flex items-center gap-3 border border-border rounded-lg p-4 text-left hover:border-primary/50 hover:bg-primary/5 transition-colors"
-            >
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                <Package className="w-5 h-5 text-primary" />
-              </div>
+          <div className="space-y-3 py-1">
+            <div>
+              <Label className="text-xs">名称 <span className="text-destructive">*</span></Label>
+              <Input
+                className="mt-1.5 h-8 text-xs"
+                value={saveName}
+                onChange={(e) => setSaveName(e.target.value)}
+                placeholder="例如：财务月报助手"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">简介</Label>
+              <Textarea
+                className="mt-1.5 text-xs"
+                rows={3}
+                value={saveDesc}
+                onChange={(e) => setSaveDesc(e.target.value)}
+                placeholder="一句话描述智能体能力"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">分类</Label>
+              <Select value={saveCategory} onValueChange={setSaveCategory}>
+                <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {["通用", "研发效能", "数据分析", "客户支持", "运营营销"].map((c) => (
+                    <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center justify-between border border-border rounded-lg px-3 py-2">
               <div>
-                <p className="text-sm font-medium text-foreground">发布到应用广场</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">作为独立应用发布，其他用户可以直接使用</p>
+                <p className="text-xs text-foreground">支持复制</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">允许其他成员复制本智能体作为模板</p>
               </div>
-            </button>
-            <button
-              onClick={() => handlePublish("agent")}
-              className="flex items-center gap-3 border border-border rounded-lg p-4 text-left hover:border-primary/50 hover:bg-primary/5 transition-colors"
-            >
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                <Bot className="w-5 h-5 text-primary" />
-              </div>
+              <Switch checked={saveAllowCopy} onCheckedChange={setSaveAllowCopy} />
+            </div>
+            <div className="flex items-center justify-between border border-border rounded-lg px-3 py-2">
               <div>
-                <p className="text-sm font-medium text-foreground">发布为项目智能体</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">添加到项目智能体列表，供团队内部使用</p>
+                <p className="text-xs text-foreground">同步发布到 Agent Hub</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">开启后保存即同步发布，并提供运行监控</p>
               </div>
-            </button>
+              <Switch checked={savePublishToHub} onCheckedChange={setSavePublishToHub} />
+            </div>
           </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setPublishOpen(false)}>取消</Button>
+            <Button
+              size="sm"
+              className="h-8 text-xs gap-1.5"
+              onClick={() => {
+                if (!saveName.trim()) {
+                  toast({ title: "请填写智能体名称", variant: "destructive" });
+                  return;
+                }
+                setAgentConfig({ ...agentConfig, name: saveName.trim() });
+                setAgentCreated(true);
+                setPublishOpen(false);
+                toast({
+                  title: "已保存到项目管理",
+                  description: `${saveName.trim()} · ${saveCategory}${savePublishToHub ? "（已同步发布到 Agent Hub）" : ""}`,
+                });
+              }}
+            >
+              <Save className="w-3 h-3" /> 保存
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
