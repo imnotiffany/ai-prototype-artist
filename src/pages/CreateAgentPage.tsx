@@ -1393,7 +1393,7 @@ const CreateAgentPage = () => {
               <Select value={saveCategory} onValueChange={setSaveCategory}>
                 <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {["通用", "研发效能", "数据分析", "客户支持", "运营营销"].map((c) => (
+                  {categories.map((c) => (
                     <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>
                   ))}
                 </SelectContent>
