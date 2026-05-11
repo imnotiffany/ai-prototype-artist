@@ -780,9 +780,19 @@ const CreateAgentPage = () => {
   // Save 确认卡片字段（仿手动组装）
   const [saveName, setSaveName] = useState("");
   const [saveDesc, setSaveDesc] = useState("");
-  const [saveCategory, setSaveCategory] = useState("通用");
+  const [saveCategory, setSaveCategory] = useState(categories[0]);
   const [saveAllowCopy, setSaveAllowCopy] = useState(true);
   const [savePublishToHub, setSavePublishToHub] = useState(false);
+  const [avatarSeed, setAvatarSeed] = useState(() => Math.random().toString(36).slice(2, 10));
+  const [generatingAvatar, setGeneratingAvatar] = useState(false);
+  const avatarUrl = `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${encodeURIComponent(avatarSeed)}&backgroundColor=dbeafe,fde68a,bbf7d0,fecaca,e9d5ff`;
+  const regenerateAvatar = () => {
+    setGeneratingAvatar(true);
+    setTimeout(() => {
+      setAvatarSeed(Math.random().toString(36).slice(2, 10) + Date.now().toString(36));
+      setGeneratingAvatar(false);
+    }, 600);
+  };
 
   // Attachments for chat input
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
