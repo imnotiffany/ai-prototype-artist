@@ -239,7 +239,7 @@ export const CapabilityPickerDialog = ({
             <Button asChild variant="ghost" size="sm" className="h-8 text-xs shrink-0">
               <Link to={mcpManageHref} onClick={() => setOpen(false)}>{marketLabel}</Link>
             </Button>
-          ) : (
+          ) : isSubagent ? null : (
             <Button
               variant="ghost"
               size="sm"
