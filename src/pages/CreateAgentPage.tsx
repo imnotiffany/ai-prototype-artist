@@ -226,16 +226,7 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
   return (
     <div className="flex-1 overflow-auto">
       <div className="divide-y divide-border">
-        {/* Name */}
-        <div className="px-5 py-4">
-          <label className="text-xs font-medium text-muted-foreground mb-2 block">名称</label>
-          <Input
-            value={config.name}
-            onChange={(e) => onConfigChange({ ...config, name: e.target.value })}
-            className="h-8 text-sm"
-            placeholder="智能体名称"
-          />
-        </div>
+        {/* 名称在「保存」时弹出确认卡片中编辑，配置区不展示 */}
 
         {/* Version 在自动创建调试页固定为 v0.0.1，隐藏切换器 */}
         <div className="px-5 py-4">
