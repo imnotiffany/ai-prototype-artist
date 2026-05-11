@@ -910,13 +910,11 @@ const CreateAgentPage = () => {
     });
   };
 
-  const rightTabs = agentCreated
-    ? [
-        { key: "preview" as const, label: "在线体验", icon: MessageSquare },
-        { key: "config" as const, label: "配置", icon: FormInput },
-        { key: "logs" as const, label: "会话记录", icon: History },
-      ]
-    : [{ key: "config" as const, label: "配置", icon: FormInput }];
+  const rightTabs = [
+    { key: "config" as const, label: "配置", icon: FormInput },
+    { key: "preview" as const, label: "对话视图", icon: MessageSquare },
+    { key: "logs" as const, label: "调试视图", icon: History },
+  ];
 
   return (
     <div className="flex flex-col h-full animate-fade-in">
