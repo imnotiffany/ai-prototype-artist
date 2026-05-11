@@ -842,8 +842,8 @@ const CreateAgentPage = () => {
       }
     }, streamDelay);
   };
+  handleSendRef.current = handleSend;
 
-  /* ── Preview send (debug chat) ── */
   const handlePreviewSend = () => {
     if (!previewInput.trim() || isAgentRunning) return;
     const msg = previewInput.trim();
