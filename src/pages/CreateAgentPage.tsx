@@ -85,6 +85,11 @@ const defaultConfig: AgentConfig = {
   fengsheng: { enabled: false, appKey: "", appSecret: "", robotCode: "", connected: false },
 };
 
+// Demo 默认绑定（无论用户输入什么，都先帮 Ta 装好这几个）
+const DEMO_DEFAULT_SKILLS_COUNT = 3;
+const DEMO_DEFAULT_MCPS_COUNT = 2;
+const DEMO_DEFAULT_SUBAGENTS_COUNT = 2;
+
 /* ── Available Skills & MCPs (from shared resource library) ── */
 import { getActiveSkills, getActiveMCPs } from "@/data/mockData";
 const availableSkills = getActiveSkills();
@@ -718,7 +723,12 @@ const CreateAgentPage = () => {
   const [thinkingStage, setThinkingStage] = useState(0);
   const [previewInput, setPreviewInput] = useState("");
   const [isAgentRunning, setIsAgentRunning] = useState(false);
-  const [agentConfig, setAgentConfig] = useState<AgentConfig>(defaultConfig);
+  const [agentConfig, setAgentConfig] = useState<AgentConfig>(() => ({
+    ...defaultConfig,
+    skills: availableSkills.slice(0, DEMO_DEFAULT_SKILLS_COUNT).map((s) => s.name),
+    mcpServers: availableMCPs.slice(0, DEMO_DEFAULT_MCPS_COUNT).map((m) => m.name),
+    subagents: availableSubagents.slice(0, DEMO_DEFAULT_SUBAGENTS_COUNT).map((s) => s.name),
+  }));
   const [agentCreated, setAgentCreated] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
 
