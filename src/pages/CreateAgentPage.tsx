@@ -723,7 +723,12 @@ const CreateAgentPage = () => {
   const [thinkingStage, setThinkingStage] = useState(0);
   const [previewInput, setPreviewInput] = useState("");
   const [isAgentRunning, setIsAgentRunning] = useState(false);
-  const [agentConfig, setAgentConfig] = useState<AgentConfig>(defaultConfig);
+  const [agentConfig, setAgentConfig] = useState<AgentConfig>(() => ({
+    ...defaultConfig,
+    skills: availableSkills.slice(0, DEMO_DEFAULT_SKILLS_COUNT).map((s) => s.name),
+    mcpServers: availableMCPs.slice(0, DEMO_DEFAULT_MCPS_COUNT).map((m) => m.name),
+    subagents: availableSubagents.slice(0, DEMO_DEFAULT_SUBAGENTS_COUNT).map((s) => s.name),
+  }));
   const [agentCreated, setAgentCreated] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
 
