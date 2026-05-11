@@ -1207,7 +1207,15 @@ const CreateAgentPage = () => {
                 </div>
               )}
               {/* Save button — 始终展示，点击弹出确认卡片 */}
-              <Button size="sm" className="h-7 text-[11px] gap-1.5 px-3" onClick={() => setPublishOpen(true)}>
+              <Button
+                size="sm"
+                className="h-7 text-[11px] gap-1.5 px-3"
+                onClick={() => {
+                  setSaveName((prev) => prev || agentConfig.name || "");
+                  setSaveDesc((prev) => prev || initialState.description || "");
+                  setPublishOpen(true);
+                }}
+              >
                 <Save className="w-3 h-3" />
                 保存
               </Button>
