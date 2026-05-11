@@ -88,6 +88,7 @@ export const CapabilityPickerDialog = ({
 
   const filtered = items.filter((it) => {
     if (hasScopes && (it.scope ?? "market") !== skillScope) return false;
+    if (isSubagent && (it.scope ?? "market") !== "project") return false;
     if (!isMcp && skillTag !== "__all__" && !(it.tags ?? []).includes(skillTag)) return false;
     const q = search.toLowerCase();
     return it.name.toLowerCase().includes(q) || it.description.toLowerCase().includes(q);
