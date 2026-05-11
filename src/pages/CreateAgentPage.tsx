@@ -211,19 +211,13 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
           />
         </div>
 
-        {/* Version */}
+        {/* Version 在自动创建调试页固定为 v0.0.1，隐藏切换器 */}
         <div className="px-5 py-4">
           <label className="text-xs font-medium text-muted-foreground mb-2 block">Version</label>
-          <Select value={config.version} onValueChange={(v) => onConfigChange({ ...config, version: v })}>
-            <SelectTrigger className="h-8 text-xs w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {versions.map((v) => (
-                <SelectItem key={v} value={v} className="text-xs">{`Version: ${v}`}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="h-8 px-3 flex items-center text-xs text-foreground bg-muted/30 rounded border border-border">
+            {config.version}
+            <span className="ml-auto text-[10px] text-muted-foreground">首次创建固定版本</span>
+          </div>
         </div>
 
         {/* Model */}
