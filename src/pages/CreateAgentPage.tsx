@@ -61,6 +61,7 @@ interface AgentConfig {
   tools: { name: string; id: string; permissions: number; permissionPolicy: string }[];
   skills: string[];
   mcpServers: string[];
+  subagents: string[];
   fengsheng: {
     enabled: boolean;
     appKey: string;
