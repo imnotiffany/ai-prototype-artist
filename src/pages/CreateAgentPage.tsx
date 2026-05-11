@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import {
   Send, ChevronRight, CheckCircle2, Copy, Loader2, ChevronDown, Code2, Settings2,
   Zap, Server, Plus, X, Rocket, Package, Bot, ScrollText, MessageSquare, Bug,
-  History, FormInput, KeyRound, Link2, Eye, EyeOff,
+  History, FormInput, KeyRound, Link2, Eye, EyeOff, AlertCircle, ExternalLink, Save, Sparkles,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
@@ -17,6 +17,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { toast } from "@/hooks/use-toast";
 import { AIStatusPill } from "@/components/AIStatusPill";
 import { ToolCallGroup, type ToolCall } from "@/components/ToolCallCard";
+import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
+import { mcpRequiresCredential } from "@/data/mockData";
+import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 
 /* ── Types ── */
 interface Message {
