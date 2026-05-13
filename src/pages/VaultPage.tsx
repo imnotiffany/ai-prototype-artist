@@ -138,6 +138,34 @@ const VaultPage = () => {
     setHeaders([]);
     setMcpType("http"); setStdioCommand("npx"); setStdioArgs(""); setEnvVars([]);
     setLocked(false);
+    setEndpointEditableWhileLocked(false);
+    setDocUrl("");
+  };
+
+  const openEditFixed = (m: FixedMcpDef) => {
+    reset();
+    setLocked(true);
+    setEndpointEditableWhileLocked(true);
+    setDocUrl(m.docUrl);
+    setName(m.name);
+    setIdentifier(m.identifier);
+    setDescription(m.description);
+    setMcpType(m.type);
+    setEndpoint(fixedEndpoints[m.id] ?? "");
+    setEditingFixedId(m.id);
+    setFixedDialogOpen(true);
+  };
+
+  const saveFixed = () => {
+    if (!editingFixedId) return;
+    if (!endpoint.trim()) return toast({ title: "请填写服务地址", variant: "destructive" });
+    setFixedEndpoints((m) => ({ ...m, [editingFixedId]: endpoint.trim() }));
+    const def = fixedMcpDefs.find((d) => d.id === editingFixedId);
+    if (def) setMcpConfigured(def.name, true);
+    toast({ title: "服务地址已保存", description: name });
+    setFixedDialogOpen(false);
+    setEditingFixedId(null);
+    reset();
   };
 
   const linkedAgents = (mcpName: string) =>
