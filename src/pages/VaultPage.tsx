@@ -515,7 +515,7 @@ const VaultPage = () => {
               <TableHead className="text-xs h-9 whitespace-nowrap">标识符</TableHead>
               <TableHead className="text-xs h-9 whitespace-nowrap">服务端点</TableHead>
               <TableHead className="text-xs h-9 whitespace-nowrap w-[130px]">类型</TableHead>
-              <TableHead className="text-xs h-9 whitespace-nowrap w-[100px]">创建时间</TableHead>
+              
               <TableHead className="text-xs h-9 whitespace-nowrap w-[80px]">操作</TableHead>
             </TableRow>
           </TableHeader>
@@ -549,7 +549,7 @@ const VaultPage = () => {
                       {typeLabel(d.type)}
                     </Badge>
                   </TableCell>
-                  <TableCell className="py-2 text-[11px] text-muted-foreground whitespace-nowrap">—</TableCell>
+                  
                   <TableCell className="py-2 whitespace-nowrap">
                     <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 px-2" onClick={() => openEditFixed(d)}>
                       <Pencil className="w-3 h-3" /> 编辑
@@ -586,7 +586,7 @@ const VaultPage = () => {
                       {typeLabel(m.type)}
                     </Badge>
                   </TableCell>
-                  <TableCell className="py-2 text-[11px] text-muted-foreground whitespace-nowrap">{m.createdAt}</TableCell>
+                  
                   <TableCell className="py-2 whitespace-nowrap">
                     {editable && (
                       <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1 px-2" onClick={(e) => { e.stopPropagation(); openEdit(m); }}>
