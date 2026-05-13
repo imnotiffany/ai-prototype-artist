@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Pencil, Trash2, Server, AlertTriangle, Bot, Plug, Loader2, CheckCircle2, XCircle, Link2, X, Search, KeyRound, ShieldCheck, Lock, Tag } from "lucide-react";
+import { Plus, Pencil, Trash2, Server, AlertTriangle, Bot, Plug, Loader2, CheckCircle2, XCircle, Link2, X, Search, KeyRound, ShieldCheck, Lock, Tag, ExternalLink } from "lucide-react";
 
 type McpType = "studio" | "sse" | "http";
 import { sharedResources, mockAgents, getCredentialFreeMcps, getCredentialRequiredMcps } from "@/data/mockData";
@@ -51,6 +51,26 @@ const freeMcps: McpEntry[] = getCredentialFreeMcps().map((r, i) => ({
   type: r.deployment === "本地" ? "studio" : "http",
 }));
 
+// 固定展示的钉钉 MCP 列表（仅服务地址需要用户配置）
+interface FixedMcpDef {
+  id: string;
+  name: string;
+  identifier: string;
+  description: string;
+  type: McpType;
+  docUrl: string;
+}
+const fixedMcpDefs: FixedMcpDef[] = [
+  { id: "dt_robot",    name: "机器人消息",  identifier: "dingtalk_robot",    description: "钉钉机器人消息MCP服务，支持发送消息至群聊与单聊",       type: "http", docUrl: "https://open.dingtalk.com/document/robots/custom-robot-access" },
+  { id: "dt_journal",  name: "钉钉日志",    identifier: "dingtalk_journal",  description: "钉钉日志MCP，包含获取日志模板、发送日志等能力",       type: "http", docUrl: "https://open.dingtalk.com/document/orgapp/dingtalk-log-overview" },
+  { id: "dt_ai_sheet", name: "钉钉 AI 表格", identifier: "dingtalk_ai_sheet", description: "钉钉 AI 表格 MCP 让 AI 直接操作智能表格",              type: "http", docUrl: "https://open.dingtalk.com/document/orgapp/ai-sheet-overview" },
+  { id: "dt_doc",      name: "钉钉文档",    identifier: "dingtalk_doc",      description: "钉钉文档MCP支持查找、创建文档等能力",                   type: "http", docUrl: "https://open.dingtalk.com/document/orgapp/dingtalk-document-overview" },
+  { id: "dt_contacts", name: "钉钉通讯录",  identifier: "dingtalk_contacts", description: "钉钉通讯录MCP支持搜索人员/部门等组织信息",              type: "http", docUrl: "https://open.dingtalk.com/document/orgapp/contact-api-overview" },
+  { id: "dt_calendar", name: "钉钉日历",    identifier: "dingtalk_calendar", description: "支持创建日程、查询日程、约空闲时间等能力",              type: "http", docUrl: "https://open.dingtalk.com/document/orgapp/calendar-overview" },
+  { id: "dt_todo",     name: "钉钉待办",    identifier: "dingtalk_todo",     description: "钉钉待办MCP服务提供高效的任务管理能力",                  type: "http", docUrl: "https://open.dingtalk.com/document/orgapp/todo-task-overview" },
+  { id: "dt_sheet",    name: "钉钉表格",    identifier: "dingtalk_sheet",    description: "钉钉表格 MCP 支持新建、编辑等表格操作能力",            type: "http", docUrl: "https://open.dingtalk.com/document/orgapp/dingtalk-spreadsheet-overview" },
+];
+
 const VaultPage = () => {
   // 用户已配置凭据 / 手动新增的 MCP
   const [credMcps, setCredMcps] = useState<McpEntry[]>([]);
@@ -74,6 +94,13 @@ const VaultPage = () => {
 
   // 字段锁定（来自 MCP 广场添加时，地址/名称/标识不可改）
   const [locked, setLocked] = useState(false);
+  // 固定 MCP 编辑：除"服务地址"外其他字段全锁定
+  const [endpointEditableWhileLocked, setEndpointEditableWhileLocked] = useState(false);
+  const [docUrl, setDocUrl] = useState<string>("");
+  // 固定 MCP 已配置的服务地址
+  const [fixedEndpoints, setFixedEndpoints] = useState<Record<string, string>>({});
+  const [editingFixedId, setEditingFixedId] = useState<string | null>(null);
+  const [fixedDialogOpen, setFixedDialogOpen] = useState(false);
 
   // 手动创建表单
   const [mcpType, setMcpType] = useState<McpType>("http");
@@ -111,6 +138,34 @@ const VaultPage = () => {
     setHeaders([]);
     setMcpType("http"); setStdioCommand("npx"); setStdioArgs(""); setEnvVars([]);
     setLocked(false);
+    setEndpointEditableWhileLocked(false);
+    setDocUrl("");
+  };
+
+  const openEditFixed = (m: FixedMcpDef) => {
+    reset();
+    setLocked(true);
+    setEndpointEditableWhileLocked(true);
+    setDocUrl(m.docUrl);
+    setName(m.name);
+    setIdentifier(m.identifier);
+    setDescription(m.description);
+    setMcpType(m.type);
+    setEndpoint(fixedEndpoints[m.id] ?? "");
+    setEditingFixedId(m.id);
+    setFixedDialogOpen(true);
+  };
+
+  const saveFixed = () => {
+    if (!editingFixedId) return;
+    if (!endpoint.trim()) return toast({ title: "请填写服务地址", variant: "destructive" });
+    setFixedEndpoints((m) => ({ ...m, [editingFixedId]: endpoint.trim() }));
+    const def = fixedMcpDefs.find((d) => d.id === editingFixedId);
+    if (def) setMcpConfigured(def.name, true);
+    toast({ title: "服务地址已保存", description: name });
+    setFixedDialogOpen(false);
+    setEditingFixedId(null);
+    reset();
   };
 
   const linkedAgents = (mcpName: string) =>
@@ -224,7 +279,9 @@ const VaultPage = () => {
         <div className="flex items-start gap-1.5 rounded-md border border-primary/30 bg-primary/5 px-2.5 py-1.5">
           <Lock className="w-3 h-3 text-primary mt-0.5 shrink-0" />
           <p className="text-[10px] text-muted-foreground leading-relaxed">
-            来自 MCP 广场，显示名称、英文标识、简介与类型已自动填入且不可修改；请在下方完成凭据等配置。
+            {endpointEditableWhileLocked
+              ? "显示名称、英文标识、简介与类型已固定，仅需填写下方「服务地址」即可完成配置。"
+              : "来自 MCP 广场，显示名称、英文标识、简介与类型已自动填入且不可修改；请在下方完成凭据等配置。"}
           </p>
         </div>
       )}
@@ -358,14 +415,21 @@ const VaultPage = () => {
         <div>
           <Label className="text-[11px] font-medium flex items-center gap-1">
             服务地址
-            {locked && <Lock className="w-2.5 h-2.5 text-muted-foreground" />}
+            {locked && !endpointEditableWhileLocked && <Lock className="w-2.5 h-2.5 text-muted-foreground" />}
           </Label>
-          <p className="text-[10px] text-muted-foreground mt-0.5">SSE MCP 服务的访问链接，由服务提供方给出</p>
+          <p className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-2">
+            <span>SSE MCP 服务的访问链接，由服务提供方给出</span>
+            {docUrl && (
+              <a href={docUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline inline-flex items-center gap-0.5">
+                获取地址 <ExternalLink className="w-2.5 h-2.5" />
+              </a>
+            )}
+          </p>
           <Input
             className="mt-1 h-8 text-xs bg-muted/30"
             value={endpoint}
-            readOnly={locked}
-            disabled={locked}
+            readOnly={locked && !endpointEditableWhileLocked}
+            disabled={locked && !endpointEditableWhileLocked}
             onChange={(e) => setEndpoint(e.target.value)}
             placeholder="例如 https://mcp.example.com/xxx/sse"
           />
@@ -377,14 +441,21 @@ const VaultPage = () => {
           <div>
             <Label className="text-[11px] font-medium flex items-center gap-1">
               服务地址
-              {locked && <Lock className="w-2.5 h-2.5 text-muted-foreground" />}
+              {locked && !endpointEditableWhileLocked && <Lock className="w-2.5 h-2.5 text-muted-foreground" />}
             </Label>
-            <p className="text-[10px] text-muted-foreground mt-0.5">MCP 服务的访问链接，由服务提供方给出</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-2">
+              <span>MCP 服务的访问链接，由服务提供方给出</span>
+              {docUrl && (
+                <a href={docUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline inline-flex items-center gap-0.5">
+                  获取地址 <ExternalLink className="w-2.5 h-2.5" />
+                </a>
+              )}
+            </p>
             <Input
               className="mt-1 h-8 text-xs bg-muted/30"
               value={endpoint}
-              readOnly={locked}
-              disabled={locked}
+              readOnly={locked && !endpointEditableWhileLocked}
+              disabled={locked && !endpointEditableWhileLocked}
               onChange={(e) => setEndpoint(e.target.value)}
               placeholder="例如 https://mcp.example.com/xxx"
             />
@@ -445,9 +516,48 @@ const VaultPage = () => {
               <TableHead className="text-xs h-9 whitespace-nowrap">服务端点</TableHead>
               <TableHead className="text-xs h-9 whitespace-nowrap w-[130px]">类型</TableHead>
               <TableHead className="text-xs h-9 whitespace-nowrap w-[100px]">创建时间</TableHead>
+              <TableHead className="text-xs h-9 whitespace-nowrap w-[80px]">操作</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
+            {/* 固定 MCP 行 */}
+            {fixedMcpDefs.map((d) => {
+              const ep = fixedEndpoints[d.id] ?? "";
+              return (
+                <TableRow key={d.id}>
+                  <TableCell className="py-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center shrink-0">
+                        <Server className="w-3 h-3 text-primary" />
+                      </div>
+                      <span className="text-xs font-medium truncate" title={d.name}>{d.name}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-2 text-[11px] text-muted-foreground font-mono whitespace-nowrap">{d.identifier}</TableCell>
+                  <TableCell className="py-2 text-[11px] text-muted-foreground font-mono max-w-[240px]">
+                    {ep ? (
+                      <div className="flex items-center gap-1 min-w-0">
+                        <Link2 className="w-3 h-3 shrink-0" />
+                        <span className="truncate" title={ep}>{ep}</span>
+                      </div>
+                    ) : (
+                      <Badge variant="outline" className="text-[10px] h-5 px-1.5 border-amber-300 text-amber-700 bg-amber-50/60">未配置</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="py-2 whitespace-nowrap">
+                    <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono font-normal">
+                      {typeLabel(d.type)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="py-2 text-[11px] text-muted-foreground whitespace-nowrap">—</TableCell>
+                  <TableCell className="py-2 whitespace-nowrap">
+                    <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 px-2" onClick={() => openEditFixed(d)}>
+                      <Pencil className="w-3 h-3" /> 编辑
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
             {mcps.map((m) => {
               const editable = m.requiresCredential; // 免凭据条目不可编辑
               return (
@@ -477,6 +587,13 @@ const VaultPage = () => {
                     </Badge>
                   </TableCell>
                   <TableCell className="py-2 text-[11px] text-muted-foreground whitespace-nowrap">{m.createdAt}</TableCell>
+                  <TableCell className="py-2 whitespace-nowrap">
+                    {editable && (
+                      <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1 px-2" onClick={(e) => { e.stopPropagation(); openEdit(m); }}>
+                        <Pencil className="w-3 h-3" /> 编辑
+                      </Button>
+                    )}
+                  </TableCell>
                 </TableRow>
               );
             })}
@@ -623,6 +740,25 @@ const VaultPage = () => {
             <Button onClick={handleSave} disabled={!canSave}>
               添加并授权
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 固定 MCP 编辑弹窗 */}
+      <Dialog open={fixedDialogOpen} onOpenChange={(o) => { if (!o) { setFixedDialogOpen(false); setEditingFixedId(null); reset(); } }}>
+        <DialogContent className="max-w-[520px] p-4">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-sm">编辑 MCP{name ? ` · ${name}` : ""}</DialogTitle>
+            <DialogDescription className="text-[11px]">
+              该 MCP 的基础信息已固定，仅需配置「服务地址」即可启用
+            </DialogDescription>
+          </DialogHeader>
+
+          {renderForm()}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setFixedDialogOpen(false); setEditingFixedId(null); reset(); }}>取消</Button>
+            <Button onClick={saveFixed} disabled={!endpoint.trim()}>保存</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
