@@ -413,14 +413,21 @@ const VaultPage = () => {
         <div>
           <Label className="text-[11px] font-medium flex items-center gap-1">
             服务地址
-            {locked && <Lock className="w-2.5 h-2.5 text-muted-foreground" />}
+            {locked && !endpointEditableWhileLocked && <Lock className="w-2.5 h-2.5 text-muted-foreground" />}
           </Label>
-          <p className="text-[10px] text-muted-foreground mt-0.5">SSE MCP 服务的访问链接，由服务提供方给出</p>
+          <p className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-2">
+            <span>SSE MCP 服务的访问链接，由服务提供方给出</span>
+            {docUrl && (
+              <a href={docUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline inline-flex items-center gap-0.5">
+                获取地址 <ExternalLink className="w-2.5 h-2.5" />
+              </a>
+            )}
+          </p>
           <Input
             className="mt-1 h-8 text-xs bg-muted/30"
             value={endpoint}
-            readOnly={locked}
-            disabled={locked}
+            readOnly={locked && !endpointEditableWhileLocked}
+            disabled={locked && !endpointEditableWhileLocked}
             onChange={(e) => setEndpoint(e.target.value)}
             placeholder="例如 https://mcp.example.com/xxx/sse"
           />
@@ -432,14 +439,21 @@ const VaultPage = () => {
           <div>
             <Label className="text-[11px] font-medium flex items-center gap-1">
               服务地址
-              {locked && <Lock className="w-2.5 h-2.5 text-muted-foreground" />}
+              {locked && !endpointEditableWhileLocked && <Lock className="w-2.5 h-2.5 text-muted-foreground" />}
             </Label>
-            <p className="text-[10px] text-muted-foreground mt-0.5">MCP 服务的访问链接，由服务提供方给出</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-2">
+              <span>MCP 服务的访问链接，由服务提供方给出</span>
+              {docUrl && (
+                <a href={docUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline inline-flex items-center gap-0.5">
+                  获取地址 <ExternalLink className="w-2.5 h-2.5" />
+                </a>
+              )}
+            </p>
             <Input
               className="mt-1 h-8 text-xs bg-muted/30"
               value={endpoint}
-              readOnly={locked}
-              disabled={locked}
+              readOnly={locked && !endpointEditableWhileLocked}
+              disabled={locked && !endpointEditableWhileLocked}
               onChange={(e) => setEndpoint(e.target.value)}
               placeholder="例如 https://mcp.example.com/xxx"
             />
