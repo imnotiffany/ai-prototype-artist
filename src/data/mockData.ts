@@ -591,3 +591,19 @@ export const mockCredentials: Credential[] = [
   { id: "c7", name: "钉钉通讯录 OAuth", type: "OAuth 2.0", mcpServer: "钉钉通讯录", createdAt: "2026-04-08" },
   { id: "c8", name: "豆包 API Key", type: "Bearer Token", mcpServer: "豆包Seedance视频生成", createdAt: "2026-04-08" },
 ];
+
+/* ── API Keys (模型调用所需) ── */
+export interface ApiKey {
+  id: string;
+  name: string;
+  provider: string;
+  keyMask: string;
+  createdAt: string;
+}
+
+export const mockApiKeys: ApiKey[] = [
+  { id: "ak1", name: "阿里云主账号 Key", provider: "aliyun", keyMask: "sk-****a3f2", createdAt: "2026-04-01" },
+  { id: "ak2", name: "阿里云测试环境 Key", provider: "aliyun", keyMask: "sk-****b7c1", createdAt: "2026-04-05" },
+  { id: "ak3", name: "智谱 AI 生产 Key", provider: "aiplat", keyMask: "sk-****d9e4", createdAt: "2026-04-10" },
+  { id: "ak4", name: "智谱 AI 开发 Key", provider: "aiplat", keyMask: "sk-****f2a8", createdAt: "2026-04-12" },
+];
