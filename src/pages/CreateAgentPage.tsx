@@ -4,6 +4,7 @@ import {
   Send, ChevronRight, CheckCircle2, Copy, Loader2, ChevronDown, Code2, Settings2,
   Zap, Server, Plus, X, Rocket, Package, Bot, ScrollText, MessageSquare, Bug,
   History, FormInput, KeyRound, Link2, Eye, EyeOff, AlertCircle, ExternalLink, Save, Sparkles, RefreshCw,
+  Search,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
@@ -14,13 +15,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
 import { AIStatusPill } from "@/components/AIStatusPill";
 import { ToolCallGroup, type ToolCall } from "@/components/ToolCallCard";
 import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
-import { mcpRequiresCredential, mockCredentials, categories } from "@/data/mockData";
+import { mcpRequiresCredential, mockCredentials, categories, mockApiKeys } from "@/data/mockData";
 import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { AlertTriangle, FolderKanban } from "lucide-react";
 
@@ -60,6 +62,7 @@ interface AgentConfig {
   name: string;
   version: string;
   model: string;
+  apiKey: string;
   systemPrompt: string;
   tools: { name: string; id: string; permissions: number; permissionPolicy: string }[];
   skills: string[];
@@ -77,7 +80,8 @@ interface AgentConfig {
 const defaultConfig: AgentConfig = {
   name: "",
   version: "v0.0.1",
-  model: "claude-sonnet-4-6",
+  model: "aliyun/qwen3.6-plus",
+  apiKey: "",
   systemPrompt: "",
   tools: [
     { name: "Built-in tools", id: "agent_toolset_20260401", permissions: 8, permissionPolicy: "Always allow" },
@@ -144,9 +148,9 @@ const assembleAgent = (
   const allMCPs = [...new Set([...mcps, ...detectedMCPs, ...demoMCPs])];
 
   const lower = description.toLowerCase();
-  let model = "claude-sonnet-4-6";
-  if (lower.includes("快速") || lower.includes("简单")) model = "gemini-2.5-flash";
-  if (lower.includes("分析") || lower.includes("推理")) model = "gpt-4o";
+  let model = "aliyun/qwen3.6-plus";
+  if (lower.includes("快速") || lower.includes("简单")) model = "aliyun/deepseek-v4-flash";
+  if (lower.includes("分析") || lower.includes("推理")) model = "aliyun/deepseek-v4-pro";
 
   const systemPrompt = `你是一个专业的AI助手。\n\n## 核心能力\n${description}\n\n## 工具使用\n${allSkills.length > 0 ? `你可以使用以下技能：${allSkills.join("、")}` : "暂无外部技能"}\n${allMCPs.length > 0 ? `你可以连接以下服务：${allMCPs.join("、")}` : ""}\n\n## 行为准则\n- 始终准确、有帮助地回答问题\n- 在需要时主动使用可用工具\n- 输出结构化、易读的结果`;
 
@@ -154,6 +158,7 @@ const assembleAgent = (
     name: description.slice(0, 20).replace(/[，。！？]/g, ""),
     version: "v0.0.1",
     model,
+    apiKey: "",
     systemPrompt,
     tools: [
       { name: "Built-in tools", id: "agent_toolset_20260401", permissions: 8, permissionPolicy: "Always allow" },
@@ -245,17 +250,60 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="claude-sonnet-4-6">Claude Sonnet 4 (6)</SelectItem>
-              <SelectItem value="claude-sonnet-4-5">Claude Sonnet 4 (5)</SelectItem>
-              <SelectItem value="claude-haiku-3-5">Claude Haiku 3.5</SelectItem>
-              <SelectItem value="gpt-4o">GPT-4o</SelectItem>
-              <SelectItem value="gpt-4o-mini">GPT-4o Mini</SelectItem>
-              <SelectItem value="gemini-2.5-pro">Gemini 2.5 Pro</SelectItem>
-              <SelectItem value="gemini-2.5-flash">Gemini 2.5 Flash</SelectItem>
-              <SelectItem value="deepseek-v3">DeepSeek V3</SelectItem>
-              <SelectItem value="qwen-max">Qwen Max</SelectItem>
+              <SelectItem value="aliyun/qwen3.6-plus">aliyun/qwen3.6-plus</SelectItem>
+              <SelectItem value="aliyun/deepseek-v4-pro">aliyun/deepseek-v4-pro</SelectItem>
+              <SelectItem value="aliyun/deepseek-v4-flash">aliyun/deepseek-v4-flash</SelectItem>
+              <SelectItem value="aiplat/GLM-5.1">aiplat/GLM-5.1</SelectItem>
             </SelectContent>
           </Select>
+
+          {/* API Key */}
+          <label className="text-xs font-medium text-muted-foreground mb-1 block mt-3">API Key</label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                className="h-8 w-full justify-between text-xs font-normal px-3"
+              >
+                {config.apiKey
+                  ? mockApiKeys.find((k) => k.id === config.apiKey)?.name ?? "选择 API Key"
+                  : "选择 API Key"}
+                <Search className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+              <Command>
+                <CommandInput placeholder="搜索 API Key..." className="h-9 text-xs" />
+                <CommandList>
+                  <CommandEmpty className="text-xs py-3">未找到匹配的 API Key</CommandEmpty>
+                  <CommandGroup>
+                    {mockApiKeys.map((k) => (
+                      <CommandItem
+                        key={k.id}
+                        value={k.name}
+                        onSelect={() => {
+                          onConfigChange({ ...config, apiKey: k.id });
+                        }}
+                        className="text-xs"
+                      >
+                        <div className="flex items-center gap-2">
+                          <KeyRound className="w-3 h-3 text-muted-foreground shrink-0" />
+                          <div className="flex flex-col">
+                            <span className="font-medium">{k.name}</span>
+                            <span className="text-[10px] text-muted-foreground">{k.keyMask} · {k.provider}</span>
+                          </div>
+                        </div>
+                        <CheckCircle2
+                          className={`ml-auto h-3.5 w-3.5 ${config.apiKey === k.id ? "opacity-100 text-primary" : "opacity-0"}`}
+                        />
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
 
         {/* System Prompt */}

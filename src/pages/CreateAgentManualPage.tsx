@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, Rocket, Plus, X, Settings2, Cpu, Server, Zap, Shield, KeyRound, Bot, MessageSquare, Eye, EyeOff, Link2, CheckCircle2, Wand, Loader2, ExternalLink, Play, Send, AlertCircle, Bug, FolderKanban, Store, ArrowRight, Mic, MicOff, HelpCircle, FileEdit, Terminal, ChevronDown, ChevronUp, Copy, Brain, Wrench, Info, AlertTriangle, Trash2, RefreshCw, Code2, FileCode } from "lucide-react";
+import { ArrowLeft, Save, Rocket, Plus, X, Settings2, Cpu, Server, Zap, Shield, KeyRound, Bot, MessageSquare, Eye, EyeOff, Link2, CheckCircle2, Wand, Loader2, ExternalLink, Play, Send, AlertCircle, Bug, FolderKanban, Store, ArrowRight, Mic, MicOff, HelpCircle, FileEdit, Terminal, ChevronDown, ChevronUp, Copy, Brain, Wrench, Info, AlertTriangle, Trash2, RefreshCw, Code2, FileCode, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,8 +13,9 @@ import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { toast } from "@/hooks/use-toast";
-import { categories, getActiveSkills, getActiveMCPs, mockAgents, mockCredentials } from "@/data/mockData";
+import { categories, getActiveSkills, getActiveMCPs, mockAgents, mockCredentials, mockApiKeys } from "@/data/mockData";
 import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
 import { AIStatusPill } from "@/components/AIStatusPill";
@@ -95,7 +96,8 @@ const CreateAgentManualPage = () => {
   };
 
   // Model
-  const [model, setModel] = useState("claude-sonnet-4-6");
+  const [model, setModel] = useState("aliyun/qwen3.6-plus");
+  const [apiKey, setApiKey] = useState("");
 
   // Prompt
   const [systemPrompt, setSystemPrompt] = useState("");
@@ -633,14 +635,60 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 <Select value={model} onValueChange={setModel}>
                   <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="claude-sonnet-4-6" className="text-xs">Claude Sonnet 4.6（推荐）</SelectItem>
-                    <SelectItem value="claude-haiku-3-5" className="text-xs">Claude Haiku 3.5（快速）</SelectItem>
-                    <SelectItem value="gpt-4o" className="text-xs">GPT-4o</SelectItem>
-                    <SelectItem value="gemini-2.5-pro" className="text-xs">Gemini 2.5 Pro</SelectItem>
-                    <SelectItem value="deepseek-v3" className="text-xs">DeepSeek V3</SelectItem>
-                    <SelectItem value="qwen-max" className="text-xs">Qwen Max</SelectItem>
+                    <SelectItem value="aliyun/qwen3.6-plus" className="text-xs">aliyun/qwen3.6-plus</SelectItem>
+                    <SelectItem value="aliyun/deepseek-v4-pro" className="text-xs">aliyun/deepseek-v4-pro</SelectItem>
+                    <SelectItem value="aliyun/deepseek-v4-flash" className="text-xs">aliyun/deepseek-v4-flash</SelectItem>
+                    <SelectItem value="aiplat/GLM-5.1" className="text-xs">aiplat/GLM-5.1</SelectItem>
                   </SelectContent>
                 </Select>
+
+                {/* API Key */}
+                <Label className="text-xs mt-3 block">API Key</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className="mt-1.5 h-8 w-full justify-between text-xs font-normal px-3"
+                    >
+                      {apiKey
+                        ? mockApiKeys.find((k) => k.id === apiKey)?.name ?? "选择 API Key"
+                        : "选择 API Key"}
+                      <Search className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="搜索 API Key..." className="h-9 text-xs" />
+                      <CommandList>
+                        <CommandEmpty className="text-xs py-3">未找到匹配的 API Key</CommandEmpty>
+                        <CommandGroup>
+                          {mockApiKeys.map((k) => (
+                            <CommandItem
+                              key={k.id}
+                              value={k.name}
+                              onSelect={() => {
+                                setApiKey(k.id);
+                              }}
+                              className="text-xs"
+                            >
+                              <div className="flex items-center gap-2">
+                                <KeyRound className="w-3 h-3 text-muted-foreground shrink-0" />
+                                <div className="flex flex-col">
+                                  <span className="font-medium">{k.name}</span>
+                                  <span className="text-[10px] text-muted-foreground">{k.keyMask} · {k.provider}</span>
+                                </div>
+                              </div>
+                              <CheckCircle2
+                                className={`ml-auto h-3.5 w-3.5 ${apiKey === k.id ? "opacity-100 text-primary" : "opacity-0"}`}
+                              />
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
 
