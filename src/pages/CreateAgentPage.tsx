@@ -62,6 +62,7 @@ interface AgentConfig {
   name: string;
   version: string;
   model: string;
+  apiKey: string;
   systemPrompt: string;
   tools: { name: string; id: string; permissions: number; permissionPolicy: string }[];
   skills: string[];
@@ -79,7 +80,8 @@ interface AgentConfig {
 const defaultConfig: AgentConfig = {
   name: "",
   version: "v0.0.1",
-  model: "claude-sonnet-4-6",
+  model: "aliyun/qwen3.6-plus",
+  apiKey: "",
   systemPrompt: "",
   tools: [
     { name: "Built-in tools", id: "agent_toolset_20260401", permissions: 8, permissionPolicy: "Always allow" },
@@ -146,9 +148,9 @@ const assembleAgent = (
   const allMCPs = [...new Set([...mcps, ...detectedMCPs, ...demoMCPs])];
 
   const lower = description.toLowerCase();
-  let model = "claude-sonnet-4-6";
-  if (lower.includes("快速") || lower.includes("简单")) model = "gemini-2.5-flash";
-  if (lower.includes("分析") || lower.includes("推理")) model = "gpt-4o";
+  let model = "aliyun/qwen3.6-plus";
+  if (lower.includes("快速") || lower.includes("简单")) model = "aliyun/deepseek-v4-flash";
+  if (lower.includes("分析") || lower.includes("推理")) model = "aliyun/deepseek-v4-pro";
 
   const systemPrompt = `你是一个专业的AI助手。\n\n## 核心能力\n${description}\n\n## 工具使用\n${allSkills.length > 0 ? `你可以使用以下技能：${allSkills.join("、")}` : "暂无外部技能"}\n${allMCPs.length > 0 ? `你可以连接以下服务：${allMCPs.join("、")}` : ""}\n\n## 行为准则\n- 始终准确、有帮助地回答问题\n- 在需要时主动使用可用工具\n- 输出结构化、易读的结果`;
 
