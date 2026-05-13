@@ -586,7 +586,7 @@ const VaultPage = () => {
                       {typeLabel(m.type)}
                     </Badge>
                   </TableCell>
-                  <TableCell className="py-2 text-[11px] text-muted-foreground whitespace-nowrap">{m.createdAt}</TableCell>
+                  
                   <TableCell className="py-2 whitespace-nowrap">
                     {editable && (
                       <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1 px-2" onClick={(e) => { e.stopPropagation(); openEdit(m); }}>
