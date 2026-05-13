@@ -158,6 +158,7 @@ const assembleAgent = (
     name: description.slice(0, 20).replace(/[，。！？]/g, ""),
     version: "v0.0.1",
     model,
+    apiKey: "",
     systemPrompt,
     tools: [
       { name: "Built-in tools", id: "agent_toolset_20260401", permissions: 8, permissionPolicy: "Always allow" },
