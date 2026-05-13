@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Server, Loader2, CheckCircle2, XCircle, Link2, X, ExternalLink, Lock, Pencil, Plug, RefreshCw } from "lucide-react";
+import { Plus, Server, Loader2, CheckCircle2, XCircle, X, ExternalLink, Lock, Pencil, Plug, RefreshCw, Trash2 } from "lucide-react";
 import { setMcpConfigured, isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { toast } from "@/hooks/use-toast";
 
@@ -14,15 +14,24 @@ type McpType = "studio" | "sse" | "http";
 const typeLabel = (t: McpType) => (t === "studio" ? "STDIO" : t === "sse" ? "SSE" : "StreamableHTTP");
 
 interface PresetMcp {
-  id: string;            // identifier
-  name: string;          // 显示名称
+  id: string;
+  name: string;
   description: string;
   type: McpType;
-  /** 跳转去复制服务地址的页面（服务提供方文档/控制台） */
   copyUrl: string;
-  /** 已配置时的服务地址（mock：仅 dingtalk_robot 默认配置） */
   defaultEndpoint?: string;
 }
+
+interface CustomMcp {
+  id: string;
+  name: string;
+  description: string;
+  type: McpType;
+  copyUrl: string;
+  isCustom: true;
+}
+
+type McpEntry = PresetMcp | CustomMcp;
 
 const presetMcps: PresetMcp[] = [
   { id: "dingtalk_robot", name: "机器人消息", description: "钉钉机器人消息MCP服务，支持创建企业机器人、根据关键词搜索群会话openConversationId、将企业机器人添加到群等", type: "http", copyUrl: "https://open.dingtalk.com/document/robot", defaultEndpoint: "https://mcp-gw.dingtalk.com/server/a5a2eb03a10b7a3a92bec597027f57ce76aac6ba2ff75cd68e35881da2/http" },
@@ -53,6 +62,8 @@ interface FormState {
 
 const emptyForm: FormState = { endpoint: "", headers: [], stdioCommand: "npx", stdioArgs: "", envVars: [] };
 
+const emptyAddForm = { name: "", id: "", description: "", type: "http" as McpType, copyUrl: "" };
+
 const VaultPage = () => {
   // identifier -> 已保存的端点配置
   const [configs, setConfigs] = useState<Record<string, FormState>>(() => {
@@ -67,6 +78,13 @@ const VaultPage = () => {
   const [testingId, setTestingId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
+
+  // 自定义 MCP
+  const [customMcps, setCustomMcps] = useState<CustomMcp[]>([]);
+
+  // 添加 MCP 弹窗
+  const [addingOpen, setAddingOpen] = useState(false);
+  const [addForm, setAddForm] = useState({ ...emptyAddForm });
 
   // 跨页面同步（创建 Agent 时需要查询「已配置」状态）
   const [, setTick] = useState(0);
@@ -83,28 +101,33 @@ const VaultPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const editingPreset = useMemo(() => presetMcps.find((m) => m.id === editingId) ?? null, [editingId]);
+  const allMcps = useMemo(() => {
+    return [...presetMcps, ...customMcps] as McpEntry[];
+  }, [customMcps]);
 
-  const openEdit = (m: PresetMcp) => {
+  const editingEntry = useMemo(() => allMcps.find((m) => m.id === editingId) ?? null, [editingId, allMcps]);
+  const isEditingCustom = useMemo(() => !!editingEntry && "isCustom" in editingEntry, [editingEntry]);
+
+  const openEdit = (m: McpEntry) => {
     setEditingId(m.id);
     setForm(configs[m.id] ?? { ...emptyForm });
   };
   const closeEdit = () => { setEditingId(null); setForm(emptyForm); };
 
   const handleSave = () => {
-    if (!editingPreset) return;
-    if (editingPreset.type === "studio") {
+    if (!editingEntry) return;
+    if (editingEntry.type === "studio") {
       if (!form.stdioCommand.trim()) return toast({ title: "请填写启动命令", variant: "destructive" });
     } else if (!form.endpoint.trim()) {
       return toast({ title: "请填写服务地址", variant: "destructive" });
     }
-    setConfigs((c) => ({ ...c, [editingPreset.id]: form }));
-    setMcpConfigured(editingPreset.name, true);
-    toast({ title: "MCP 已保存", description: `${editingPreset.name} 配置已更新` });
+    setConfigs((c) => ({ ...c, [editingEntry.id]: form }));
+    setMcpConfigured(editingEntry.name, true);
+    toast({ title: "MCP 已保存", description: `${editingEntry.name} 配置已更新` });
     closeEdit();
   };
 
-  const runTest = (m: PresetMcp) => {
+  const runTest = (m: McpEntry) => {
     if (!configs[m.id]) {
       toast({ title: "请先配置", description: `请先编辑 ${m.name} 并填写服务地址`, variant: "destructive" });
       return;
@@ -122,6 +145,36 @@ const VaultPage = () => {
     }, 900);
   };
 
+  // 添加自定义 MCP
+  const handleAdd = () => {
+    const { name, id, description, type, copyUrl } = addForm;
+    if (!name.trim()) return toast({ title: "请填写显示名称", variant: "destructive" });
+    if (!id.trim()) return toast({ title: "请填写英文标识", variant: "destructive" });
+    if (!description.trim()) return toast({ title: "请填写简介", variant: "destructive" });
+    if (!copyUrl.trim()) return toast({ title: "请填写服务地址复制链接", variant: "destructive" });
+    if (allMcps.some((m) => m.id === id.trim())) return toast({ title: "英文标识已存在", variant: "destructive" });
+    const newMcp: CustomMcp = { id: id.trim(), name: name.trim(), description: description.trim(), type, copyUrl: copyUrl.trim(), isCustom: true };
+    setCustomMcps((prev) => [...prev, newMcp]);
+    setAddForm({ ...emptyAddForm });
+    setAddingOpen(false);
+    toast({ title: "MCP 已添加", description: `${newMcp.name} 已添加到列表` });
+  };
+
+  const handleDeleteCustom = (id: string) => {
+    setCustomMcps((prev) => prev.filter((m) => m.id !== id));
+    setConfigs((c) => {
+      const next = { ...c };
+      delete next[id];
+      return next;
+    });
+    setLinkStatus((s) => {
+      const next = { ...s };
+      delete next[id];
+      return next;
+    });
+    toast({ title: "已删除", description: "自定义 MCP 已移除" });
+  };
+
   return (
     <div className="p-6 max-w-[1200px] mx-auto animate-fade-in">
       <div className="flex items-start justify-between mb-2">
@@ -131,9 +184,12 @@ const VaultPage = () => {
             MCP 管理
           </h1>
           <p className="text-xs text-muted-foreground mt-1">
-            列表内 MCP 的名称、标识、简介与类型已固定，仅需配置服务地址等凭据即可启用
+            列表内预设 MCP 的名称、标识、简介与类型已固定；也可添加自定义 MCP
           </p>
         </div>
+        <Button size="sm" className="h-8 text-xs gap-1" onClick={() => setAddingOpen(true)}>
+          <Plus className="w-3.5 h-3.5" />添加 MCP
+        </Button>
       </div>
 
       <div className="border border-border rounded-lg overflow-hidden mt-5">
@@ -149,10 +205,11 @@ const VaultPage = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {presetMcps.map((m) => {
+            {allMcps.map((m) => {
               const configured = !!configs[m.id];
               const status = linkStatus[m.id];
               const testing = testingId === m.id;
+              const isCustom = "isCustom" in m;
               return (
                 <TableRow key={m.id}>
                   <TableCell className="py-2.5">
@@ -161,7 +218,10 @@ const VaultPage = () => {
                         <Server className="w-3.5 h-3.5 text-primary" />
                       </div>
                       <div className="min-w-0">
-                        <div className="text-xs font-medium truncate" title={m.name}>{m.name}</div>
+                        <div className="text-xs font-medium truncate flex items-center gap-1" title={m.name}>
+                          {m.name}
+                          {isCustom && <Badge variant="outline" className="text-[10px] h-4 px-1 font-normal">自定义</Badge>}
+                        </div>
                         <div className="text-[10px] text-muted-foreground font-mono mt-0.5">{m.id}</div>
                         <div className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5 max-w-[360px]" title={m.description}>{m.description}</div>
                       </div>
@@ -218,6 +278,16 @@ const VaultPage = () => {
                         {testing ? <Loader2 className="w-3 h-3 animate-spin" /> : status ? <RefreshCw className="w-3 h-3" /> : <Plug className="w-3 h-3" />}
                         {status ? "重新连接" : "连接"}
                       </Button>
+                      {isCustom && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                          onClick={() => handleDeleteCustom(m.id)}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -227,65 +297,89 @@ const VaultPage = () => {
         </Table>
       </div>
 
-      {/* 编辑弹窗：手动创建表单（名称/标识/简介/类型 锁定） */}
+      {/* 编辑弹窗 */}
       <Dialog open={!!editingId} onOpenChange={(o) => { if (!o) closeEdit(); }}>
         <DialogContent className="max-w-[520px] p-4">
           <DialogHeader>
             <DialogTitle className="text-sm">
-              配置 MCP{editingPreset ? ` · ${editingPreset.name}` : ""}
+              {isEditingCustom ? "编辑 MCP" : "配置 MCP"}{editingEntry ? ` · ${editingEntry.name}` : ""}
             </DialogTitle>
           </DialogHeader>
 
-          {editingPreset && (
+          {editingEntry && (
             <div className="space-y-3 max-h-[480px] overflow-auto -mx-1 px-1">
               {/* 1. 显示名称 */}
               <div>
                 <Label className="text-[11px] font-medium flex items-center gap-1">
-                  显示名称 <Lock className="w-2.5 h-2.5 text-muted-foreground" />
+                  显示名称 {isEditingCustom ? "" : <Lock className="w-2.5 h-2.5 text-muted-foreground" />}
                 </Label>
-                <div className="mt-1 flex items-center gap-2">
-                  <Input className="h-8 text-xs bg-muted/30 flex-1" value={editingPreset.name} readOnly disabled />
-                  <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center shrink-0">
-                    <Server className="w-3.5 h-3.5 text-primary-foreground" />
+                {isEditingCustom ? (
+                  <Input
+                    className="mt-1 h-8 text-xs"
+                    value={editingEntry.name}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setCustomMcps((prev) => prev.map((m) => m.id === editingEntry.id ? { ...m, name: val } : m));
+                      setEditingEntryName(val);
+                    }}
+                  />
+                ) : (
+                  <div className="mt-1 flex items-center gap-2">
+                    <Input className="h-8 text-xs bg-muted/30 flex-1" value={editingEntry.name} readOnly disabled />
+                    <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center shrink-0">
+                      <Server className="w-3.5 h-3.5 text-primary-foreground" />
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* 2. 英文标识 */}
               <div>
                 <Label className="text-[11px] font-medium flex items-center gap-1">
-                  英文标识 <Lock className="w-2.5 h-2.5 text-muted-foreground" />
+                  英文标识 {isEditingCustom ? "" : <Lock className="w-2.5 h-2.5 text-muted-foreground" />}
                 </Label>
-                <Input className="mt-1 h-8 text-xs bg-muted/30 font-mono" value={editingPreset.id} readOnly disabled />
+                {isEditingCustom ? (
+                  <Input className="mt-1 h-8 text-xs font-mono" value={editingEntry.id} disabled />
+                ) : (
+                  <Input className="mt-1 h-8 text-xs bg-muted/30 font-mono" value={editingEntry.id} readOnly disabled />
+                )}
               </div>
 
               {/* 3. 简介 */}
               <div>
                 <Label className="text-[11px] font-medium flex items-center gap-1">
-                  简介 <Lock className="w-2.5 h-2.5 text-muted-foreground" />
+                  简介 {isEditingCustom ? "" : <Lock className="w-2.5 h-2.5 text-muted-foreground" />}
                 </Label>
-                <Textarea className="mt-1 text-xs bg-muted/30 min-h-[56px]" value={editingPreset.description} readOnly disabled />
+                {isEditingCustom ? (
+                  <Textarea
+                    className="mt-1 text-xs min-h-[56px]"
+                    value={editingEntry.description}
+                    onChange={(e) => setCustomMcps((prev) => prev.map((m) => m.id === editingEntry.id ? { ...m, description: e.target.value } : m))}
+                  />
+                ) : (
+                  <Textarea className="mt-1 text-xs bg-muted/30 min-h-[56px]" value={editingEntry.description} readOnly disabled />
+                )}
               </div>
 
               {/* 4. 类型 */}
               <div>
                 <Label className="text-[11px] font-medium flex items-center gap-1">
-                  类型 <Lock className="w-2.5 h-2.5 text-muted-foreground" />
+                  类型 {isEditingCustom ? "" : <Lock className="w-2.5 h-2.5 text-muted-foreground" />}
                 </Label>
                 <div className="mt-1.5">
                   <Badge variant="outline" className="text-[11px] h-6 px-2 font-mono font-normal">
-                    {typeLabel(editingPreset.type)}
+                    {typeLabel(editingEntry.type)}
                   </Badge>
                 </div>
               </div>
 
               {/* 5. 服务地址（可填） + 跳转复制链接 */}
-              {editingPreset.type !== "studio" && (
+              {editingEntry.type !== "studio" && (
                 <div>
                   <div className="flex items-center justify-between">
                     <Label className="text-[11px] font-medium">服务地址</Label>
                     <a
-                      href={editingPreset.copyUrl}
+                      href={editingEntry.copyUrl}
                       target="_blank"
                       rel="noreferrer"
                       className="text-[11px] text-primary hover:underline inline-flex items-center gap-0.5"
@@ -304,7 +398,7 @@ const VaultPage = () => {
               )}
 
               {/* 6. 请求头 */}
-              {editingPreset.type === "http" && (
+              {editingEntry.type === "http" && (
                 <div>
                   <Label className="text-[11px] font-medium">请求头</Label>
                   <p className="text-[10px] text-muted-foreground mt-0.5">发送到 MCP 服务器的额外 HTTP 请求头（如 Authorization、X-API-Key 等）</p>
@@ -335,6 +429,77 @@ const VaultPage = () => {
           <DialogFooter>
             <Button variant="outline" onClick={closeEdit}>取消</Button>
             <Button onClick={handleSave}>保存</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 添加 MCP 弹窗 */}
+      <Dialog open={addingOpen} onOpenChange={setAddingOpen}>
+        <DialogContent className="max-w-[520px] p-4">
+          <DialogHeader>
+            <DialogTitle className="text-sm">添加 MCP</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 max-h-[480px] overflow-auto -mx-1 px-1">
+            <div>
+              <Label className="text-[11px] font-medium">显示名称</Label>
+              <Input
+                className="mt-1 h-8 text-xs"
+                value={addForm.name}
+                onChange={(e) => setAddForm((f) => ({ ...f, name: e.target.value }))}
+                placeholder="例如：我的自定义 MCP"
+              />
+            </div>
+            <div>
+              <Label className="text-[11px] font-medium">英文标识</Label>
+              <Input
+                className="mt-1 h-8 text-xs font-mono"
+                value={addForm.id}
+                onChange={(e) => setAddForm((f) => ({ ...f, id: e.target.value }))}
+                placeholder="例如：my_custom_mcp"
+              />
+            </div>
+            <div>
+              <Label className="text-[11px] font-medium">简介</Label>
+              <Textarea
+                className="mt-1 text-xs min-h-[56px]"
+                value={addForm.description}
+                onChange={(e) => setAddForm((f) => ({ ...f, description: e.target.value }))}
+                placeholder="简述该 MCP 的功能"
+              />
+            </div>
+            <div>
+              <Label className="text-[11px] font-medium">类型</Label>
+              <div className="mt-1.5 flex gap-2">
+                {(["http", "sse", "studio"] as McpType[]).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setAddForm((f) => ({ ...f, type: t }))}
+                    className={`text-[11px] px-2.5 py-1 rounded-md border transition-colors ${
+                      addForm.type === t
+                        ? "border-primary bg-primary/5 text-primary font-medium"
+                        : "border-border text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {typeLabel(t)}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <Label className="text-[11px] font-medium">服务地址复制链接</Label>
+              <p className="text-[10px] text-muted-foreground mt-0.5">用户点击「去复制服务地址」时跳转的目标页面</p>
+              <Input
+                className="mt-1 h-8 text-xs"
+                value={addForm.copyUrl}
+                onChange={(e) => setAddForm((f) => ({ ...f, copyUrl: e.target.value }))}
+                placeholder="例如：https://example.com/mcp/docs"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setAddingOpen(false); setAddForm({ ...emptyAddForm }); }}>取消</Button>
+            <Button onClick={handleAdd}>添加</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
