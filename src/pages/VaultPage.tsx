@@ -549,7 +549,7 @@ const VaultPage = () => {
                       {typeLabel(d.type)}
                     </Badge>
                   </TableCell>
-                  <TableCell className="py-2 text-[11px] text-muted-foreground whitespace-nowrap">—</TableCell>
+                  
                   <TableCell className="py-2 whitespace-nowrap">
                     <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 px-2" onClick={() => openEditFixed(d)}>
                       <Pencil className="w-3 h-3" /> 编辑
