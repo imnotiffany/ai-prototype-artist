@@ -516,9 +516,48 @@ const VaultPage = () => {
               <TableHead className="text-xs h-9 whitespace-nowrap">服务端点</TableHead>
               <TableHead className="text-xs h-9 whitespace-nowrap w-[130px]">类型</TableHead>
               <TableHead className="text-xs h-9 whitespace-nowrap w-[100px]">创建时间</TableHead>
+              <TableHead className="text-xs h-9 whitespace-nowrap w-[80px]">操作</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
+            {/* 固定 MCP 行 */}
+            {fixedMcpDefs.map((d) => {
+              const ep = fixedEndpoints[d.id] ?? "";
+              return (
+                <TableRow key={d.id}>
+                  <TableCell className="py-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center shrink-0">
+                        <Server className="w-3 h-3 text-primary" />
+                      </div>
+                      <span className="text-xs font-medium truncate" title={d.name}>{d.name}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-2 text-[11px] text-muted-foreground font-mono whitespace-nowrap">{d.identifier}</TableCell>
+                  <TableCell className="py-2 text-[11px] text-muted-foreground font-mono max-w-[240px]">
+                    {ep ? (
+                      <div className="flex items-center gap-1 min-w-0">
+                        <Link2 className="w-3 h-3 shrink-0" />
+                        <span className="truncate" title={ep}>{ep}</span>
+                      </div>
+                    ) : (
+                      <Badge variant="outline" className="text-[10px] h-5 px-1.5 border-amber-300 text-amber-700 bg-amber-50/60">未配置</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="py-2 whitespace-nowrap">
+                    <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono font-normal">
+                      {typeLabel(d.type)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="py-2 text-[11px] text-muted-foreground whitespace-nowrap">—</TableCell>
+                  <TableCell className="py-2 whitespace-nowrap">
+                    <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 px-2" onClick={() => openEditFixed(d)}>
+                      <Pencil className="w-3 h-3" /> 编辑
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
             {mcps.map((m) => {
               const editable = m.requiresCredential; // 免凭据条目不可编辑
               return (
@@ -548,6 +587,13 @@ const VaultPage = () => {
                     </Badge>
                   </TableCell>
                   <TableCell className="py-2 text-[11px] text-muted-foreground whitespace-nowrap">{m.createdAt}</TableCell>
+                  <TableCell className="py-2 whitespace-nowrap">
+                    {editable && (
+                      <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1 px-2" onClick={(e) => { e.stopPropagation(); openEdit(m); }}>
+                        <Pencil className="w-3 h-3" /> 编辑
+                      </Button>
+                    )}
+                  </TableCell>
                 </TableRow>
               );
             })}
