@@ -744,6 +744,25 @@ const VaultPage = () => {
         </DialogContent>
       </Dialog>
 
+      {/* 固定 MCP 编辑弹窗 */}
+      <Dialog open={fixedDialogOpen} onOpenChange={(o) => { if (!o) { setFixedDialogOpen(false); setEditingFixedId(null); reset(); } }}>
+        <DialogContent className="max-w-[520px] p-4">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-sm">编辑 MCP{name ? ` · ${name}` : ""}</DialogTitle>
+            <DialogDescription className="text-[11px]">
+              该 MCP 的基础信息已固定，仅需配置「服务地址」即可启用
+            </DialogDescription>
+          </DialogHeader>
+
+          {renderForm()}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setFixedDialogOpen(false); setEditingFixedId(null); reset(); }}>取消</Button>
+            <Button onClick={saveFixed} disabled={!endpoint.trim()}>保存</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
