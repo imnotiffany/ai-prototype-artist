@@ -320,7 +320,6 @@ const VaultPage = () => {
                     onChange={(e) => {
                       const val = e.target.value;
                       setCustomMcps((prev) => prev.map((m) => m.id === editingEntry.id ? { ...m, name: val } : m));
-                      setEditingEntryName(val);
                     }}
                   />
                 ) : (
