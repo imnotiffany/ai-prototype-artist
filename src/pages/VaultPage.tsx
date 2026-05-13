@@ -94,6 +94,13 @@ const VaultPage = () => {
 
   // 字段锁定（来自 MCP 广场添加时，地址/名称/标识不可改）
   const [locked, setLocked] = useState(false);
+  // 固定 MCP 编辑：除"服务地址"外其他字段全锁定
+  const [endpointEditableWhileLocked, setEndpointEditableWhileLocked] = useState(false);
+  const [docUrl, setDocUrl] = useState<string>("");
+  // 固定 MCP 已配置的服务地址
+  const [fixedEndpoints, setFixedEndpoints] = useState<Record<string, string>>({});
+  const [editingFixedId, setEditingFixedId] = useState<string | null>(null);
+  const [fixedDialogOpen, setFixedDialogOpen] = useState(false);
 
   // 手动创建表单
   const [mcpType, setMcpType] = useState<McpType>("http");
