@@ -250,17 +250,60 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="claude-sonnet-4-6">Claude Sonnet 4 (6)</SelectItem>
-              <SelectItem value="claude-sonnet-4-5">Claude Sonnet 4 (5)</SelectItem>
-              <SelectItem value="claude-haiku-3-5">Claude Haiku 3.5</SelectItem>
-              <SelectItem value="gpt-4o">GPT-4o</SelectItem>
-              <SelectItem value="gpt-4o-mini">GPT-4o Mini</SelectItem>
-              <SelectItem value="gemini-2.5-pro">Gemini 2.5 Pro</SelectItem>
-              <SelectItem value="gemini-2.5-flash">Gemini 2.5 Flash</SelectItem>
-              <SelectItem value="deepseek-v3">DeepSeek V3</SelectItem>
-              <SelectItem value="qwen-max">Qwen Max</SelectItem>
+              <SelectItem value="aliyun/qwen3.6-plus">aliyun/qwen3.6-plus</SelectItem>
+              <SelectItem value="aliyun/deepseek-v4-pro">aliyun/deepseek-v4-pro</SelectItem>
+              <SelectItem value="aliyun/deepseek-v4-flash">aliyun/deepseek-v4-flash</SelectItem>
+              <SelectItem value="aiplat/GLM-5.1">aiplat/GLM-5.1</SelectItem>
             </SelectContent>
           </Select>
+
+          {/* API Key */}
+          <label className="text-xs font-medium text-muted-foreground mb-1 block mt-3">API Key</label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                className="h-8 w-full justify-between text-xs font-normal px-3"
+              >
+                {config.apiKey
+                  ? mockApiKeys.find((k) => k.id === config.apiKey)?.name ?? "选择 API Key"
+                  : "选择 API Key"}
+                <Search className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+              <Command>
+                <CommandInput placeholder="搜索 API Key..." className="h-9 text-xs" />
+                <CommandList>
+                  <CommandEmpty className="text-xs py-3">未找到匹配的 API Key</CommandEmpty>
+                  <CommandGroup>
+                    {mockApiKeys.map((k) => (
+                      <CommandItem
+                        key={k.id}
+                        value={k.name}
+                        onSelect={() => {
+                          onConfigChange({ ...config, apiKey: k.id });
+                        }}
+                        className="text-xs"
+                      >
+                        <div className="flex items-center gap-2">
+                          <KeyRound className="w-3 h-3 text-muted-foreground shrink-0" />
+                          <div className="flex flex-col">
+                            <span className="font-medium">{k.name}</span>
+                            <span className="text-[10px] text-muted-foreground">{k.keyMask} · {k.provider}</span>
+                          </div>
+                        </div>
+                        <CheckCircle2
+                          className={`ml-auto h-3.5 w-3.5 ${config.apiKey === k.id ? "opacity-100 text-primary" : "opacity-0"}`}
+                        />
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
 
         {/* System Prompt */}
