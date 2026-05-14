@@ -9,7 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { mockAgents, SKILL_CATEGORIES, type Agent } from "@/data/mockData";
 
-type KindFilter = "all" | "app" | "agent";
+type KindFilter = "app" | "agent";
 
 const openAgent = (a: Agent, navigate: (p: string) => void) => {
   if (a.kind === "app") navigate(`/app/${a.id}`);
@@ -21,7 +21,7 @@ const AgentMarketplace = () => {
   const [scopeTab, setScopeTab] = useState<"marketplace" | "project">("marketplace");
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [kindFilter, setKindFilter] = useState<KindFilter>("all");
+  const [kindFilter, setKindFilter] = useState<KindFilter>("app");
   const [sortBy, setSortBy] = useState<"latest" | "downloads">("latest");
   const [catPopOpen, setCatPopOpen] = useState(false);
 
@@ -37,7 +37,7 @@ const AgentMarketplace = () => {
         a.description.includes(search) ||
         a.tags.some((t) => t.includes(search));
       const matchCategory = !activeCategory || a.category === activeCategory;
-      const matchKind = kindFilter === "all" || a.kind === kindFilter;
+      const matchKind = a.kind === kindFilter;
       return matchSearch && matchCategory && matchKind;
     })
     .sort((a, b) =>
@@ -47,7 +47,6 @@ const AgentMarketplace = () => {
     );
 
   const kindTabs: { value: KindFilter; label: string }[] = [
-    { value: "all", label: "全部" },
     { value: "app", label: "应用" },
     { value: "agent", label: "智能体" },
   ];

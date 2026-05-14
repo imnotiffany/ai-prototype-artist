@@ -42,7 +42,7 @@ const ProjectAgents = () => {
   const [searchName, setSearchName] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [kindFilter, setKindFilter] = useState<"all" | "app" | "agent">("all");
+  const [kindFilter, setKindFilter] = useState<"app" | "agent">("app");
   const [onlyMine, setOnlyMine] = useState(false);
   const [publishTarget, setPublishTarget] = useState<Agent | null>(null);
   const [unpublishTarget, setUnpublishTarget] = useState<Agent | null>(null);
@@ -90,7 +90,7 @@ const ProjectAgents = () => {
       if (statusFilter === "published" && app.status !== "published") return false;
       if (statusFilter === "unpublished" && app.status === "published") return false;
     }
-    if (kindFilter !== "all" && app.kind !== kindFilter) return false;
+    if (app.kind !== kindFilter) return false;
     if (onlyMine && app.authorId !== MY_AUTHOR_ID) return false;
     return true;
   });
@@ -99,7 +99,7 @@ const ProjectAgents = () => {
     setSearchName("");
     setCategoryFilter("all");
     setStatusFilter("all");
-    setKindFilter("all");
+    setKindFilter("app");
     setOnlyMine(false);
   };
 
@@ -117,7 +117,27 @@ const ProjectAgents = () => {
       <div className="max-w-[1200px] mx-auto px-6 py-6 animate-fade-in">
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
-          <h1 className="text-lg font-semibold text-primary">作品管理</h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-lg font-semibold text-primary">作品管理</h1>
+            <div className="inline-flex items-center bg-muted rounded-md p-0.5">
+              {([
+                { value: "app", label: "应用" },
+                { value: "agent", label: "智能体" },
+              ] as const).map((t) => (
+                <button
+                  key={t.value}
+                  onClick={() => setKindFilter(t.value)}
+                  className={`px-2.5 py-0.5 text-xs rounded transition-colors ${
+                    kindFilter === t.value
+                      ? "bg-background text-foreground shadow-sm font-medium"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="flex items-center gap-2">
             <Button size="sm" className="gap-1.5 h-8 text-xs" onClick={() => navigate("/create")}>
               <Plus className="w-3.5 h-3.5" />
@@ -148,19 +168,6 @@ const ProjectAgents = () => {
                 {usedCategories.map((cat) => (
                   <SelectItem key={cat} value={cat} className="text-xs">{cat}</SelectItem>
                 ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs text-muted-foreground whitespace-nowrap">作品类型</span>
-            <Select value={kindFilter} onValueChange={(v) => setKindFilter(v as "all" | "app" | "agent")}>
-              <SelectTrigger className="h-8 text-xs w-24">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all" className="text-xs">全部</SelectItem>
-                <SelectItem value="app" className="text-xs">应用</SelectItem>
-                <SelectItem value="agent" className="text-xs">智能体</SelectItem>
               </SelectContent>
             </Select>
           </div>
