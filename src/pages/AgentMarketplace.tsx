@@ -37,7 +37,7 @@ const AgentMarketplace = () => {
         a.description.includes(search) ||
         a.tags.some((t) => t.includes(search));
       const matchCategory = !activeCategory || a.category === activeCategory;
-      const matchKind = kindFilter === "all" || a.kind === kindFilter;
+      const matchKind = a.kind === kindFilter;
       return matchSearch && matchCategory && matchKind;
     })
     .sort((a, b) =>
