@@ -309,7 +309,7 @@ export const mockAgents: Agent[] = [
     platform: "AI技术平台", author: "廖奕通", authorId: "01441970",
     updatedAt: "2026-04-10", downloads: 34,
     skills: ["File Processor"], mcpServers: [],
-    sessionCount: 12, creationType: "ai", status: "published", kind: "app",
+    sessionCount: 12, creationType: "ai", status: "published", kind: "app", publishScope: "project",
     versions: [
       { version: "v1.0.0", createdAt: "2026-04-10", fileSize: "16KB", downloads: 34, status: "published", creator: "廖奕通" },
     ],
@@ -331,7 +331,7 @@ export const mockAgents: Agent[] = [
     platform: "AI技术平台", author: "廖奕通", authorId: "01441970",
     updatedAt: "2026-04-01", downloads: 56,
     skills: ["File Processor"], mcpServers: [],
-    sessionCount: 20, creationType: "ai", status: "published", kind: "app",
+    sessionCount: 20, creationType: "ai", status: "published", kind: "app", publishScope: "project",
     versions: [
       { version: "v1.0.0", createdAt: "2026-04-01", fileSize: "10KB", downloads: 56, status: "published", creator: "廖奕通" },
     ],
@@ -343,7 +343,7 @@ export const mockAgents: Agent[] = [
     platform: "AI技术平台", author: "廖奕通", authorId: "01441970",
     updatedAt: "2026-03-31", downloads: 78,
     skills: ["Content Generation", "Translation Engine"], mcpServers: [],
-    sessionCount: 35, creationType: "ai", status: "published", kind: "agent",
+    sessionCount: 35, creationType: "ai", status: "published", kind: "agent", publishScope: "project",
     versions: [
       { version: "v1.0.0", createdAt: "2026-03-31", fileSize: "8KB", downloads: 78, status: "published", creator: "廖奕通" },
     ],
