@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { mockAgents, SKILL_CATEGORIES, type Agent } from "@/data/mockData";
+import { SKILL_CATEGORIES, type Agent } from "@/data/mockData";
+import { useAgents } from "@/contexts/AgentsContext";
 
 type KindFilter = "app" | "agent";
 
@@ -19,6 +20,7 @@ const openAgent = (a: Agent, navigate: (p: string) => void) => {
 const AgentMarketplace = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { agents } = useAgents();
   const scopeTab: "marketplace" | "project" =
     location.pathname === "/project" ? "project" : "marketplace";
   const [search, setSearch] = useState("");
@@ -27,9 +29,11 @@ const AgentMarketplace = () => {
   const [sortBy, setSortBy] = useState<"latest" | "downloads">("latest");
   const [catPopOpen, setCatPopOpen] = useState(false);
 
-  const allPublished = mockAgents.filter(
-    (a) => a.status === "published" && a.publishScope === scopeTab
-  );
+  const allPublished = agents.filter((a) => {
+    if (a.status !== "published") return false;
+    const scope = a.publishScope ?? "marketplace";
+    return scope === scopeTab;
+  });
 
   const filtered = allPublished
     .filter((a) => {
@@ -56,19 +60,8 @@ const AgentMarketplace = () => {
   return (
     <div className="flex-1 overflow-auto animate-fade-in">
 
-      {/* Hero */}
-      <div className="pt-6 pb-6 text-center">
-        <h1 className="text-2xl font-semibold text-foreground tracking-tight">
-          数字同事就位，
-          <span className="text-primary font-bold">组建你的专属团队</span>
-        </h1>
-        <p className="mt-2 text-xs text-muted-foreground">
-          精选全场景应用及智能体，汇聚实战力量，让业务化繁为简
-        </p>
-      </div>
-
       {/* Search bar */}
-      <div className="flex items-center justify-center gap-2 mb-4 px-6">
+      <div className="flex items-center justify-between gap-2 mb-4 px-6 pt-4">
         <div className="relative w-full max-w-md">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input

@@ -33,8 +33,8 @@ function resolveRoute(pathname: string): ResolvedRoute | null {
   }
   if (pathname === "/project") {
     return {
-      section: "manage",
-      tab: { key: "project", title: "项目作品", path: "/project", closable: false, section: "manage" },
+      section: "marketplace",
+      tab: { key: "project", title: "项目作品", path: "/project", closable: false, section: "marketplace" },
     };
   }
   if (pathname === "/project-agents") {
@@ -90,6 +90,16 @@ const SECTION_HOME: Record<Section, string> = {
   mcp: "/vault",
 };
 
+const SECTION_DEFAULT_TABS: Record<Section, Tab[]> = {
+  create: [{ key: "create", title: "新建作品", path: "/create", closable: false, section: "create" }],
+  marketplace: [
+    { key: "marketplace", title: "作品广场", path: "/", closable: false, section: "marketplace" },
+    { key: "project", title: "项目作品", path: "/project", closable: false, section: "marketplace" },
+  ],
+  manage: [{ key: "manage", title: "作品管理", path: "/project-agents", closable: false, section: "manage" }],
+  mcp: [{ key: "mcp", title: "MCP 管理", path: "/vault", closable: false, section: "mcp" }],
+};
+
 export const TabsProvider = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -108,14 +118,10 @@ export const TabsProvider = ({ children }: { children: ReactNode }) => {
 
     setAllTabs((prev) => {
       let next = prev;
-      // Seed manage section with both default tabs the first time
-      if (section === "manage" && !prev.some((x) => x.section === "manage")) {
-        next = [
-          ...next,
-          { key: "manage", title: "作品管理", path: "/project-agents", closable: false, section: "manage" },
-          { key: "project", title: "项目作品", path: "/project", closable: false, section: "manage" },
-        ];
-      }
+      const missingDefaultTabs = SECTION_DEFAULT_TABS[section].filter(
+        (defaultTab) => !next.some((x) => x.key === defaultTab.key)
+      );
+      if (missingDefaultTabs.length > 0) next = [...next, ...missingDefaultTabs];
       const exists = next.some((x) => x.key === tab.key);
       if (exists) {
         return next.map((x) =>
@@ -161,7 +167,7 @@ export const useTabs = () => useContext(TabsContext);
 export const SECTION_PATHS: Record<Section, string[]> = {
   create: ["/create", "/create-web", "/create-agent", "/create-agent-manual", "/create-skill"],
   marketplace: ["/", "/app/", "/chat/", "/agent/"],
-  manage: ["/project-agents", "/project"],
+  manage: ["/project-agents"],
   mcp: ["/vault"],
 };
 
@@ -174,7 +180,8 @@ export function pathToSection(pathname: string): Section | null {
     pathname.startsWith("/agent/")
   )
     return "marketplace";
-  if (pathname === "/project-agents" || pathname === "/project") return "manage";
+  if (pathname === "/project") return "marketplace";
+  if (pathname === "/project-agents") return "manage";
   if (pathname === "/vault") return "mcp";
   return null;
 }

@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, RotateCcw, Rocket, Copy, Share2, ArrowDownToLine, Trash2 } from "lucide-react";
-import { mockAgents, type Agent } from "@/data/mockData";
-import { PublishAgentDialog } from "@/components/PublishAgentDialog";
+import { type Agent } from "@/data/mockData";
+import { useAgents } from "@/contexts/AgentsContext";
 import { AgentRuntimeBadge, type AgentRuntimeStatus } from "@/components/AgentRuntimeBadge";
 import {
   AlertDialog,
@@ -44,10 +44,9 @@ const ProjectAgents = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [kindFilter, setKindFilter] = useState<"app" | "agent">("app");
   const [onlyMine, setOnlyMine] = useState(false);
-  const [publishTarget, setPublishTarget] = useState<Agent | null>(null);
   const [unpublishTarget, setUnpublishTarget] = useState<Agent | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Agent | null>(null);
-  const [agents, setAgents] = useState<Agent[]>(mockAgents);
+  const { agents, setAgents } = useAgents();
   const { toast } = useToast();
 
   const handleCopy = (app: Agent) => {
@@ -74,6 +73,15 @@ const ProjectAgents = () => {
     setAgents((prev) => prev.map((a) => (a.id === unpublishTarget.id ? { ...a, status: "project" as const, publishScope: undefined } : a)));
     toast({ title: "已下架", description: `「${unpublishTarget.name}」已下架` });
     setUnpublishTarget(null);
+  };
+
+  const handlePublishToProject = (app: Agent) => {
+    setAgents((prev) =>
+      prev.map((a) =>
+        a.id === app.id ? { ...a, status: "published" as const, publishScope: "project" as const } : a
+      )
+    );
+    toast({ title: "已发布到项目作品", description: `「${app.name}」已展示在项目作品中` });
   };
 
   const handleConfirmDelete = () => {
@@ -274,7 +282,7 @@ const ProjectAgents = () => {
                   <>
                     <button
                       className="inline-flex items-center gap-1 text-xs text-primary hover:opacity-80"
-                      onClick={() => setPublishTarget(app)}
+                      onClick={() => handlePublishToProject(app)}
                     >
                       <Rocket className="w-3.5 h-3.5" />发布
                     </button>
@@ -295,14 +303,6 @@ const ProjectAgents = () => {
           <div className="text-center py-16 text-sm text-muted-foreground">暂无匹配的应用</div>
         )}
       </div>
-
-      <PublishAgentDialog
-        open={!!publishTarget}
-        onOpenChange={(o) => !o && setPublishTarget(null)}
-        agentName={publishTarget?.name ?? ""}
-        kind={publishTarget?.kind}
-      />
-
       <AlertDialog open={!!unpublishTarget} onOpenChange={(o) => !o && setUnpublishTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
