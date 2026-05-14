@@ -108,12 +108,12 @@ export const TabsProvider = ({ children }: { children: ReactNode }) => {
 
     setAllTabs((prev) => {
       let next = prev;
-      // Seed marketplace section with both default tabs the first time
-      if (section === "marketplace" && !prev.some((x) => x.section === "marketplace")) {
+      // Seed manage section with both default tabs the first time
+      if (section === "manage" && !prev.some((x) => x.section === "manage")) {
         next = [
           ...next,
-          { key: "marketplace", title: "作品广场", path: "/", closable: false, section: "marketplace" },
-          { key: "project", title: "项目作品", path: "/project", closable: false, section: "marketplace" },
+          { key: "manage", title: "作品管理", path: "/project-agents", closable: false, section: "manage" },
+          { key: "project", title: "项目作品", path: "/project", closable: false, section: "manage" },
         ];
       }
       const exists = next.some((x) => x.key === tab.key);
