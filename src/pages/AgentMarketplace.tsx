@@ -21,7 +21,7 @@ const AgentMarketplace = () => {
   const [scopeTab, setScopeTab] = useState<"marketplace" | "project">("marketplace");
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [kindFilter, setKindFilter] = useState<KindFilter>("all");
+  const [kindFilter, setKindFilter] = useState<KindFilter>("app");
   const [sortBy, setSortBy] = useState<"latest" | "downloads">("latest");
   const [catPopOpen, setCatPopOpen] = useState(false);
 
