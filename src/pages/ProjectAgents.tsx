@@ -76,6 +76,15 @@ const ProjectAgents = () => {
     setUnpublishTarget(null);
   };
 
+  const handlePublishToProject = (app: Agent) => {
+    setAgents((prev) =>
+      prev.map((a) =>
+        a.id === app.id ? { ...a, status: "published" as const, publishScope: "project" as const } : a
+      )
+    );
+    toast({ title: "已发布到项目作品", description: `「${app.name}」已展示在项目作品中` });
+  };
+
   const handleConfirmDelete = () => {
     if (!deleteTarget) return;
     setAgents((prev) => prev.filter((a) => a.id !== deleteTarget.id));
@@ -274,7 +283,7 @@ const ProjectAgents = () => {
                   <>
                     <button
                       className="inline-flex items-center gap-1 text-xs text-primary hover:opacity-80"
-                      onClick={() => setPublishTarget(app)}
+                      onClick={() => handlePublishToProject(app)}
                     >
                       <Rocket className="w-3.5 h-3.5" />发布
                     </button>
