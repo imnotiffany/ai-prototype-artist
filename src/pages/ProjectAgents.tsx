@@ -116,14 +116,11 @@ const ProjectAgents = () => {
     <div className="flex-1 overflow-auto">
       <div className="max-w-[1200px] mx-auto px-6 py-6 animate-fade-in">
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-lg font-semibold text-primary">作品管理</h1>
-          <div className="flex items-center gap-2">
-            <Button size="sm" className="gap-1.5 h-8 text-xs" onClick={() => navigate("/create")}>
-              <Plus className="w-3.5 h-3.5" />
-              创建作品
-            </Button>
-          </div>
+        <div className="flex items-center justify-end mb-4">
+          <Button size="sm" className="gap-1.5 h-8 text-xs" onClick={() => navigate("/create")}>
+            <Plus className="w-3.5 h-3.5" />
+            创建作品
+          </Button>
         </div>
 
         {/* Kind segmented control */}
