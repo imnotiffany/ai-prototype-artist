@@ -30,6 +30,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<AppLayout><AgentMarketplace /></AppLayout>} />
+          <Route path="/project" element={<AppLayout><AgentMarketplace /></AppLayout>} />
           <Route path="/agent/:id" element={<AppLayout><AgentDetail /></AppLayout>} />
           <Route path="/chat/:id" element={<AppLayout><ChatPage /></AppLayout>} />
           <Route path="/app/:id" element={<AppLayout><AppRunner /></AppLayout>} />
