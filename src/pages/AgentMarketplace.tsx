@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Search, Clock, MessageSquare, Globe, Zap, Plus, ChevronDown, Check } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +18,9 @@ const openAgent = (a: Agent, navigate: (p: string) => void) => {
 
 const AgentMarketplace = () => {
   const navigate = useNavigate();
-  const [scopeTab, setScopeTab] = useState<"marketplace" | "project">("marketplace");
+  const location = useLocation();
+  const scopeTab: "marketplace" | "project" =
+    location.pathname === "/project" ? "project" : "marketplace";
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [kindFilter, setKindFilter] = useState<KindFilter>("app");
@@ -53,30 +55,6 @@ const AgentMarketplace = () => {
 
   return (
     <div className="flex-1 overflow-auto animate-fade-in">
-      {/* Top tabs */}
-      <div className="px-6 pt-4 border-b border-border">
-        <div className="flex items-center gap-6">
-          {([
-            { value: "marketplace", label: "作品广场" },
-            { value: "project", label: "项目作品" },
-          ] as const).map((t) => (
-            <button
-              key={t.value}
-              onClick={() => setScopeTab(t.value)}
-              className={`relative pb-3 text-sm transition-colors ${
-                scopeTab === t.value
-                  ? "text-primary font-semibold"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {t.label}
-              {scopeTab === t.value && (
-                <span className="absolute -bottom-px left-0 right-0 h-0.5 bg-primary rounded-full" />
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
 
       {/* Hero */}
       <div className="pt-6 pb-6 text-center">
