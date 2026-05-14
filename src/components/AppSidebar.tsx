@@ -1,20 +1,24 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { Compass, Plus, FolderOpen, Server } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { pathToSection, type Section } from "@/contexts/TabsContext";
 
-const menuSections = [
+const menuSections: {
+  label: string;
+  items: { name: string; path: string; icon: typeof Plus; section: Section }[];
+}[] = [
   {
     label: "工作台",
     items: [
-      { name: "新建作品", path: "/create", icon: Plus },
-      { name: "作品广场", path: "/", icon: Compass },
+      { name: "新建作品", path: "/create", icon: Plus, section: "create" },
+      { name: "作品广场", path: "/", icon: Compass, section: "marketplace" },
     ],
   },
   {
     label: "管理",
     items: [
-      { name: "作品管理", path: "/project-agents", icon: FolderOpen },
-      { name: "MCP 管理", path: "/vault", icon: Server },
+      { name: "作品管理", path: "/project-agents", icon: FolderOpen, section: "manage" },
+      { name: "MCP 管理", path: "/vault", icon: Server, section: "mcp" },
     ],
   },
 ];
@@ -22,6 +26,7 @@ const menuSections = [
 export const AppSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const currentSection = pathToSection(location.pathname);
 
   return (
     <aside className="w-[130px] border-r border-border bg-sidebar flex flex-col py-3 shrink-0">
@@ -33,7 +38,7 @@ export const AppSidebar = () => {
             </div>
           )}
           {section.items.map((item) => {
-            const isActive = location.pathname === item.path;
+            const isActive = currentSection === item.section;
             return (
               <button
                 key={item.path}
