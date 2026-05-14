@@ -33,8 +33,8 @@ function resolveRoute(pathname: string): ResolvedRoute | null {
   }
   if (pathname === "/project") {
     return {
-      section: "marketplace",
-      tab: { key: "project", title: "项目作品", path: "/project", closable: false, section: "marketplace" },
+      section: "manage",
+      tab: { key: "project", title: "项目作品", path: "/project", closable: false, section: "manage" },
     };
   }
   if (pathname === "/project-agents") {
