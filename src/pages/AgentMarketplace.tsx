@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Search, Clock, MessageSquare, Globe, Zap, Plus, ChevronDown, Check } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
