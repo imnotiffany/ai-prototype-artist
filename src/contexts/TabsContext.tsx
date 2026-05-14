@@ -33,8 +33,8 @@ function resolveRoute(pathname: string): ResolvedRoute | null {
   }
   if (pathname === "/project") {
     return {
-      section: "marketplace",
-      tab: { key: "project", title: "项目作品", path: "/project", closable: false, section: "marketplace" },
+      section: "manage",
+      tab: { key: "project", title: "项目作品", path: "/project", closable: false, section: "manage" },
     };
   }
   if (pathname === "/project-agents") {
@@ -108,12 +108,12 @@ export const TabsProvider = ({ children }: { children: ReactNode }) => {
 
     setAllTabs((prev) => {
       let next = prev;
-      // Seed marketplace section with both default tabs the first time
-      if (section === "marketplace" && !prev.some((x) => x.section === "marketplace")) {
+      // Seed manage section with both default tabs the first time
+      if (section === "manage" && !prev.some((x) => x.section === "manage")) {
         next = [
           ...next,
-          { key: "marketplace", title: "作品广场", path: "/", closable: false, section: "marketplace" },
-          { key: "project", title: "项目作品", path: "/project", closable: false, section: "marketplace" },
+          { key: "manage", title: "作品管理", path: "/project-agents", closable: false, section: "manage" },
+          { key: "project", title: "项目作品", path: "/project", closable: false, section: "manage" },
         ];
       }
       const exists = next.some((x) => x.key === tab.key);
@@ -160,8 +160,8 @@ export const useTabs = () => useContext(TabsContext);
 
 export const SECTION_PATHS: Record<Section, string[]> = {
   create: ["/create", "/create-web", "/create-agent", "/create-agent-manual", "/create-skill"],
-  marketplace: ["/", "/project", "/app/", "/chat/", "/agent/"],
-  manage: ["/project-agents"],
+  marketplace: ["/", "/app/", "/chat/", "/agent/"],
+  manage: ["/project-agents", "/project"],
   mcp: ["/vault"],
 };
 
@@ -169,13 +169,12 @@ export function pathToSection(pathname: string): Section | null {
   if (pathname.startsWith("/create")) return "create";
   if (
     pathname === "/" ||
-    pathname === "/project" ||
     pathname.startsWith("/app/") ||
     pathname.startsWith("/chat/") ||
     pathname.startsWith("/agent/")
   )
     return "marketplace";
-  if (pathname === "/project-agents") return "manage";
+  if (pathname === "/project-agents" || pathname === "/project") return "manage";
   if (pathname === "/vault") return "mcp";
   return null;
 }
