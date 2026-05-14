@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { mockAgents, SKILL_CATEGORIES, type Agent } from "@/data/mockData";
+import { SKILL_CATEGORIES, type Agent } from "@/data/mockData";
+import { useAgents } from "@/contexts/AgentsContext";
 
 type KindFilter = "app" | "agent";
 
@@ -19,6 +20,7 @@ const openAgent = (a: Agent, navigate: (p: string) => void) => {
 const AgentMarketplace = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { agents } = useAgents();
   const scopeTab: "marketplace" | "project" =
     location.pathname === "/project" ? "project" : "marketplace";
   const [search, setSearch] = useState("");
@@ -27,7 +29,7 @@ const AgentMarketplace = () => {
   const [sortBy, setSortBy] = useState<"latest" | "downloads">("latest");
   const [catPopOpen, setCatPopOpen] = useState(false);
 
-  const allPublished = mockAgents.filter((a) => {
+  const allPublished = agents.filter((a) => {
     if (a.status !== "published") return false;
     const scope = a.publishScope ?? "marketplace";
     return scope === scopeTab;
