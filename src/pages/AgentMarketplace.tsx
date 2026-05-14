@@ -47,7 +47,6 @@ const AgentMarketplace = () => {
     );
 
   const kindTabs: { value: KindFilter; label: string }[] = [
-    { value: "all", label: "全部" },
     { value: "app", label: "应用" },
     { value: "agent", label: "智能体" },
   ];
