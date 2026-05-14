@@ -107,13 +107,22 @@ export const TabsProvider = ({ children }: { children: ReactNode }) => {
     const tab: Tab = { ...r.tab, section };
 
     setAllTabs((prev) => {
-      const exists = prev.some((x) => x.key === tab.key);
+      let next = prev;
+      // Seed marketplace section with both default tabs the first time
+      if (section === "marketplace" && !prev.some((x) => x.section === "marketplace")) {
+        next = [
+          ...next,
+          { key: "marketplace", title: "作品广场", path: "/", closable: false, section: "marketplace" },
+          { key: "project", title: "项目作品", path: "/project", closable: false, section: "marketplace" },
+        ];
+      }
+      const exists = next.some((x) => x.key === tab.key);
       if (exists) {
-        return prev.map((x) =>
+        return next.map((x) =>
           x.key === tab.key ? { ...x, path: tab.path, title: tab.title, section } : x
         );
       }
-      return [...prev, tab];
+      return [...next, tab];
     });
     setActiveKey(tab.key);
     setActiveSection(section);
