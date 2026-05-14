@@ -28,7 +28,7 @@ function resolveRoute(pathname: string): ResolvedRoute | null {
   if (pathname === "/") {
     return {
       section: "marketplace",
-      tab: { key: "marketplace", title: "广场", path: "/", closable: false, section: "marketplace" },
+      tab: { key: "marketplace", title: "作品广场", path: "/", closable: false, section: "marketplace" },
     };
   }
   if (pathname === "/project") {
@@ -112,7 +112,7 @@ export const TabsProvider = ({ children }: { children: ReactNode }) => {
       if (section === "marketplace" && !prev.some((x) => x.section === "marketplace")) {
         next = [
           ...next,
-          { key: "marketplace", title: "广场", path: "/", closable: false, section: "marketplace" },
+          { key: "marketplace", title: "作品广场", path: "/", closable: false, section: "marketplace" },
           { key: "project", title: "项目作品", path: "/project", closable: false, section: "marketplace" },
         ];
       }
