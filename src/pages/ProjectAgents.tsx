@@ -7,7 +7,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, RotateCcw, Rocket, Copy, Share2, ArrowDownToLine, Trash2 } from "lucide-react";
 import { mockAgents, type Agent } from "@/data/mockData";
-import { PublishAgentDialog } from "@/components/PublishAgentDialog";
 import { AgentRuntimeBadge, type AgentRuntimeStatus } from "@/components/AgentRuntimeBadge";
 import {
   AlertDialog,
@@ -44,7 +43,6 @@ const ProjectAgents = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [kindFilter, setKindFilter] = useState<"app" | "agent">("app");
   const [onlyMine, setOnlyMine] = useState(false);
-  const [publishTarget, setPublishTarget] = useState<Agent | null>(null);
   const [unpublishTarget, setUnpublishTarget] = useState<Agent | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Agent | null>(null);
   const [agents, setAgents] = useState<Agent[]>(mockAgents);
@@ -304,14 +302,6 @@ const ProjectAgents = () => {
           <div className="text-center py-16 text-sm text-muted-foreground">暂无匹配的应用</div>
         )}
       </div>
-
-      <PublishAgentDialog
-        open={!!publishTarget}
-        onOpenChange={(o) => !o && setPublishTarget(null)}
-        agentName={publishTarget?.name ?? ""}
-        kind={publishTarget?.kind}
-      />
-
       <AlertDialog open={!!unpublishTarget} onOpenChange={(o) => !o && setUnpublishTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
