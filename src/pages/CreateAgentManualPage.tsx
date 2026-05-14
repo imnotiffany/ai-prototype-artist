@@ -672,16 +672,8 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                               }}
                               className="text-xs"
                             >
-                              <div className="flex items-center gap-2">
-                                <KeyRound className="w-3 h-3 text-muted-foreground shrink-0" />
-                                <div className="flex flex-col">
-                                  <span className="font-medium">{k.name}</span>
-                                  <span className="text-[10px] text-muted-foreground">{k.keyMask} · {k.provider}</span>
-                                </div>
-                              </div>
-                              <CheckCircle2
-                                className={`ml-auto h-3.5 w-3.5 ${apiKey === k.id ? "opacity-100 text-primary" : "opacity-0"}`}
-                              />
+                              <span className="font-medium">{k.name}</span>
+                              <span className="ml-2 text-[10px] text-muted-foreground">{k.keyMask}</span>
                             </CommandItem>
                           ))}
                         </CommandGroup>
