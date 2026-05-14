@@ -117,7 +117,27 @@ const ProjectAgents = () => {
       <div className="max-w-[1200px] mx-auto px-6 py-6 animate-fade-in">
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
-          <h1 className="text-lg font-semibold text-primary">作品管理</h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-lg font-semibold text-primary">作品管理</h1>
+            <div className="inline-flex items-center bg-muted rounded-md p-0.5">
+              {([
+                { value: "app", label: "应用" },
+                { value: "agent", label: "智能体" },
+              ] as const).map((t) => (
+                <button
+                  key={t.value}
+                  onClick={() => setKindFilter(t.value)}
+                  className={`px-2.5 py-0.5 text-xs rounded transition-colors ${
+                    kindFilter === t.value
+                      ? "bg-background text-foreground shadow-sm font-medium"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="flex items-center gap-2">
             <Button size="sm" className="gap-1.5 h-8 text-xs" onClick={() => navigate("/create")}>
               <Plus className="w-3.5 h-3.5" />
