@@ -90,7 +90,7 @@ const ProjectAgents = () => {
       if (statusFilter === "published" && app.status !== "published") return false;
       if (statusFilter === "unpublished" && app.status === "published") return false;
     }
-    if (kindFilter !== "all" && app.kind !== kindFilter) return false;
+    if (app.kind !== kindFilter) return false;
     if (onlyMine && app.authorId !== MY_AUTHOR_ID) return false;
     return true;
   });
