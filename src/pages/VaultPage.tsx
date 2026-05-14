@@ -492,15 +492,9 @@ const VaultPage = () => {
   return (
     <div className="p-6 max-w-[1100px] mx-auto animate-fade-in">
       <div className="flex items-start justify-between mb-2">
-        <div>
-          <h1 className="text-lg font-semibold flex items-center gap-2">
-            <Server className="w-4 h-4 text-primary" />
-            MCP 管理
-          </h1>
-          <p className="text-xs text-muted-foreground mt-1">
-            免凭据 MCP 已默认接入；需凭据 MCP 请通过「新增 MCP」配置凭据后启用
-          </p>
-        </div>
+        <p className="text-xs text-muted-foreground">
+          免凭据 MCP 已默认接入；需凭据 MCP 请通过「新增 MCP」配置凭据后启用
+        </p>
         <Button size="sm" onClick={openCreate} className="h-8 text-xs gap-1.5">
           <Plus className="w-3.5 h-3.5" />
           新增 MCP
