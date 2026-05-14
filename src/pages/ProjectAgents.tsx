@@ -99,7 +99,7 @@ const ProjectAgents = () => {
     setSearchName("");
     setCategoryFilter("all");
     setStatusFilter("all");
-    setKindFilter("all");
+    setKindFilter("app");
     setOnlyMine(false);
   };
 
