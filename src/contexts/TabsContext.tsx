@@ -160,8 +160,8 @@ export const useTabs = () => useContext(TabsContext);
 
 export const SECTION_PATHS: Record<Section, string[]> = {
   create: ["/create", "/create-web", "/create-agent", "/create-agent-manual", "/create-skill"],
-  marketplace: ["/", "/project", "/app/", "/chat/", "/agent/"],
-  manage: ["/project-agents"],
+  marketplace: ["/", "/app/", "/chat/", "/agent/"],
+  manage: ["/project-agents", "/project"],
   mcp: ["/vault"],
 };
 
@@ -169,13 +169,12 @@ export function pathToSection(pathname: string): Section | null {
   if (pathname.startsWith("/create")) return "create";
   if (
     pathname === "/" ||
-    pathname === "/project" ||
     pathname.startsWith("/app/") ||
     pathname.startsWith("/chat/") ||
     pathname.startsWith("/agent/")
   )
     return "marketplace";
-  if (pathname === "/project-agents") return "manage";
+  if (pathname === "/project-agents" || pathname === "/project") return "manage";
   if (pathname === "/vault") return "mcp";
   return null;
 }
