@@ -18,7 +18,9 @@ const openAgent = (a: Agent, navigate: (p: string) => void) => {
 
 const AgentMarketplace = () => {
   const navigate = useNavigate();
-  const [scopeTab, setScopeTab] = useState<"marketplace" | "project">("marketplace");
+  const location = useLocation();
+  const scopeTab: "marketplace" | "project" =
+    location.pathname === "/project" ? "project" : "marketplace";
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [kindFilter, setKindFilter] = useState<KindFilter>("app");
