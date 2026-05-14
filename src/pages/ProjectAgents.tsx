@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, RotateCcw, Rocket, Copy, Share2, ArrowDownToLine, Trash2 } from "lucide-react";
-import { mockAgents, type Agent } from "@/data/mockData";
+import { type Agent } from "@/data/mockData";
+import { useAgents } from "@/contexts/AgentsContext";
 import { AgentRuntimeBadge, type AgentRuntimeStatus } from "@/components/AgentRuntimeBadge";
 import {
   AlertDialog,
@@ -45,7 +46,7 @@ const ProjectAgents = () => {
   const [onlyMine, setOnlyMine] = useState(false);
   const [unpublishTarget, setUnpublishTarget] = useState<Agent | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Agent | null>(null);
-  const [agents, setAgents] = useState<Agent[]>(mockAgents);
+  const { agents, setAgents } = useAgents();
   const { toast } = useToast();
 
   const handleCopy = (app: Agent) => {
