@@ -9,7 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { mockAgents, SKILL_CATEGORIES, type Agent } from "@/data/mockData";
 
-type KindFilter = "all" | "app" | "agent";
+type KindFilter = "app" | "agent";
 
 const openAgent = (a: Agent, navigate: (p: string) => void) => {
   if (a.kind === "app") navigate(`/app/${a.id}`);
