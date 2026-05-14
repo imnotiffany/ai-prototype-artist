@@ -128,7 +128,7 @@ const ProjectAgents = () => {
 
         {/* Kind segmented control */}
         <div className="mb-5">
-          <div className="inline-flex items-center bg-muted rounded-lg p-1">
+          <div className="inline-flex items-center bg-muted rounded-md p-0.5">
             {([
               { value: "app", label: "应用" },
               { value: "agent", label: "智能体" },
@@ -136,9 +136,9 @@ const ProjectAgents = () => {
               <button
                 key={t.value}
                 onClick={() => setKindFilter(t.value)}
-                className={`px-5 py-1.5 text-sm rounded-md transition-all ${
+                className={`px-3 py-0.5 text-xs rounded transition-all ${
                   kindFilter === t.value
-                    ? "bg-background text-foreground shadow-sm font-semibold"
+                    ? "bg-background text-foreground shadow-sm font-medium"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
