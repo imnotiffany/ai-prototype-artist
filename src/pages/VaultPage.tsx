@@ -539,7 +539,7 @@ const VaultPage = () => {
               <TableHead className="text-xs h-9 whitespace-nowrap">服务端点</TableHead>
               <TableHead className="text-xs h-9 whitespace-nowrap w-[130px]">类型</TableHead>
               
-              <TableHead className="text-xs h-9 whitespace-nowrap w-[80px]">操作</TableHead>
+              <TableHead className="text-xs h-9 whitespace-nowrap w-[120px]">操作</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
