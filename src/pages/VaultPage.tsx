@@ -36,7 +36,7 @@ interface McpEntry {
 
 const typeLabel = (t: McpType) => (t === "studio" ? "STDIO" : t === "sse" ? "SSE" : "StreamableHTTP");
 
-// 免凭据 MCP 默认即在列表
+// 免凭据 MCP 默认即在列表（视为来自 MCP 广场的预置条目）
 const freeMcps: McpEntry[] = getCredentialFreeMcps().map((r, i) => ({
   id: r.id,
   name: r.name,
@@ -49,6 +49,7 @@ const freeMcps: McpEntry[] = getCredentialFreeMcps().map((r, i) => ({
   createdAt: r.addedAt,
   requiresCredential: false,
   type: r.deployment === "本地" ? "studio" : "http",
+  fromMarket: true,
 }));
 
 
