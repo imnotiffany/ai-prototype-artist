@@ -75,15 +75,9 @@ const VaultPage = () => {
 
   // 字段锁定（来自 MCP 广场添加时，地址/名称/标识不可改）
   const [locked, setLocked] = useState(false);
-  // 固定 MCP 编辑：除"服务地址"外其他字段全锁定
-  const [endpointEditableWhileLocked, setEndpointEditableWhileLocked] = useState(false);
+  // 编辑模式下仅可改请求头（用于 MCP 广场来源的条目）
+  const [headersOnly, setHeadersOnly] = useState(false);
   const [docUrl, setDocUrl] = useState<string>("");
-  // 固定 MCP 已配置的服务地址
-  const [fixedEndpoints, setFixedEndpoints] = useState<Record<string, string>>({});
-  // 固定 MCP 自定义请求头（官方 MCP 仅允许编辑此项）
-  const [fixedHeaders, setFixedHeaders] = useState<Record<string, { key: string; value: string }[]>>({});
-  const [editingFixedId, setEditingFixedId] = useState<string | null>(null);
-  const [fixedDialogOpen, setFixedDialogOpen] = useState(false);
 
   // 手动创建表单
   const [mcpType, setMcpType] = useState<McpType>("http");
@@ -121,33 +115,8 @@ const VaultPage = () => {
     setHeaders([]);
     setMcpType("http"); setStdioCommand("npx"); setStdioArgs(""); setEnvVars([]);
     setLocked(false);
-    setEndpointEditableWhileLocked(false);
+    setHeadersOnly(false);
     setDocUrl("");
-  };
-
-  const openEditFixed = (m: FixedMcpDef) => {
-    reset();
-    setLocked(true);
-    setDocUrl(m.docUrl);
-    setName(m.name);
-    setIdentifier(m.identifier);
-    setDescription(m.description);
-    setMcpType(m.type);
-    setEndpoint(fixedEndpoints[m.id] ?? "");
-    setHeaders(fixedHeaders[m.id] ?? []);
-    setEditingFixedId(m.id);
-    setFixedDialogOpen(true);
-  };
-
-  const saveFixed = () => {
-    if (!editingFixedId) return;
-    setFixedHeaders((m) => ({ ...m, [editingFixedId]: headers.filter((h) => h.key.trim()) }));
-    const def = fixedMcpDefs.find((d) => d.id === editingFixedId);
-    if (def) setMcpConfigured(def.name, true);
-    toast({ title: "请求头已保存", description: name });
-    setFixedDialogOpen(false);
-    setEditingFixedId(null);
-    reset();
   };
 
   const linkedAgents = (mcpName: string) =>
