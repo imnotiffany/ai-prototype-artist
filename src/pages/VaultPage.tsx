@@ -158,6 +158,7 @@ const VaultPage = () => {
     setStdioArgs(m.stdioArgs ?? "");
     setEnvVars(m.envVars ?? []);
     setLocked(!!m.fromMarket);
+    setHeadersOnly(!!m.fromMarket);
     setCreateOpen(true);
   };
 
