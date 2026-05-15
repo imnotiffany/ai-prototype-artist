@@ -616,7 +616,7 @@ const VaultPage = () => {
             </TabsContent>
 
             <TabsContent value="manual" className="mt-0">
-              {renderForm()}
+              {headersOnly ? renderHeadersOnly() : renderForm()}
             </TabsContent>
           </Tabs>
 
