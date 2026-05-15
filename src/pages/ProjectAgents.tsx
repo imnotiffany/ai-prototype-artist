@@ -251,24 +251,6 @@ const ProjectAgents = () => {
                       <Share2 className="w-3.5 h-3.5" />分享
                     </button>
                   </>
-                ) : app.status === "pending" ? (
-                  <>
-                    <button
-                      className="inline-flex items-center gap-1 text-xs text-primary hover:opacity-80"
-                      onClick={() => {
-                        setAgents((prev) => prev.map((a) => (a.id === app.id ? { ...a, status: "project" as const } : a)));
-                        toast({ title: "已撤回", description: `「${app.name}」已撤回发布申请` });
-                      }}
-                    >
-                      <ArrowDownToLine className="w-3.5 h-3.5" />撤回
-                    </button>
-                    <button
-                      className="inline-flex items-center gap-1 text-xs text-destructive hover:opacity-80"
-                      onClick={() => setDeleteTarget(app)}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />删除
-                    </button>
-                  </>
                 ) : (
                   <>
                     <button
