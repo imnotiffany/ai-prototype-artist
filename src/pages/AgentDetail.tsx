@@ -206,7 +206,14 @@ const AgentDetail = () => {
   };
 
   /* ── Run history ── */
-  const [activeRun, setActiveRun] = useState<RunRecord | null>(null);
+  const [activeRunId, setActiveRunId] = useState<string>(mockRuns[0]?.id ?? "");
+  const [runQuery, setRunQuery] = useState("");
+  const activeRun = mockRuns.find((r) => r.id === activeRunId) ?? null;
+  const filteredRuns = mockRuns.filter((r) => {
+    const k = runQuery.trim().toLowerCase();
+    if (!k) return true;
+    return r.prompt.toLowerCase().includes(k) || r.trigger.toLowerCase().includes(k) || r.id.toLowerCase().includes(k);
+  });
 
   /* ── 订阅 MCP 管理（Vault）配置变化，让本页绑定区实时联动 ── */
   const [, setVaultTick] = useState(0);
