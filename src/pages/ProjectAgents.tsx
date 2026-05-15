@@ -33,7 +33,7 @@ const MY_AUTHOR_ID = "01441970";
 const statusOptions = [
   { value: "all", label: "全部" },
   { value: "published", label: "已发布" },
-  { value: "pending", label: "待发布" },
+  
   { value: "unpublished", label: "未发布" },
 ];
 
@@ -89,7 +89,6 @@ const ProjectAgents = () => {
     if (categoryFilter !== "all" && app.category !== categoryFilter) return false;
     if (statusFilter !== "all") {
       if (statusFilter === "published" && app.status !== "published") return false;
-      if (statusFilter === "pending" && app.status !== "pending") return false;
       if (statusFilter === "unpublished" && app.status !== "project") return false;
     }
     if (app.kind !== kindFilter) return false;
@@ -107,9 +106,6 @@ const ProjectAgents = () => {
   const getStatusInfo = (app: Agent): { label: string; dot: string; text: string; bg: string } => {
     if (app.status === "published") {
       return { label: "已发布", dot: "bg-green-500", text: "text-green-700 dark:text-green-400", bg: "bg-green-500/10" };
-    }
-    if (app.status === "pending") {
-      return { label: "待发布", dot: "bg-amber-500", text: "text-amber-700 dark:text-amber-400", bg: "bg-amber-500/10" };
     }
     return { label: "未发布", dot: "bg-gray-400", text: "text-muted-foreground", bg: "bg-muted" };
   };
@@ -253,24 +249,6 @@ const ProjectAgents = () => {
                     </button>
                     <button className="inline-flex items-center gap-1 text-xs text-primary hover:opacity-80">
                       <Share2 className="w-3.5 h-3.5" />分享
-                    </button>
-                  </>
-                ) : app.status === "pending" ? (
-                  <>
-                    <button
-                      className="inline-flex items-center gap-1 text-xs text-primary hover:opacity-80"
-                      onClick={() => {
-                        setAgents((prev) => prev.map((a) => (a.id === app.id ? { ...a, status: "project" as const } : a)));
-                        toast({ title: "已撤回", description: `「${app.name}」已撤回发布申请` });
-                      }}
-                    >
-                      <ArrowDownToLine className="w-3.5 h-3.5" />撤回
-                    </button>
-                    <button
-                      className="inline-flex items-center gap-1 text-xs text-destructive hover:opacity-80"
-                      onClick={() => setDeleteTarget(app)}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />删除
                     </button>
                   </>
                 ) : (
