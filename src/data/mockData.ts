@@ -44,7 +44,7 @@ export interface Agent {
   sessionCount: number;
   versions: Version[];
   creationType: "ai" | "upload";
-  status: "published" | "project";
+  status: "published" | "project" | "pending";
   /** "agent" = 对话型智能体（点击进入对话），"app" = 网页应用（点击直接运行） */
   kind: "agent" | "app";
   /** 仅当 status==="published" 时有意义：marketplace=已发布到广场，project=已发布到项目内 */
