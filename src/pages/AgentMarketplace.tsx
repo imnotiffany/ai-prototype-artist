@@ -199,23 +199,8 @@ const AgentMarketplace = () => {
             )}
             </div>
 
-            {/* Second row: kind filter (left) + sort (right) */}
+            {/* Second row: sort */}
             <div className="flex items-center gap-3 text-xs">
-              <div className="inline-flex items-center bg-muted rounded-md p-0.5">
-                {kindTabs.map((t) => (
-                  <button
-                    key={t.value}
-                    onClick={() => setKindFilter(t.value)}
-                    className={`px-2.5 py-0.5 text-xs rounded transition-colors ${
-                      kindFilter === t.value
-                        ? "bg-background text-foreground shadow-sm font-medium"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
               <div className="ml-auto flex items-center gap-1 text-muted-foreground">
                 <button
                   onClick={() => setSortBy("latest")}
