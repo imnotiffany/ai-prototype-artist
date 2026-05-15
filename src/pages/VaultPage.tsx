@@ -54,8 +54,8 @@ const freeMcps: McpEntry[] = getCredentialFreeMcps().map((r, i) => ({
 
 
 const VaultPage = () => {
-  // 用户已配置凭据 / 手动新增的 MCP
-  const [credMcps, setCredMcps] = useState<McpEntry[]>([]);
+  // 用户可见的所有 MCP（含预置免凭据条目 + 用户添加的）
+  const [credMcps, setCredMcps] = useState<McpEntry[]>(() => [...freeMcps]);
   // 强制订阅 store（用于跨页面同步显示）
   const [, setTick] = useState(0);
   useEffect(() => {
@@ -63,7 +63,15 @@ const VaultPage = () => {
     return () => { unsub(); };
   }, []);
 
-  const mcps = useMemo(() => [...credMcps, ...freeMcps], [credMcps]);
+  // 顶部模糊搜索：按名称或标识符过滤
+  const [listSearch, setListSearch] = useState("");
+  const mcps = useMemo(() => {
+    const q = listSearch.trim().toLowerCase();
+    if (!q) return credMcps;
+    return credMcps.filter(
+      (m) => m.name.toLowerCase().includes(q) || m.identifier.toLowerCase().includes(q),
+    );
+  }, [credMcps, listSearch]);
 
   const [createOpen, setCreateOpen] = useState(false);
   // 来自 MCP 广场的独立配置弹窗
