@@ -712,7 +712,7 @@ fengsheng:
                     <Users className="w-3.5 h-3.5 text-primary" />子智能体
                   </h3>
                   <p className="text-[11px] text-muted-foreground mt-0.5">
-                    从项目作品挑选已发布的智能体作为子智能体；它们继承的 Skill / MCP 会一并展示，未配置凭据的 MCP 需在「<button onClick={() => navigate("/vault")} className="text-primary hover:underline">MCP 管理</button>」中补齐
+                    从项目智能体挑选已发布的智能体作为子智能体；它们继承的 Skill / MCP 会一并展示，未配置凭据的 MCP 需在「<button onClick={() => navigate("/vault")} className="text-primary hover:underline">MCP 管理</button>」中补齐
                   </p>
                 </div>
                 <CapabilityPickerDialog
