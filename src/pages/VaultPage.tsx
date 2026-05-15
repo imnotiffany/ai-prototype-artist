@@ -541,7 +541,7 @@ const VaultPage = () => {
                         <span className="truncate" title={ep}>{ep}</span>
                       </div>
                     ) : (
-                      <Badge variant="outline" className="text-[10px] h-5 px-1.5 border-amber-300 text-amber-700 bg-amber-50/60">未配置</Badge>
+                      <span className="text-muted-foreground/50">—</span>
                     )}
                   </TableCell>
                   <TableCell className="py-2 whitespace-nowrap">
