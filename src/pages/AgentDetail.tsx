@@ -936,7 +936,7 @@ fengsheng:
         <TabsContent value="runs" className="mt-4">
           <div className="border border-border rounded-lg overflow-hidden bg-card flex" style={{ height: "calc(100vh - 240px)", minHeight: 480 }}>
             {/* 左侧会话列表 */}
-            <aside className="w-64 shrink-0 border-r border-border flex flex-col bg-muted/20">
+            <aside className="w-48 shrink-0 border-r border-border flex flex-col bg-muted/20">
               <div className="p-2 border-b border-border shrink-0">
                 <div className="relative">
                   <MessageSquare className="w-3.5 h-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
