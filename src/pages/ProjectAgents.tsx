@@ -107,9 +107,6 @@ const ProjectAgents = () => {
     if (app.status === "published") {
       return { label: "已发布", dot: "bg-green-500", text: "text-green-700 dark:text-green-400", bg: "bg-green-500/10" };
     }
-    if (app.status === "pending") {
-      return { label: "待发布", dot: "bg-amber-500", text: "text-amber-700 dark:text-amber-400", bg: "bg-amber-500/10" };
-    }
     return { label: "未发布", dot: "bg-gray-400", text: "text-muted-foreground", bg: "bg-muted" };
   };
 
