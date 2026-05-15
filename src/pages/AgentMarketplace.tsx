@@ -46,10 +46,6 @@ const AgentMarketplace = () => {
         : b.updatedAt.localeCompare(a.updatedAt)
     );
 
-  const kindTabs: { value: KindFilter; label: string }[] = [
-    { value: "app", label: "应用" },
-    { value: "agent", label: "智能体" },
-  ];
 
   return (
     <div className="flex-1 overflow-auto animate-fade-in">
