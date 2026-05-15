@@ -230,9 +230,7 @@ const VaultPage = () => {
         <div className="flex items-start gap-1.5 rounded-md border border-primary/30 bg-primary/5 px-2.5 py-1.5">
           <Lock className="w-3 h-3 text-primary mt-0.5 shrink-0" />
           <p className="text-[10px] text-muted-foreground leading-relaxed">
-            {endpointEditableWhileLocked
-              ? "显示名称、英文标识、简介与类型已固定，仅需填写下方「服务地址」即可完成配置。"
-              : "来自 MCP 广场，显示名称、英文标识、简介与类型已自动填入且不可修改；请在下方完成凭据等配置。"}
+            来自 MCP 广场，显示名称、英文标识、简介与类型已自动填入且不可修改；请在下方完成凭据等配置。
           </p>
         </div>
       )}
