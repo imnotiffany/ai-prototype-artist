@@ -528,8 +528,9 @@ const VaultPage = () => {
           value={listSearch}
           onChange={(e) => setListSearch(e.target.value)}
         />
+      </div>
 
-      <div className="border border-border rounded-lg overflow-hidden mt-5">
+      <div className="border border-border rounded-lg overflow-hidden mt-3">
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
