@@ -99,6 +99,8 @@ const VaultPage = () => {
   const [docUrl, setDocUrl] = useState<string>("");
   // 固定 MCP 已配置的服务地址
   const [fixedEndpoints, setFixedEndpoints] = useState<Record<string, string>>({});
+  // 固定 MCP 自定义请求头（官方 MCP 仅允许编辑此项）
+  const [fixedHeaders, setFixedHeaders] = useState<Record<string, { key: string; value: string }[]>>({});
   const [editingFixedId, setEditingFixedId] = useState<string | null>(null);
   const [fixedDialogOpen, setFixedDialogOpen] = useState(false);
 
