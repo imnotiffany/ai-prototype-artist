@@ -44,7 +44,7 @@ export interface Agent {
   sessionCount: number;
   versions: Version[];
   creationType: "ai" | "upload";
-  status: "published" | "project";
+  status: "published" | "project" | "pending";
   /** "agent" = 对话型智能体（点击进入对话），"app" = 网页应用（点击直接运行） */
   kind: "agent" | "app";
   /** 仅当 status==="published" 时有意义：marketplace=已发布到广场，project=已发布到项目内 */
@@ -274,9 +274,9 @@ export const mockAgents: Agent[] = [
     platform: "市场部", author: "钱七", authorId: "01234571",
     updatedAt: "2026-04-11", downloads: 198,
     skills: ["Content Generation", "SEO Optimizer"], mcpServers: [],
-    sessionCount: 120, creationType: "ai", status: "published", kind: "agent",
+    sessionCount: 120, creationType: "ai", status: "pending", kind: "agent",
     versions: [
-      { version: "v0.3.1", createdAt: "2026-04-11", fileSize: "14KB", downloads: 198, status: "published", creator: "钱七" },
+      { version: "v0.3.1", createdAt: "2026-04-11", fileSize: "14KB", downloads: 198, status: "unpublished", creator: "钱七" },
     ],
   },
   {
@@ -343,9 +343,9 @@ export const mockAgents: Agent[] = [
     platform: "AI技术平台", author: "廖奕通", authorId: "01441970",
     updatedAt: "2026-03-31", downloads: 78,
     skills: ["Content Generation", "Translation Engine"], mcpServers: [],
-    sessionCount: 35, creationType: "ai", status: "published", kind: "agent",
+    sessionCount: 35, creationType: "ai", status: "pending", kind: "agent",
     versions: [
-      { version: "v1.0.0", createdAt: "2026-03-31", fileSize: "8KB", downloads: 78, status: "published", creator: "廖奕通" },
+      { version: "v1.0.0", createdAt: "2026-03-31", fileSize: "8KB", downloads: 78, status: "unpublished", creator: "廖奕通" },
     ],
   },
   {
