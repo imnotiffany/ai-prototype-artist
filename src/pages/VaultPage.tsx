@@ -520,6 +520,15 @@ const VaultPage = () => {
         </Button>
       </div>
 
+      <div className="mt-4 relative max-w-[320px]">
+        <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          className="h-8 text-xs pl-8 bg-muted/30"
+          placeholder="搜索 MCP 名称或标识符"
+          value={listSearch}
+          onChange={(e) => setListSearch(e.target.value)}
+        />
+
       <div className="border border-border rounded-lg overflow-hidden mt-5">
         <Table>
           <TableHeader>
