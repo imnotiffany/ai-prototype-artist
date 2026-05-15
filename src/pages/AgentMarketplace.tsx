@@ -233,20 +233,8 @@ const AgentMarketplace = () => {
                 onClick={() => openAgent(agent, navigate)}
                 className="group relative border border-border rounded-lg p-3.5 bg-card hover:shadow-sm hover:border-primary/40 transition-all cursor-pointer flex flex-col"
               >
-                {/* Kind badge */}
-                <div
-                  className={`absolute top-2.5 right-2.5 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                    isApp
-                      ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
-                      : "bg-purple-500/10 text-purple-600 dark:text-purple-400"
-                  }`}
-                >
-                  {isApp ? <Globe className="w-2.5 h-2.5" /> : <MessageSquare className="w-2.5 h-2.5" />}
-                  {isApp ? "应用" : "智能体"}
-                </div>
-
                 {/* Header: icon + title */}
-                <div className="flex items-start gap-2.5 mb-2 pr-12">
+                <div className="flex items-start gap-2.5 mb-2">
                   <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary/10 to-secondary flex items-center justify-center text-lg shrink-0">
                     {agent.avatar}
                   </div>
