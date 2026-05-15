@@ -36,7 +36,7 @@ interface McpEntry {
 
 const typeLabel = (t: McpType) => (t === "studio" ? "STDIO" : t === "sse" ? "SSE" : "StreamableHTTP");
 
-// 免凭据 MCP 默认即在列表
+// 免凭据 MCP 默认即在列表（视为来自 MCP 广场的预置条目）
 const freeMcps: McpEntry[] = getCredentialFreeMcps().map((r, i) => ({
   id: r.id,
   name: r.name,
@@ -49,12 +49,13 @@ const freeMcps: McpEntry[] = getCredentialFreeMcps().map((r, i) => ({
   createdAt: r.addedAt,
   requiresCredential: false,
   type: r.deployment === "本地" ? "studio" : "http",
+  fromMarket: true,
 }));
 
 
 const VaultPage = () => {
-  // 用户已配置凭据 / 手动新增的 MCP
-  const [credMcps, setCredMcps] = useState<McpEntry[]>([]);
+  // 用户可见的所有 MCP（含预置免凭据条目 + 用户添加的）
+  const [credMcps, setCredMcps] = useState<McpEntry[]>(() => [...freeMcps]);
   // 强制订阅 store（用于跨页面同步显示）
   const [, setTick] = useState(0);
   useEffect(() => {
@@ -62,7 +63,15 @@ const VaultPage = () => {
     return () => { unsub(); };
   }, []);
 
-  const mcps = useMemo(() => [...credMcps, ...freeMcps], [credMcps]);
+  // 顶部模糊搜索：按名称或标识符过滤
+  const [listSearch, setListSearch] = useState("");
+  const mcps = useMemo(() => {
+    const q = listSearch.trim().toLowerCase();
+    if (!q) return credMcps;
+    return credMcps.filter(
+      (m) => m.name.toLowerCase().includes(q) || m.identifier.toLowerCase().includes(q),
+    );
+  }, [credMcps, listSearch]);
 
   const [createOpen, setCreateOpen] = useState(false);
   // 来自 MCP 广场的独立配置弹窗
@@ -511,7 +520,17 @@ const VaultPage = () => {
         </Button>
       </div>
 
-      <div className="border border-border rounded-lg overflow-hidden mt-5">
+      <div className="mt-4 relative max-w-[320px]">
+        <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          className="h-8 text-xs pl-8 bg-muted/30"
+          placeholder="搜索 MCP 名称或标识符"
+          value={listSearch}
+          onChange={(e) => setListSearch(e.target.value)}
+        />
+      </div>
+
+      <div className="border border-border rounded-lg overflow-hidden mt-3">
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
@@ -520,49 +539,57 @@ const VaultPage = () => {
               <TableHead className="text-xs h-9 whitespace-nowrap">服务端点</TableHead>
               <TableHead className="text-xs h-9 whitespace-nowrap w-[130px]">类型</TableHead>
               
-              <TableHead className="text-xs h-9 whitespace-nowrap w-[80px]">操作</TableHead>
+              <TableHead className="text-xs h-9 whitespace-nowrap w-[120px]">操作</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {mcps.map((m) => {
-              const editable = m.requiresCredential; // 免凭据条目不可编辑
-              return (
-                <TableRow
-                  key={m.id}
-                  className={editable ? "cursor-pointer" : ""}
-                  onClick={editable ? () => openEdit(m) : undefined}
-                >
-                  <TableCell className="py-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center shrink-0">
-                        <Server className="w-3 h-3 text-primary" />
-                      </div>
-                      <span className="text-xs font-medium truncate" title={m.name}>{m.name}</span>
+            {mcps.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center text-[11px] text-muted-foreground py-8">
+                  未找到匹配的 MCP
+                </TableCell>
+              </TableRow>
+            )}
+            {mcps.map((m) => (
+              <TableRow
+                key={m.id}
+                className="cursor-pointer"
+                onClick={() => openEdit(m)}
+              >
+                <TableCell className="py-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center shrink-0">
+                      <Server className="w-3 h-3 text-primary" />
                     </div>
-                  </TableCell>
-                  <TableCell className="py-2 text-[11px] text-muted-foreground font-mono whitespace-nowrap">{m.identifier}</TableCell>
-                  <TableCell className="py-2 text-[11px] text-muted-foreground font-mono max-w-[240px]">
-                    <div className="flex items-center gap-1 min-w-0">
-                      <Link2 className="w-3 h-3 shrink-0" />
-                      <span className="truncate" title={m.endpoint}>{m.endpoint}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="py-2 whitespace-nowrap">
-                    <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono font-normal">
-                      {typeLabel(m.type)}
-                    </Badge>
-                  </TableCell>
-                  
-                  <TableCell className="py-2 whitespace-nowrap">
-                    {editable && (
-                      <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1 px-2" onClick={(e) => { e.stopPropagation(); openEdit(m); }}>
-                        <Pencil className="w-3 h-3" /> 编辑
-                      </Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
+                    <span className="text-xs font-medium truncate" title={m.name}>{m.name}</span>
+                  </div>
+                </TableCell>
+                <TableCell className="py-2 text-[11px] text-muted-foreground font-mono whitespace-nowrap">{m.identifier}</TableCell>
+                <TableCell className="py-2 text-[11px] text-muted-foreground font-mono max-w-[240px]">
+                  <div className="flex items-center gap-1 min-w-0">
+                    <Link2 className="w-3 h-3 shrink-0" />
+                    <span className="truncate" title={m.endpoint}>{m.endpoint}</span>
+                  </div>
+                </TableCell>
+                <TableCell className="py-2 whitespace-nowrap">
+                  <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono font-normal">
+                    {typeLabel(m.type)}
+                  </Badge>
+                </TableCell>
+                <TableCell className="py-2 whitespace-nowrap">
+                  <div className="flex items-center gap-0.5">
+                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0" title="编辑"
+                      onClick={(e) => { e.stopPropagation(); openEdit(m); }}>
+                      <Pencil className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10" title="删除"
+                      onClick={(e) => { e.stopPropagation(); setDeleteTarget(m); }}>
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </div>
