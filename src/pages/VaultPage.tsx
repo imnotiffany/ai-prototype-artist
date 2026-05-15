@@ -51,25 +51,6 @@ const freeMcps: McpEntry[] = getCredentialFreeMcps().map((r, i) => ({
   type: r.deployment === "本地" ? "studio" : "http",
 }));
 
-// 固定展示的钉钉 MCP 列表（仅服务地址需要用户配置）
-interface FixedMcpDef {
-  id: string;
-  name: string;
-  identifier: string;
-  description: string;
-  type: McpType;
-  docUrl: string;
-}
-const fixedMcpDefs: FixedMcpDef[] = [
-  { id: "dt_robot",    name: "机器人消息",  identifier: "dingtalk_robot",    description: "钉钉机器人消息MCP服务，支持发送消息至群聊与单聊",       type: "http", docUrl: "https://open.dingtalk.com/document/robots/custom-robot-access" },
-  { id: "dt_journal",  name: "钉钉日志",    identifier: "dingtalk_journal",  description: "钉钉日志MCP，包含获取日志模板、发送日志等能力",       type: "http", docUrl: "https://open.dingtalk.com/document/orgapp/dingtalk-log-overview" },
-  { id: "dt_ai_sheet", name: "钉钉 AI 表格", identifier: "dingtalk_ai_sheet", description: "钉钉 AI 表格 MCP 让 AI 直接操作智能表格",              type: "http", docUrl: "https://open.dingtalk.com/document/orgapp/ai-sheet-overview" },
-  { id: "dt_doc",      name: "钉钉文档",    identifier: "dingtalk_doc",      description: "钉钉文档MCP支持查找、创建文档等能力",                   type: "http", docUrl: "https://open.dingtalk.com/document/orgapp/dingtalk-document-overview" },
-  { id: "dt_contacts", name: "钉钉通讯录",  identifier: "dingtalk_contacts", description: "钉钉通讯录MCP支持搜索人员/部门等组织信息",              type: "http", docUrl: "https://open.dingtalk.com/document/orgapp/contact-api-overview" },
-  { id: "dt_calendar", name: "钉钉日历",    identifier: "dingtalk_calendar", description: "支持创建日程、查询日程、约空闲时间等能力",              type: "http", docUrl: "https://open.dingtalk.com/document/orgapp/calendar-overview" },
-  { id: "dt_todo",     name: "钉钉待办",    identifier: "dingtalk_todo",     description: "钉钉待办MCP服务提供高效的任务管理能力",                  type: "http", docUrl: "https://open.dingtalk.com/document/orgapp/todo-task-overview" },
-  { id: "dt_sheet",    name: "钉钉表格",    identifier: "dingtalk_sheet",    description: "钉钉表格 MCP 支持新建、编辑等表格操作能力",            type: "http", docUrl: "https://open.dingtalk.com/document/orgapp/dingtalk-spreadsheet-overview" },
-];
 
 const VaultPage = () => {
   // 用户已配置凭据 / 手动新增的 MCP
@@ -94,15 +75,9 @@ const VaultPage = () => {
 
   // 字段锁定（来自 MCP 广场添加时，地址/名称/标识不可改）
   const [locked, setLocked] = useState(false);
-  // 固定 MCP 编辑：除"服务地址"外其他字段全锁定
-  const [endpointEditableWhileLocked, setEndpointEditableWhileLocked] = useState(false);
+  // 编辑模式下仅可改请求头（用于 MCP 广场来源的条目）
+  const [headersOnly, setHeadersOnly] = useState(false);
   const [docUrl, setDocUrl] = useState<string>("");
-  // 固定 MCP 已配置的服务地址
-  const [fixedEndpoints, setFixedEndpoints] = useState<Record<string, string>>({});
-  // 固定 MCP 自定义请求头（官方 MCP 仅允许编辑此项）
-  const [fixedHeaders, setFixedHeaders] = useState<Record<string, { key: string; value: string }[]>>({});
-  const [editingFixedId, setEditingFixedId] = useState<string | null>(null);
-  const [fixedDialogOpen, setFixedDialogOpen] = useState(false);
 
   // 手动创建表单
   const [mcpType, setMcpType] = useState<McpType>("http");
@@ -140,33 +115,8 @@ const VaultPage = () => {
     setHeaders([]);
     setMcpType("http"); setStdioCommand("npx"); setStdioArgs(""); setEnvVars([]);
     setLocked(false);
-    setEndpointEditableWhileLocked(false);
+    setHeadersOnly(false);
     setDocUrl("");
-  };
-
-  const openEditFixed = (m: FixedMcpDef) => {
-    reset();
-    setLocked(true);
-    setDocUrl(m.docUrl);
-    setName(m.name);
-    setIdentifier(m.identifier);
-    setDescription(m.description);
-    setMcpType(m.type);
-    setEndpoint(fixedEndpoints[m.id] ?? "");
-    setHeaders(fixedHeaders[m.id] ?? []);
-    setEditingFixedId(m.id);
-    setFixedDialogOpen(true);
-  };
-
-  const saveFixed = () => {
-    if (!editingFixedId) return;
-    setFixedHeaders((m) => ({ ...m, [editingFixedId]: headers.filter((h) => h.key.trim()) }));
-    const def = fixedMcpDefs.find((d) => d.id === editingFixedId);
-    if (def) setMcpConfigured(def.name, true);
-    toast({ title: "请求头已保存", description: name });
-    setFixedDialogOpen(false);
-    setEditingFixedId(null);
-    reset();
   };
 
   const linkedAgents = (mcpName: string) =>
@@ -208,6 +158,7 @@ const VaultPage = () => {
     setStdioArgs(m.stdioArgs ?? "");
     setEnvVars(m.envVars ?? []);
     setLocked(!!m.fromMarket);
+    setHeadersOnly(!!m.fromMarket);
     setCreateOpen(true);
   };
 
@@ -274,15 +225,67 @@ const VaultPage = () => {
     setDeleteTarget(null);
   };
 
+  const renderHeadersOnly = () => (
+    <div className="space-y-3 max-h-[440px] overflow-auto -mx-1 px-1">
+      <div className="flex items-start gap-1.5 rounded-md border border-primary/30 bg-primary/5 px-2.5 py-1.5">
+        <Lock className="w-3 h-3 text-primary mt-0.5 shrink-0" />
+        <p className="text-[10px] text-muted-foreground leading-relaxed">
+          来自 MCP 广场的条目，基础信息已固定，仅可编辑下方「请求头」。
+        </p>
+      </div>
+      <div className="rounded-md border border-border bg-muted/30 p-2.5 space-y-1">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[11px] text-muted-foreground">名称</span>
+          <span className="text-xs font-medium truncate">{name}</span>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[11px] text-muted-foreground">标识</span>
+          <span className="text-[11px] font-mono truncate">{identifier}</span>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[11px] text-muted-foreground">类型</span>
+          <span className="text-[11px] font-mono">{typeLabel(mcpType)}</span>
+        </div>
+        {endpoint && (
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[11px] text-muted-foreground">服务地址</span>
+            <span className="text-[11px] font-mono truncate max-w-[280px]" title={endpoint}>{endpoint}</span>
+          </div>
+        )}
+      </div>
+      <div>
+        <Label className="text-[11px] font-medium">请求头</Label>
+        <p className="text-[10px] text-muted-foreground mt-0.5">发送到该 MCP 服务的额外 HTTP 请求头（如 Authorization、X-API-Key 等）</p>
+        {headers.length > 0 && (
+          <div className="space-y-1.5 mt-1.5">
+            {headers.map((h, i) => (
+              <div key={i} className="flex items-center gap-1.5">
+                <Input className="h-7 text-xs flex-1" placeholder="Header" value={h.key}
+                  onChange={(e) => setHeaders((arr) => arr.map((x, idx) => idx === i ? { ...x, key: e.target.value } : x))} />
+                <Input className="h-7 text-xs flex-1" placeholder="Value" value={h.value}
+                  onChange={(e) => setHeaders((arr) => arr.map((x, idx) => idx === i ? { ...x, value: e.target.value } : x))} />
+                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setHeaders((arr) => arr.filter((_, idx) => idx !== i))}>
+                  <X className="w-3 h-3" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+        <Button variant="outline" size="sm" className="w-full h-7 text-xs gap-1 border-dashed mt-1.5"
+          onClick={() => setHeaders((arr) => [...arr, { key: "", value: "" }])}>
+          <Plus className="w-3 h-3" /> 添加请求头
+        </Button>
+      </div>
+    </div>
+  );
+
   const renderForm = () => (
     <div className="space-y-3 max-h-[440px] overflow-auto -mx-1 px-1">
       {locked && (
         <div className="flex items-start gap-1.5 rounded-md border border-primary/30 bg-primary/5 px-2.5 py-1.5">
           <Lock className="w-3 h-3 text-primary mt-0.5 shrink-0" />
           <p className="text-[10px] text-muted-foreground leading-relaxed">
-            {endpointEditableWhileLocked
-              ? "显示名称、英文标识、简介与类型已固定，仅需填写下方「服务地址」即可完成配置。"
-              : "来自 MCP 广场，显示名称、英文标识、简介与类型已自动填入且不可修改；请在下方完成凭据等配置。"}
+            来自 MCP 广场，显示名称、英文标识、简介与类型已自动填入且不可修改；请在下方完成凭据等配置。
           </p>
         </div>
       )}
@@ -416,7 +419,7 @@ const VaultPage = () => {
         <div>
           <Label className="text-[11px] font-medium flex items-center gap-1">
             服务地址
-            {locked && !endpointEditableWhileLocked && <Lock className="w-2.5 h-2.5 text-muted-foreground" />}
+            {locked && <Lock className="w-2.5 h-2.5 text-muted-foreground" />}
           </Label>
           <p className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-2">
             <span>SSE MCP 服务的访问链接，由服务提供方给出</span>
@@ -429,8 +432,8 @@ const VaultPage = () => {
           <Input
             className="mt-1 h-8 text-xs bg-muted/30"
             value={endpoint}
-            readOnly={locked && !endpointEditableWhileLocked}
-            disabled={locked && !endpointEditableWhileLocked}
+            readOnly={locked}
+            disabled={locked}
             onChange={(e) => setEndpoint(e.target.value)}
             placeholder="例如 https://mcp.example.com/xxx/sse"
           />
@@ -442,7 +445,7 @@ const VaultPage = () => {
           <div>
             <Label className="text-[11px] font-medium flex items-center gap-1">
               服务地址
-              {locked && !endpointEditableWhileLocked && <Lock className="w-2.5 h-2.5 text-muted-foreground" />}
+              {locked && <Lock className="w-2.5 h-2.5 text-muted-foreground" />}
             </Label>
             <p className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-2">
               <span>MCP 服务的访问链接，由服务提供方给出</span>
@@ -455,8 +458,8 @@ const VaultPage = () => {
             <Input
               className="mt-1 h-8 text-xs bg-muted/30"
               value={endpoint}
-              readOnly={locked && !endpointEditableWhileLocked}
-              disabled={locked && !endpointEditableWhileLocked}
+              readOnly={locked}
+              disabled={locked}
               onChange={(e) => setEndpoint(e.target.value)}
               placeholder="例如 https://mcp.example.com/xxx"
             />
@@ -521,44 +524,6 @@ const VaultPage = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {/* 固定 MCP 行 */}
-            {fixedMcpDefs.map((d) => {
-              const ep = fixedEndpoints[d.id] ?? "";
-              return (
-                <TableRow key={d.id}>
-                  <TableCell className="py-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center shrink-0">
-                        <Server className="w-3 h-3 text-primary" />
-                      </div>
-                      <span className="text-xs font-medium truncate" title={d.name}>{d.name}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="py-2 text-[11px] text-muted-foreground font-mono whitespace-nowrap">{d.identifier}</TableCell>
-                  <TableCell className="py-2 text-[11px] text-muted-foreground font-mono max-w-[240px]">
-                    {ep ? (
-                      <div className="flex items-center gap-1 min-w-0">
-                        <Link2 className="w-3 h-3 shrink-0" />
-                        <span className="truncate" title={ep}>{ep}</span>
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground/50">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="py-2 whitespace-nowrap">
-                    <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono font-normal">
-                      {typeLabel(d.type)}
-                    </Badge>
-                  </TableCell>
-                  
-                  <TableCell className="py-2 whitespace-nowrap">
-                    <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 px-2" onClick={() => openEditFixed(d)}>
-                      <Pencil className="w-3 h-3" /> 编辑
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
             {mcps.map((m) => {
               const editable = m.requiresCredential; // 免凭据条目不可编辑
               return (
@@ -705,7 +670,7 @@ const VaultPage = () => {
             </TabsContent>
 
             <TabsContent value="manual" className="mt-0">
-              {renderForm()}
+              {headersOnly ? renderHeadersOnly() : renderForm()}
             </TabsContent>
           </Tabs>
 
@@ -745,63 +710,6 @@ const VaultPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* 固定 MCP（官方）编辑弹窗：仅允许编辑请求头 */}
-      <Dialog open={fixedDialogOpen} onOpenChange={(o) => { if (!o) { setFixedDialogOpen(false); setEditingFixedId(null); reset(); } }}>
-        <DialogContent className="max-w-[520px] p-4">
-          <DialogHeader className="space-y-1">
-            <DialogTitle className="text-sm">编辑 MCP{name ? ` · ${name}` : ""}</DialogTitle>
-            <DialogDescription className="text-[11px]">
-              官方 MCP 的基础信息已固定，仅可编辑发送给该 MCP 服务的「请求头」
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-3 max-h-[440px] overflow-auto -mx-1 px-1">
-            <div className="rounded-md border border-border bg-muted/30 p-2.5 space-y-1">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-[11px] text-muted-foreground">名称</span>
-                <span className="text-xs font-medium truncate">{name}</span>
-              </div>
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-[11px] text-muted-foreground">标识</span>
-                <span className="text-[11px] font-mono truncate">{identifier}</span>
-              </div>
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-[11px] text-muted-foreground">类型</span>
-                <span className="text-[11px] font-mono">{typeLabel(mcpType)}</span>
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-[11px] font-medium">请求头</Label>
-              <p className="text-[10px] text-muted-foreground mt-0.5">发送到该 MCP 服务的额外 HTTP 请求头（如 Authorization、X-API-Key 等）</p>
-              {headers.length > 0 && (
-                <div className="space-y-1.5 mt-1.5">
-                  {headers.map((h, i) => (
-                    <div key={i} className="flex items-center gap-1.5">
-                      <Input className="h-7 text-xs flex-1" placeholder="Header" value={h.key}
-                        onChange={(e) => setHeaders((arr) => arr.map((x, idx) => idx === i ? { ...x, key: e.target.value } : x))} />
-                      <Input className="h-7 text-xs flex-1" placeholder="Value" value={h.value}
-                        onChange={(e) => setHeaders((arr) => arr.map((x, idx) => idx === i ? { ...x, value: e.target.value } : x))} />
-                      <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setHeaders((arr) => arr.filter((_, idx) => idx !== i))}>
-                        <X className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <Button variant="outline" size="sm" className="w-full h-7 text-xs gap-1 border-dashed mt-1.5"
-                onClick={() => setHeaders((arr) => [...arr, { key: "", value: "" }])}>
-                <Plus className="w-3 h-3" /> 添加请求头
-              </Button>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => { setFixedDialogOpen(false); setEditingFixedId(null); reset(); }}>取消</Button>
-            <Button onClick={saveFixed}>保存</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <AlertDialogContent>
