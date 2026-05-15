@@ -934,64 +934,81 @@ fengsheng:
 
         {/* ───────── 会话记录 ───────── */}
         <TabsContent value="runs" className="mt-4">
-          <div className="border border-border rounded-lg overflow-hidden bg-card">
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent">
-                  <TableHead className="w-20 h-8 py-1.5 text-[11px] font-medium text-muted-foreground">来源</TableHead>
-                  <TableHead className="w-24 h-8 py-1.5 text-[11px] font-medium text-muted-foreground">触发人</TableHead>
-                  <TableHead className="h-8 py-1.5 text-[11px] font-medium text-muted-foreground">触发内容</TableHead>
-                  <TableHead className="w-40 h-8 py-1.5 text-[11px] font-medium text-muted-foreground">时间</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {mockRuns.map((r) => (
-                  <TableRow key={r.id} className="cursor-pointer" onClick={() => setActiveRun(r)}>
-                    <TableCell className="py-2"><Badge variant="outline" className="text-[10px] h-4 px-1.5 font-normal whitespace-nowrap">{r.source}</Badge></TableCell>
-                    <TableCell className="py-2 text-xs">{r.trigger}</TableCell>
-                    <TableCell className="py-2 text-xs text-muted-foreground truncate max-w-[280px]">{r.prompt}</TableCell>
-                    <TableCell className="py-2 text-[11px] font-mono text-muted-foreground">{r.startedAt}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-
-          <Sheet open={!!activeRun} onOpenChange={(o) => !o && setActiveRun(null)}>
-            <SheetContent className="w-[680px] sm:max-w-[680px] p-0 flex flex-col">
-              <SheetHeader className="px-5 py-3 border-b border-border space-y-1.5">
-                <SheetTitle className="text-sm flex items-center gap-2">
-                  <span>会话详情</span>
-                  {activeRun && (
-                    <span className="text-[11px] text-muted-foreground">
-                      会话 ID：<span className="font-mono text-foreground">{activeRun.id}</span>
-                    </span>
-                  )}
-                </SheetTitle>
-                <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-                  {activeRun && (
-                    <>
-                      <span>来源：{activeRun.source}</span>
-                      <span>触发人：{activeRun.trigger}</span>
-                    </>
-                  )}
-                </div>
-              </SheetHeader>
-              <div className="flex-1 min-h-0">
-                {activeRun && (
-                  <RunDualView
-                    transcriptEvents={buildMockTranscript(activeRun.prompt)}
-                    debugEvents={mockDebugEvents}
-                    debugMeta={[
-                      { label: "模型", value: "claude-sonnet-4-6" },
-                      { label: "总耗时", value: activeRun.duration },
-                      { label: "总 tokens", value: "1552" },
-                    ]}
+          <div className="border border-border rounded-lg overflow-hidden bg-card flex" style={{ height: "calc(100vh - 240px)", minHeight: 480 }}>
+            {/* 左侧会话列表 */}
+            <aside className="w-64 shrink-0 border-r border-border flex flex-col bg-muted/20">
+              <div className="p-2 border-b border-border shrink-0">
+                <div className="relative">
+                  <MessageSquare className="w-3.5 h-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    value={runQuery}
+                    onChange={(e) => setRunQuery(e.target.value)}
+                    placeholder="搜索会话"
+                    className="h-8 pl-7 text-xs"
                   />
-                )}
+                </div>
               </div>
-            </SheetContent>
-          </Sheet>
+              <div className="flex-1 min-h-0 overflow-auto px-1.5 py-1.5 space-y-0.5">
+                {filteredRuns.length === 0 && (
+                  <div className="text-xs text-muted-foreground px-2 py-6 text-center">暂无会话</div>
+                )}
+                {filteredRuns.map((r) => {
+                  const active = r.id === activeRunId;
+                  return (
+                    <button
+                      key={r.id}
+                      onClick={() => setActiveRunId(r.id)}
+                      className={`w-full text-left px-2 py-2 rounded-md transition-colors ${active ? "bg-accent text-accent-foreground" : "hover:bg-accent/50"}`}
+                    >
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-normal whitespace-nowrap shrink-0">{r.source}</Badge>
+                        <span className="text-[11px] text-muted-foreground truncate">{r.trigger}</span>
+                      </div>
+                      <div className="text-xs font-medium truncate">{r.prompt}</div>
+                      <div className="text-[10px] font-mono text-muted-foreground mt-0.5 truncate">{r.startedAt}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </aside>
+
+            {/* 右侧会话主视图 */}
+            <div className="flex-1 min-w-0 flex flex-col">
+              {activeRun ? (
+                <>
+                  <header className="px-5 py-3 border-b border-border space-y-1.5 shrink-0">
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="font-semibold">会话详情</span>
+                      <span className="text-[11px] text-muted-foreground">
+                        会话 ID：<span className="font-mono text-foreground">{activeRun.id}</span>
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 text-[11px] text-muted-foreground flex-wrap">
+                      <span>来源：<span className="text-foreground">{activeRun.source}</span></span>
+                      <span>触发人：<span className="text-foreground">{activeRun.trigger}</span></span>
+                      <span>时间：<span className="font-mono text-foreground">{activeRun.startedAt}</span></span>
+                      <span>时长：<span className="font-mono text-foreground">{activeRun.duration}</span></span>
+                    </div>
+                  </header>
+                  <div className="flex-1 min-h-0">
+                    <RunDualView
+                      transcriptEvents={buildMockTranscript(activeRun.prompt)}
+                      debugEvents={mockDebugEvents}
+                      debugMeta={[
+                        { label: "模型", value: "claude-sonnet-4-6" },
+                        { label: "总耗时", value: activeRun.duration },
+                        { label: "总 tokens", value: "1552" },
+                      ]}
+                    />
+                  </div>
+                </>
+              ) : (
+                <div className="flex-1 flex items-center justify-center text-xs text-muted-foreground">
+                  从左侧选择一个会话
+                </div>
+              )}
+            </div>
+          </div>
         </TabsContent>
 
         {/* ───────── API Key ───────── */}
