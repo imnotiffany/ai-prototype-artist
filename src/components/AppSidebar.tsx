@@ -13,7 +13,7 @@ const menuSections = [
   {
     label: "管理",
     items: [
-      { name: "作品管理", path: "/project-agents", icon: FolderOpen },
+      { name: "智能体管理", path: "/project-agents", icon: FolderOpen },
       { name: "MCP 管理", path: "/vault", icon: Server },
     ],
   },
