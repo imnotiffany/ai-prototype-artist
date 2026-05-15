@@ -33,7 +33,7 @@ const MY_AUTHOR_ID = "01441970";
 const statusOptions = [
   { value: "all", label: "全部" },
   { value: "published", label: "已发布" },
-  { value: "pending", label: "待发布" },
+  
   { value: "unpublished", label: "未发布" },
 ];
 
