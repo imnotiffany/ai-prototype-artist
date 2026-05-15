@@ -169,11 +169,11 @@ export const PublishAgentDialog = ({
             >
               <label className="flex items-center gap-2 cursor-pointer">
                 <RadioGroupItem value="marketplace" id="scope-public" />
-                <span className="text-xs">公开（所有人可见）</span>
+                <span className="text-xs">发布至广场（所有人可见）</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <RadioGroupItem value="project" id="scope-project" />
-                <span className="text-xs">仅项目内可见</span>
+                <span className="text-xs">发布至项目（仅项目内可见）</span>
               </label>
             </RadioGroup>
           </div>
