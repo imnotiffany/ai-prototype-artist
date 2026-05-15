@@ -51,25 +51,6 @@ const freeMcps: McpEntry[] = getCredentialFreeMcps().map((r, i) => ({
   type: r.deployment === "本地" ? "studio" : "http",
 }));
 
-// 固定展示的钉钉 MCP 列表（仅服务地址需要用户配置）
-interface FixedMcpDef {
-  id: string;
-  name: string;
-  identifier: string;
-  description: string;
-  type: McpType;
-  docUrl: string;
-}
-const fixedMcpDefs: FixedMcpDef[] = [
-  { id: "dt_robot",    name: "机器人消息",  identifier: "dingtalk_robot",    description: "钉钉机器人消息MCP服务，支持发送消息至群聊与单聊",       type: "http", docUrl: "https://open.dingtalk.com/document/robots/custom-robot-access" },
-  { id: "dt_journal",  name: "钉钉日志",    identifier: "dingtalk_journal",  description: "钉钉日志MCP，包含获取日志模板、发送日志等能力",       type: "http", docUrl: "https://open.dingtalk.com/document/orgapp/dingtalk-log-overview" },
-  { id: "dt_ai_sheet", name: "钉钉 AI 表格", identifier: "dingtalk_ai_sheet", description: "钉钉 AI 表格 MCP 让 AI 直接操作智能表格",              type: "http", docUrl: "https://open.dingtalk.com/document/orgapp/ai-sheet-overview" },
-  { id: "dt_doc",      name: "钉钉文档",    identifier: "dingtalk_doc",      description: "钉钉文档MCP支持查找、创建文档等能力",                   type: "http", docUrl: "https://open.dingtalk.com/document/orgapp/dingtalk-document-overview" },
-  { id: "dt_contacts", name: "钉钉通讯录",  identifier: "dingtalk_contacts", description: "钉钉通讯录MCP支持搜索人员/部门等组织信息",              type: "http", docUrl: "https://open.dingtalk.com/document/orgapp/contact-api-overview" },
-  { id: "dt_calendar", name: "钉钉日历",    identifier: "dingtalk_calendar", description: "支持创建日程、查询日程、约空闲时间等能力",              type: "http", docUrl: "https://open.dingtalk.com/document/orgapp/calendar-overview" },
-  { id: "dt_todo",     name: "钉钉待办",    identifier: "dingtalk_todo",     description: "钉钉待办MCP服务提供高效的任务管理能力",                  type: "http", docUrl: "https://open.dingtalk.com/document/orgapp/todo-task-overview" },
-  { id: "dt_sheet",    name: "钉钉表格",    identifier: "dingtalk_sheet",    description: "钉钉表格 MCP 支持新建、编辑等表格操作能力",            type: "http", docUrl: "https://open.dingtalk.com/document/orgapp/dingtalk-spreadsheet-overview" },
-];
 
 const VaultPage = () => {
   // 用户已配置凭据 / 手动新增的 MCP
