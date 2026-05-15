@@ -274,7 +274,7 @@ export const mockAgents: Agent[] = [
     platform: "市场部", author: "钱七", authorId: "01234571",
     updatedAt: "2026-04-11", downloads: 198,
     skills: ["Content Generation", "SEO Optimizer"], mcpServers: [],
-    sessionCount: 120, creationType: "ai", status: "pending", kind: "agent",
+    sessionCount: 120, creationType: "ai", status: "project", kind: "agent",
     versions: [
       { version: "v0.3.1", createdAt: "2026-04-11", fileSize: "14KB", downloads: 198, status: "unpublished", creator: "钱七" },
     ],
