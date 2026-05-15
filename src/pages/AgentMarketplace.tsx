@@ -81,7 +81,7 @@ const AgentMarketplace = () => {
           <span className="text-primary font-bold">组建你的专属团队</span>
         </h1>
         <p className="mt-2 text-xs text-muted-foreground">
-          精选全场景应用及智能体，汇聚实战力量，让业务化繁为简
+          精选全场景智能体，汇聚实战力量，让业务化繁为简
         </p>
       </div>
 
@@ -90,7 +90,7 @@ const AgentMarketplace = () => {
         <div className="relative w-full max-w-md">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="搜索应用或智能体"
+            placeholder="搜索智能体"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="h-9 text-xs pr-9"
