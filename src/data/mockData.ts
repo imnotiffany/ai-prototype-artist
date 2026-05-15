@@ -343,9 +343,9 @@ export const mockAgents: Agent[] = [
     platform: "AI技术平台", author: "廖奕通", authorId: "01441970",
     updatedAt: "2026-03-31", downloads: 78,
     skills: ["Content Generation", "Translation Engine"], mcpServers: [],
-    sessionCount: 35, creationType: "ai", status: "published", kind: "agent",
+    sessionCount: 35, creationType: "ai", status: "pending", kind: "agent",
     versions: [
-      { version: "v1.0.0", createdAt: "2026-03-31", fileSize: "8KB", downloads: 78, status: "published", creator: "廖奕通" },
+      { version: "v1.0.0", createdAt: "2026-03-31", fileSize: "8KB", downloads: 78, status: "unpublished", creator: "廖奕通" },
     ],
   },
   {
