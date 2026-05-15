@@ -50,7 +50,7 @@ const CreatePage = () => {
                 <div className="flex items-center gap-1.5 mb-1">
                   <Wand className={`w-3.5 h-3.5 ${agentMode === "auto" ? "text-primary" : "text-muted-foreground"}`} />
                   <span className="text-xs font-medium text-foreground">自动组装</span>
-                  <Badge variant="outline" className="text-[10px] h-4 px-1.5 ml-auto">推荐</Badge>
+                  
                 </div>
                 <p className="text-[11px] text-muted-foreground leading-relaxed">
                   输入需求一句话描述，AI 自动检索匹配 MCP / Skill / 子智能体 并生成智能体
