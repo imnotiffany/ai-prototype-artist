@@ -89,7 +89,6 @@ const ProjectAgents = () => {
     if (categoryFilter !== "all" && app.category !== categoryFilter) return false;
     if (statusFilter !== "all") {
       if (statusFilter === "published" && app.status !== "published") return false;
-      if (statusFilter === "pending" && app.status !== "pending") return false;
       if (statusFilter === "unpublished" && app.status !== "project") return false;
     }
     if (app.kind !== kindFilter) return false;
