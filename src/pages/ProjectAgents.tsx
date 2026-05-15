@@ -42,7 +42,7 @@ const ProjectAgents = () => {
   const [searchName, setSearchName] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [kindFilter, setKindFilter] = useState<"app" | "agent">("app");
+  const [kindFilter] = useState<"app" | "agent">("agent");
   const [onlyMine, setOnlyMine] = useState(false);
   const [publishTarget, setPublishTarget] = useState<Agent | null>(null);
   const [unpublishTarget, setUnpublishTarget] = useState<Agent | null>(null);
