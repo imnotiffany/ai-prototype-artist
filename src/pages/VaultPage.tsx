@@ -225,6 +225,60 @@ const VaultPage = () => {
     setDeleteTarget(null);
   };
 
+  const renderHeadersOnly = () => (
+    <div className="space-y-3 max-h-[440px] overflow-auto -mx-1 px-1">
+      <div className="flex items-start gap-1.5 rounded-md border border-primary/30 bg-primary/5 px-2.5 py-1.5">
+        <Lock className="w-3 h-3 text-primary mt-0.5 shrink-0" />
+        <p className="text-[10px] text-muted-foreground leading-relaxed">
+          来自 MCP 广场的条目，基础信息已固定，仅可编辑下方「请求头」。
+        </p>
+      </div>
+      <div className="rounded-md border border-border bg-muted/30 p-2.5 space-y-1">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[11px] text-muted-foreground">名称</span>
+          <span className="text-xs font-medium truncate">{name}</span>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[11px] text-muted-foreground">标识</span>
+          <span className="text-[11px] font-mono truncate">{identifier}</span>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[11px] text-muted-foreground">类型</span>
+          <span className="text-[11px] font-mono">{typeLabel(mcpType)}</span>
+        </div>
+        {endpoint && (
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[11px] text-muted-foreground">服务地址</span>
+            <span className="text-[11px] font-mono truncate max-w-[280px]" title={endpoint}>{endpoint}</span>
+          </div>
+        )}
+      </div>
+      <div>
+        <Label className="text-[11px] font-medium">请求头</Label>
+        <p className="text-[10px] text-muted-foreground mt-0.5">发送到该 MCP 服务的额外 HTTP 请求头（如 Authorization、X-API-Key 等）</p>
+        {headers.length > 0 && (
+          <div className="space-y-1.5 mt-1.5">
+            {headers.map((h, i) => (
+              <div key={i} className="flex items-center gap-1.5">
+                <Input className="h-7 text-xs flex-1" placeholder="Header" value={h.key}
+                  onChange={(e) => setHeaders((arr) => arr.map((x, idx) => idx === i ? { ...x, key: e.target.value } : x))} />
+                <Input className="h-7 text-xs flex-1" placeholder="Value" value={h.value}
+                  onChange={(e) => setHeaders((arr) => arr.map((x, idx) => idx === i ? { ...x, value: e.target.value } : x))} />
+                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setHeaders((arr) => arr.filter((_, idx) => idx !== i))}>
+                  <X className="w-3 h-3" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+        <Button variant="outline" size="sm" className="w-full h-7 text-xs gap-1 border-dashed mt-1.5"
+          onClick={() => setHeaders((arr) => [...arr, { key: "", value: "" }])}>
+          <Plus className="w-3 h-3" /> 添加请求头
+        </Button>
+      </div>
+    </div>
+  );
+
   const renderForm = () => (
     <div className="space-y-3 max-h-[440px] overflow-auto -mx-1 px-1">
       {locked && (
