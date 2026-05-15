@@ -53,8 +53,8 @@ const AgentMarketplace = () => {
       <div className="px-6 pt-4 border-b border-border">
         <div className="flex items-center gap-6">
           {([
-            { value: "marketplace", label: "作品广场" },
-            { value: "project", label: "项目作品" },
+            { value: "marketplace", label: "智能体广场" },
+            { value: "project", label: "项目智能体" },
           ] as const).map((t) => (
             <button
               key={t.value}
