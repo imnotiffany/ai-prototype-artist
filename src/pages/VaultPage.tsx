@@ -599,9 +599,6 @@ const VaultPage = () => {
         <DialogContent className={createMode === "market" && !editingId ? "max-w-[760px] p-4" : "max-w-[520px] p-4"}>
           <DialogHeader className="space-y-1">
             <DialogTitle className="text-sm">{editingId ? "编辑 MCP 服务" : "新增 MCP"}</DialogTitle>
-            <DialogDescription className="text-[11px]">
-              免凭据 MCP 已自动接入，无需手动添加；这里仅用于配置「需凭据」的 MCP 或手动接入自有 MCP
-            </DialogDescription>
           </DialogHeader>
 
           <Tabs value={createMode} onValueChange={(v) => setCreateMode(v as "market" | "manual")} className="w-full">
