@@ -182,17 +182,7 @@ const ProjectAgents = () => {
               className="group relative border border-border rounded-lg p-4 hover:shadow-md hover:border-primary/40 transition-all cursor-pointer bg-card overflow-hidden"
               onClick={() => navigate(app.kind === "app" ? `/app/${app.id}` : `/agent/${app.id}`)}
             >
-              <div
-                className={`absolute top-2 right-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                  app.kind === "app"
-                    ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
-                    : "bg-purple-500/10 text-purple-600 dark:text-purple-400"
-                }`}
-              >
-                {app.kind === "app" ? "应用" : "智能体"}
-              </div>
-
-              <div className="flex items-start gap-3 mb-2 pr-14">
+              <div className="flex items-start gap-3 mb-2">
                 <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center text-2xl shrink-0">
                   {app.avatar}
                 </div>
