@@ -42,7 +42,7 @@ const ProjectAgents = () => {
   const [searchName, setSearchName] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [kindFilter, setKindFilter] = useState<"app" | "agent">("app");
+  const [kindFilter] = useState<"app" | "agent">("agent");
   const [onlyMine, setOnlyMine] = useState(false);
   const [publishTarget, setPublishTarget] = useState<Agent | null>(null);
   const [unpublishTarget, setUnpublishTarget] = useState<Agent | null>(null);
@@ -99,7 +99,6 @@ const ProjectAgents = () => {
     setSearchName("");
     setCategoryFilter("all");
     setStatusFilter("all");
-    setKindFilter("app");
     setOnlyMine(false);
   };
 
@@ -116,42 +115,20 @@ const ProjectAgents = () => {
     <div className="flex-1 overflow-auto">
       <div className="max-w-[1200px] mx-auto px-6 py-6 animate-fade-in">
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-lg font-semibold text-primary">作品管理</h1>
+        <div className="flex items-center justify-between mb-5">
+          <h1 className="text-lg font-semibold text-primary">智能体管理</h1>
           <div className="flex items-center gap-2">
             <Button size="sm" className="gap-1.5 h-8 text-xs" onClick={() => navigate("/create")}>
               <Plus className="w-3.5 h-3.5" />
-              创建作品
+              创建智能体
             </Button>
-          </div>
-        </div>
-
-        {/* Kind segmented control */}
-        <div className="mb-5">
-          <div className="inline-flex items-center bg-muted rounded-md p-0.5">
-            {([
-              { value: "app", label: "应用" },
-              { value: "agent", label: "智能体" },
-            ] as const).map((t) => (
-              <button
-                key={t.value}
-                onClick={() => setKindFilter(t.value)}
-                className={`px-3 py-0.5 text-xs rounded transition-all ${
-                  kindFilter === t.value
-                    ? "bg-background text-foreground shadow-sm font-medium"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
           </div>
         </div>
 
         {/* Filters */}
         <div className="flex items-center gap-3 mb-5 flex-wrap">
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-muted-foreground whitespace-nowrap">作品名称</span>
+            <span className="text-xs text-muted-foreground whitespace-nowrap">智能体名称</span>
             <Input
               value={searchName}
               onChange={(e) => setSearchName(e.target.value)}
@@ -160,7 +137,7 @@ const ProjectAgents = () => {
             />
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-muted-foreground whitespace-nowrap">作品分类</span>
+            <span className="text-xs text-muted-foreground whitespace-nowrap">智能体分类</span>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger className="h-8 text-xs w-28">
                 <SelectValue />

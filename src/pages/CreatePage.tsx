@@ -1,25 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Monitor, Bot, ArrowRight, Clock, Flame, Wand, SlidersHorizontal } from "lucide-react";
+import { ArrowRight, Clock, Flame, Wand, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getRecentAgents, getMyAgents } from "@/data/mockData";
 
-const tabs = [
-  { key: "web", label: "网页应用", icon: Monitor },
-  { key: "agent", label: "智能体", icon: Bot },
-] as const;
-
-type TabKey = (typeof tabs)[number]["key"];
-
-const placeholders: Record<TabKey, string> = {
-  web: "描述你想要创建的网页应用，例如：一个任务管理看板",
-  agent: "描述你想要创建的智能体，例如：一个小红书爬虫助手",
-};
-
 const CreatePage = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<TabKey>("agent");
   const [description, setDescription] = useState("");
   const [agentMode, setAgentMode] = useState<"auto" | "manual">("auto");
 
@@ -27,14 +14,10 @@ const CreatePage = () => {
   const hotAgents = getRecentAgents().slice(0, 3);
 
   const handleCreate = () => {
-    if (activeTab === "agent") {
-      if (agentMode === "auto") {
-        navigate("/create-agent", { state: { description, autoStart: true } });
-      } else {
-        navigate("/create-agent-manual");
-      }
-    } else if (activeTab === "web") {
-      navigate("/create-web");
+    if (agentMode === "auto") {
+      navigate("/create-agent", { state: { description, autoStart: true } });
+    } else {
+      navigate("/create-agent-manual");
     }
   };
 
@@ -46,101 +29,61 @@ const CreatePage = () => {
           一句话描述，<span className="text-primary">数字同事立马上岗</span>
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          描述你的想法，一键快速构建功能完整的强大应用或智能体
+          描述你的想法，一键快速构建功能完整的强大智能体
         </p>
       </div>
 
       {/* Creation card */}
       <div className="max-w-2xl mx-auto px-6">
         <div className="border border-border rounded-xl bg-card shadow-sm overflow-hidden">
-          {/* Tabs */}
-          <div className="flex border-b border-border bg-muted/30">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.key;
-              return (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors relative ${
-                    isActive
-                      ? "text-primary"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  {tab.label}
-                  {isActive && (
-                    <span className="absolute bottom-0 left-1/4 right-1/4 h-0.5 bg-primary rounded-full" />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Textarea */}
-          {activeTab !== "agent" && (
-            <div className="p-4">
+          <div className="p-4 space-y-3">
+            <div className="grid grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                onClick={() => setAgentMode("auto")}
+                className={`text-left rounded-lg border p-3 transition-colors ${
+                  agentMode === "auto"
+                    ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+                    : "border-border bg-card hover:border-primary/40"
+                }`}
+              >
+                <div className="flex items-center gap-1.5 mb-1">
+                  <Wand className={`w-3.5 h-3.5 ${agentMode === "auto" ? "text-primary" : "text-muted-foreground"}`} />
+                  <span className="text-xs font-medium text-foreground">自动组装</span>
+                  <Badge variant="outline" className="text-[10px] h-4 px-1.5 ml-auto">推荐</Badge>
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  输入需求一句话描述，AI 自动检索匹配 MCP / Skill / 子智能体 并生成智能体
+                </p>
+              </button>
+              <button
+                type="button"
+                onClick={() => setAgentMode("manual")}
+                className={`text-left rounded-lg border p-3 transition-colors ${
+                  agentMode === "manual"
+                    ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+                    : "border-border bg-card hover:border-primary/40"
+                }`}
+              >
+                <div className="flex items-center gap-1.5 mb-1">
+                  <SlidersHorizontal className={`w-3.5 h-3.5 ${agentMode === "manual" ? "text-primary" : "text-muted-foreground"}`} />
+                  <span className="text-xs font-medium text-foreground">手动组装</span>
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  自行配置模型、提示词、MCP / Skill、子智能体，并对接至丰声 NEXT 机器人
+                </p>
+              </button>
+            </div>
+            {agentMode === "auto" && (
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder={placeholders[activeTab]}
-                rows={4}
-                className="w-full resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none leading-relaxed"
+                placeholder="描述你想要创建的智能体，例如：一个小红书爬虫助手"
+                rows={3}
+                className="w-full resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none leading-relaxed border-t border-border pt-3"
               />
-            </div>
-          )}
-
-          {activeTab === "agent" && (
-            <div className="p-4 space-y-3">
-              <div className="grid grid-cols-2 gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => setAgentMode("auto")}
-                  className={`text-left rounded-lg border p-3 transition-colors ${
-                    agentMode === "auto"
-                      ? "border-primary bg-primary/5 ring-1 ring-primary/30"
-                      : "border-border bg-card hover:border-primary/40"
-                  }`}
-                >
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <Wand className={`w-3.5 h-3.5 ${agentMode === "auto" ? "text-primary" : "text-muted-foreground"}`} />
-                    <span className="text-xs font-medium text-foreground">自动组装</span>
-                    <Badge variant="outline" className="text-[10px] h-4 px-1.5 ml-auto">推荐</Badge>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    输入需求一句话描述，AI 自动检索匹配 MCP / Skill / 子智能体 并生成智能体
-                  </p>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAgentMode("manual")}
-                  className={`text-left rounded-lg border p-3 transition-colors ${
-                    agentMode === "manual"
-                      ? "border-primary bg-primary/5 ring-1 ring-primary/30"
-                      : "border-border bg-card hover:border-primary/40"
-                  }`}
-                >
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <SlidersHorizontal className={`w-3.5 h-3.5 ${agentMode === "manual" ? "text-primary" : "text-muted-foreground"}`} />
-                    <span className="text-xs font-medium text-foreground">手动组装</span>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    自行配置模型、提示词、MCP / Skill、子智能体，并对接至丰声 NEXT 机器人
-                  </p>
-                </button>
-              </div>
-              {agentMode === "auto" && (
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="描述你想要创建的智能体，例如：一个小红书爬虫助手"
-                  rows={3}
-                  className="w-full resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none leading-relaxed border-t border-border pt-3"
-                />
-              )}
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Footer */}
           <div className="flex items-center justify-end px-4 py-3">
@@ -148,17 +91,9 @@ const CreatePage = () => {
               size="sm"
               className="gap-1.5 text-xs h-8 px-4"
               onClick={handleCreate}
-              disabled={
-                activeTab === "agent"
-                  ? agentMode === "auto" && !description.trim()
-                  : !description.trim()
-              }
+              disabled={agentMode === "auto" && !description.trim()}
             >
-              {activeTab === "agent"
-                ? agentMode === "auto"
-                  ? "立即生成"
-                  : "进入手动组装"
-                : "立即创建"}
+              {agentMode === "auto" ? "立即生成" : "进入手动组装"}
               <ArrowRight className="w-3.5 h-3.5" />
             </Button>
           </div>
@@ -217,7 +152,7 @@ const CreatePage = () => {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-1.5 text-sm font-medium text-foreground">
               <Flame className="w-3.5 h-3.5 text-orange-500" />
-              热门应用
+              热门智能体
             </div>
             <button
               className="text-xs text-muted-foreground hover:text-primary transition-colors"

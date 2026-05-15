@@ -21,7 +21,7 @@ const AgentMarketplace = () => {
   const [scopeTab, setScopeTab] = useState<"marketplace" | "project">("marketplace");
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [kindFilter, setKindFilter] = useState<KindFilter>("app");
+  const [kindFilter] = useState<KindFilter>("agent");
   const [sortBy, setSortBy] = useState<"latest" | "downloads">("latest");
   const [catPopOpen, setCatPopOpen] = useState(false);
 
@@ -46,10 +46,6 @@ const AgentMarketplace = () => {
         : b.updatedAt.localeCompare(a.updatedAt)
     );
 
-  const kindTabs: { value: KindFilter; label: string }[] = [
-    { value: "app", label: "应用" },
-    { value: "agent", label: "智能体" },
-  ];
 
   return (
     <div className="flex-1 overflow-auto animate-fade-in">
@@ -57,8 +53,8 @@ const AgentMarketplace = () => {
       <div className="px-6 pt-4 border-b border-border">
         <div className="flex items-center gap-6">
           {([
-            { value: "marketplace", label: "作品广场" },
-            { value: "project", label: "项目作品" },
+            { value: "marketplace", label: "智能体广场" },
+            { value: "project", label: "项目智能体" },
           ] as const).map((t) => (
             <button
               key={t.value}
@@ -85,7 +81,7 @@ const AgentMarketplace = () => {
           <span className="text-primary font-bold">组建你的专属团队</span>
         </h1>
         <p className="mt-2 text-xs text-muted-foreground">
-          精选全场景应用及智能体，汇聚实战力量，让业务化繁为简
+          精选全场景智能体，汇聚实战力量，让业务化繁为简
         </p>
       </div>
 
@@ -94,7 +90,7 @@ const AgentMarketplace = () => {
         <div className="relative w-full max-w-md">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="搜索应用或智能体"
+            placeholder="搜索智能体"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="h-9 text-xs pr-9"
@@ -107,7 +103,7 @@ const AgentMarketplace = () => {
           onClick={() => navigate("/create")}
         >
           <Plus className="w-3.5 h-3.5" />
-          新建作品
+          新建智能体
         </Button>
       </div>
 
@@ -203,23 +199,8 @@ const AgentMarketplace = () => {
             )}
             </div>
 
-            {/* Second row: kind filter (left) + sort (right) */}
+            {/* Second row: sort */}
             <div className="flex items-center gap-3 text-xs">
-              <div className="inline-flex items-center bg-muted rounded-md p-0.5">
-                {kindTabs.map((t) => (
-                  <button
-                    key={t.value}
-                    onClick={() => setKindFilter(t.value)}
-                    className={`px-2.5 py-0.5 text-xs rounded transition-colors ${
-                      kindFilter === t.value
-                        ? "bg-background text-foreground shadow-sm font-medium"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
               <div className="ml-auto flex items-center gap-1 text-muted-foreground">
                 <button
                   onClick={() => setSortBy("latest")}
