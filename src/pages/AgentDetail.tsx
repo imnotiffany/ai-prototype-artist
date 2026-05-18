@@ -14,7 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import {
   ArrowLeft, MessageSquare, Send, Save, Bot, CheckCircle2, Server, Bug, Mic, MicOff, Zap, Plus, X, RotateCcw, EyeOff, Eye, Settings2,
-  AlertTriangle, Copy, Pencil, Rocket, Code2, Layout, Users, KeyRound,
+  AlertTriangle, Copy, Pencil, Rocket, Code2, Layout, Users, KeyRound, Filter, Check,
 } from "lucide-react";
 import { mockAgents, getActiveMCPs, getActiveSkills } from "@/data/mockData";
 import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
@@ -939,27 +939,43 @@ fengsheng:
           <div className="border border-border rounded-lg overflow-hidden bg-card flex" style={{ height: "calc(100vh - 240px)", minHeight: 480 }}>
             {/* 左侧会话列表 */}
             <aside className="w-48 shrink-0 border-r border-border flex flex-col bg-muted/20">
-              <div className="p-1.5 border-b border-border shrink-0 flex items-center gap-1">
-                <div className="relative flex-1 min-w-0">
+              <div className="p-1.5 border-b border-border shrink-0">
+                <div className="relative">
                   <MessageSquare className="w-3 h-3 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     value={runQuery}
                     onChange={(e) => setRunQuery(e.target.value)}
                     placeholder="搜索会话"
-                    className="h-7 pl-6 text-[11px]"
+                    className="h-7 pl-6 pr-7 text-[11px]"
                   />
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className={`absolute right-1 top-1/2 -translate-y-1/2 h-5 w-5 inline-flex items-center justify-center rounded hover:bg-accent ${runSourceFilter !== "all" ? "text-primary" : "text-muted-foreground"}`}
+                        aria-label="筛选来源"
+                      >
+                        <Filter className="w-3 h-3" />
+                        {runSourceFilter !== "all" && (
+                          <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-primary" />
+                        )}
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent align="end" className="w-36 p-1">
+                      <div className="px-2 py-1 text-[10px] text-muted-foreground">按来源筛选</div>
+                      {(["all", "丰声 NEXT", "Web 端", "API"] as const).map((opt) => (
+                        <button
+                          key={opt}
+                          onClick={() => setRunSourceFilter(opt)}
+                          className="w-full flex items-center justify-between px-2 py-1.5 text-[11px] rounded hover:bg-accent"
+                        >
+                          <span>{opt === "all" ? "全部来源" : opt}</span>
+                          {runSourceFilter === opt && <Check className="w-3 h-3 text-primary" />}
+                        </button>
+                      ))}
+                    </PopoverContent>
+                  </Popover>
                 </div>
-                <Select value={runSourceFilter} onValueChange={(v) => setRunSourceFilter(v as typeof runSourceFilter)}>
-                  <SelectTrigger className="h-7 w-[72px] shrink-0 text-[11px] px-2">
-                    <SelectValue placeholder="来源" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all" className="text-[11px]">全部来源</SelectItem>
-                    <SelectItem value="丰声 NEXT" className="text-[11px]">丰声 NEXT</SelectItem>
-                    <SelectItem value="Web 端" className="text-[11px]">Web 端</SelectItem>
-                    <SelectItem value="API" className="text-[11px]">API</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
               <div className="flex-1 min-h-0 overflow-auto px-1.5 py-1.5 space-y-0.5">
                 {filteredRuns.length === 0 && (
