@@ -939,7 +939,7 @@ fengsheng:
           <div className="border border-border rounded-lg overflow-hidden bg-card flex" style={{ height: "calc(100vh - 240px)", minHeight: 480 }}>
             {/* 左侧会话列表 */}
             <aside className="w-48 shrink-0 border-r border-border flex flex-col bg-muted/20">
-              <div className="p-1.5 border-b border-border shrink-0">
+              <div className="p-1.5 border-b border-border shrink-0 space-y-1">
                 <div className="relative">
                   <MessageSquare className="w-3 h-3 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
                   <Input
@@ -949,6 +949,17 @@ fengsheng:
                     className="h-7 pl-6 text-[11px]"
                   />
                 </div>
+                <Select value={runSourceFilter} onValueChange={(v) => setRunSourceFilter(v as typeof runSourceFilter)}>
+                  <SelectTrigger className="h-7 text-[11px]">
+                    <SelectValue placeholder="全部来源" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all" className="text-[11px]">全部来源</SelectItem>
+                    <SelectItem value="丰声 NEXT" className="text-[11px]">丰声 NEXT</SelectItem>
+                    <SelectItem value="Web 端" className="text-[11px]">Web 端</SelectItem>
+                    <SelectItem value="API" className="text-[11px]">API</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="flex-1 min-h-0 overflow-auto px-1.5 py-1.5 space-y-0.5">
                 {filteredRuns.length === 0 && (
