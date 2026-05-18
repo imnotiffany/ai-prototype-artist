@@ -208,7 +208,7 @@ const AgentDetail = () => {
   /* ── Run history ── */
   const [activeRunId, setActiveRunId] = useState<string>(mockRuns[0]?.id ?? "");
   const [runQuery, setRunQuery] = useState("");
-  const [runSourceFilter, setRunSourceFilter] = useState<"all" | "丰声 NEXT" | "Web 端" | "API">("all");
+  const [runSourceFilter, setRunSourceFilter] = useState<"all" | "丰声 NEXT" | "Web 端" | "API" | "测试调试">("all");
   const activeRun = mockRuns.find((r) => r.id === activeRunId) ?? null;
   const filteredRuns = mockRuns.filter((r) => {
     if (runSourceFilter !== "all" && r.source !== runSourceFilter) return false;
@@ -963,7 +963,7 @@ fengsheng:
                     </PopoverTrigger>
                     <PopoverContent align="end" className="w-36 p-1">
                       <div className="px-2 py-1 text-[10px] text-muted-foreground">按来源筛选</div>
-                      {(["all", "丰声 NEXT", "Web 端", "API"] as const).map((opt) => (
+                      {(["all", "丰声 NEXT", "Web 端", "API", "测试调试"] as const).map((opt) => (
                         <button
                           key={opt}
                           onClick={() => setRunSourceFilter(opt)}
