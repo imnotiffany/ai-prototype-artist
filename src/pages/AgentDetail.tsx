@@ -29,7 +29,7 @@ import { RunDualView, RunningIndicator, type TranscriptEvent, type DebugEvent } 
 type RunStatus = "success" | "failed" | "running";
 interface RunRecord {
   id: string;
-  source: "丰声 NEXT" | "Web 端" | "API";
+  source: "丰声 NEXT" | "Web 端" | "API" | "测试调试";
   trigger: string;
   startedAt: string;
   duration: string;
