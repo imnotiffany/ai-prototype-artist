@@ -656,9 +656,6 @@ const VaultPage = () => {
                             <div className="min-w-0 flex-1">
                               <p className="text-xs font-semibold truncate" title={it.name}>{it.name}</p>
                               <div className="flex items-center gap-1 mt-1 flex-wrap">
-                                <Badge variant="outline" className="text-[10px] h-4 px-1.5 gap-0.5 border-amber-300 text-amber-700 bg-amber-50/60">
-                                  <KeyRound className="w-2.5 h-2.5" />需凭据
-                                </Badge>
                                 <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-normal text-muted-foreground">
                                   {it.tag}
                                 </Badge>
