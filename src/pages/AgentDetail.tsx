@@ -939,8 +939,8 @@ fengsheng:
           <div className="border border-border rounded-lg overflow-hidden bg-card flex" style={{ height: "calc(100vh - 240px)", minHeight: 480 }}>
             {/* 左侧会话列表 */}
             <aside className="w-48 shrink-0 border-r border-border flex flex-col bg-muted/20">
-              <div className="p-1.5 border-b border-border shrink-0 space-y-1">
-                <div className="relative">
+              <div className="p-1.5 border-b border-border shrink-0 flex items-center gap-1">
+                <div className="relative flex-1 min-w-0">
                   <MessageSquare className="w-3 h-3 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     value={runQuery}
@@ -950,8 +950,8 @@ fengsheng:
                   />
                 </div>
                 <Select value={runSourceFilter} onValueChange={(v) => setRunSourceFilter(v as typeof runSourceFilter)}>
-                  <SelectTrigger className="h-7 text-[11px]">
-                    <SelectValue placeholder="全部来源" />
+                  <SelectTrigger className="h-7 w-[72px] shrink-0 text-[11px] px-2">
+                    <SelectValue placeholder="来源" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all" className="text-[11px]">全部来源</SelectItem>
