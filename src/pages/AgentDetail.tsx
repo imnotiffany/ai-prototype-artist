@@ -208,8 +208,10 @@ const AgentDetail = () => {
   /* ── Run history ── */
   const [activeRunId, setActiveRunId] = useState<string>(mockRuns[0]?.id ?? "");
   const [runQuery, setRunQuery] = useState("");
+  const [runSourceFilter, setRunSourceFilter] = useState<"all" | "丰声 NEXT" | "Web 端" | "API">("all");
   const activeRun = mockRuns.find((r) => r.id === activeRunId) ?? null;
   const filteredRuns = mockRuns.filter((r) => {
+    if (runSourceFilter !== "all" && r.source !== runSourceFilter) return false;
     const k = runQuery.trim().toLowerCase();
     if (!k) return true;
     return r.prompt.toLowerCase().includes(k) || r.trigger.toLowerCase().includes(k) || r.id.toLowerCase().includes(k);
