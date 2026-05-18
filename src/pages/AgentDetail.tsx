@@ -963,7 +963,7 @@ fengsheng:
                     </PopoverTrigger>
                     <PopoverContent align="end" className="w-36 p-1">
                       <div className="px-2 py-1 text-[10px] text-muted-foreground">按来源筛选</div>
-                      {(["all", "丰声 NEXT", "Web 端", "API", "测试调试"] as const).map((opt) => (
+                      {(["all", "测试调试", "丰声 NEXT", "Web 端", "API"] as const).map((opt) => (
                         <button
                           key={opt}
                           onClick={() => setRunSourceFilter(opt)}
