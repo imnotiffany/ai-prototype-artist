@@ -848,7 +848,8 @@ fengsheng:
                     className="mt-1.5 h-8 text-xs font-mono"
                     placeholder="企业应用 AppKey"
                     value={fsAppKey}
-                    onChange={(e) => setFsAppKey(e.target.value)}
+                    onChange={(e) => { setFsAppKey(e.target.value); setFsConnected(false); }}
+                    id="fs-app-key"
                   />
                 </div>
                 <div>
@@ -859,7 +860,7 @@ fengsheng:
                       type={fsSecretVisible ? "text" : "password"}
                       placeholder="企业应用 AppSecret"
                       value={fsAppSecret}
-                      onChange={(e) => setFsAppSecret(e.target.value)}
+                      onChange={(e) => { setFsAppSecret(e.target.value); setFsConnected(false); }}
                     />
                     <button
                       type="button"
@@ -876,18 +877,25 @@ fengsheng:
                     className="mt-1.5 h-8 text-xs font-mono"
                     placeholder="机器人编码"
                     value={fsRobotCode}
-                    onChange={(e) => setFsRobotCode(e.target.value)}
+                    onChange={(e) => { setFsRobotCode(e.target.value); setFsConnected(false); }}
                   />
                   <p className="text-[10px] text-muted-foreground mt-1.5">在丰声 NEXT 开发者后台「机器人管理」中获取，凭据将通过「凭据管理」加密存储</p>
                 </div>
-                <div className="flex justify-end pt-1">
+                <div className="flex items-center justify-between pt-1">
+                  <span className={`text-[10px] inline-flex items-center gap-1 ${fsConnected && fsAppKey ? "text-emerald-600" : "text-muted-foreground"}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${fsConnected && fsAppKey ? "bg-emerald-500" : "bg-muted-foreground/50"}`} />
+                    {fsConnected && fsAppKey ? "已连接" : "未连接"}
+                  </span>
                   <Button
                     size="sm"
                     className="h-8 text-xs gap-1.5"
-                    disabled={!fsAppKey.trim() || !fsAppSecret.trim() || !fsRobotCode.trim()}
-                    onClick={() => toast({ title: "已连接丰声 NEXT 机器人", description: `Robot Code：${fsRobotCode}` })}
+                    disabled={!fsAppKey.trim() || !fsAppSecret.trim() || !fsRobotCode.trim() || fsConnected}
+                    onClick={() => {
+                      setFsConnected(true);
+                      toast({ title: "已连接丰声 NEXT 机器人", description: `Robot Code：${fsRobotCode}` });
+                    }}
                   >
-                    <Zap className="w-3.5 h-3.5" />连接
+                    <Zap className="w-3.5 h-3.5" />{fsConnected ? "已连接" : "连接"}
                   </Button>
                 </div>
               </div>
