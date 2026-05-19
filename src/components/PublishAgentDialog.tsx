@@ -117,23 +117,6 @@ export const PublishAgentDialog = ({
         </DialogHeader>
 
         <div className="space-y-3 py-1">
-          {/* 头像 */}
-          <div>
-            <Label className="text-xs">头像</Label>
-            <div className="mt-1.5 flex items-center gap-3">
-              <div className="w-14 h-14 rounded-lg border border-border bg-muted/40 overflow-hidden flex items-center justify-center shrink-0">
-                {generatingAvatar ? (
-                  <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                ) : (
-                  <img src={avatarUrl} alt={`${noun}头像`} className="w-full h-full object-cover" />
-                )}
-              </div>
-              <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={regenerateAvatar} disabled={generatingAvatar}>
-                <RefreshCw className={`w-3 h-3 ${generatingAvatar ? "animate-spin" : ""}`} />
-                {generatingAvatar ? "生成中…" : "AI 重新生成"}
-              </Button>
-            </div>
-          </div>
 
           {/* 头像 */}
           <div>
