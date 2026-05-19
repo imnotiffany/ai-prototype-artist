@@ -648,6 +648,74 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
 
         <Tabs value={currentTab} onValueChange={setCurrentTab}>
 
+          {/* Basic: 名称 / 头像 / 描述 / 分类 */}
+          <TabsContent value="basic" className="mt-4 space-y-4">
+            <div className="border border-border rounded-lg p-5 space-y-5 bg-card">
+              <div>
+                <h2 className="text-sm font-semibold">基础信息</h2>
+                <p className="text-[11px] text-muted-foreground mt-0.5">定义智能体的名称、头像和分类，后续步骤将基于此生成配置</p>
+              </div>
+
+              <div>
+                <Label className="text-xs">头像</Label>
+                <div className="mt-1.5">
+                  <AvatarPicker
+                    uploadedAvatar={uploadedAvatar}
+                    onUploadedAvatarChange={setUploadedAvatar}
+                    seed={avatarSeed}
+                    onSeedChange={setAvatarSeed}
+                    noun="智能体"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-xs">名称 <span className="text-destructive">*</span></Label>
+                <Input
+                  className="mt-1.5 h-9 text-xs"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="例如：财务月报助手"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs">描述</Label>
+                <Textarea
+                  className="mt-1.5 text-xs"
+                  rows={3}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value.slice(0, 100))}
+                  placeholder="一句话描述智能体能力"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs">分类</Label>
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger className="mt-1.5 h-9 text-xs"><SelectValue placeholder="选择分类" /></SelectTrigger>
+                  <SelectContent>
+                    {categories.map((c) => (
+                      <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <Button
+                size="sm"
+                className="h-8 text-xs gap-1.5"
+                disabled={!basicComplete}
+                onClick={() => setCurrentTab("capability")}
+                title={basicComplete ? "下一步：能力配置" : "请填写智能体名称"}
+              >
+                下一步：能力配置 <ArrowRight className="w-3 h-3" />
+              </Button>
+            </div>
+          </TabsContent>
+
           {/* Capability: 基座模型 + MCP + Skill + Subagent */}
           <TabsContent value="capability" className="mt-4 space-y-4">
             {/* 模型配置 */}
