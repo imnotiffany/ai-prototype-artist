@@ -656,18 +656,13 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 <p className="text-[11px] text-muted-foreground mt-0.5">定义智能体的名称、头像和分类，后续步骤将基于此生成配置</p>
               </div>
 
-              <div>
-                <Label className="text-xs">头像</Label>
-                <div className="mt-1.5">
-                  <AvatarPicker
-                    uploadedAvatar={uploadedAvatar}
-                    onUploadedAvatarChange={setUploadedAvatar}
-                    seed={avatarSeed}
-                    onSeedChange={setAvatarSeed}
-                    noun="智能体"
-                  />
-                </div>
-              </div>
+              <AvatarPicker
+                uploadedAvatar={uploadedAvatar}
+                onUploadedAvatarChange={setUploadedAvatar}
+                seed={avatarSeed}
+                onSeedChange={setAvatarSeed}
+                noun="智能体"
+              />
 
               <div>
                 <Label className="text-xs">名称 <span className="text-destructive">*</span></Label>
