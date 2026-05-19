@@ -555,13 +555,32 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
           </Button>
           <Button
             size="sm"
+            variant="outline"
+            className="h-8 text-xs gap-1.5"
+            onClick={() => {
+              if (!canSave) {
+                const first = blockingReasons[0];
+                toast({ title: "无法保存", description: first.msg, variant: "destructive" });
+                setCurrentTab(first.jumpTo);
+                return;
+              }
+              handleSave();
+            }}
+            disabled={!canSave}
+            title={canSave ? "仅保存到当前项目，不对外发布" : blockingReasons[0]?.msg}
+          >
+            <FolderKanban className="w-3.5 h-3.5" />
+            保存到项目
+          </Button>
+          <Button
+            size="sm"
             className="h-8 text-xs gap-1.5"
             onClick={openPublish}
             disabled={!canSave}
-            title={canSave ? "发布智能体" : blockingReasons[0]?.msg}
+            title={canSave ? "发布到智能体广场" : blockingReasons[0]?.msg}
           >
             <Rocket className="w-3.5 h-3.5" />
-            发布
+            发布到广场
           </Button>
         </div>
       </div>
