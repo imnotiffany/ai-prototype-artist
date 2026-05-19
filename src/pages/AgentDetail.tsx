@@ -325,6 +325,8 @@ const AgentDetail = () => {
   const [editInfoOpen, setEditInfoOpen] = useState(false);
   const [draftName, setDraftName] = useState(name);
   const [draftDesc, setDraftDesc] = useState(description);
+  const [draftAvatarSeed, setDraftAvatarSeed] = useState(() => name || Math.random().toString(36).slice(2, 10));
+  const [draftUploadedAvatar, setDraftUploadedAvatar] = useState<string | null>(null);
 
   const openEditInfo = () => {
     setDraftName(name);
