@@ -135,6 +135,48 @@ export const PublishAgentDialog = ({
             </div>
           </div>
 
+          {/* 头像 */}
+          <div>
+            <Label className="text-xs">头像</Label>
+            <div className="mt-1.5 flex items-center gap-3">
+              <div className="relative w-14 h-14 rounded-lg border border-border bg-muted/40 overflow-hidden flex items-center justify-center shrink-0">
+                {generatingAvatar ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                ) : (
+                  <img src={avatarUrl} alt={`${noun}头像`} className="w-full h-full object-cover" />
+                )}
+                {uploadedAvatar && !generatingAvatar && (
+                  <button
+                    type="button"
+                    onClick={() => setUploadedAvatar(null)}
+                    className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-background/90 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground"
+                    title="移除上传"
+                  >
+                    <X className="w-2.5 h-2.5" />
+                  </button>
+                )}
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={handleUploadClick}>
+                  <Upload className="w-3 h-3" />
+                  上传头像
+                </Button>
+                <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={regenerateAvatar} disabled={generatingAvatar}>
+                  <RefreshCw className={`w-3 h-3 ${generatingAvatar ? "animate-spin" : ""}`} />
+                  {generatingAvatar ? "生成中…" : "AI 重新生成"}
+                </Button>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+            </div>
+            <p className="mt-1 text-[10px] text-muted-foreground">支持 JPG/PNG/GIF/WEBP，建议正方形，不超过 2MB</p>
+          </div>
+
           {/* 名称 */}
           <div>
             <Label className="text-xs">名称 <span className="text-destructive">*</span></Label>
