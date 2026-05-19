@@ -1108,8 +1108,14 @@ fengsheng:
           </DialogHeader>
           <div className="space-y-3 py-1">
             <p className="text-[11px] text-muted-foreground">
-              名称与描述是展示给使用者的「门面」，调整这些不会影响智能体行为。
+              名称、头像与描述是展示给使用者的「门面」，调整这些不会影响智能体行为。
             </p>
+            <AvatarPicker
+              uploadedAvatar={draftUploadedAvatar}
+              onUploadedAvatarChange={setDraftUploadedAvatar}
+              seed={draftAvatarSeed}
+              onSeedChange={setDraftAvatarSeed}
+            />
             <div>
               <Label className="text-xs">名称</Label>
               <Input value={draftName} onChange={(e) => setDraftName(e.target.value)} className="mt-1.5 h-9 text-xs" />
