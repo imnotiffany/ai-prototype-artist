@@ -298,6 +298,11 @@ const AgentDetail = () => {
 
   /* ── Config actions ── */
   const handleSave = () => {
+    if (!fsAlertShown) {
+      setFsAlertShown(true);
+      setFsAlertOpen(true);
+      return;
+    }
     if (fsDirty) {
       setFsAlertOpen(true);
       return;
@@ -309,6 +314,11 @@ const AgentDetail = () => {
   };
 
   const handlePublishClick = () => {
+    if (!fsAlertShown) {
+      setFsAlertShown(true);
+      setFsAlertOpen(true);
+      return;
+    }
     if (fsDirty) {
       setFsAlertOpen(true);
       return;
