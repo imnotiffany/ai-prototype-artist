@@ -1101,7 +1101,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               <div className="p-5 space-y-3">
                 <div>
                   <Label className="text-xs">Client ID（AppKey）</Label>
-                  <Input className="mt-1.5 h-8 text-xs font-mono" placeholder="企业应用 AppKey" value={fsAppKey} onChange={(e) => setFsAppKey(e.target.value)} />
+                  <Input id="fs-app-key" className="mt-1.5 h-8 text-xs font-mono" placeholder="企业应用 AppKey" value={fsAppKey} onChange={(e) => setFsAppKey(e.target.value)} />
                 </div>
                 <div>
                   <Label className="text-xs">Client Secret（AppSecret）</Label>
