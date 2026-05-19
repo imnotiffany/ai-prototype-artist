@@ -407,7 +407,7 @@ const AgentDetail = () => {
           <Button
             size="sm"
             className="h-8 text-xs gap-1.5"
-            onClick={() => setPublishOpen(true)}
+            onClick={() => { if (fsDirty) { setFsAlertOpen(true); return; } setPublishOpen(true); }}
             disabled={isDirty}
             title={isDirty ? "请先保存当前修改后再发布" : "发布"}
           >
