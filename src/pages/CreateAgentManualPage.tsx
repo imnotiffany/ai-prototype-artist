@@ -1162,6 +1162,8 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
         agentName={name}
         agentDescription={description}
         agentCategory={category}
+        defaultScope="marketplace"
+        lockScope
       />
 
 
