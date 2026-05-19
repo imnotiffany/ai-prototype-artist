@@ -925,11 +925,7 @@ fengsheng:
                   />
                   <p className="text-[10px] text-muted-foreground mt-1.5">在丰声 NEXT 开发者后台「机器人管理」中获取，凭据将通过「凭据管理」加密存储</p>
                 </div>
-                <div className="flex items-center justify-between pt-1">
-                  <span className={`text-[10px] inline-flex items-center gap-1 ${fsConnected && fsAppKey ? "text-emerald-600" : "text-muted-foreground"}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${fsConnected && fsAppKey ? "bg-emerald-500" : "bg-muted-foreground/50"}`} />
-                    {fsConnected && fsAppKey ? "已连接" : "未连接"}
-                  </span>
+                <div className="flex items-center justify-end pt-1">
                   <Button
                     size="sm"
                     className="h-8 text-xs gap-1.5"
