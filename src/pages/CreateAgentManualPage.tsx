@@ -141,7 +141,8 @@ const CreateAgentManualPage = () => {
   const [hubEnabled, setHubEnabled] = useState(false);
 
   // Controlled tab (so we can jump users between steps)
-  const [currentTab, setCurrentTab] = useState("capability");
+  const [currentTab, setCurrentTab] = useState("basic");
+  const [uploadedAvatar, setUploadedAvatar] = useState<string | null>(null);
 
   // Debug — three streams: assistant chat (left), agent run (right), runtime logs (right bottom)
   type PromptSuggestion = { id: string; addition: string; summaryNote: string; status: "pending" | "adopted" | "rejected" };
