@@ -51,13 +51,34 @@ export const PublishAgentDialog = ({
   const [allowCopy, setAllowCopy] = useState(agentAllowCopy);
   const [avatarSeed, setAvatarSeed] = useState(() => agentName || Math.random().toString(36).slice(2, 10));
   const [generatingAvatar, setGeneratingAvatar] = useState(false);
-  const avatarUrl = `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${encodeURIComponent(avatarSeed)}&backgroundColor=dbeafe,fde68a,bbf7d0,fecaca,e9d5ff`;
+  const [uploadedAvatar, setUploadedAvatar] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const generatedAvatarUrl = `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${encodeURIComponent(avatarSeed)}&backgroundColor=dbeafe,fde68a,bbf7d0,fecaca,e9d5ff`;
+  const avatarUrl = uploadedAvatar || generatedAvatarUrl;
   const regenerateAvatar = () => {
+    setUploadedAvatar(null);
     setGeneratingAvatar(true);
     setTimeout(() => {
       setAvatarSeed(Math.random().toString(36).slice(2, 10) + Date.now().toString(36));
       setGeneratingAvatar(false);
     }, 600);
+  };
+  const handleUploadClick = () => fileInputRef.current?.click();
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "请选择图片文件", variant: "destructive" });
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: "图片大小不能超过 2MB", variant: "destructive" });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setUploadedAvatar(reader.result as string);
+    reader.readAsDataURL(file);
+    e.target.value = "";
   };
 
   useEffect(() => {
