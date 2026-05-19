@@ -20,6 +20,7 @@ import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
 import { AIStatusPill } from "@/components/AIStatusPill";
 import { RunDualView, RunningIndicator, type TranscriptEvent } from "@/components/RunViews";
+import { PublishAgentDialog } from "@/components/PublishAgentDialog";
 
 // 基于 Anthropic 对 Claude 的 prompting 最佳实践，提供一份"脚手架"模板，
 // 帮助用户按结构补全自己的提示词，而不是套用某个具体行业的成品。
@@ -557,10 +558,10 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
             className="h-8 text-xs gap-1.5"
             onClick={openPublish}
             disabled={!canSave}
-            title={canSave ? "保存为新版本" : blockingReasons[0]?.msg}
+            title={canSave ? "发布智能体" : blockingReasons[0]?.msg}
           >
-            <Save className="w-3.5 h-3.5" />
-            保存
+            <Rocket className="w-3.5 h-3.5" />
+            发布
           </Button>
         </div>
       </div>
@@ -1136,75 +1137,14 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
         </Tabs>
       </div>
 
-      <Dialog open={publishOpen} onOpenChange={setPublishOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-sm flex items-center gap-1.5">
-              <FolderKanban className="w-4 h-4 text-primary" />
-              保存到项目管理
-            </DialogTitle>
-            <DialogDescription className="text-[11px]">
-              确认基础信息后保存为新版本。如需发布，请在项目管理卡片或详情页右上角的「发布」按钮中操作。
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3 py-1">
-            <div>
-              <Label className="text-xs">头像</Label>
-              <div className="mt-1.5 flex items-center gap-3">
-                <div className="w-14 h-14 rounded-lg border border-border bg-muted/40 overflow-hidden flex items-center justify-center shrink-0">
-                  {generatingAvatar ? (
-                    <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                  ) : (
-                    <img src={avatarUrl} alt="智能体头像" className="w-full h-full object-cover" />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={regenerateAvatar} disabled={generatingAvatar}>
-                    <RefreshCw className={`w-3 h-3 ${generatingAvatar ? "animate-spin" : ""}`} />
-                    {generatingAvatar ? "生成中…" : "AI 重新生成"}
-                  </Button>
-                </div>
-              </div>
-            </div>
-            <div>
-              <Label className="text-xs">名称 <span className="text-destructive">*</span></Label>
-              <Input className="mt-1.5 h-8 text-xs" value={name} onChange={(e) => setName(e.target.value)} placeholder="例如：财务月报助手" />
-            </div>
-            <div>
-              <Label className="text-xs">描述</Label>
-              <Textarea className="mt-1.5 text-xs" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="一句话描述智能体能力" />
-            </div>
-            <div>
-              <Label className="text-xs">分类</Label>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {categories.map((c) => <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            {debugChanges.length > 0 && (
-              <div className="border border-primary/30 bg-primary/5 rounded-lg p-3 space-y-1.5">
-                <div className="flex items-center gap-1.5 text-xs font-medium text-primary">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  本次保存将包含 {debugChanges.length} 项调试期改动
-                </div>
-                <ul className="text-[11px] text-muted-foreground space-y-1 pl-5 list-disc leading-relaxed">
-                  {debugChanges.map((c, i) => (
-                    <li key={i}>{c.summary}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setPublishOpen(false)}>取消</Button>
-            <Button size="sm" className="h-8 text-xs gap-1.5" onClick={handleSave}>
-              <Save className="w-3 h-3" /> 保存
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <PublishAgentDialog
+        open={publishOpen}
+        onOpenChange={setPublishOpen}
+        agentName={name}
+        agentDescription={description}
+        agentCategory={category}
+      />
+
 
       {/* 配置文档查看 */}
       <Dialog open={specOpen} onOpenChange={setSpecOpen}>
