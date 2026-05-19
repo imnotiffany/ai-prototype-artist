@@ -108,6 +108,8 @@ const AgentDetail = () => {
   const [fsAppSecret, setFsAppSecret] = useState(initialSnapshot.fsAppSecret);
   const [fsRobotCode, setFsRobotCode] = useState(initialSnapshot.fsRobotCode);
   const [fsSecretVisible, setFsSecretVisible] = useState(false);
+  const [fsConnected, setFsConnected] = useState(true); // 已保存的配置默认视为已连接
+  const [fsAlertOpen, setFsAlertOpen] = useState(false);
   const [selSubagents, setSelSubagents] = useState<string[]>(["数据查询子智能体", "报告撰写子智能体"]);
   const [subagentGapDialogOpen, setSubagentGapDialogOpen] = useState(false);
   const [configView, setConfigView] = useState<"form" | "code">("form");
