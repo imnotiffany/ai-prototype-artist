@@ -1181,11 +1181,8 @@ fengsheng:
       <FengshengIncompleteDialog
         open={fsAlertOpen}
         onOpenChange={setFsAlertOpen}
-        status={fsStatus}
-        actionLabel={pendingFsAction === "publish" ? "发布" : "保存"}
         onGoConnect={goConnectFengsheng}
-        onClearConfig={() => { clearFengsheng(); continueAfterFsAlert(); }}
-        onContinue={continueAfterFsAlert}
+        onClearConfig={clearFengsheng}
       />
 
       {/* Apply API Key dialog */}
