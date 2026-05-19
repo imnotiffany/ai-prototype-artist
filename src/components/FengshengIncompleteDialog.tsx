@@ -1,83 +1,45 @@
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter } from "@/components/ui/alert-dialog";
-import { AlertTriangle, CheckCircle2, Link2, Trash2, ArrowRight } from "lucide-react";
+import { AlertTriangle, Link2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-export type FsStatus = "connected" | "incomplete" | "empty";
 
 interface Props {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  status: FsStatus;
-  /** 跳转到丰声 NEXT 配置区域 / 聚焦输入项（不继续保存/发布） */
   onGoConnect: () => void;
-  /** 清空当前已填写的 ClientID / Secret / RobotCode，并继续保存/发布 */
   onClearConfig: () => void;
-  /** 用户确认当前状态，继续保存/发布 */
-  onContinue: () => void;
-  /** 当前动作描述：保存草稿 / 发布 */
-  actionLabel?: string;
 }
 
 /**
- * 在用户首次点击「保存草稿」或「发布」时弹出，
- * 让用户明确感知丰声 NEXT 机器人当前的连接状态，
- * 避免「填写了凭据就以为生效」或「忘了配机器人」等误解。
+ * 当用户填写了丰声 NEXT 的凭据但未连接成功时，
+ * 保存/发布前强制弹出此提醒：必须连接成功，或删除配置内容，才能继续。
  */
-export const FengshengIncompleteDialog = ({
-  open,
-  onOpenChange,
-  status,
-  onGoConnect,
-  onClearConfig,
-  onContinue,
-  actionLabel = "保存 / 发布",
-}: Props) => {
-  const isConnected = status === "connected";
-  const isEmpty = status === "empty";
-
-  const title = isConnected
-    ? "丰声 NEXT 机器人已连接"
-    : isEmpty
-    ? "尚未配置丰声 NEXT 机器人"
-    : "丰声 NEXT 机器人未连接";
-
-  const Icon = isConnected ? CheckCircle2 : AlertTriangle;
-  const iconCls = isConnected ? "text-emerald-500" : "text-amber-500";
-
+export const FengshengIncompleteDialog = ({ open, onOpenChange, onGoConnect, onClearConfig }: Props) => {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent className="max-w-md">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-sm flex items-center gap-1.5">
-            <Icon className={`w-4 h-4 ${iconCls}`} />
-            {title}
+            <AlertTriangle className="w-4 h-4 text-amber-500" />
+            丰声 NEXT 机器人尚未连接成功
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-xs leading-relaxed pt-1 space-y-2">
-            {isConnected && (
-              <span className="block">
-                当前智能体已与 <span className="font-medium text-foreground">丰声 NEXT 机器人</span> 完成连接，{actionLabel}后即可在群聊中触发。
-                若不再需要，可在此移除机器人配置。
-              </span>
-            )}
-            {status === "incomplete" && (
-              <span className="block">
-                你已填写丰声 NEXT 的 <span className="font-medium text-foreground">Client ID / Client Secret / Robot Code</span>，
-                但还没有点击「连接」并连接成功。
-                <br />
-                <span className="text-destructive font-medium">未连接的情况下机器人不会生效</span>，建议先去完成连接，或移除相关配置。
-              </span>
-            )}
-            {isEmpty && (
-              <span className="block">
-                你尚未配置丰声 NEXT 机器人，本智能体将<span className="font-medium text-foreground">仅在 Web 端 / API 等渠道</span>可用。
-                如需在丰声群聊中触发，请先去配置并连接机器人。
-              </span>
-            )}
+          <AlertDialogDescription className="text-xs leading-relaxed pt-1">
+            丰声 NEXT 机器人尚未连接成功，请先在配置中<span className="font-medium text-foreground">连接成功</span>或<span className="font-medium text-foreground">删除配置内容</span>，才可发布 / 保存。
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className="gap-2 sm:gap-2 flex-col sm:flex-row">
+        <AlertDialogFooter className="gap-2 sm:gap-2">
           <Button
             variant="outline"
+            size="sm"
+            className="h-8 text-xs gap-1.5"
+            onClick={() => {
+              onClearConfig();
+              onOpenChange(false);
+            }}
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            删除配置内容
+          </Button>
+          <Button
             size="sm"
             className="h-8 text-xs gap-1.5"
             onClick={() => {
@@ -86,32 +48,7 @@ export const FengshengIncompleteDialog = ({
             }}
           >
             <Link2 className="w-3.5 h-3.5" />
-            {isConnected ? "查看配置" : "去连接"}
-          </Button>
-          {!isEmpty && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs gap-1.5"
-              onClick={() => {
-                onClearConfig();
-                onOpenChange(false);
-              }}
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              移除机器人配置
-            </Button>
-          )}
-          <Button
-            size="sm"
-            className="h-8 text-xs gap-1.5"
-            onClick={() => {
-              onContinue();
-              onOpenChange(false);
-            }}
-          >
-            知道了，继续{actionLabel}
-            <ArrowRight className="w-3.5 h-3.5" />
+            去连接
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
