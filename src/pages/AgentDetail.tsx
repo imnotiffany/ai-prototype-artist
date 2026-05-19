@@ -280,75 +280,39 @@ const AgentDetail = () => {
     [id]
   );
 
-  const fsStatus: "connected" | "incomplete" | "empty" =
-    fsConnected && (fsAppKey || fsAppSecret || fsRobotCode)
-      ? "connected"
-      : fsAppKey || fsAppSecret || fsRobotCode
-      ? "incomplete"
-      : "empty";
-  const fsDirty = fsStatus === "incomplete";
-  const [fsAlertShown, setFsAlertShown] = useState(false);
-  const [pendingFsAction, setPendingFsAction] = useState<null | "save" | "publish">(null);
+  const fsDirty = (!!fsAppKey || !!fsAppSecret || !!fsRobotCode) && !fsConnected;
 
   const clearFengsheng = () => {
     setFsAppKey("");
     setFsAppSecret("");
     setFsRobotCode("");
     setFsConnected(false);
-    toast({ title: "已移除丰声 NEXT 机器人配置" });
+    toast({ title: "已删除丰声 NEXT 配置内容" });
   };
   const goConnectFengsheng = () => {
-    setPendingFsAction(null);
     const el = document.getElementById("fs-app-key");
     el?.scrollIntoView({ behavior: "smooth", block: "center" });
     setTimeout(() => (el as HTMLInputElement | null)?.focus(), 300);
   };
 
-  const doSave = () => {
+  /* ── Config actions ── */
+  const handleSave = () => {
+    if (fsDirty) {
+      setFsAlertOpen(true);
+      return;
+    }
     setSavedSnapshot({ name, description, model, systemPrompt, skills: selSkills, mcpBindings, fsAppKey, fsAppSecret, fsRobotCode });
     setJustSaved(true);
     window.setTimeout(() => setJustSaved(false), 2800);
     toast({ title: "已保存", description: "配置已更新，可点击发布上线" });
   };
 
-  const doPublish = () => setPublishOpen(true);
-
-  const continueAfterFsAlert = () => {
-    const action = pendingFsAction;
-    setPendingFsAction(null);
-    if (action === "save") doSave();
-    else if (action === "publish") doPublish();
-  };
-
-  /* ── Config actions ── */
-  const handleSave = () => {
-    if (!fsAlertShown) {
-      setFsAlertShown(true);
-      setPendingFsAction("save");
-      setFsAlertOpen(true);
-      return;
-    }
-    if (fsDirty) {
-      setPendingFsAction("save");
-      setFsAlertOpen(true);
-      return;
-    }
-    doSave();
-  };
-
   const handlePublishClick = () => {
-    if (!fsAlertShown) {
-      setFsAlertShown(true);
-      setPendingFsAction("publish");
-      setFsAlertOpen(true);
-      return;
-    }
     if (fsDirty) {
-      setPendingFsAction("publish");
       setFsAlertOpen(true);
       return;
     }
-    doPublish();
+    setPublishOpen(true);
   };
 
   const handleRevert = () => {
