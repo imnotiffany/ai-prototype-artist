@@ -973,7 +973,10 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               </DialogContent>
             </Dialog>
 
-            <div className="flex justify-end">
+            <div className="flex justify-between">
+              <Button size="sm" variant="ghost" className="h-8 text-xs gap-1" onClick={() => setCurrentTab("basic")}>
+                <ArrowLeft className="w-3 h-3" /> 上一步
+              </Button>
               <Button
                 size="sm"
                 className="h-8 text-xs gap-1.5"
