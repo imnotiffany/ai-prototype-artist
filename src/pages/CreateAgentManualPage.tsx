@@ -21,6 +21,7 @@ import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
 import { AIStatusPill } from "@/components/AIStatusPill";
 import { RunDualView, RunningIndicator, type TranscriptEvent } from "@/components/RunViews";
 import { PublishAgentDialog } from "@/components/PublishAgentDialog";
+import { AvatarPicker } from "@/components/AvatarPicker";
 
 // 基于 Anthropic 对 Claude 的 prompting 最佳实践，提供一份"脚手架"模板，
 // 帮助用户按结构补全自己的提示词，而不是套用某个具体行业的成品。
@@ -140,7 +141,8 @@ const CreateAgentManualPage = () => {
   const [hubEnabled, setHubEnabled] = useState(false);
 
   // Controlled tab (so we can jump users between steps)
-  const [currentTab, setCurrentTab] = useState("capability");
+  const [currentTab, setCurrentTab] = useState("basic");
+  const [uploadedAvatar, setUploadedAvatar] = useState<string | null>(null);
 
   // Debug — three streams: assistant chat (left), agent run (right), runtime logs (right bottom)
   type PromptSuggestion = { id: string; addition: string; summaryNote: string; status: "pending" | "adopted" | "rejected" };
@@ -420,20 +422,22 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
   }, [currentTab]);
 
   // ── Step validation ──────────────────────────────────────────────
+  const basicComplete = !!name.trim();
   const capabilityComplete = selMCPs.length > 0 || selSkills.length > 0;
   const promptComplete = systemPrompt.trim().length >= 20;
-  // 对外接入是可选的，但若启用了丰声 NEXT 必须完成连接（Agent Hub 仅是开关）
-  const channelsValid = !fsConnected || (!!fsAppKey && !!fsAppSecret && !!fsRobotCode);
   const debugComplete = debugPassed && !debugLastError;
+  const channelsValid = fsConnected || (!fsAppKey && !fsAppSecret && !fsRobotCode);
 
   const stepStatus = {
-    capability: capabilityComplete ? "done" : "todo",
-    prompt: capabilityComplete ? (promptComplete ? "done" : "todo") : "locked",
-    channels: capabilityComplete && promptComplete ? (channelsValid ? "done" : "warn") : "locked",
-    debug: capabilityComplete && promptComplete ? (debugComplete ? "done" : debugAttempted ? (debugLastError ? "warn" : "todo") : "todo") : "locked",
+    basic: basicComplete ? "done" : "todo",
+    capability: basicComplete ? (capabilityComplete ? "done" : "todo") : "locked",
+    prompt: basicComplete && capabilityComplete ? (promptComplete ? "done" : "todo") : "locked",
+    channels: basicComplete && capabilityComplete && promptComplete ? (channelsValid ? "done" : "warn") : "locked",
+    debug: basicComplete && capabilityComplete && promptComplete ? (debugComplete ? "done" : debugAttempted ? (debugLastError ? "warn" : "todo") : "todo") : "locked",
   } as const;
 
   const blockingReasons: { msg: string; jumpTo: string }[] = [];
+  if (!basicComplete) blockingReasons.push({ msg: "请填写智能体名称", jumpTo: "basic" });
   if (!capabilityComplete) blockingReasons.push({ msg: "请至少绑定 1 个 MCP 或 Skill", jumpTo: "capability" });
   if (!promptComplete) blockingReasons.push({ msg: "请完善系统提示词（不少于 20 字）", jumpTo: "prompt" });
   if (!channelsValid) blockingReasons.push({ msg: "已启用的对外接入尚未完成连接，请补齐或关闭", jumpTo: "channels" });
@@ -586,10 +590,11 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
         {/* 步骤指引 */}
         {(() => {
           const steps: { key: string; label: string; sub: string }[] = [
-            { key: "capability", label: "1. 能力配置", sub: "选择模型 / MCP / Skill" },
-            { key: "prompt", label: "2. 系统提示词", sub: "定义角色与工作方式" },
-            { key: "channels", label: "3. 对外接入", sub: "丰声 NEXT / Agent Hub（可选）" },
-            { key: "debug", label: "4. 调试并保存", sub: "至少一次成功运行后才能保存" },
+            { key: "basic", label: "1. 基础信息", sub: "名称 / 头像 / 分类" },
+            { key: "capability", label: "2. 能力配置", sub: "选择模型 / MCP / Skill" },
+            { key: "prompt", label: "3. 系统提示词", sub: "定义角色与工作方式" },
+            { key: "channels", label: "4. 对外接入", sub: "丰声 NEXT（可选）" },
+            { key: "debug", label: "5. 调试", sub: "可选，验证智能体运行效果" },
           ];
           return (
             <div className="mb-4 rounded-lg border border-border bg-card p-3">
@@ -642,6 +647,74 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
         })()}
 
         <Tabs value={currentTab} onValueChange={setCurrentTab}>
+
+          {/* Basic: 名称 / 头像 / 描述 / 分类 */}
+          <TabsContent value="basic" className="mt-4 space-y-4">
+            <div className="border border-border rounded-lg p-5 space-y-5 bg-card">
+              <div>
+                <h2 className="text-sm font-semibold">基础信息</h2>
+                <p className="text-[11px] text-muted-foreground mt-0.5">定义智能体的名称、头像和分类，后续步骤将基于此生成配置</p>
+              </div>
+
+              <div>
+                <Label className="text-xs">头像</Label>
+                <div className="mt-1.5">
+                  <AvatarPicker
+                    uploadedAvatar={uploadedAvatar}
+                    onUploadedAvatarChange={setUploadedAvatar}
+                    seed={avatarSeed}
+                    onSeedChange={setAvatarSeed}
+                    noun="智能体"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-xs">名称 <span className="text-destructive">*</span></Label>
+                <Input
+                  className="mt-1.5 h-9 text-xs"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="例如：财务月报助手"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs">描述</Label>
+                <Textarea
+                  className="mt-1.5 text-xs"
+                  rows={3}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value.slice(0, 100))}
+                  placeholder="一句话描述智能体能力"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs">分类</Label>
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger className="mt-1.5 h-9 text-xs"><SelectValue placeholder="选择分类" /></SelectTrigger>
+                  <SelectContent>
+                    {categories.map((c) => (
+                      <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <Button
+                size="sm"
+                className="h-8 text-xs gap-1.5"
+                disabled={!basicComplete}
+                onClick={() => setCurrentTab("capability")}
+                title={basicComplete ? "下一步：能力配置" : "请填写智能体名称"}
+              >
+                下一步：能力配置 <ArrowRight className="w-3 h-3" />
+              </Button>
+            </div>
+          </TabsContent>
 
           {/* Capability: 基座模型 + MCP + Skill + Subagent */}
           <TabsContent value="capability" className="mt-4 space-y-4">
@@ -900,7 +973,10 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               </DialogContent>
             </Dialog>
 
-            <div className="flex justify-end">
+            <div className="flex justify-between">
+              <Button size="sm" variant="ghost" className="h-8 text-xs gap-1" onClick={() => setCurrentTab("basic")}>
+                <ArrowLeft className="w-3 h-3" /> 上一步
+              </Button>
               <Button
                 size="sm"
                 className="h-8 text-xs gap-1.5"
