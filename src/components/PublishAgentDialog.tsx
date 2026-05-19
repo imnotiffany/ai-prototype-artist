@@ -31,6 +31,8 @@ interface Props {
   agentAllowCopy?: boolean;
   versions?: AgentVersion[];
   defaultScope?: "marketplace" | "project";
+  /** 锁定发布范围（隐藏单选），用于入口已经明确意图的场景 */
+  lockScope?: boolean;
   kind?: "app" | "agent";
 }
 
@@ -42,6 +44,7 @@ export const PublishAgentDialog = ({
   agentCategory = "",
   agentAllowCopy = true,
   defaultScope = "marketplace",
+  lockScope = false,
   kind = "agent",
 }: Props) => {
   const noun = kind === "app" ? "应用" : "智能体";
@@ -143,24 +146,26 @@ export const PublishAgentDialog = ({
             <Switch checked={allowCopy} onCheckedChange={setAllowCopy} />
           </div>
 
-          {/* 发布范围 — 发布独有 */}
-          <div>
-            <Label className="text-xs">发布范围 <span className="text-destructive">*</span></Label>
-            <RadioGroup
-              value={scope}
-              onValueChange={(v) => setScope(v as "marketplace" | "project")}
-              className="mt-1.5 flex items-center gap-6"
-            >
-              <label className="flex items-center gap-2 cursor-pointer">
-                <RadioGroupItem value="marketplace" id="scope-public" />
-                <span className="text-xs">发布至广场（所有人可见）</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <RadioGroupItem value="project" id="scope-project" />
-                <span className="text-xs">发布至项目（仅项目内可见）</span>
-              </label>
-            </RadioGroup>
-          </div>
+          {/* 发布范围 — 入口未锁定时可选 */}
+          {!lockScope && (
+            <div>
+              <Label className="text-xs">发布范围 <span className="text-destructive">*</span></Label>
+              <RadioGroup
+                value={scope}
+                onValueChange={(v) => setScope(v as "marketplace" | "project")}
+                className="mt-1.5 flex items-center gap-6"
+              >
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <RadioGroupItem value="marketplace" id="scope-public" />
+                  <span className="text-xs">发布至广场（所有人可见）</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <RadioGroupItem value="project" id="scope-project" />
+                  <span className="text-xs">发布至项目（仅项目内可见）</span>
+                </label>
+              </RadioGroup>
+            </div>
+          )}
         </div>
 
         <DialogFooter>
