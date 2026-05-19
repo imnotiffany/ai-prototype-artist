@@ -1261,11 +1261,8 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
       <FengshengIncompleteDialog
         open={fsAlertOpen}
         onOpenChange={setFsAlertOpen}
-        status={fsStatus}
-        actionLabel={pendingAction === "publish" ? "发布" : "保存草稿"}
         onGoConnect={goConnectFengsheng}
-        onClearConfig={() => { clearFengsheng(); continueAfterFsAlert(); }}
-        onContinue={continueAfterFsAlert}
+        onClearConfig={clearFengsheng}
       />
 
 
