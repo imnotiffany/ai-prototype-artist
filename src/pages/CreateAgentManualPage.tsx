@@ -444,7 +444,25 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
   if (!debugComplete) blockingReasons.push({ msg: debugLastError ? "上一次调试出现错误，请修复后重新调试" : "保存前必须在「调试」中完成至少一次成功运行", jumpTo: "debug" });
   const canSave = blockingReasons.length === 0;
 
+  const fsDirty = (!!fsAppKey || !!fsAppSecret || !!fsRobotCode) && !fsConnected;
+  const clearFengsheng = () => {
+    setFsAppKey("");
+    setFsAppSecret("");
+    setFsRobotCode("");
+    toast({ title: "已清空丰声 NEXT 配置" });
+  };
+  const goConnectFengsheng = () => {
+    setCurrentTab("channels");
+    setTimeout(() => {
+      document.getElementById("fs-app-key")?.focus();
+    }, 80);
+  };
+
   const openPublish = () => {
+    if (fsDirty) {
+      setFsAlertOpen(true);
+      return;
+    }
     if (!canSave) {
       const first = blockingReasons[0];
       toast({ title: "无法保存", description: first.msg, variant: "destructive" });
@@ -458,6 +476,10 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
   const handleSave = () => {
     if (!name.trim()) {
       toast({ title: "请填写智能体名称", variant: "destructive" });
+      return;
+    }
+    if (fsDirty) {
+      setFsAlertOpen(true);
       return;
     }
     toast({ title: "已保存到项目管理", description: `${name} · ${category}（如需发布，请前往项目管理或详情页发布）` });
