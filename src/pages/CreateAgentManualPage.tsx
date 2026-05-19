@@ -422,20 +422,21 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
   }, [currentTab]);
 
   // ── Step validation ──────────────────────────────────────────────
+  const basicComplete = !!name.trim();
   const capabilityComplete = selMCPs.length > 0 || selSkills.length > 0;
   const promptComplete = systemPrompt.trim().length >= 20;
-  // 对外接入是可选的，但若启用了丰声 NEXT 必须完成连接（Agent Hub 仅是开关）
-  const channelsValid = !fsConnected || (!!fsAppKey && !!fsAppSecret && !!fsRobotCode);
   const debugComplete = debugPassed && !debugLastError;
 
   const stepStatus = {
-    capability: capabilityComplete ? "done" : "todo",
-    prompt: capabilityComplete ? (promptComplete ? "done" : "todo") : "locked",
-    channels: capabilityComplete && promptComplete ? (channelsValid ? "done" : "warn") : "locked",
-    debug: capabilityComplete && promptComplete ? (debugComplete ? "done" : debugAttempted ? (debugLastError ? "warn" : "todo") : "todo") : "locked",
+    basic: basicComplete ? "done" : "todo",
+    capability: basicComplete ? (capabilityComplete ? "done" : "todo") : "locked",
+    prompt: basicComplete && capabilityComplete ? (promptComplete ? "done" : "todo") : "locked",
+    channels: basicComplete && capabilityComplete && promptComplete ? (channelsValid ? "done" : "warn") : "locked",
+    debug: basicComplete && capabilityComplete && promptComplete ? (debugComplete ? "done" : debugAttempted ? (debugLastError ? "warn" : "todo") : "todo") : "locked",
   } as const;
 
   const blockingReasons: { msg: string; jumpTo: string }[] = [];
+  if (!basicComplete) blockingReasons.push({ msg: "请填写智能体名称", jumpTo: "basic" });
   if (!capabilityComplete) blockingReasons.push({ msg: "请至少绑定 1 个 MCP 或 Skill", jumpTo: "capability" });
   if (!promptComplete) blockingReasons.push({ msg: "请完善系统提示词（不少于 20 字）", jumpTo: "prompt" });
   if (!channelsValid) blockingReasons.push({ msg: "已启用的对外接入尚未完成连接，请补齐或关闭", jumpTo: "channels" });
