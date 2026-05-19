@@ -426,6 +426,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
   const capabilityComplete = selMCPs.length > 0 || selSkills.length > 0;
   const promptComplete = systemPrompt.trim().length >= 20;
   const debugComplete = debugPassed && !debugLastError;
+  const channelsValid = fsConnected || (!fsAppKey && !fsAppSecret && !fsRobotCode);
 
   const stepStatus = {
     basic: basicComplete ? "done" : "todo",
