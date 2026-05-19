@@ -558,29 +558,26 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
             variant="outline"
             className="h-8 text-xs gap-1.5"
             onClick={() => {
-              if (!canSave) {
-                const first = blockingReasons[0];
-                toast({ title: "无法保存", description: first.msg, variant: "destructive" });
-                setCurrentTab(first.jumpTo);
+              if (!name.trim()) {
+                toast({ title: "请填写智能体名称", variant: "destructive" });
                 return;
               }
-              handleSave();
+              toast({ title: "草稿已保存", description: `${name} · 可稍后继续编辑或发布` });
             }}
-            disabled={!canSave}
-            title={canSave ? "仅保存到当前项目，不对外发布" : blockingReasons[0]?.msg}
+            title="保存当前配置为草稿，不发布"
           >
-            <FolderKanban className="w-3.5 h-3.5" />
-            保存到项目
+            <Save className="w-3.5 h-3.5" />
+            保存草稿
           </Button>
           <Button
             size="sm"
             className="h-8 text-xs gap-1.5"
             onClick={openPublish}
             disabled={!canSave}
-            title={canSave ? "发布到智能体广场" : blockingReasons[0]?.msg}
+            title={canSave ? "发布智能体" : blockingReasons[0]?.msg}
           >
             <Rocket className="w-3.5 h-3.5" />
-            发布到广场
+            发布
           </Button>
         </div>
       </div>
