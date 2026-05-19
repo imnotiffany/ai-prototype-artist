@@ -21,6 +21,7 @@ import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { toast } from "@/hooks/use-toast";
 import { PublishAgentDialog } from "@/components/PublishAgentDialog";
 import { AvatarPicker } from "@/components/AvatarPicker";
+import { FengshengIncompleteDialog } from "@/components/FengshengIncompleteDialog";
 import { AgentRuntimeBadge, type AgentRuntimeStatus } from "@/components/AgentRuntimeBadge";
 import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -108,6 +109,8 @@ const AgentDetail = () => {
   const [fsAppSecret, setFsAppSecret] = useState(initialSnapshot.fsAppSecret);
   const [fsRobotCode, setFsRobotCode] = useState(initialSnapshot.fsRobotCode);
   const [fsSecretVisible, setFsSecretVisible] = useState(false);
+  const [fsConnected, setFsConnected] = useState(true); // 已保存的配置默认视为已连接
+  const [fsAlertOpen, setFsAlertOpen] = useState(false);
   const [selSubagents, setSelSubagents] = useState<string[]>(["数据查询子智能体", "报告撰写子智能体"]);
   const [subagentGapDialogOpen, setSubagentGapDialogOpen] = useState(false);
   const [configView, setConfigView] = useState<"form" | "code">("form");
@@ -277,8 +280,26 @@ const AgentDetail = () => {
     [id]
   );
 
+  const fsDirty = (!!fsAppKey || !!fsAppSecret || !!fsRobotCode) && !fsConnected;
+  const clearFengsheng = () => {
+    setFsAppKey("");
+    setFsAppSecret("");
+    setFsRobotCode("");
+    setFsConnected(true);
+    toast({ title: "已清空丰声 NEXT 配置" });
+  };
+  const goConnectFengsheng = () => {
+    const el = document.getElementById("fs-app-key");
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    setTimeout(() => (el as HTMLInputElement | null)?.focus(), 300);
+  };
+
   /* ── Config actions ── */
   const handleSave = () => {
+    if (fsDirty) {
+      setFsAlertOpen(true);
+      return;
+    }
     setSavedSnapshot({ name, description, model, systemPrompt, skills: selSkills, mcpBindings, fsAppKey, fsAppSecret, fsRobotCode });
     setJustSaved(true);
     window.setTimeout(() => setJustSaved(false), 2800);
@@ -386,7 +407,7 @@ const AgentDetail = () => {
           <Button
             size="sm"
             className="h-8 text-xs gap-1.5"
-            onClick={() => setPublishOpen(true)}
+            onClick={() => { if (fsDirty) { setFsAlertOpen(true); return; } setPublishOpen(true); }}
             disabled={isDirty}
             title={isDirty ? "请先保存当前修改后再发布" : "发布"}
           >
@@ -845,7 +866,8 @@ fengsheng:
                     className="mt-1.5 h-8 text-xs font-mono"
                     placeholder="企业应用 AppKey"
                     value={fsAppKey}
-                    onChange={(e) => setFsAppKey(e.target.value)}
+                    onChange={(e) => { setFsAppKey(e.target.value); setFsConnected(false); }}
+                    id="fs-app-key"
                   />
                 </div>
                 <div>
@@ -856,7 +878,7 @@ fengsheng:
                       type={fsSecretVisible ? "text" : "password"}
                       placeholder="企业应用 AppSecret"
                       value={fsAppSecret}
-                      onChange={(e) => setFsAppSecret(e.target.value)}
+                      onChange={(e) => { setFsAppSecret(e.target.value); setFsConnected(false); }}
                     />
                     <button
                       type="button"
@@ -873,18 +895,25 @@ fengsheng:
                     className="mt-1.5 h-8 text-xs font-mono"
                     placeholder="机器人编码"
                     value={fsRobotCode}
-                    onChange={(e) => setFsRobotCode(e.target.value)}
+                    onChange={(e) => { setFsRobotCode(e.target.value); setFsConnected(false); }}
                   />
                   <p className="text-[10px] text-muted-foreground mt-1.5">在丰声 NEXT 开发者后台「机器人管理」中获取，凭据将通过「凭据管理」加密存储</p>
                 </div>
-                <div className="flex justify-end pt-1">
+                <div className="flex items-center justify-between pt-1">
+                  <span className={`text-[10px] inline-flex items-center gap-1 ${fsConnected && fsAppKey ? "text-emerald-600" : "text-muted-foreground"}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${fsConnected && fsAppKey ? "bg-emerald-500" : "bg-muted-foreground/50"}`} />
+                    {fsConnected && fsAppKey ? "已连接" : "未连接"}
+                  </span>
                   <Button
                     size="sm"
                     className="h-8 text-xs gap-1.5"
-                    disabled={!fsAppKey.trim() || !fsAppSecret.trim() || !fsRobotCode.trim()}
-                    onClick={() => toast({ title: "已连接丰声 NEXT 机器人", description: `Robot Code：${fsRobotCode}` })}
+                    disabled={!fsAppKey.trim() || !fsAppSecret.trim() || !fsRobotCode.trim() || fsConnected}
+                    onClick={() => {
+                      setFsConnected(true);
+                      toast({ title: "已连接丰声 NEXT 机器人", description: `Robot Code：${fsRobotCode}` });
+                    }}
                   >
-                    <Zap className="w-3.5 h-3.5" />连接
+                    <Zap className="w-3.5 h-3.5" />{fsConnected ? "已连接" : "连接"}
                   </Button>
                 </div>
               </div>
@@ -1138,6 +1167,13 @@ fengsheng:
         onOpenChange={setPublishOpen}
         agentName={name}
         kind={agent.kind}
+      />
+
+      <FengshengIncompleteDialog
+        open={fsAlertOpen}
+        onOpenChange={setFsAlertOpen}
+        onGoConnect={goConnectFengsheng}
+        onClearConfig={clearFengsheng}
       />
 
       {/* Apply API Key dialog */}

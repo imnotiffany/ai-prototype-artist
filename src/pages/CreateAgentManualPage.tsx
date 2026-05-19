@@ -22,6 +22,7 @@ import { AIStatusPill } from "@/components/AIStatusPill";
 import { RunDualView, RunningIndicator, type TranscriptEvent } from "@/components/RunViews";
 import { PublishAgentDialog } from "@/components/PublishAgentDialog";
 import { AvatarPicker } from "@/components/AvatarPicker";
+import { FengshengIncompleteDialog } from "@/components/FengshengIncompleteDialog";
 
 // 基于 Anthropic 对 Claude 的 prompting 最佳实践，提供一份"脚手架"模板，
 // 帮助用户按结构补全自己的提示词，而不是套用某个具体行业的成品。
@@ -143,6 +144,7 @@ const CreateAgentManualPage = () => {
   // Controlled tab (so we can jump users between steps)
   const [currentTab, setCurrentTab] = useState("basic");
   const [uploadedAvatar, setUploadedAvatar] = useState<string | null>(null);
+  const [fsAlertOpen, setFsAlertOpen] = useState(false);
 
   // Debug — three streams: assistant chat (left), agent run (right), runtime logs (right bottom)
   type PromptSuggestion = { id: string; addition: string; summaryNote: string; status: "pending" | "adopted" | "rejected" };
@@ -444,7 +446,25 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
   if (!debugComplete) blockingReasons.push({ msg: debugLastError ? "上一次调试出现错误，请修复后重新调试" : "保存前必须在「调试」中完成至少一次成功运行", jumpTo: "debug" });
   const canSave = blockingReasons.length === 0;
 
+  const fsDirty = (!!fsAppKey || !!fsAppSecret || !!fsRobotCode) && !fsConnected;
+  const clearFengsheng = () => {
+    setFsAppKey("");
+    setFsAppSecret("");
+    setFsRobotCode("");
+    toast({ title: "已清空丰声 NEXT 配置" });
+  };
+  const goConnectFengsheng = () => {
+    setCurrentTab("channels");
+    setTimeout(() => {
+      document.getElementById("fs-app-key")?.focus();
+    }, 80);
+  };
+
   const openPublish = () => {
+    if (fsDirty) {
+      setFsAlertOpen(true);
+      return;
+    }
     if (!canSave) {
       const first = blockingReasons[0];
       toast({ title: "无法保存", description: first.msg, variant: "destructive" });
@@ -458,6 +478,10 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
   const handleSave = () => {
     if (!name.trim()) {
       toast({ title: "请填写智能体名称", variant: "destructive" });
+      return;
+    }
+    if (fsDirty) {
+      setFsAlertOpen(true);
       return;
     }
     toast({ title: "已保存到项目管理", description: `${name} · ${category}（如需发布，请前往项目管理或详情页发布）` });
@@ -1077,7 +1101,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               <div className="p-5 space-y-3">
                 <div>
                   <Label className="text-xs">Client ID（AppKey）</Label>
-                  <Input className="mt-1.5 h-8 text-xs font-mono" placeholder="企业应用 AppKey" value={fsAppKey} onChange={(e) => setFsAppKey(e.target.value)} />
+                  <Input id="fs-app-key" className="mt-1.5 h-8 text-xs font-mono" placeholder="企业应用 AppKey" value={fsAppKey} onChange={(e) => setFsAppKey(e.target.value)} />
                 </div>
                 <div>
                   <Label className="text-xs">Client Secret（AppSecret）</Label>
@@ -1230,6 +1254,13 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
         agentName={name}
         agentDescription={description}
         agentCategory={category}
+      />
+
+      <FengshengIncompleteDialog
+        open={fsAlertOpen}
+        onOpenChange={setFsAlertOpen}
+        onGoConnect={goConnectFengsheng}
+        onClearConfig={clearFengsheng}
       />
 
 
