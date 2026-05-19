@@ -280,8 +280,26 @@ const AgentDetail = () => {
     [id]
   );
 
+  const fsDirty = (!!fsAppKey || !!fsAppSecret || !!fsRobotCode) && !fsConnected;
+  const clearFengsheng = () => {
+    setFsAppKey("");
+    setFsAppSecret("");
+    setFsRobotCode("");
+    setFsConnected(true);
+    toast({ title: "已清空丰声 NEXT 配置" });
+  };
+  const goConnectFengsheng = () => {
+    const el = document.getElementById("fs-app-key");
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    setTimeout(() => (el as HTMLInputElement | null)?.focus(), 300);
+  };
+
   /* ── Config actions ── */
   const handleSave = () => {
+    if (fsDirty) {
+      setFsAlertOpen(true);
+      return;
+    }
     setSavedSnapshot({ name, description, model, systemPrompt, skills: selSkills, mcpBindings, fsAppKey, fsAppSecret, fsRobotCode });
     setJustSaved(true);
     window.setTimeout(() => setJustSaved(false), 2800);
