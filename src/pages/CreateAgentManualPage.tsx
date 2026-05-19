@@ -145,6 +145,7 @@ const CreateAgentManualPage = () => {
   const [currentTab, setCurrentTab] = useState("basic");
   const [uploadedAvatar, setUploadedAvatar] = useState<string | null>(null);
   const [fsAlertOpen, setFsAlertOpen] = useState(false);
+  const [fsAlertShown, setFsAlertShown] = useState(false);
 
   // Debug — three streams: assistant chat (left), agent run (right), runtime logs (right bottom)
   type PromptSuggestion = { id: string; addition: string; summaryNote: string; status: "pending" | "adopted" | "rejected" };
@@ -463,6 +464,11 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
   };
 
   const openPublish = () => {
+    if (!fsAlertShown) {
+      setFsAlertShown(true);
+      setFsAlertOpen(true);
+      return;
+    }
     if (fsDirty) {
       setFsAlertOpen(true);
       return;
@@ -480,6 +486,11 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
   const handleSave = () => {
     if (!name.trim()) {
       toast({ title: "请填写智能体名称", variant: "destructive" });
+      return;
+    }
+    if (!fsAlertShown) {
+      setFsAlertShown(true);
+      setFsAlertOpen(true);
       return;
     }
     if (fsDirty) {
