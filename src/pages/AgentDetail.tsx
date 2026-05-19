@@ -20,6 +20,7 @@ import { mockAgents, getActiveMCPs, getActiveSkills } from "@/data/mockData";
 import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { toast } from "@/hooks/use-toast";
 import { PublishAgentDialog } from "@/components/PublishAgentDialog";
+import { AvatarPicker } from "@/components/AvatarPicker";
 import { AgentRuntimeBadge, type AgentRuntimeStatus } from "@/components/AgentRuntimeBadge";
 import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -324,6 +325,8 @@ const AgentDetail = () => {
   const [editInfoOpen, setEditInfoOpen] = useState(false);
   const [draftName, setDraftName] = useState(name);
   const [draftDesc, setDraftDesc] = useState(description);
+  const [draftAvatarSeed, setDraftAvatarSeed] = useState(() => name || Math.random().toString(36).slice(2, 10));
+  const [draftUploadedAvatar, setDraftUploadedAvatar] = useState<string | null>(null);
 
   const openEditInfo = () => {
     setDraftName(name);
@@ -1105,8 +1108,14 @@ fengsheng:
           </DialogHeader>
           <div className="space-y-3 py-1">
             <p className="text-[11px] text-muted-foreground">
-              名称与描述是展示给使用者的「门面」，调整这些不会影响智能体行为。
+              名称、头像与描述是展示给使用者的「门面」，调整这些不会影响智能体行为。
             </p>
+            <AvatarPicker
+              uploadedAvatar={draftUploadedAvatar}
+              onUploadedAvatarChange={setDraftUploadedAvatar}
+              seed={draftAvatarSeed}
+              onSeedChange={setDraftAvatarSeed}
+            />
             <div>
               <Label className="text-xs">名称</Label>
               <Input value={draftName} onChange={(e) => setDraftName(e.target.value)} className="mt-1.5 h-9 text-xs" />
