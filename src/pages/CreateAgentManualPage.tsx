@@ -590,10 +590,11 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
         {/* 步骤指引 */}
         {(() => {
           const steps: { key: string; label: string; sub: string }[] = [
-            { key: "capability", label: "1. 能力配置", sub: "选择模型 / MCP / Skill" },
-            { key: "prompt", label: "2. 系统提示词", sub: "定义角色与工作方式" },
-            { key: "channels", label: "3. 对外接入", sub: "丰声 NEXT / Agent Hub（可选）" },
-            { key: "debug", label: "4. 调试并保存", sub: "至少一次成功运行后才能保存" },
+            { key: "basic", label: "1. 基础信息", sub: "名称 / 头像 / 分类" },
+            { key: "capability", label: "2. 能力配置", sub: "选择模型 / MCP / Skill" },
+            { key: "prompt", label: "3. 系统提示词", sub: "定义角色与工作方式" },
+            { key: "channels", label: "4. 对外接入", sub: "丰声 NEXT（可选）" },
+            { key: "debug", label: "5. 调试", sub: "可选，验证智能体运行效果" },
           ];
           return (
             <div className="mb-4 rounded-lg border border-border bg-card p-3">
