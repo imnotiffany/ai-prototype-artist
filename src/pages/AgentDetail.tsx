@@ -872,12 +872,18 @@ fengsheng:
 
             {/* 6. 丰声 NEXT 机器人 */}
             <section className="border border-border rounded-lg bg-card">
-              <header className="px-4 py-2.5 border-b border-border">
-                <h3 className="text-sm font-semibold flex items-center gap-1.5">
-                  <MessageSquare className="w-3.5 h-3.5 text-primary" />丰声 NEXT 机器人
-                  <span className="text-[10px] px-1.5 h-4 leading-4 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 font-normal">可选</span>
-                </h3>
-                <p className="text-[11px] text-muted-foreground mt-0.5">仅在需要把智能体发布为群聊机器人（成员 @ 即可触发）时配置；不配置不影响其他渠道使用</p>
+              <header className="px-4 py-2.5 border-b border-border flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <h3 className="text-sm font-semibold flex items-center gap-1.5">
+                    <MessageSquare className="w-3.5 h-3.5 text-primary" />丰声 NEXT 机器人
+                    <span className="text-[10px] px-1.5 h-4 leading-4 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 font-normal">可选</span>
+                  </h3>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">仅在需要把智能体发布为群聊机器人（成员 @ 即可触发）时配置；不配置不影响其他渠道使用</p>
+                </div>
+                <span className={`shrink-0 text-[10px] inline-flex items-center gap-1 ${fsConnected && fsAppKey ? "text-emerald-600" : "text-muted-foreground"}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${fsConnected && fsAppKey ? "bg-emerald-500" : "bg-muted-foreground/50"}`} />
+                  {fsConnected && fsAppKey ? "已连接" : "未连接"}
+                </span>
               </header>
               <div className="p-4 space-y-3">
                 <div>
