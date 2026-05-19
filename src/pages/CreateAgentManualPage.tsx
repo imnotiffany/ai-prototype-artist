@@ -464,6 +464,11 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
   };
 
   const openPublish = () => {
+    if (!fsAlertShown) {
+      setFsAlertShown(true);
+      setFsAlertOpen(true);
+      return;
+    }
     if (fsDirty) {
       setFsAlertOpen(true);
       return;
@@ -481,6 +486,11 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
   const handleSave = () => {
     if (!name.trim()) {
       toast({ title: "请填写智能体名称", variant: "destructive" });
+      return;
+    }
+    if (!fsAlertShown) {
+      setFsAlertShown(true);
+      setFsAlertOpen(true);
       return;
     }
     if (fsDirty) {
