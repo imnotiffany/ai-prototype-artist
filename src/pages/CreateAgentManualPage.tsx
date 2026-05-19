@@ -446,25 +446,32 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
   if (!debugComplete) blockingReasons.push({ msg: debugLastError ? "上一次调试出现错误，请修复后重新调试" : "保存前必须在「调试」中完成至少一次成功运行", jumpTo: "debug" });
   const canSave = blockingReasons.length === 0;
 
-  const fsDirty = (!!fsAppKey || !!fsAppSecret || !!fsRobotCode) && !fsConnected;
+  const fsStatus: "connected" | "incomplete" | "empty" =
+    fsConnected && (fsAppKey || fsAppSecret || fsRobotCode)
+      ? "connected"
+      : fsAppKey || fsAppSecret || fsRobotCode
+      ? "incomplete"
+      : "empty";
+  const fsDirty = fsStatus === "incomplete";
+  const [fsAlertShown, setFsAlertShown] = useState(false);
+  const [pendingAction, setPendingAction] = useState<null | "save" | "publish">(null);
+
   const clearFengsheng = () => {
     setFsAppKey("");
     setFsAppSecret("");
     setFsRobotCode("");
-    toast({ title: "已清空丰声 NEXT 配置" });
+    setFsConnected(false);
+    toast({ title: "已移除丰声 NEXT 机器人配置" });
   };
   const goConnectFengsheng = () => {
     setCurrentTab("channels");
+    setPendingAction(null);
     setTimeout(() => {
       document.getElementById("fs-app-key")?.focus();
     }, 80);
   };
 
-  const openPublish = () => {
-    if (fsDirty) {
-      setFsAlertOpen(true);
-      return;
-    }
+  const doPublish = () => {
     if (!canSave) {
       const first = blockingReasons[0];
       toast({ title: "无法保存", description: first.msg, variant: "destructive" });
@@ -475,18 +482,51 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
     setPublishOpen(true);
   };
 
+  const doSave = () => {
+    toast({ title: "已保存到项目管理", description: `${name} · ${category}（如需发布，请前往项目管理或详情页发布）` });
+    setPublishOpen(false);
+    navigate("/project-agents");
+  };
+
+  const openPublish = () => {
+    if (!fsAlertShown) {
+      setFsAlertShown(true);
+      setPendingAction("publish");
+      setFsAlertOpen(true);
+      return;
+    }
+    if (fsDirty) {
+      setPendingAction("publish");
+      setFsAlertOpen(true);
+      return;
+    }
+    doPublish();
+  };
+
   const handleSave = () => {
     if (!name.trim()) {
       toast({ title: "请填写智能体名称", variant: "destructive" });
       return;
     }
-    if (fsDirty) {
+    if (!fsAlertShown) {
+      setFsAlertShown(true);
+      setPendingAction("save");
       setFsAlertOpen(true);
       return;
     }
-    toast({ title: "已保存到项目管理", description: `${name} · ${category}（如需发布，请前往项目管理或详情页发布）` });
-    setPublishOpen(false);
-    navigate("/project-agents");
+    if (fsDirty) {
+      setPendingAction("save");
+      setFsAlertOpen(true);
+      return;
+    }
+    doSave();
+  };
+
+  const continueAfterFsAlert = () => {
+    const action = pendingAction;
+    setPendingAction(null);
+    if (action === "publish") doPublish();
+    else if (action === "save") doSave();
   };
 
   // PickerDialog moved to shared component: CapabilityPickerDialog
