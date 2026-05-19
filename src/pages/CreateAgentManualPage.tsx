@@ -557,10 +557,10 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
             className="h-8 text-xs gap-1.5"
             onClick={openPublish}
             disabled={!canSave}
-            title={canSave ? "保存为新版本" : blockingReasons[0]?.msg}
+            title={canSave ? "发布智能体" : blockingReasons[0]?.msg}
           >
-            <Save className="w-3.5 h-3.5" />
-            保存
+            <Rocket className="w-3.5 h-3.5" />
+            发布
           </Button>
         </div>
       </div>
