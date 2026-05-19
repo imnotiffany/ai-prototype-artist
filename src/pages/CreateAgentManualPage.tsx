@@ -1256,6 +1256,13 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
         agentCategory={category}
       />
 
+      <FengshengIncompleteDialog
+        open={fsAlertOpen}
+        onOpenChange={setFsAlertOpen}
+        onGoConnect={goConnectFengsheng}
+        onClearConfig={clearFengsheng}
+      />
+
 
       {/* 配置文档查看 */}
       <Dialog open={specOpen} onOpenChange={setSpecOpen}>
