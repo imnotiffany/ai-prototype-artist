@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,9 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
-import { RefreshCw, Loader2, Rocket, Upload, X } from "lucide-react";
+import { Rocket } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { categories } from "@/data/mockData";
+import { AvatarPicker } from "@/components/AvatarPicker";
 
 export interface AgentVersion {
   v: string;
