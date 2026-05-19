@@ -145,6 +145,7 @@ const CreateAgentManualPage = () => {
   const [currentTab, setCurrentTab] = useState("basic");
   const [uploadedAvatar, setUploadedAvatar] = useState<string | null>(null);
   const [fsAlertOpen, setFsAlertOpen] = useState(false);
+  const [fsAlertShown, setFsAlertShown] = useState(false);
 
   // Debug — three streams: assistant chat (left), agent run (right), runtime logs (right bottom)
   type PromptSuggestion = { id: string; addition: string; summaryNote: string; status: "pending" | "adopted" | "rejected" };
