@@ -22,6 +22,7 @@ import { AIStatusPill } from "@/components/AIStatusPill";
 import { RunDualView, RunningIndicator, type TranscriptEvent } from "@/components/RunViews";
 import { PublishAgentDialog } from "@/components/PublishAgentDialog";
 import { AvatarPicker } from "@/components/AvatarPicker";
+import { FengshengIncompleteDialog } from "@/components/FengshengIncompleteDialog";
 
 // 基于 Anthropic 对 Claude 的 prompting 最佳实践，提供一份"脚手架"模板，
 // 帮助用户按结构补全自己的提示词，而不是套用某个具体行业的成品。
