@@ -31,6 +31,8 @@ interface Props {
   agentAllowCopy?: boolean;
   versions?: AgentVersion[];
   defaultScope?: "marketplace" | "project";
+  /** 锁定发布范围（隐藏单选），用于入口已经明确意图的场景 */
+  lockScope?: boolean;
   kind?: "app" | "agent";
 }
 
@@ -42,6 +44,7 @@ export const PublishAgentDialog = ({
   agentCategory = "",
   agentAllowCopy = true,
   defaultScope = "marketplace",
+  lockScope = false,
   kind = "agent",
 }: Props) => {
   const noun = kind === "app" ? "应用" : "智能体";
