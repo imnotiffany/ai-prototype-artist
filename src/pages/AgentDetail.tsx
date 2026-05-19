@@ -1169,6 +1169,13 @@ fengsheng:
         kind={agent.kind}
       />
 
+      <FengshengIncompleteDialog
+        open={fsAlertOpen}
+        onOpenChange={setFsAlertOpen}
+        onGoConnect={goConnectFengsheng}
+        onClearConfig={clearFengsheng}
+      />
+
       {/* Apply API Key dialog */}
       <Dialog open={apiKeyOpen} onOpenChange={(o) => (o ? setApiKeyOpen(true) : closeApiKey())}>
         <DialogContent className="max-w-md">
