@@ -478,6 +478,7 @@ const AgentDetail = () => {
                   data: { message: l.message, ...(l.meta ? { meta: l.meta } : {}) },
                 }))}
                 showTranscriptSearch={false}
+                transcriptFooter={debugRunning ? <AIStatusPill stages={["分析需求", "选择工具", "调用工具", "整理回答"]} /> : undefined}
               />
             </div>
             <div className="border-t border-border p-3 flex items-center gap-2 shrink-0">
