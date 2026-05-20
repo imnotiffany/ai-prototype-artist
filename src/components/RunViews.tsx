@@ -1,9 +1,21 @@
 import { useMemo, useState } from "react";
-import { ChevronRight, ChevronDown, Search, XCircle, Terminal, MessageSquare, Loader2 } from "lucide-react";
+import { ChevronRight, ChevronDown, Search, XCircle, Terminal, MessageSquare, Loader2, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ToolCallGroup, type ToolCall } from "@/components/ToolCallCard";
 import { cn } from "@/lib/utils";
+
+const UserAvatar = () => (
+  <div className="w-7 h-7 rounded-full bg-primary/15 text-primary flex items-center justify-center shrink-0">
+    <User className="w-3.5 h-3.5" />
+  </div>
+);
+
+const AgentAvatar = ({ avatar }: { avatar?: string }) => (
+  <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center text-base shrink-0">
+    {avatar ?? "🤖"}
+  </div>
+);
 
 /* ================= Shared event model ================= */
 
@@ -34,11 +46,15 @@ export const RunTranscriptView = ({
   emptyText = "暂无对话内容",
   showSearch = true,
   footer,
+  agentAvatar,
+  showAvatars = false,
 }: {
   events: TranscriptEvent[];
   emptyText?: string;
   showSearch?: boolean;
   footer?: React.ReactNode;
+  agentAvatar?: string;
+  showAvatars?: boolean;
 }) => {
   const [q, setQ] = useState("");
 
@@ -80,16 +96,18 @@ export const RunTranscriptView = ({
         {filtered.map((e) => {
           if (e.type === "user") {
             return (
-              <div key={e.id} className="flex justify-end">
+              <div key={e.id} className="flex justify-end items-end gap-2">
                 <div className="max-w-[80%] rounded-2xl px-3 py-2 text-xs bg-primary text-primary-foreground whitespace-pre-wrap leading-relaxed">
                   {e.content}
                 </div>
+                {showAvatars && <UserAvatar />}
               </div>
             );
           }
           if (e.type === "agent") {
             return (
-              <div key={e.id} className="flex justify-start">
+              <div key={e.id} className="flex justify-start items-end gap-2">
+                {showAvatars && <AgentAvatar avatar={agentAvatar} />}
                 <div className="max-w-[80%] rounded-2xl px-3 py-2 text-xs bg-secondary text-foreground whitespace-pre-wrap leading-relaxed">
                   {e.content}
                 </div>
@@ -231,6 +249,8 @@ export const RunDualView = ({
   toolbarRight,
   showTranscriptSearch = true,
   transcriptFooter,
+  agentAvatar,
+  showAvatars = false,
 }: {
   transcriptEvents: TranscriptEvent[];
   debugEvents: DebugEvent[];
@@ -239,6 +259,8 @@ export const RunDualView = ({
   showTranscriptSearch?: boolean;
   /** 渲染在对话视图消息列表末尾的内容（如"思考中"指示器） */
   transcriptFooter?: React.ReactNode;
+  agentAvatar?: string;
+  showAvatars?: boolean;
 }) => {
   const [view, setView] = useState<"transcript" | "debug">("transcript");
   return (
@@ -279,7 +301,13 @@ export const RunDualView = ({
       </div>
       <div className="flex-1 min-h-0">
         {view === "transcript" ? (
-          <RunTranscriptView events={transcriptEvents} showSearch={showTranscriptSearch} footer={transcriptFooter} />
+          <RunTranscriptView
+            events={transcriptEvents}
+            showSearch={showTranscriptSearch}
+            footer={transcriptFooter}
+            agentAvatar={agentAvatar}
+            showAvatars={showAvatars}
+          />
         ) : (
           <RunDebugView events={debugEvents} meta={debugMeta} />
         )}
