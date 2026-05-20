@@ -36,7 +36,7 @@ export const FengshengHowToCard = ({ defaultOpen = false }: { defaultOpen?: bool
                 rel="noreferrer"
                 className="text-primary hover:underline inline-flex items-center gap-0.5"
               >
-                丰声文档 <ExternalLink className="w-3 h-3" />
+                丰声NEXT文档 <ExternalLink className="w-3 h-3" />
               </a>{" "}
               完成机器人创建和配置
             </li>
