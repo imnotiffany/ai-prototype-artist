@@ -1101,7 +1101,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                     丰声 NEXT 群聊机器人
                     <Badge variant="outline" className="text-[10px] h-4 px-1.5 text-muted-foreground">可选</Badge>
                   </div>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">把智能体接入丰声 NEXT 群聊（基于 Function Calling），成员 @ 机器人即可触发</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">把智能体接入丰声 NEXT， @ 机器人即可触发</p>
                 </div>
               </div>
               <div className="p-5 space-y-3">
