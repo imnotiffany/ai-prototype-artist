@@ -6,13 +6,13 @@ import { ToolCallGroup, type ToolCall } from "@/components/ToolCallCard";
 import { cn } from "@/lib/utils";
 
 const UserAvatar = () => (
-  <div className="w-7 h-7 rounded-full bg-primary/15 text-primary flex items-center justify-center shrink-0">
-    <User className="w-3.5 h-3.5" />
+  <div className="w-9 h-9 rounded-full bg-primary/15 text-primary flex items-center justify-center shrink-0">
+    <User className="w-4.5 h-4.5" />
   </div>
 );
 
 const AgentAvatar = ({ avatar }: { avatar?: string }) => (
-  <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center text-base shrink-0">
+  <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-xl shrink-0">
     {avatar ?? "🤖"}
   </div>
 );
@@ -96,7 +96,7 @@ export const RunTranscriptView = ({
         {filtered.map((e) => {
           if (e.type === "user") {
             return (
-              <div key={e.id} className="flex justify-end items-end gap-2">
+              <div key={e.id} className="flex justify-end items-center gap-2">
                 <div className="max-w-[80%] rounded-2xl px-3 py-2 text-xs bg-primary text-primary-foreground whitespace-pre-wrap leading-relaxed">
                   {e.content}
                 </div>
@@ -106,7 +106,7 @@ export const RunTranscriptView = ({
           }
           if (e.type === "agent") {
             return (
-              <div key={e.id} className="flex justify-start items-end gap-2">
+              <div key={e.id} className="flex justify-start items-center gap-2">
                 {showAvatars && <AgentAvatar avatar={agentAvatar} />}
                 <div className="max-w-[80%] rounded-2xl px-3 py-2 text-xs bg-secondary text-foreground whitespace-pre-wrap leading-relaxed">
                   {e.content}
