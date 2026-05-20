@@ -113,7 +113,11 @@ const AgentDetail = () => {
   const [fsSecretVisible, setFsSecretVisible] = useState(false);
   // 丰声 NEXT 连接状态机：empty → draft → connecting → connected | failed
   type FsStatus = "empty" | "draft" | "connecting" | "connected" | "failed";
-  const [fsStatus, setFsStatus] = useState<FsStatus>("connected"); // 已保存的配置默认视为已连接
+  // 根据已保存凭证推导：三项均空 → empty(未配置)；有任意已保存值 → connected(已连接)；否则 draft
+  const [fsStatus, setFsStatus] = useState<FsStatus>(() => {
+    const hasAny = !!(initialSnapshot.fsAppKey || initialSnapshot.fsAppSecret || initialSnapshot.fsRobotCode);
+    return hasAny ? "connected" : "empty";
+  });
   const [fsFailMsg, setFsFailMsg] = useState<string>("");
   const fsConnected = fsStatus === "connected";
   const [fsAlertOpen, setFsAlertOpen] = useState(false);
