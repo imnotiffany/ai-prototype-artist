@@ -22,7 +22,8 @@ import { AIStatusPill } from "@/components/AIStatusPill";
 import { RunDualView, RunningIndicator, type TranscriptEvent } from "@/components/RunViews";
 import { PublishAgentDialog } from "@/components/PublishAgentDialog";
 import { AvatarPicker } from "@/components/AvatarPicker";
-import { FengshengIncompleteDialog } from "@/components/FengshengIncompleteDialog";
+import { FengshengIncompleteDialog, type FsAlertStatus } from "@/components/FengshengIncompleteDialog";
+import { FengshengHowToCard } from "@/components/FengshengHowToCard";
 
 // 基于 Anthropic 对 Claude 的 prompting 最佳实践，提供一份"脚手架"模板，
 // 帮助用户按结构补全自己的提示词，而不是套用某个具体行业的成品。
@@ -136,7 +137,17 @@ const CreateAgentManualPage = () => {
   const [fsAppSecret, setFsAppSecret] = useState("");
   const [fsRobotCode, setFsRobotCode] = useState("");
   const [fsSecretVisible, setFsSecretVisible] = useState(false);
-  const [fsConnected, setFsConnected] = useState(false);
+  type FsStatus = "empty" | "draft" | "connecting" | "connected" | "failed";
+  const [fsStatus, setFsStatus] = useState<FsStatus>("empty");
+  const [fsFailMsg, setFsFailMsg] = useState("");
+  const fsConnected = fsStatus === "connected";
+  const onFsFieldChange = (next: { appKey?: string; appSecret?: string; robotCode?: string }) => {
+    const appKey = next.appKey ?? fsAppKey;
+    const appSecret = next.appSecret ?? fsAppSecret;
+    const robotCode = next.robotCode ?? fsRobotCode;
+    setFsStatus(!appKey && !appSecret && !robotCode ? "empty" : "draft");
+    setFsFailMsg("");
+  };
 
   // Agent Hub publishing (optional) — 仅控制是否发布到 Hub 进行可视化监控
   const [hubEnabled, setHubEnabled] = useState(false);
@@ -145,7 +156,7 @@ const CreateAgentManualPage = () => {
   const [currentTab, setCurrentTab] = useState("basic");
   const [uploadedAvatar, setUploadedAvatar] = useState<string | null>(null);
   const [fsAlertOpen, setFsAlertOpen] = useState(false);
-  const [fsAlertShown, setFsAlertShown] = useState(false);
+  const [fsAlertStatus, setFsAlertStatus] = useState<FsAlertStatus>("draft");
 
   // Debug — three streams: assistant chat (left), agent run (right), runtime logs (right bottom)
   type PromptSuggestion = { id: string; addition: string; summaryNote: string; status: "pending" | "adopted" | "rejected" };
@@ -447,32 +458,30 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
   if (!debugComplete) blockingReasons.push({ msg: debugLastError ? "上一次调试出现错误，请修复后重新调试" : "保存前必须在「调试」中完成至少一次成功运行", jumpTo: "debug" });
   const canSave = blockingReasons.length === 0;
 
-  const fsDirty = (!!fsAppKey || !!fsAppSecret || !!fsRobotCode) && !fsConnected;
+  const fsBlocking: FsAlertStatus | null =
+    fsStatus === "draft" ? "draft" : fsStatus === "connecting" ? "connecting" : fsStatus === "failed" ? "failed" : null;
 
-  const clearFengsheng = () => {
-    setFsAppKey("");
-    setFsAppSecret("");
-    setFsRobotCode("");
-    setFsConnected(false);
-    toast({ title: "已删除丰声 NEXT 配置内容" });
-  };
-  const goConnectFengsheng = () => {
+  const focusFengshengCard = () => {
     setCurrentTab("channels");
     setTimeout(() => {
-      document.getElementById("fs-app-key")?.focus();
-    }, 80);
+      const el = document.getElementById("fs-app-key");
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      (el as HTMLInputElement | null)?.focus();
+    }, 100);
+  };
+
+  /** 拦截：丰声处于 draft/connecting/failed 时弹窗并返回 false */
+  const guardFengsheng = (): boolean => {
+    if (fsBlocking) {
+      setFsAlertStatus(fsBlocking);
+      setFsAlertOpen(true);
+      return false;
+    }
+    return true;
   };
 
   const openPublish = () => {
-    if (!fsAlertShown) {
-      setFsAlertShown(true);
-      setFsAlertOpen(true);
-      return;
-    }
-    if (fsDirty) {
-      setFsAlertOpen(true);
-      return;
-    }
+    if (!guardFengsheng()) return;
     if (!canSave) {
       const first = blockingReasons[0];
       toast({ title: "无法保存", description: first.msg, variant: "destructive" });
@@ -488,19 +497,13 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
       toast({ title: "请填写智能体名称", variant: "destructive" });
       return;
     }
-    if (!fsAlertShown) {
-      setFsAlertShown(true);
-      setFsAlertOpen(true);
-      return;
-    }
-    if (fsDirty) {
-      setFsAlertOpen(true);
-      return;
-    }
+    if (!guardFengsheng()) return;
     toast({ title: "已保存到项目管理", description: `${name} · ${category}（如需发布，请前往项目管理或详情页发布）` });
     setPublishOpen(false);
     navigate("/project-agents");
   };
+
+
 
   // PickerDialog moved to shared component: CapabilityPickerDialog
 
@@ -1103,23 +1106,33 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   </div>
                   <p className="text-[11px] text-muted-foreground mt-0.5">把智能体接入丰声 NEXT 群聊（基于 Function Calling），成员 @ 机器人即可触发</p>
                 </div>
-                <Badge
-                  variant="outline"
-                  className={`text-[10px] gap-1 ${fsConnected ? "text-emerald-600 border-emerald-600/40 bg-emerald-500/10" : "text-muted-foreground"}`}
-                >
-                  <span className={`w-1.5 h-1.5 rounded-full ${fsConnected ? "bg-emerald-500" : "bg-muted-foreground/50"}`} />
-                  {fsConnected ? "已连接" : "未连接"}
-                </Badge>
+                {(() => {
+                  const cfg: Record<FsStatus, { dot: string; cls: string; label: string }> = {
+                    empty: { dot: "bg-muted-foreground/50", cls: "text-muted-foreground", label: "未配置" },
+                    draft: { dot: "bg-muted-foreground/50", cls: "text-muted-foreground", label: "未连接" },
+                    connecting: { dot: "bg-primary animate-pulse", cls: "text-primary border-primary/40 bg-primary/10", label: "连接中…" },
+                    connected: { dot: "bg-emerald-500", cls: "text-emerald-600 border-emerald-600/40 bg-emerald-500/10", label: "已连接" },
+                    failed: { dot: "bg-destructive", cls: "text-destructive border-destructive/40 bg-destructive/10", label: "连接失败" },
+                  };
+                  const c = cfg[fsStatus];
+                  return (
+                    <Badge variant="outline" className={`text-[10px] gap-1 ${c.cls}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
+                      {c.label}
+                    </Badge>
+                  );
+                })()}
               </div>
               <div className="p-5 space-y-3">
+                <FengshengHowToCard />
                 <div>
                   <Label className="text-xs">Client ID（AppKey）</Label>
-                  <Input id="fs-app-key" className="mt-1.5 h-8 text-xs font-mono" placeholder="企业应用 AppKey" value={fsAppKey} onChange={(e) => setFsAppKey(e.target.value)} />
+                  <Input id="fs-app-key" className="mt-1.5 h-8 text-xs font-mono" placeholder="企业应用 AppKey" value={fsAppKey} onChange={(e) => { setFsAppKey(e.target.value); onFsFieldChange({ appKey: e.target.value }); }} />
                 </div>
                 <div>
                   <Label className="text-xs">Client Secret（AppSecret）</Label>
                   <div className="relative mt-1.5">
-                    <Input className="h-8 text-xs font-mono pr-9" type={fsSecretVisible ? "text" : "password"} placeholder="企业应用 AppSecret" value={fsAppSecret} onChange={(e) => setFsAppSecret(e.target.value)} />
+                    <Input className="h-8 text-xs font-mono pr-9" type={fsSecretVisible ? "text" : "password"} placeholder="企业应用 AppSecret" value={fsAppSecret} onChange={(e) => { setFsAppSecret(e.target.value); onFsFieldChange({ appSecret: e.target.value }); }} />
                     <button type="button" onClick={() => setFsSecretVisible(!fsSecretVisible)} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                       {fsSecretVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                     </button>
@@ -1127,28 +1140,45 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 </div>
                 <div>
                   <Label className="text-xs">Robot Code</Label>
-                  <Input className="mt-1.5 h-8 text-xs font-mono" placeholder="机器人编码" value={fsRobotCode} onChange={(e) => setFsRobotCode(e.target.value)} />
+                  <Input className="mt-1.5 h-8 text-xs font-mono" placeholder="机器人编码" value={fsRobotCode} onChange={(e) => { setFsRobotCode(e.target.value); onFsFieldChange({ robotCode: e.target.value }); }} />
                 </div>
+
+                {fsStatus === "failed" && (
+                  <div className="border border-destructive/40 bg-destructive/5 rounded px-2.5 py-2 text-[11px] text-destructive flex items-start gap-1.5">
+                    <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                    <span>{fsFailMsg || "凭证校验未通过，请检查 Client ID / Client Secret / Robot Code 是否正确"}</span>
+                  </div>
+                )}
+
                 <div className="flex justify-end pt-1">
                   <Button
                     size="sm"
-                    variant={fsConnected ? "outline" : "default"}
+                    variant={fsStatus === "connected" ? "outline" : "default"}
                     className="h-8 text-xs gap-1.5"
+                    disabled={!fsAppKey.trim() || !fsAppSecret.trim() || !fsRobotCode.trim() || fsStatus === "connecting" || fsStatus === "connected"}
                     onClick={() => {
-                      if (!fsAppKey || !fsAppSecret || !fsRobotCode) {
-                        toast({ title: "请先填写完整的应用凭证", variant: "destructive" });
-                        return;
-                      }
-                      setFsConnected(true);
-                      toast({ title: "丰声 NEXT 机器人已连接", description: `Robot ${fsRobotCode}` });
+                      setFsStatus("connecting");
+                      setFsFailMsg("");
+                      setTimeout(() => {
+                        const ok = !fsRobotCode.endsWith("_fail") && fsAppKey.length >= 4 && fsAppSecret.length >= 4 && fsRobotCode.length >= 4;
+                        if (ok) {
+                          setFsStatus("connected");
+                          toast({ title: "丰声 NEXT 机器人已连接", description: `Robot ${fsRobotCode}` });
+                        } else {
+                          setFsStatus("failed");
+                          setFsFailMsg("凭证校验未通过：请检查 Client ID / Client Secret / Robot Code 是否正确");
+                          toast({ title: "连接失败", description: "凭证校验未通过，请检查后重试", variant: "destructive" });
+                        }
+                      }, 800);
                     }}
                   >
-                    {fsConnected ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Link2 className="w-3.5 h-3.5" />}
-                    {fsConnected ? "已连接" : "连接"}
+                    {fsStatus === "connecting" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : fsStatus === "connected" ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Link2 className="w-3.5 h-3.5" />}
+                    {fsStatus === "connected" ? "已连接" : fsStatus === "connecting" ? "连接中…" : fsStatus === "failed" ? "重新连接" : "连接"}
                   </Button>
                 </div>
               </div>
             </div>
+
 
             {/* Agent Hub 发布 */}
             <div className="border border-border rounded-lg bg-card">
@@ -1272,8 +1302,8 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
       <FengshengIncompleteDialog
         open={fsAlertOpen}
         onOpenChange={setFsAlertOpen}
-        onGoConnect={goConnectFengsheng}
-        onClearConfig={clearFengsheng}
+        status={fsAlertStatus}
+        onReturn={focusFengshengCard}
       />
 
 
