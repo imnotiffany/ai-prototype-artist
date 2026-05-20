@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, ArrowRight, Check, Globe, MessageSquare, Webhook, Activity, ShieldCheck, Eye, EyeOff, KeyRound } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { FengshengHowToCard } from "@/components/FengshengHowToCard";
 
 interface Props {
   open: boolean;
@@ -127,6 +128,7 @@ export const PublishDialog = ({ open, onOpenChange, defaultName = "", defaultDes
 
             {fsSelected && (
               <div className="border border-primary/40 bg-primary/5 rounded-lg p-3 space-y-2.5 mt-2">
+                <FengshengHowToCard />
                 <div className="flex items-center gap-1.5 text-xs font-medium">
                   <KeyRound className="w-3.5 h-3.5 text-primary" />
                   丰声 NEXT 应用凭证
