@@ -1256,12 +1256,6 @@ fengsheng:
         kind={agent.kind}
       />
 
-      <FengshengIncompleteDialog
-        open={fsAlertOpen}
-        onOpenChange={setFsAlertOpen}
-        status={fsAlertStatus}
-        onReturn={focusFengshengCard}
-      />
 
       {/* Apply API Key dialog */}
       <Dialog open={apiKeyOpen} onOpenChange={(o) => (o ? setApiKeyOpen(true) : closeApiKey())}>
