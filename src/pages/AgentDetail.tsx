@@ -895,19 +895,19 @@ fengsheng:
                   <p className="text-[11px] text-muted-foreground mt-0.5">仅在需要把智能体发布为群聊机器人（成员 @ 即可触发）时配置；不配置不影响其他渠道使用</p>
                 </div>
                 {(() => {
-                  const cfg: Record<FsStatus, { dot: string; text: string; label: string }> = {
-                    empty: { dot: "bg-muted-foreground/50", text: "text-muted-foreground", label: "未配置" },
-                    draft: { dot: "bg-muted-foreground/50", text: "text-muted-foreground", label: "未连接" },
-                    connecting: { dot: "bg-primary animate-pulse", text: "text-primary", label: "连接中…" },
-                    connected: { dot: "bg-emerald-500", text: "text-emerald-600", label: "已连接" },
-                    failed: { dot: "bg-destructive", text: "text-destructive", label: "连接失败" },
+                  const cfg: Record<FsStatus, { dot: string; cls: string; label: string }> = {
+                    empty: { dot: "bg-muted-foreground/50", cls: "text-muted-foreground", label: "未配置" },
+                    draft: { dot: "bg-muted-foreground/50", cls: "text-muted-foreground", label: "未连接" },
+                    connecting: { dot: "bg-primary animate-pulse", cls: "text-primary border-primary/40 bg-primary/10", label: "连接中…" },
+                    connected: { dot: "bg-emerald-500", cls: "text-emerald-600 border-emerald-600/40 bg-emerald-500/10", label: "已连接" },
+                    failed: { dot: "bg-destructive", cls: "text-destructive border-destructive/40 bg-destructive/10", label: "连接失败" },
                   };
                   const c = cfg[fsStatus];
                   return (
-                    <span className={`shrink-0 text-[10px] inline-flex items-center gap-1 ${c.text}`}>
+                    <Badge variant="outline" className={`shrink-0 text-[10px] gap-1 ${c.cls}`}>
                       <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
                       {c.label}
-                    </span>
+                    </Badge>
                   );
                 })()}
               </header>
