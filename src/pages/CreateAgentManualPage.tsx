@@ -1147,33 +1147,32 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   </div>
                 )}
 
-                {fsStatus !== "connected" && (
-                  <div className="flex justify-end pt-1">
-                    <Button
-                      size="sm"
-                      className="h-8 text-xs gap-1.5"
-                      disabled={!fsAppKey.trim() || !fsAppSecret.trim() || !fsRobotCode.trim() || fsStatus === "connecting"}
-                      onClick={() => {
-                        setFsStatus("connecting");
-                        setFsFailMsg("");
-                        setTimeout(() => {
-                          const ok = !fsRobotCode.endsWith("_fail") && fsAppKey.length >= 4 && fsAppSecret.length >= 4 && fsRobotCode.length >= 4;
-                          if (ok) {
-                            setFsStatus("connected");
-                            toast({ title: "丰声 NEXT 机器人已连接", description: `Robot ${fsRobotCode}` });
-                          } else {
-                            setFsStatus("failed");
-                            setFsFailMsg("凭证校验未通过：请检查 Client ID / Client Secret / Robot Code 是否正确");
-                            toast({ title: "连接失败", description: "凭证校验未通过，请检查后重试", variant: "destructive" });
-                          }
-                        }, 800);
-                      }}
-                    >
-                      {fsStatus === "connecting" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Link2 className="w-3.5 h-3.5" />}
-                      {fsStatus === "connecting" ? "连接中…" : fsStatus === "failed" ? "重新连接" : "连接"}
-                    </Button>
-                  </div>
-                )}
+                <div className="flex justify-end pt-1">
+                  <Button
+                    size="sm"
+                    variant={fsStatus === "connected" ? "outline" : "default"}
+                    className="h-8 text-xs gap-1.5"
+                    disabled={!fsAppKey.trim() || !fsAppSecret.trim() || !fsRobotCode.trim() || fsStatus === "connecting" || fsStatus === "connected"}
+                    onClick={() => {
+                      setFsStatus("connecting");
+                      setFsFailMsg("");
+                      setTimeout(() => {
+                        const ok = !fsRobotCode.endsWith("_fail") && fsAppKey.length >= 4 && fsAppSecret.length >= 4 && fsRobotCode.length >= 4;
+                        if (ok) {
+                          setFsStatus("connected");
+                          toast({ title: "丰声 NEXT 机器人已连接", description: `Robot ${fsRobotCode}` });
+                        } else {
+                          setFsStatus("failed");
+                          setFsFailMsg("凭证校验未通过：请检查 Client ID / Client Secret / Robot Code 是否正确");
+                          toast({ title: "连接失败", description: "凭证校验未通过，请检查后重试", variant: "destructive" });
+                        }
+                      }, 800);
+                    }}
+                  >
+                    {fsStatus === "connecting" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : fsStatus === "connected" ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Link2 className="w-3.5 h-3.5" />}
+                    {fsStatus === "connected" ? "已连接" : fsStatus === "connecting" ? "连接中…" : fsStatus === "failed" ? "重新连接" : "连接"}
+                  </Button>
+                </div>
               </div>
             </div>
 
