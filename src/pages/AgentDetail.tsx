@@ -521,8 +521,8 @@ const AgentDetail = () => {
                           {fsBlocking === "connecting"
                             ? "请等待连接结果后再保存"
                             : fsBlocking === "failed"
-                            ? "请检查 Client ID / Client Secret / Robot Code 后重新连接，或清空凭证不发布到丰声 NEXT"
-                            : "请点击「连接」校验凭证后再保存，或清空凭证不发布到丰声 NEXT"}
+                            ? "请检查 Client ID / Client Secret / Robot Code 后重新连接，或清空凭证不对接丰声 NEXT 机器人"
+                            : "请点击「连接」校验凭证后再保存，或清空凭证不对接丰声 NEXT 机器人"}
                         </p>
                       </>
                     ) : (
