@@ -300,32 +300,29 @@ const AgentDetail = () => {
     [id]
   );
 
-  const fsDirty = (!!fsAppKey || !!fsAppSecret || !!fsRobotCode) && !fsConnected;
+  // 阻塞保存/发布的状态：draft / connecting / failed
+  const fsBlocking: FsAlertStatus | null =
+    fsStatus === "draft" ? "draft" : fsStatus === "connecting" ? "connecting" : fsStatus === "failed" ? "failed" : null;
 
-  const clearFengsheng = () => {
-    setFsAppKey("");
-    setFsAppSecret("");
-    setFsRobotCode("");
-    setFsConnected(false);
-    toast({ title: "已删除丰声 NEXT 配置内容" });
-  };
-  const goConnectFengsheng = () => {
+  const focusFengshengCard = () => {
     const el = document.getElementById("fs-app-key");
     el?.scrollIntoView({ behavior: "smooth", block: "center" });
     setTimeout(() => (el as HTMLInputElement | null)?.focus(), 300);
   };
 
+  /** 统一拦截：若丰声处于 draft/connecting/failed 则弹窗并返回 false */
+  const guardFengsheng = (): boolean => {
+    if (fsBlocking) {
+      setFsAlertStatus(fsBlocking);
+      setFsAlertOpen(true);
+      return false;
+    }
+    return true;
+  };
+
   /* ── Config actions ── */
   const handleSave = () => {
-    if (!fsAlertShown) {
-      setFsAlertShown(true);
-      setFsAlertOpen(true);
-      return;
-    }
-    if (fsDirty) {
-      setFsAlertOpen(true);
-      return;
-    }
+    if (!guardFengsheng()) return;
     setSavedSnapshot({ name, description, model, systemPrompt, skills: selSkills, mcpBindings, fsAppKey, fsAppSecret, fsRobotCode });
     setJustSaved(true);
     window.setTimeout(() => setJustSaved(false), 2800);
@@ -333,16 +330,9 @@ const AgentDetail = () => {
   };
 
   const handlePublishClick = () => {
-    if (!fsAlertShown) {
-      setFsAlertShown(true);
-      setFsAlertOpen(true);
-      return;
-    }
-    if (fsDirty) {
-      setFsAlertOpen(true);
-      return;
-    }
+    if (!guardFengsheng()) return;
     setPublishOpen(true);
+
   };
 
   const handleRevert = () => {
