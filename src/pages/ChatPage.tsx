@@ -367,6 +367,8 @@ const ChatPage = () => {
         <div className="flex-1 min-h-0">
           <RunDualView
             showTranscriptSearch={false}
+            showAvatars
+            agentAvatar={agent.avatar}
             transcriptEvents={messages.map<TranscriptEvent>((m, i) => {
               if (m.role === "tools") return { id: `t${i}`, type: "tools", calls: m.calls };
               if (m.role === "user") return { id: `u${i}`, type: "user", content: m.content };
