@@ -21,7 +21,8 @@ import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { toast } from "@/hooks/use-toast";
 import { PublishAgentDialog } from "@/components/PublishAgentDialog";
 import { AvatarPicker } from "@/components/AvatarPicker";
-import { FengshengIncompleteDialog } from "@/components/FengshengIncompleteDialog";
+import { FengshengIncompleteDialog, type FsAlertStatus } from "@/components/FengshengIncompleteDialog";
+import { FengshengHowToCard } from "@/components/FengshengHowToCard";
 import { AgentRuntimeBadge, type AgentRuntimeStatus } from "@/components/AgentRuntimeBadge";
 import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -110,9 +111,26 @@ const AgentDetail = () => {
   const [fsAppSecret, setFsAppSecret] = useState(initialSnapshot.fsAppSecret);
   const [fsRobotCode, setFsRobotCode] = useState(initialSnapshot.fsRobotCode);
   const [fsSecretVisible, setFsSecretVisible] = useState(false);
-  const [fsConnected, setFsConnected] = useState(true); // 已保存的配置默认视为已连接
+  // 丰声 NEXT 连接状态机：empty → draft → connecting → connected | failed
+  type FsStatus = "empty" | "draft" | "connecting" | "connected" | "failed";
+  const [fsStatus, setFsStatus] = useState<FsStatus>("connected"); // 已保存的配置默认视为已连接
+  const [fsFailMsg, setFsFailMsg] = useState<string>("");
+  const fsConnected = fsStatus === "connected";
   const [fsAlertOpen, setFsAlertOpen] = useState(false);
-  const [fsAlertShown, setFsAlertShown] = useState(false);
+  const [fsAlertStatus, setFsAlertStatus] = useState<FsAlertStatus>("draft");
+
+  // 任一凭证字段被编辑时，让状态回退（验证结果作废）
+  const onFsFieldChange = (next: { appKey?: string; appSecret?: string; robotCode?: string }) => {
+    const appKey = next.appKey ?? fsAppKey;
+    const appSecret = next.appSecret ?? fsAppSecret;
+    const robotCode = next.robotCode ?? fsRobotCode;
+    if (!appKey && !appSecret && !robotCode) {
+      setFsStatus("empty");
+    } else {
+      setFsStatus("draft");
+    }
+    setFsFailMsg("");
+  };
   const [selSubagents, setSelSubagents] = useState<string[]>(["数据查询子智能体", "报告撰写子智能体"]);
   const [subagentGapDialogOpen, setSubagentGapDialogOpen] = useState(false);
   const [configView, setConfigView] = useState<"form" | "code">("form");
