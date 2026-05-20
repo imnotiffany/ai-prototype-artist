@@ -46,11 +46,15 @@ export const RunTranscriptView = ({
   emptyText = "暂无对话内容",
   showSearch = true,
   footer,
+  agentAvatar,
+  showAvatars = false,
 }: {
   events: TranscriptEvent[];
   emptyText?: string;
   showSearch?: boolean;
   footer?: React.ReactNode;
+  agentAvatar?: string;
+  showAvatars?: boolean;
 }) => {
   const [q, setQ] = useState("");
 
