@@ -314,19 +314,8 @@ const AgentDetail = () => {
     setTimeout(() => (el as HTMLInputElement | null)?.focus(), 300);
   };
 
-  /** 统一拦截：若丰声处于 draft/connecting/failed 则弹窗并返回 false */
-  const guardFengsheng = (): boolean => {
-    if (fsBlocking) {
-      setFsAlertStatus(fsBlocking);
-      setFsAlertOpen(true);
-      return false;
-    }
-    return true;
-  };
-
   /* ── Config actions ── */
   const handleSave = () => {
-    if (!guardFengsheng()) return;
     setSavedSnapshot({ name, description, model, systemPrompt, skills: selSkills, mcpBindings, fsAppKey, fsAppSecret, fsRobotCode });
     setJustSaved(true);
     window.setTimeout(() => setJustSaved(false), 2800);
@@ -334,9 +323,7 @@ const AgentDetail = () => {
   };
 
   const handlePublishClick = () => {
-    if (!guardFengsheng()) return;
     setPublishOpen(true);
-
   };
 
   const handleRevert = () => {
