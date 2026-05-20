@@ -96,16 +96,18 @@ export const RunTranscriptView = ({
         {filtered.map((e) => {
           if (e.type === "user") {
             return (
-              <div key={e.id} className="flex justify-end">
+              <div key={e.id} className="flex justify-end items-end gap-2">
                 <div className="max-w-[80%] rounded-2xl px-3 py-2 text-xs bg-primary text-primary-foreground whitespace-pre-wrap leading-relaxed">
                   {e.content}
                 </div>
+                {showAvatars && <UserAvatar />}
               </div>
             );
           }
           if (e.type === "agent") {
             return (
-              <div key={e.id} className="flex justify-start">
+              <div key={e.id} className="flex justify-start items-end gap-2">
+                {showAvatars && <AgentAvatar avatar={agentAvatar} />}
                 <div className="max-w-[80%] rounded-2xl px-3 py-2 text-xs bg-secondary text-foreground whitespace-pre-wrap leading-relaxed">
                   {e.content}
                 </div>
