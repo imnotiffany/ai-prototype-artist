@@ -26,6 +26,7 @@ import { AgentRuntimeBadge, type AgentRuntimeStatus } from "@/components/AgentRu
 import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { RunDualView, RunningIndicator, type TranscriptEvent, type DebugEvent } from "@/components/RunViews";
+import { AIStatusPill } from "@/components/AIStatusPill";
 
 /* ───────── Mock run history ───────── */
 type RunStatus = "success" | "failed" | "running";
