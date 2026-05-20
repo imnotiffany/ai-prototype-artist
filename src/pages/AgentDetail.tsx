@@ -120,8 +120,6 @@ const AgentDetail = () => {
   });
   const [fsFailMsg, setFsFailMsg] = useState<string>("");
   const fsConnected = fsStatus === "connected";
-  const [fsAlertOpen, setFsAlertOpen] = useState(false);
-  const [fsAlertStatus, setFsAlertStatus] = useState<FsAlertStatus>("draft");
 
   // 任一凭证字段被编辑时，让状态回退（验证结果作废）
   const onFsFieldChange = (next: { appKey?: string; appSecret?: string; robotCode?: string }) => {
