@@ -1240,8 +1240,8 @@ fengsheng:
       <FengshengIncompleteDialog
         open={fsAlertOpen}
         onOpenChange={setFsAlertOpen}
-        onGoConnect={goConnectFengsheng}
-        onClearConfig={clearFengsheng}
+        status={fsAlertStatus}
+        onReturn={() => { setActiveTab("config"); focusFengshengCard(); }}
       />
 
       {/* Apply API Key dialog */}
