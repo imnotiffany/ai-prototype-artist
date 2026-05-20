@@ -445,7 +445,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
     basic: basicComplete ? "done" : "todo",
     capability: basicComplete ? "done" : "locked",
     prompt: basicComplete ? (promptComplete ? "done" : "todo") : "locked",
-    channels: basicComplete && promptComplete ? (channelsValid ? "done" : "warn") : "locked",
+    channels: basicComplete && promptComplete ? "todo" : "locked",
     debug: basicComplete && promptComplete ? (debugComplete ? "done" : debugAttempted ? (debugLastError ? "warn" : "todo") : "todo") : "locked",
   } as const;
 
@@ -1103,22 +1103,6 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   </div>
                   <p className="text-[11px] text-muted-foreground mt-0.5">把智能体接入丰声 NEXT 群聊（基于 Function Calling），成员 @ 机器人即可触发</p>
                 </div>
-                {(() => {
-                  const cfg: Record<FsStatus, { dot: string; cls: string; label: string }> = {
-                    empty: { dot: "bg-muted-foreground/50", cls: "text-muted-foreground", label: "未配置" },
-                    draft: { dot: "bg-muted-foreground/50", cls: "text-muted-foreground", label: "未连接" },
-                    connecting: { dot: "bg-primary animate-pulse", cls: "text-primary border-primary/40 bg-primary/10", label: "连接中…" },
-                    connected: { dot: "bg-emerald-500", cls: "text-emerald-600 border-emerald-600/40 bg-emerald-500/10", label: "已连接" },
-                    failed: { dot: "bg-destructive", cls: "text-destructive border-destructive/40 bg-destructive/10", label: "连接失败" },
-                  };
-                  const c = cfg[fsStatus];
-                  return (
-                    <Badge variant="outline" className={`text-[10px] gap-1 ${c.cls}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
-                      {c.label}
-                    </Badge>
-                  );
-                })()}
               </div>
               <div className="p-5 space-y-3">
                 <FengshengHowToCard />
