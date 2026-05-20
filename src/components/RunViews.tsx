@@ -1,9 +1,21 @@
 import { useMemo, useState } from "react";
-import { ChevronRight, ChevronDown, Search, XCircle, Terminal, MessageSquare, Loader2 } from "lucide-react";
+import { ChevronRight, ChevronDown, Search, XCircle, Terminal, MessageSquare, Loader2, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ToolCallGroup, type ToolCall } from "@/components/ToolCallCard";
 import { cn } from "@/lib/utils";
+
+const UserAvatar = () => (
+  <div className="w-7 h-7 rounded-full bg-primary/15 text-primary flex items-center justify-center shrink-0">
+    <User className="w-3.5 h-3.5" />
+  </div>
+);
+
+const AgentAvatar = ({ avatar }: { avatar?: string }) => (
+  <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center text-base shrink-0">
+    {avatar ?? "🤖"}
+  </div>
+);
 
 /* ================= Shared event model ================= */
 
