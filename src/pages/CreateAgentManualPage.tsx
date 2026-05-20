@@ -458,32 +458,30 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
   if (!debugComplete) blockingReasons.push({ msg: debugLastError ? "上一次调试出现错误，请修复后重新调试" : "保存前必须在「调试」中完成至少一次成功运行", jumpTo: "debug" });
   const canSave = blockingReasons.length === 0;
 
-  const fsDirty = (!!fsAppKey || !!fsAppSecret || !!fsRobotCode) && !fsConnected;
+  const fsBlocking: FsAlertStatus | null =
+    fsStatus === "draft" ? "draft" : fsStatus === "connecting" ? "connecting" : fsStatus === "failed" ? "failed" : null;
 
-  const clearFengsheng = () => {
-    setFsAppKey("");
-    setFsAppSecret("");
-    setFsRobotCode("");
-    setFsConnected(false);
-    toast({ title: "已删除丰声 NEXT 配置内容" });
-  };
-  const goConnectFengsheng = () => {
+  const focusFengshengCard = () => {
     setCurrentTab("channels");
     setTimeout(() => {
-      document.getElementById("fs-app-key")?.focus();
-    }, 80);
+      const el = document.getElementById("fs-app-key");
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      (el as HTMLInputElement | null)?.focus();
+    }, 100);
+  };
+
+  /** 拦截：丰声处于 draft/connecting/failed 时弹窗并返回 false */
+  const guardFengsheng = (): boolean => {
+    if (fsBlocking) {
+      setFsAlertStatus(fsBlocking);
+      setFsAlertOpen(true);
+      return false;
+    }
+    return true;
   };
 
   const openPublish = () => {
-    if (!fsAlertShown) {
-      setFsAlertShown(true);
-      setFsAlertOpen(true);
-      return;
-    }
-    if (fsDirty) {
-      setFsAlertOpen(true);
-      return;
-    }
+    if (!guardFengsheng()) return;
     if (!canSave) {
       const first = blockingReasons[0];
       toast({ title: "无法保存", description: first.msg, variant: "destructive" });
@@ -499,19 +497,13 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
       toast({ title: "请填写智能体名称", variant: "destructive" });
       return;
     }
-    if (!fsAlertShown) {
-      setFsAlertShown(true);
-      setFsAlertOpen(true);
-      return;
-    }
-    if (fsDirty) {
-      setFsAlertOpen(true);
-      return;
-    }
+    if (!guardFengsheng()) return;
     toast({ title: "已保存到项目管理", description: `${name} · ${category}（如需发布，请前往项目管理或详情页发布）` });
     setPublishOpen(false);
     navigate("/project-agents");
   };
+
+
 
   // PickerDialog moved to shared component: CapabilityPickerDialog
 
