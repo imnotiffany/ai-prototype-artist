@@ -13,7 +13,8 @@ interface Props {
   className?: string;
 }
 
-const defaultStages = ["思考中", "分析需求", "匹配工具", "生成回答"];
+// Claude 风格的"grinding"通用文案，不暴露任何工具/链路细节
+const defaultStages = ["思考中", "推敲中", "斟酌中", "整理中"];
 
 const formatElapsed = (ms: number) => {
   const s = Math.floor(ms / 1000);
@@ -37,8 +38,10 @@ export const AIStatusPill = ({ stageIndex, stages = defaultStages, startedAt, co
   }, []);
 
   const elapsed = now - start;
-  const idx = stageIndex ?? Math.min(stages.length - 1, Math.floor(elapsed / 1500));
-  const verb = stages[idx] ?? stages[stages.length - 1];
+  // 阶段循环推进，避免长时间停留在最后一个词，更接近 Claude "grinding" 的呼吸感
+  const autoIdx = Math.floor(elapsed / 2200) % stages.length;
+  const idx = stageIndex ?? autoIdx;
+  const verb = stages[idx] ?? stages[0];
 
   return (
     <div className={cn("flex items-start gap-2 animate-fade-in", className)}>
