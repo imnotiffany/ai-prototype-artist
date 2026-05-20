@@ -279,7 +279,7 @@ export const RunDualView = ({
       </div>
       <div className="flex-1 min-h-0">
         {view === "transcript" ? (
-          <RunTranscriptView events={transcriptEvents} showSearch={showTranscriptSearch} />
+          <RunTranscriptView events={transcriptEvents} showSearch={showTranscriptSearch} footer={transcriptFooter} />
         ) : (
           <RunDebugView events={debugEvents} meta={debugMeta} />
         )}
