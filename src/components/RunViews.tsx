@@ -230,12 +230,15 @@ export const RunDualView = ({
   debugMeta,
   toolbarRight,
   showTranscriptSearch = true,
+  transcriptFooter,
 }: {
   transcriptEvents: TranscriptEvent[];
   debugEvents: DebugEvent[];
   debugMeta?: { label: string; value: string }[];
   toolbarRight?: React.ReactNode;
   showTranscriptSearch?: boolean;
+  /** 渲染在对话视图消息列表末尾的内容（如"思考中"指示器） */
+  transcriptFooter?: React.ReactNode;
 }) => {
   const [view, setView] = useState<"transcript" | "debug">("transcript");
   return (
