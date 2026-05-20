@@ -22,7 +22,8 @@ import { AIStatusPill } from "@/components/AIStatusPill";
 import { RunDualView, RunningIndicator, type TranscriptEvent } from "@/components/RunViews";
 import { PublishAgentDialog } from "@/components/PublishAgentDialog";
 import { AvatarPicker } from "@/components/AvatarPicker";
-import { FengshengIncompleteDialog } from "@/components/FengshengIncompleteDialog";
+import { FengshengIncompleteDialog, type FsAlertStatus } from "@/components/FengshengIncompleteDialog";
+import { FengshengHowToCard } from "@/components/FengshengHowToCard";
 
 // 基于 Anthropic 对 Claude 的 prompting 最佳实践，提供一份"脚手架"模板，
 // 帮助用户按结构补全自己的提示词，而不是套用某个具体行业的成品。
@@ -136,7 +137,17 @@ const CreateAgentManualPage = () => {
   const [fsAppSecret, setFsAppSecret] = useState("");
   const [fsRobotCode, setFsRobotCode] = useState("");
   const [fsSecretVisible, setFsSecretVisible] = useState(false);
-  const [fsConnected, setFsConnected] = useState(false);
+  type FsStatus = "empty" | "draft" | "connecting" | "connected" | "failed";
+  const [fsStatus, setFsStatus] = useState<FsStatus>("empty");
+  const [fsFailMsg, setFsFailMsg] = useState("");
+  const fsConnected = fsStatus === "connected";
+  const onFsFieldChange = (next: { appKey?: string; appSecret?: string; robotCode?: string }) => {
+    const appKey = next.appKey ?? fsAppKey;
+    const appSecret = next.appSecret ?? fsAppSecret;
+    const robotCode = next.robotCode ?? fsRobotCode;
+    setFsStatus(!appKey && !appSecret && !robotCode ? "empty" : "draft");
+    setFsFailMsg("");
+  };
 
   // Agent Hub publishing (optional) — 仅控制是否发布到 Hub 进行可视化监控
   const [hubEnabled, setHubEnabled] = useState(false);
@@ -145,7 +156,7 @@ const CreateAgentManualPage = () => {
   const [currentTab, setCurrentTab] = useState("basic");
   const [uploadedAvatar, setUploadedAvatar] = useState<string | null>(null);
   const [fsAlertOpen, setFsAlertOpen] = useState(false);
-  const [fsAlertShown, setFsAlertShown] = useState(false);
+  const [fsAlertStatus, setFsAlertStatus] = useState<FsAlertStatus>("draft");
 
   // Debug — three streams: assistant chat (left), agent run (right), runtime logs (right bottom)
   type PromptSuggestion = { id: string; addition: string; summaryNote: string; status: "pending" | "adopted" | "rejected" };
