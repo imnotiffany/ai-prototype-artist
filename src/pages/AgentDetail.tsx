@@ -537,11 +537,6 @@ const AgentDetail = () => {
                   <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1 text-amber-900 hover:text-amber-900 hover:bg-amber-100/80 dark:text-amber-200" onClick={handleRevert}>
                     <RotateCcw className="w-3 h-3" />撤销修改
                   </Button>
-                  {fsBlocking ? (
-                    <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 border-amber-600 text-amber-900 hover:bg-amber-100/80 dark:text-amber-200" onClick={focusFengshengCard}>
-                      去配置
-                    </Button>
-                  ) : null}
                   <Button
                     size="sm"
                     className="h-7 text-[11px] gap-1 bg-amber-600 hover:bg-amber-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
