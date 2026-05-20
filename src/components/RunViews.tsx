@@ -249,6 +249,8 @@ export const RunDualView = ({
   toolbarRight,
   showTranscriptSearch = true,
   transcriptFooter,
+  agentAvatar,
+  showAvatars = false,
 }: {
   transcriptEvents: TranscriptEvent[];
   debugEvents: DebugEvent[];
@@ -257,6 +259,8 @@ export const RunDualView = ({
   showTranscriptSearch?: boolean;
   /** 渲染在对话视图消息列表末尾的内容（如"思考中"指示器） */
   transcriptFooter?: React.ReactNode;
+  agentAvatar?: string;
+  showAvatars?: boolean;
 }) => {
   const [view, setView] = useState<"transcript" | "debug">("transcript");
   return (
@@ -297,7 +301,13 @@ export const RunDualView = ({
       </div>
       <div className="flex-1 min-h-0">
         {view === "transcript" ? (
-          <RunTranscriptView events={transcriptEvents} showSearch={showTranscriptSearch} footer={transcriptFooter} />
+          <RunTranscriptView
+            events={transcriptEvents}
+            showSearch={showTranscriptSearch}
+            footer={transcriptFooter}
+            agentAvatar={agentAvatar}
+            showAvatars={showAvatars}
+          />
         ) : (
           <RunDebugView events={debugEvents} meta={debugMeta} />
         )}
