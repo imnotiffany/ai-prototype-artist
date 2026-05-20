@@ -374,6 +374,7 @@ const ChatPage = () => {
             })}
             debugEvents={debugEvents}
             debugMeta={debugMeta}
+            transcriptFooter={isRunning ? <AIStatusPill stages={stages} stageIndex={stageIndex} /> : undefined}
           />
         </div>
 
