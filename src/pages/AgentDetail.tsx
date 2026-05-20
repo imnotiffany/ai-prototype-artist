@@ -21,7 +21,7 @@ import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { toast } from "@/hooks/use-toast";
 import { PublishAgentDialog } from "@/components/PublishAgentDialog";
 import { AvatarPicker } from "@/components/AvatarPicker";
-import { FengshengIncompleteDialog, type FsAlertStatus } from "@/components/FengshengIncompleteDialog";
+import type { FsAlertStatus } from "@/components/FengshengIncompleteDialog";
 import { FengshengHowToCard } from "@/components/FengshengHowToCard";
 import { AgentRuntimeBadge, type AgentRuntimeStatus } from "@/components/AgentRuntimeBadge";
 import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
@@ -120,8 +120,6 @@ const AgentDetail = () => {
   });
   const [fsFailMsg, setFsFailMsg] = useState<string>("");
   const fsConnected = fsStatus === "connected";
-  const [fsAlertOpen, setFsAlertOpen] = useState(false);
-  const [fsAlertStatus, setFsAlertStatus] = useState<FsAlertStatus>("draft");
 
   // 任一凭证字段被编辑时，让状态回退（验证结果作废）
   const onFsFieldChange = (next: { appKey?: string; appSecret?: string; robotCode?: string }) => {
@@ -314,19 +312,8 @@ const AgentDetail = () => {
     setTimeout(() => (el as HTMLInputElement | null)?.focus(), 300);
   };
 
-  /** 统一拦截：若丰声处于 draft/connecting/failed 则弹窗并返回 false */
-  const guardFengsheng = (): boolean => {
-    if (fsBlocking) {
-      setFsAlertStatus(fsBlocking);
-      setFsAlertOpen(true);
-      return false;
-    }
-    return true;
-  };
-
   /* ── Config actions ── */
   const handleSave = () => {
-    if (!guardFengsheng()) return;
     setSavedSnapshot({ name, description, model, systemPrompt, skills: selSkills, mcpBindings, fsAppKey, fsAppSecret, fsRobotCode });
     setJustSaved(true);
     window.setTimeout(() => setJustSaved(false), 2800);
@@ -334,9 +321,7 @@ const AgentDetail = () => {
   };
 
   const handlePublishClick = () => {
-    if (!guardFengsheng()) return;
     setPublishOpen(true);
-
   };
 
   const handleRevert = () => {
@@ -527,15 +512,43 @@ const AgentDetail = () => {
                 <div className="flex items-center gap-2 min-w-0">
                   <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold text-amber-900 dark:text-amber-200">配置已修改，尚未保存</p>
-                    <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80 mt-0.5">保存后才能发布上线，发布按钮在保存前不可用</p>
+                    {fsBlocking ? (
+                      <>
+                        <p className="text-xs font-semibold text-amber-900 dark:text-amber-200">
+                          丰声 NEXT 机器人{fsBlocking === "connecting" ? "正在连接中" : fsBlocking === "failed" ? "连接失败" : "凭证未连接"}，无法保存
+                        </p>
+                        <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80 mt-0.5">
+                          {fsBlocking === "connecting"
+                            ? "请等待连接结果后再保存"
+                            : fsBlocking === "failed"
+                            ? "请检查 Client ID / Client Secret / Robot Code 后重新连接，或清空凭证不发布到丰声 NEXT"
+                            : "请点击「连接」校验凭证后再保存，或清空凭证不发布到丰声 NEXT"}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-xs font-semibold text-amber-900 dark:text-amber-200">配置已修改，尚未保存</p>
+                        <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80 mt-0.5">保存后才能发布上线，发布按钮在保存前不可用</p>
+                      </>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1 text-amber-900 hover:text-amber-900 hover:bg-amber-100/80 dark:text-amber-200" onClick={handleRevert}>
                     <RotateCcw className="w-3 h-3" />撤销修改
                   </Button>
-                  <Button size="sm" className="h-7 text-[11px] gap-1 bg-amber-600 hover:bg-amber-700 text-white" onClick={handleSave}>
+                  {fsBlocking ? (
+                    <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 border-amber-600 text-amber-900 hover:bg-amber-100/80 dark:text-amber-200" onClick={focusFengshengCard}>
+                      去配置
+                    </Button>
+                  ) : null}
+                  <Button
+                    size="sm"
+                    className="h-7 text-[11px] gap-1 bg-amber-600 hover:bg-amber-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={handleSave}
+                    disabled={!!fsBlocking}
+                    title={fsBlocking ? "请先完成丰声 NEXT 机器人配置（连接成功或清空）后再保存" : "保存"}
+                  >
                     <Save className="w-3 h-3" />保存
                   </Button>
                 </div>
@@ -1241,12 +1254,6 @@ fengsheng:
         kind={agent.kind}
       />
 
-      <FengshengIncompleteDialog
-        open={fsAlertOpen}
-        onOpenChange={setFsAlertOpen}
-        status={fsAlertStatus}
-        onReturn={focusFengshengCard}
-      />
 
       {/* Apply API Key dialog */}
       <Dialog open={apiKeyOpen} onOpenChange={(o) => (o ? setApiKeyOpen(true) : closeApiKey())}>
