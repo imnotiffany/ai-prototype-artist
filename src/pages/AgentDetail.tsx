@@ -890,19 +890,32 @@ fengsheng:
                   </h3>
                   <p className="text-[11px] text-muted-foreground mt-0.5">仅在需要把智能体发布为群聊机器人（成员 @ 即可触发）时配置；不配置不影响其他渠道使用</p>
                 </div>
-                <span className={`shrink-0 text-[10px] inline-flex items-center gap-1 ${fsConnected && fsAppKey ? "text-emerald-600" : "text-muted-foreground"}`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${fsConnected && fsAppKey ? "bg-emerald-500" : "bg-muted-foreground/50"}`} />
-                  {fsConnected && fsAppKey ? "已连接" : "未连接"}
-                </span>
+                {(() => {
+                  const cfg: Record<FsStatus, { dot: string; text: string; label: string }> = {
+                    empty: { dot: "bg-muted-foreground/50", text: "text-muted-foreground", label: "未配置" },
+                    draft: { dot: "bg-muted-foreground/50", text: "text-muted-foreground", label: "未连接" },
+                    connecting: { dot: "bg-primary animate-pulse", text: "text-primary", label: "连接中…" },
+                    connected: { dot: "bg-emerald-500", text: "text-emerald-600", label: "已连接" },
+                    failed: { dot: "bg-destructive", text: "text-destructive", label: "连接失败" },
+                  };
+                  const c = cfg[fsStatus];
+                  return (
+                    <span className={`shrink-0 text-[10px] inline-flex items-center gap-1 ${c.text}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
+                      {c.label}
+                    </span>
+                  );
+                })()}
               </header>
               <div className="p-4 space-y-3">
+                <FengshengHowToCard />
                 <div>
                   <Label className="text-xs">Client ID（AppKey） <span className="text-destructive">*</span></Label>
                   <Input
                     className="mt-1.5 h-8 text-xs font-mono"
                     placeholder="企业应用 AppKey"
                     value={fsAppKey}
-                    onChange={(e) => { setFsAppKey(e.target.value); setFsConnected(false); }}
+                    onChange={(e) => { setFsAppKey(e.target.value); onFsFieldChange({ appKey: e.target.value }); }}
                     id="fs-app-key"
                   />
                 </div>
@@ -914,7 +927,7 @@ fengsheng:
                       type={fsSecretVisible ? "text" : "password"}
                       placeholder="企业应用 AppSecret"
                       value={fsAppSecret}
-                      onChange={(e) => { setFsAppSecret(e.target.value); setFsConnected(false); }}
+                      onChange={(e) => { setFsAppSecret(e.target.value); onFsFieldChange({ appSecret: e.target.value }); }}
                     />
                     <button
                       type="button"
@@ -931,25 +944,48 @@ fengsheng:
                     className="mt-1.5 h-8 text-xs font-mono"
                     placeholder="机器人编码"
                     value={fsRobotCode}
-                    onChange={(e) => { setFsRobotCode(e.target.value); setFsConnected(false); }}
+                    onChange={(e) => { setFsRobotCode(e.target.value); onFsFieldChange({ robotCode: e.target.value }); }}
                   />
                   <p className="text-[10px] text-muted-foreground mt-1.5">在丰声 NEXT 开发者后台「机器人管理」中获取，凭据将通过「凭据管理」加密存储</p>
                 </div>
+
+                {fsStatus === "failed" && (
+                  <div className="border border-destructive/40 bg-destructive/5 rounded px-2.5 py-2 text-[11px] text-destructive flex items-start gap-1.5">
+                    <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                    <span>{fsFailMsg || "凭证校验未通过，请检查 Client ID / Client Secret / Robot Code 是否正确"}</span>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-end pt-1">
                   <Button
                     size="sm"
+                    variant={fsStatus === "connected" ? "outline" : "default"}
                     className="h-8 text-xs gap-1.5"
-                    disabled={!fsAppKey.trim() || !fsAppSecret.trim() || !fsRobotCode.trim() || fsConnected}
+                    disabled={!fsAppKey.trim() || !fsAppSecret.trim() || !fsRobotCode.trim() || fsStatus === "connecting" || fsStatus === "connected"}
                     onClick={() => {
-                      setFsConnected(true);
-                      toast({ title: "已连接丰声 NEXT 机器人", description: `Robot Code：${fsRobotCode}` });
+                      setFsStatus("connecting");
+                      setFsFailMsg("");
+                      setTimeout(() => {
+                        // Mock 失败规则：RobotCode 以 _fail 结尾 或 任一字段长度 < 4
+                        const ok = !fsRobotCode.endsWith("_fail") && fsAppKey.length >= 4 && fsAppSecret.length >= 4 && fsRobotCode.length >= 4;
+                        if (ok) {
+                          setFsStatus("connected");
+                          toast({ title: "已连接丰声 NEXT 机器人", description: `Robot Code：${fsRobotCode}` });
+                        } else {
+                          setFsStatus("failed");
+                          setFsFailMsg("凭证校验未通过：请检查 Client ID / Client Secret / Robot Code 是否正确");
+                          toast({ title: "连接失败", description: "凭证校验未通过，请检查后重试", variant: "destructive" });
+                        }
+                      }, 800);
                     }}
                   >
-                    <Zap className="w-3.5 h-3.5" />{fsConnected ? "已连接" : "连接"}
+                    {fsStatus === "connecting" ? <RotateCcw className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
+                    {fsStatus === "connected" ? "已连接" : fsStatus === "connecting" ? "连接中…" : fsStatus === "failed" ? "重新连接" : "连接"}
                   </Button>
                 </div>
               </div>
             </section>
+
 
             {/* 子智能体缺口配置 - 独立弹窗，避免在主表单中堆叠 */}
             <Dialog open={subagentGapDialogOpen} onOpenChange={setSubagentGapDialogOpen}>
