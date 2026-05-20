@@ -1013,9 +1013,8 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               <Button
                 size="sm"
                 className="h-8 text-xs gap-1.5"
-                disabled={!capabilityComplete}
                 onClick={() => setCurrentTab("prompt")}
-                title={capabilityComplete ? "下一步：系统提示词" : "请至少绑定 1 个 MCP 或 Skill"}
+                title="下一步：系统提示词"
               >
                 下一步：系统提示词 <ArrowRight className="w-3 h-3" />
               </Button>
