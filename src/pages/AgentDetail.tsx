@@ -527,15 +527,43 @@ const AgentDetail = () => {
                 <div className="flex items-center gap-2 min-w-0">
                   <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold text-amber-900 dark:text-amber-200">配置已修改，尚未保存</p>
-                    <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80 mt-0.5">保存后才能发布上线，发布按钮在保存前不可用</p>
+                    {fsBlocking ? (
+                      <>
+                        <p className="text-xs font-semibold text-amber-900 dark:text-amber-200">
+                          丰声 NEXT 机器人{fsBlocking === "connecting" ? "正在连接中" : fsBlocking === "failed" ? "连接失败" : "凭证未连接"}，无法保存
+                        </p>
+                        <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80 mt-0.5">
+                          {fsBlocking === "connecting"
+                            ? "请等待连接结果后再保存"
+                            : fsBlocking === "failed"
+                            ? "请检查 Client ID / Client Secret / Robot Code 后重新连接，或清空凭证不发布到丰声 NEXT"
+                            : "请点击「连接」校验凭证后再保存，或清空凭证不发布到丰声 NEXT"}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-xs font-semibold text-amber-900 dark:text-amber-200">配置已修改，尚未保存</p>
+                        <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80 mt-0.5">保存后才能发布上线，发布按钮在保存前不可用</p>
+                      </>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1 text-amber-900 hover:text-amber-900 hover:bg-amber-100/80 dark:text-amber-200" onClick={handleRevert}>
                     <RotateCcw className="w-3 h-3" />撤销修改
                   </Button>
-                  <Button size="sm" className="h-7 text-[11px] gap-1 bg-amber-600 hover:bg-amber-700 text-white" onClick={handleSave}>
+                  {fsBlocking ? (
+                    <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 border-amber-600 text-amber-900 hover:bg-amber-100/80 dark:text-amber-200" onClick={focusFengshengCard}>
+                      去配置
+                    </Button>
+                  ) : null}
+                  <Button
+                    size="sm"
+                    className="h-7 text-[11px] gap-1 bg-amber-600 hover:bg-amber-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={handleSave}
+                    disabled={!!fsBlocking}
+                    title={fsBlocking ? "请先完成丰声 NEXT 机器人配置（连接成功或清空）后再保存" : "保存"}
+                  >
                     <Save className="w-3 h-3" />保存
                   </Button>
                 </div>
