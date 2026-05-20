@@ -1241,7 +1241,7 @@ fengsheng:
         open={fsAlertOpen}
         onOpenChange={setFsAlertOpen}
         status={fsAlertStatus}
-        onReturn={() => { setActiveTab("config"); focusFengshengCard(); }}
+        onReturn={focusFengshengCard}
       />
 
       {/* Apply API Key dialog */}
