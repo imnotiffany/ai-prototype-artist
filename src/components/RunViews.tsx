@@ -106,7 +106,7 @@ export const RunTranscriptView = ({
           }
           if (e.type === "agent") {
             return (
-              <div key={e.id} className="flex justify-start items-end gap-2">
+              <div key={e.id} className="flex justify-start items-center gap-2">
                 {showAvatars && <AgentAvatar avatar={agentAvatar} />}
                 <div className="max-w-[80%] rounded-2xl px-3 py-2 text-xs bg-secondary text-foreground whitespace-pre-wrap leading-relaxed">
                   {e.content}
