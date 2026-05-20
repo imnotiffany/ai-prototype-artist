@@ -437,22 +437,20 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
 
   // ── Step validation ──────────────────────────────────────────────
   const basicComplete = !!name.trim();
-  const capabilityComplete = selMCPs.length > 0 || selSkills.length > 0;
   const promptComplete = systemPrompt.trim().length >= 20;
   const debugComplete = debugPassed && !debugLastError;
   const channelsValid = fsConnected || (!fsAppKey && !fsAppSecret && !fsRobotCode);
 
   const stepStatus = {
     basic: basicComplete ? "done" : "todo",
-    capability: basicComplete ? (capabilityComplete ? "done" : "todo") : "locked",
-    prompt: basicComplete && capabilityComplete ? (promptComplete ? "done" : "todo") : "locked",
-    channels: basicComplete && capabilityComplete && promptComplete ? (channelsValid ? "done" : "warn") : "locked",
-    debug: basicComplete && capabilityComplete && promptComplete ? (debugComplete ? "done" : debugAttempted ? (debugLastError ? "warn" : "todo") : "todo") : "locked",
+    capability: basicComplete ? "done" : "locked",
+    prompt: basicComplete ? (promptComplete ? "done" : "todo") : "locked",
+    channels: basicComplete && promptComplete ? (channelsValid ? "done" : "warn") : "locked",
+    debug: basicComplete && promptComplete ? (debugComplete ? "done" : debugAttempted ? (debugLastError ? "warn" : "todo") : "todo") : "locked",
   } as const;
 
   const blockingReasons: { msg: string; jumpTo: string }[] = [];
   if (!basicComplete) blockingReasons.push({ msg: "请填写智能体名称", jumpTo: "basic" });
-  if (!capabilityComplete) blockingReasons.push({ msg: "请至少绑定 1 个 MCP 或 Skill", jumpTo: "capability" });
   if (!promptComplete) blockingReasons.push({ msg: "请完善系统提示词（不少于 20 字）", jumpTo: "prompt" });
   if (!channelsValid) blockingReasons.push({ msg: "已启用的对外接入尚未完成连接，请补齐或关闭", jumpTo: "channels" });
   if (!debugComplete) blockingReasons.push({ msg: debugLastError ? "上一次调试出现错误，请修复后重新调试" : "保存前必须在「调试」中完成至少一次成功运行", jumpTo: "debug" });
@@ -1015,9 +1013,8 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               <Button
                 size="sm"
                 className="h-8 text-xs gap-1.5"
-                disabled={!capabilityComplete}
                 onClick={() => setCurrentTab("prompt")}
-                title={capabilityComplete ? "下一步：系统提示词" : "请至少绑定 1 个 MCP 或 Skill"}
+                title="下一步：系统提示词"
               >
                 下一步：系统提示词 <ArrowRight className="w-3 h-3" />
               </Button>
