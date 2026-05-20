@@ -1302,8 +1302,8 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
       <FengshengIncompleteDialog
         open={fsAlertOpen}
         onOpenChange={setFsAlertOpen}
-        onGoConnect={goConnectFengsheng}
-        onClearConfig={clearFengsheng}
+        status={fsAlertStatus}
+        onReturn={focusFengshengCard}
       />
 
 
