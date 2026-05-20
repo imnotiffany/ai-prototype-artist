@@ -91,12 +91,17 @@ export default {
           "0%, 100%": { opacity: "0.4", transform: "scale(0.9)" },
           "50%": { opacity: "1", transform: "scale(1.1)" },
         },
+        "thinking-dot": {
+          "0%, 80%, 100%": { opacity: "0.25", transform: "translateY(0)" },
+          "40%": { opacity: "1", transform: "translateY(-2px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "fade-in": "fade-in 0.3s ease-out",
         shimmer: "shimmer 1.6s ease-in-out infinite",
+        "thinking-dot": "thinking-dot 1.2s ease-in-out infinite",
       },
     },
   },
