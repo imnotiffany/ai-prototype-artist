@@ -1165,6 +1165,14 @@ fengsheng:
                   <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
                     完整密钥仅在生成时展示一次，列表只展示首尾片段
                   </p>
+                  <a
+                    href="https://docs.example.com/api"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[11px] text-primary hover:underline inline-flex items-center gap-0.5 mt-0.5"
+                  >
+                    查看 API 调用文档 <ExternalLink className="w-3 h-3" />
+                  </a>
                 </div>
               </div>
               <Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0" onClick={() => setApiKeyOpen(true)}>
