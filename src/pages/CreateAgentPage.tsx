@@ -380,7 +380,7 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
                   >
                     <Server className="w-3 h-3 text-primary shrink-0" />
                     <span className="font-medium max-w-[140px] truncate">{mcpName}</span>
-                    {needsCred ? (
+                    {needsCred && (
                       <Popover>
                         <PopoverTrigger asChild>
                           <button
