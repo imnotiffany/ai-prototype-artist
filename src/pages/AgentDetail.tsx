@@ -87,7 +87,7 @@ const AgentDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const initialTab = searchParams.get("tab") === "config" ? "config" : "debug";
+  const initialTab = searchParams.get("tab") ?? "config";
   const agent = mockAgents.find((a) => a.id === id);
 
   /* ── Saved snapshot vs current draft (for "未保存" indicator) ── */
