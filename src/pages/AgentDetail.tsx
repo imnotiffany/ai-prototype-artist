@@ -14,7 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import {
   ArrowLeft, MessageSquare, Send, Save, Bot, CheckCircle2, Server, Bug, Mic, MicOff, Zap, Plus, X, RotateCcw, EyeOff, Eye, Settings2,
-  AlertTriangle, Copy, Pencil, Rocket, Code2, Layout, Users, KeyRound, Filter, Check, ExternalLink, Activity,
+  AlertTriangle, Copy, Pencil, Rocket, Code2, Layout, Users, KeyRound, Filter, Check, ExternalLink, Activity, Plug,
 } from "lucide-react";
 import { mockAgents, getActiveMCPs, getActiveSkills } from "@/data/mockData";
 import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
