@@ -226,32 +226,30 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
           </Select>
         </div>
 
-        {rangeKey === "custom" ? (
-          <div className="flex items-center gap-1.5">
-            <Input
-              type="datetime-local"
-              value={customStart}
-              onChange={(e) => setCustomStart(e.target.value)}
-              className="h-8 w-[170px] text-xs"
-            />
-            <span className="text-xs text-muted-foreground">~</span>
-            <Input
-              type="datetime-local"
-              value={customEnd}
-              onChange={(e) => setCustomEnd(e.target.value)}
-              className="h-8 w-[170px] text-xs"
-            />
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setRangeKey("custom")}
-            className="text-xs font-mono text-foreground/80 hover:text-foreground transition-colors"
-            title="点击切换到自定义"
-          >
-            {rangeLabel}
-          </button>
-        )}
+        <div className="flex items-center gap-1.5">
+          <Input
+            type="datetime-local"
+            value={rangeKey === "custom" ? customStart : fmtInput(start)}
+            onChange={(e) => {
+              setCustomStart(e.target.value);
+              if (rangeKey !== "custom") setCustomEnd(fmtInput(end));
+              setRangeKey("custom");
+            }}
+            className="h-8 w-[200px] text-xs pr-2"
+          />
+          <span className="text-xs text-muted-foreground">~</span>
+          <Input
+            type="datetime-local"
+            value={rangeKey === "custom" ? customEnd : fmtInput(end)}
+            onChange={(e) => {
+              setCustomEnd(e.target.value);
+              if (rangeKey !== "custom") setCustomStart(fmtInput(start));
+              setRangeKey("custom");
+            }}
+            className="h-8 w-[200px] text-xs pr-2"
+          />
+        </div>
+
 
         <div className="flex items-center gap-1.5">
           <span className="text-xs text-muted-foreground">粒度</span>
