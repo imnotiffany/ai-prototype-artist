@@ -938,6 +938,7 @@ const CreateAgentPage = () => {
         // First message: assemble the agent
         const newConfig = assembleAgent(userMsg, selectedSkills, selectedMCPs);
         setAgentConfig(newConfig);
+        setPromptSnapshot({ skills: newConfig.skills, mcpServers: newConfig.mcpServers, subagents: newConfig.subagents });
         setAgentCreated(true);
         setSelectedSkills([]);
         setSelectedMCPs([]);
