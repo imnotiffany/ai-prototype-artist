@@ -1234,7 +1234,7 @@ const CreateAgentPage = () => {
                     {msg.content === "WELCOME_HERO" ? (
                       <div className="px-1 py-2">
                         <p className="text-[11px] text-muted-foreground leading-relaxed">
-                          描述你想创建的智能体，AI 会自动帮你生成并装配右侧配置。
+                          描述你想创建的智能体，AI 会自动帮你生成。
                         </p>
                       </div>
                     ) : msg.content.includes("\n") ? (
