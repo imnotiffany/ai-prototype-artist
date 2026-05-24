@@ -159,7 +159,7 @@ const assembleAgent = (
     model,
     apiKey: "",
     systemPrompt,
-    tools: [],
+    tools: [{ name: "内置工具", id: "builtin_tools", permissions: 8, permissionPolicy: "Always allow" }],
     skills: allSkills,
     mcpServers: allMCPs,
     subagents: demoSubagents,
