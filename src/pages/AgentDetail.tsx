@@ -779,7 +779,7 @@ fengsheng:
                 </Popover>
               </div>
               <div>
-                <Label className="text-xs flex items-center gap-1.5"><Box className="w-3 h-3 text-muted-foreground" />运行环境</Label>
+                <Label className="text-xs">运行环境</Label>
                 <Select value={envId} onValueChange={setEnvId}>
                   <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
                   <SelectContent>

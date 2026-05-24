@@ -810,7 +810,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 </Popover>
 
                 {/* 运行环境 */}
-                <Label className="text-xs mt-3 flex items-center gap-1.5"><Box className="w-3 h-3 text-muted-foreground" />运行环境</Label>
+                <Label className="text-xs mt-3">运行环境</Label>
                 <Select value={envId} onValueChange={setEnvId}>
                   <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
                   <SelectContent>
