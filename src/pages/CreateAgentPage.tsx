@@ -246,6 +246,78 @@ const AttachmentPicker = ({
   </Popover>
 );
 
+/* ── Proposal Card (AI 建议变更 - 采纳/撤销) ── */
+const ProposalCardInline = ({
+  msg,
+  onAccept,
+  onWithdraw,
+}: {
+  msg: Message;
+  onAccept: () => void;
+  onWithdraw: () => void;
+}) => {
+  const p = msg.proposal!;
+  const { diff, status } = p;
+  const rowDef: Array<[string, string[], string[], (typeof Server) | (typeof Zap)]> = [
+    ["MCP", diff.addedMcps, diff.removedMcps, Server],
+    ["Skill", diff.addedSkills, diff.removedSkills, Zap],
+  ];
+  return (
+    <div className="border border-border rounded-lg bg-card overflow-hidden">
+      <div className="px-3 py-2 border-b border-border bg-muted/30 flex items-center gap-1.5">
+        <Sparkles className="w-3.5 h-3.5 text-primary" />
+        <span className="text-xs font-semibold text-foreground">AI 建议变更</span>
+        {status === "accepted" && (
+          <Badge className="ml-auto h-4 text-[10px] px-1.5 bg-primary/10 text-primary border-primary/30">已采纳</Badge>
+        )}
+        {status === "withdrawn" && (
+          <Badge variant="outline" className="ml-auto h-4 text-[10px] px-1.5 text-muted-foreground">已撤销</Badge>
+        )}
+      </div>
+      <div className="p-3 space-y-2">
+        <p className="text-[11px] text-muted-foreground">{msg.content}</p>
+        <ul className="space-y-1">
+          {rowDef.map(([label, added, removed, Icon]) => (
+            <>
+              {added.map((x) => (
+                <li key={`a-${label}-${x}`} className="flex items-center gap-1.5 text-[11px]">
+                  <Plus className="w-3 h-3 text-primary shrink-0" />
+                  <Icon className="w-3 h-3 text-muted-foreground shrink-0" />
+                  <span className="text-foreground">新增 {label}：{x}</span>
+                </li>
+              ))}
+              {removed.map((x) => (
+                <li key={`r-${label}-${x}`} className="flex items-center gap-1.5 text-[11px]">
+                  <X className="w-3 h-3 text-destructive shrink-0" />
+                  <Icon className="w-3 h-3 text-muted-foreground shrink-0" />
+                  <span className="text-foreground line-through">移除 {label}：{x}</span>
+                </li>
+              ))}
+            </>
+          ))}
+          {diff.promptChanged && (
+            <li className="flex items-start gap-1.5 text-[11px]">
+              <ScrollText className="w-3 h-3 text-primary shrink-0 mt-0.5" />
+              <span className="text-foreground">更新系统提示词{diff.promptNote ? `：${diff.promptNote.slice(0, 40)}${diff.promptNote.length > 40 ? "…" : ""}` : ""}</span>
+            </li>
+          )}
+        </ul>
+        {status === "pending" && (
+          <div className="flex items-center gap-2 pt-1">
+            <Button size="sm" className="h-7 text-[11px] gap-1 flex-1" onClick={onAccept}>
+              <CheckCircle2 className="w-3 h-3" /> 采纳
+            </Button>
+            <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 flex-1" onClick={onWithdraw}>
+              <X className="w-3 h-3" /> 撤销
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+
 /* ── Structured Config View ── */
 interface PromptSnapshot {
   skills: string[];
