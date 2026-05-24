@@ -539,7 +539,7 @@ const AgentDetail = () => {
             </aside>
 
             {/* 右侧：配置 / 调试 */}
-            <div className="space-y-4 min-w-0">
+            <div className="space-y-4 min-w-0 h-[calc(100vh-200px)] min-h-[520px] overflow-y-auto pr-2">
 
             {/* 子标签：配置 / 调试 */}
             <div className="flex items-center gap-1 bg-muted/40 rounded-md p-0.5 w-fit">
