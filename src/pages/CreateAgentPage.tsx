@@ -24,7 +24,7 @@ import { ToolCallGroup, type ToolCall } from "@/components/ToolCallCard";
 import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
 import { mcpRequiresCredential, mockCredentials, categories, mockApiKeys } from "@/data/mockData";
 import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
-import { AlertTriangle, FolderKanban } from "lucide-react";
+import { AlertTriangle, FolderKanban, ArrowRight } from "lucide-react";
 
 /* ── Types ── */
 interface Message {
