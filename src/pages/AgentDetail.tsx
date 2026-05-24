@@ -110,6 +110,9 @@ const AgentDetail = () => {
   const [name, setName] = useState(initialSnapshot.name);
   const [description, setDescription] = useState(initialSnapshot.description);
   const [model, setModel] = useState(initialSnapshot.model);
+  const [apiKey, setApiKey] = useState<string>("");
+  const [envId, setEnvId] = useState<string>(getEnvironments()[0]?.envId ?? "env-default");
+
   const [systemPrompt, setSystemPrompt] = useState(initialSnapshot.systemPrompt);
   const [selSkills, setSelSkills] = useState<string[]>(initialSnapshot.skills);
   const [mcpBindings, setMcpBindings] = useState<{ name: string; credential: string }[]>(initialSnapshot.mcpBindings);
