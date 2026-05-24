@@ -307,7 +307,52 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
           </div>
         </div>
 
-        {/* MCPs and tools */}
+        {/* Built-in Tools */}
+        {config.tools.length > 0 && (
+          <div className="px-5 py-4">
+            <label className="text-xs font-medium text-muted-foreground block mb-3">内置工具</label>
+            {config.tools.map((tool, i) => (
+              <div key={i} className="border border-border rounded-lg p-3 mb-2">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded bg-muted flex items-center justify-center">
+                    <Settings2 className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-foreground">{tool.name}</p>
+                    <p className="text-[10px] text-muted-foreground font-mono">{tool.id}</p>
+                  </div>
+                </div>
+                <Collapsible open={toolsOpen} onOpenChange={setToolsOpen}>
+                  <CollapsibleTrigger className="flex items-center justify-between w-full mt-3 pt-2 border-t border-border">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <ChevronDown className={`w-3 h-3 transition-transform ${toolsOpen ? "rotate-180" : ""}`} />
+                      <span>Tool permissions</span>
+                      <Badge variant="secondary" className="text-[10px] h-4 px-1.5">{tool.permissions}</Badge>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3" />
+                      {tool.permissionPolicy}
+                    </span>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="pt-2">
+                    <div className="text-[10px] text-muted-foreground space-y-1 pl-4">
+                      <p>• web_search — allowed</p>
+                      <p>• file_read — allowed</p>
+                      <p>• file_write — allowed</p>
+                      <p>• bash — allowed</p>
+                      <p>• code_exec — allowed</p>
+                      <p>• browser — allowed</p>
+                      <p>• mcp_call — allowed</p>
+                      <p>• api_request — allowed</p>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* MCPs */}
         <div className="px-5 py-4">
           <div className="flex items-center justify-between mb-3">
             <label className="text-xs font-medium text-muted-foreground">MCP 服务</label>
@@ -324,44 +369,6 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
               marketLink="/vault"
             />
           </div>
-          {config.tools.map((tool, i) => (
-            <div key={i} className="border border-border rounded-lg p-3 mb-2">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded bg-muted flex items-center justify-center">
-                  <Settings2 className="w-4 h-4 text-muted-foreground" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-foreground">{tool.name}</p>
-                  <p className="text-[10px] text-muted-foreground font-mono">{tool.id}</p>
-                </div>
-              </div>
-              <Collapsible open={toolsOpen} onOpenChange={setToolsOpen}>
-                <CollapsibleTrigger className="flex items-center justify-between w-full mt-3 pt-2 border-t border-border">
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <ChevronDown className={`w-3 h-3 transition-transform ${toolsOpen ? "rotate-180" : ""}`} />
-                    <span>Tool permissions</span>
-                    <Badge variant="secondary" className="text-[10px] h-4 px-1.5">{tool.permissions}</Badge>
-                  </div>
-                  <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" />
-                    {tool.permissionPolicy}
-                  </span>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="pt-2">
-                  <div className="text-[10px] text-muted-foreground space-y-1 pl-4">
-                    <p>• web_search — allowed</p>
-                    <p>• file_read — allowed</p>
-                    <p>• file_write — allowed</p>
-                    <p>• bash — allowed</p>
-                    <p>• code_exec — allowed</p>
-                    <p>• browser — allowed</p>
-                    <p>• mcp_call — allowed</p>
-                    <p>• api_request — allowed</p>
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
-            </div>
-          ))}
           {/* MCP Servers — 仿手动组装：chip + 凭据 popover */}
           {config.mcpServers.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-3">
@@ -432,6 +439,7 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
             </div>
           )}
         </div>
+
 
         {/* Skills */}
         <div className="px-5 py-4">
