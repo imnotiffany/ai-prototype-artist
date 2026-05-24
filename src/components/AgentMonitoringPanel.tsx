@@ -208,9 +208,10 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
   return (
     <div className="space-y-3">
       {/* ───── Filter bar ───── */}
-      <div className="border border-border rounded-lg bg-card px-3 py-2 flex items-center gap-2 flex-wrap">
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-[11px] text-muted-foreground">时间范围</span>
         <Select value={rangeKey} onValueChange={(v) => setRangeKey(v as RangeKey)}>
-          <SelectTrigger className="h-8 w-[120px] text-xs">
+          <SelectTrigger className="h-8 w-[110px] text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -223,7 +224,6 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
           </SelectContent>
         </Select>
 
-        <span className="text-[11px] text-muted-foreground">时间范围</span>
         {rangeKey === "custom" ? (
           <>
             <Input
@@ -241,7 +241,14 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
             />
           </>
         ) : (
-          <span className="text-[11px] font-mono text-foreground">{rangeLabel}</span>
+          <button
+            type="button"
+            onClick={() => setRangeKey("custom")}
+            className="text-[11px] font-mono text-muted-foreground hover:text-foreground transition-colors"
+            title="点击切换到自定义"
+          >
+            {rangeLabel}
+          </button>
         )}
 
         <span className="text-[11px] text-muted-foreground ml-2">粒度</span>
@@ -260,27 +267,23 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
 
         <Button
           size="icon"
-          variant="outline"
-          className="h-8 w-8"
+          variant="ghost"
+          className="h-7 w-7"
           onClick={() => setNow(new Date())}
           title="刷新"
         >
           <RefreshCw className="w-3.5 h-3.5" />
         </Button>
 
-        <div className="ml-auto">
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-8 text-xs gap-1.5"
-            asChild
-          >
-            <a href={langfuseUrl} target="_blank" rel="noreferrer">
-              Langfuse 看板
-              <ExternalLink className="w-3 h-3" />
-            </a>
-          </Button>
-        </div>
+        <a
+          href={langfuseUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="ml-auto inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+        >
+          Langfuse 看板
+          <ExternalLink className="w-3 h-3" />
+        </a>
       </div>
 
       {/* ───── Stat cards ───── */}
@@ -294,7 +297,7 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
 
       {/* ───── Charts ───── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        <ChartCard title="调用趋势" subtitle="（单位：次）">
+        <ChartCard title="调用趋势" subtitle="（次）">
           <AreaChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="gCalls" x1="0" y1="0" x2="0" y2="1">
@@ -310,7 +313,7 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
           </AreaChart>
         </ChartCard>
 
-        <ChartCard title="QPM" subtitle="（每分钟请求数）">
+        <ChartCard title="每分钟请求数">
           <BarChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
             <XAxis dataKey="t" {...axisProps} />
@@ -320,7 +323,7 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
           </BarChart>
         </ChartCard>
 
-        <ChartCard title="响应时间" subtitle="（P50 / P90 / P95 / P99 / 平均 / 最大，单位：ms）">
+        <ChartCard title="响应时间" subtitle="（ms）">
           <LineChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
             <XAxis dataKey="t" {...axisProps} />
@@ -336,7 +339,7 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
           </LineChart>
         </ChartCard>
 
-        <ChartCard title="CPU 使用率" subtitle="（单位：%）">
+        <ChartCard title="CPU 使用率" subtitle="（%）">
           <AreaChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="gCpu" x1="0" y1="0" x2="0" y2="1">
@@ -352,7 +355,7 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
           </AreaChart>
         </ChartCard>
 
-        <ChartCard title="内存使用率" subtitle="（单位：%）">
+        <ChartCard title="内存使用率" subtitle="（%）">
           <AreaChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="gMem" x1="0" y1="0" x2="0" y2="1">
@@ -368,7 +371,7 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
           </AreaChart>
         </ChartCard>
 
-        <ChartCard title="网络流量" subtitle="（单位：MB/s · 发送 / 接收）">
+        <ChartCard title="网络流量" subtitle="（MB/s · 发送 / 接收）">
           <LineChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
             <XAxis dataKey="t" {...axisProps} />
