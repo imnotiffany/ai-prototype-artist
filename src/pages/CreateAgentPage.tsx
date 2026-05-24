@@ -599,10 +599,78 @@ const StructuredConfigView = ({
           )}
         </div>
 
+        {/* 4. 对外接入 丰声 NEXT（可选） */}
+        <div className="px-5 py-4 border-t border-border">
+          <div className="flex items-center justify-between mb-2">
+            <div className="min-w-0">
+              <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                <MessageSquare className="w-3 h-3" />
+                对外接入 · 丰声 NEXT
+                <span className="text-[10px] rounded border border-border px-1 text-muted-foreground/80">可选</span>
+              </label>
+              <p className="text-[10px] text-muted-foreground mt-0.5">把智能体接入丰声 NEXT， @ 机器人即可触发</p>
+            </div>
+            <Switch
+              checked={config.fengsheng.enabled}
+              onCheckedChange={(v) => onConfigChange({ ...config, fengsheng: { ...config.fengsheng, enabled: v } })}
+            />
+          </div>
+          {config.fengsheng.enabled && (
+            <div className="mt-3 space-y-2.5 border border-border rounded-md p-3 bg-muted/20">
+              <div>
+                <label className="text-[11px] text-muted-foreground">Client ID（AppKey）</label>
+                <input
+                  className="mt-1 h-8 w-full text-xs font-mono rounded-md border border-input bg-background px-3"
+                  placeholder="企业应用 AppKey"
+                  value={config.fengsheng.appKey}
+                  onChange={(e) => onConfigChange({ ...config, fengsheng: { ...config.fengsheng, appKey: e.target.value, connected: false } })}
+                />
+              </div>
+              <div>
+                <label className="text-[11px] text-muted-foreground">Client Secret（AppSecret）</label>
+                <input
+                  type="password"
+                  className="mt-1 h-8 w-full text-xs font-mono rounded-md border border-input bg-background px-3"
+                  placeholder="企业应用 AppSecret"
+                  value={config.fengsheng.appSecret}
+                  onChange={(e) => onConfigChange({ ...config, fengsheng: { ...config.fengsheng, appSecret: e.target.value, connected: false } })}
+                />
+              </div>
+              <div>
+                <label className="text-[11px] text-muted-foreground">Robot Code</label>
+                <input
+                  className="mt-1 h-8 w-full text-xs font-mono rounded-md border border-input bg-background px-3"
+                  placeholder="机器人编码"
+                  value={config.fengsheng.robotCode}
+                  onChange={(e) => onConfigChange({ ...config, fengsheng: { ...config.fengsheng, robotCode: e.target.value, connected: false } })}
+                />
+              </div>
+              <div className="flex items-center justify-between pt-1">
+                <span className={`text-[10px] inline-flex items-center gap-1 ${config.fengsheng.connected ? "text-emerald-600" : "text-muted-foreground"}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${config.fengsheng.connected ? "bg-emerald-500" : "bg-muted-foreground/50"}`} />
+                  {config.fengsheng.connected ? "已连接" : "未连接"}
+                </span>
+                <button
+                  type="button"
+                  disabled={!config.fengsheng.appKey.trim() || !config.fengsheng.appSecret.trim() || !config.fengsheng.robotCode.trim() || config.fengsheng.connected}
+                  onClick={() => {
+                    onConfigChange({ ...config, fengsheng: { ...config.fengsheng, connected: true } });
+                    toast({ title: "丰声 NEXT 机器人已连接", description: `Robot ${config.fengsheng.robotCode}` });
+                  }}
+                  className="h-7 px-3 text-[11px] rounded-md bg-primary text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1.5"
+                >
+                  <Link2 className="w-3 h-3" />{config.fengsheng.connected ? "已连接" : "连接"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
       </div>
     </div>
   );
 };
+
 
 /* ── Raw Code View ── */
 const generateYaml = (config: AgentConfig) =>
