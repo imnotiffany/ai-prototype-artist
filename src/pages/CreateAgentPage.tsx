@@ -4,7 +4,7 @@ import {
   Send, ChevronRight, CheckCircle2, Copy, Loader2, ChevronDown, Code2, Settings2,
   Zap, Server, Plus, X, Rocket, Package, Bot, ScrollText, MessageSquare, Bug,
   History, FormInput, KeyRound, Link2, Eye, EyeOff, AlertCircle, ExternalLink, Save, Sparkles, RefreshCw,
-  Search,
+  Search, Terminal,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
