@@ -13,6 +13,33 @@ import { defaultEnvironments, getEnvironments, setEnvironments, type EnvItem } f
 
 const genEnvId = () => `env-${Math.random().toString(36).slice(2, 8)}`;
 
+const PKG_CATALOG: Record<"pip" | "npm" | "apt", Record<string, string[]>> = {
+  pip: {
+    pandas: ["2.2.0", "2.1.4", "2.0.3", "1.5.3"],
+    numpy: ["1.26.4", "1.26.0", "1.24.3"],
+    requests: ["2.32.0", "2.31.0", "2.28.2"],
+    fastapi: ["0.111.0", "0.110.0", "0.104.1"],
+    pydantic: ["2.7.0", "2.6.0", "1.10.13"],
+    playwright: ["1.44.0", "1.42.0"],
+    openai: ["1.30.0", "1.20.0"],
+  },
+  npm: {
+    lodash: ["4.17.21", "4.17.20"],
+    axios: ["1.7.2", "1.6.7", "0.27.2"],
+    typescript: ["5.4.5", "5.3.3", "5.2.2"],
+    zod: ["3.23.8", "3.22.4"],
+    playwright: ["1.44.0", "1.42.0"],
+  },
+  apt: {
+    curl: ["8.5.0", "7.88.1"],
+    git: ["2.43.0", "2.39.2"],
+    "ffmpeg": ["6.1.1", "5.1.4"],
+    "imagemagick": ["7.1.1", "6.9.12"],
+    wget: ["1.21.4", "1.21.3"],
+  },
+};
+
+
 const EnvironmentPage = () => {
   const [envs, setEnvs] = useState<EnvItem[]>(getEnvironments().length ? getEnvironments() : defaultEnvironments);
   const [open, setOpen] = useState(false);
@@ -173,7 +200,7 @@ const EnvironmentPage = () => {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-sm">新建环境</DialogTitle>
-            <DialogDescription className="text-[11px]">环境 ID 将在创建后自动生成，无需手动填写</DialogDescription>
+            <DialogDescription className="text-[11px]">配置环境的资源、依赖包与网络策略</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-1">
             <div>
@@ -190,7 +217,7 @@ const EnvironmentPage = () => {
               <Textarea className="mt-1.5 text-xs" rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="简要描述环境用途" />
             </div>
             <div>
-              <Label className="text-xs flex items-center gap-1.5"><Cpu className="w-3 h-3" />CPU / 内存规格</Label>
+              <Label className="text-xs flex items-center gap-1.5"><Cpu className="w-3 h-3" />资源配置</Label>
               <Select value={form.spec} onValueChange={(v) => setForm({ ...form, spec: v })}>
                 <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -227,26 +254,37 @@ const EnvironmentPage = () => {
                         <SelectItem value="apt" className="text-xs">apt</SelectItem>
                       </SelectContent>
                     </Select>
-                    <Input
-                      className="h-8 text-xs font-mono"
-                      placeholder={d.manager === "pip" ? "pandas" : d.manager === "npm" ? "lodash" : "curl"}
+                    <Select
                       value={d.pkg}
-                      onChange={(e) => {
+                      onValueChange={(v) => {
                         const next = [...form.deps];
-                        next[i] = { ...next[i], pkg: e.target.value };
+                        next[i] = { ...next[i], pkg: v, version: "" };
                         setForm({ ...form, deps: next });
                       }}
-                    />
-                    <Input
-                      className="h-8 text-xs font-mono"
-                      placeholder="2.2.0"
+                    >
+                      <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="选择包名" /></SelectTrigger>
+                      <SelectContent>
+                        {Object.keys(PKG_CATALOG[d.manager]).map((p) => (
+                          <SelectItem key={p} value={p} className="text-xs font-mono">{p}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select
                       value={d.version}
-                      onChange={(e) => {
+                      onValueChange={(v) => {
                         const next = [...form.deps];
-                        next[i] = { ...next[i], version: e.target.value };
+                        next[i] = { ...next[i], version: v };
                         setForm({ ...form, deps: next });
                       }}
-                    />
+                      disabled={!d.pkg}
+                    >
+                      <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="版本" /></SelectTrigger>
+                      <SelectContent>
+                        {(PKG_CATALOG[d.manager][d.pkg] ?? []).map((v) => (
+                          <SelectItem key={v} value={v} className="text-xs font-mono">{v}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <Button
                       size="sm"
                       variant="ghost"
@@ -267,7 +305,6 @@ const EnvironmentPage = () => {
                   <Plus className="w-3 h-3" /> 添加依赖
                 </Button>
               </div>
-              <p className="text-[10px] text-muted-foreground mt-1.5">pip 安装 Python 包，npm 安装 Node 包，apt 安装系统工具</p>
             </div>
             <div>
               <Label className="text-xs flex items-center gap-1.5"><Globe className="w-3 h-3" />网络策略</Label>
