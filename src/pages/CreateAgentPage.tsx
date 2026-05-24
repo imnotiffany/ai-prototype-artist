@@ -222,11 +222,92 @@ const AttachmentPicker = ({
 );
 
 /* ── Structured Config View ── */
-const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig; onConfigChange: (c: AgentConfig) => void }) => {
+interface PromptSnapshot {
+  skills: string[];
+  mcpServers: string[];
+  subagents: string[];
+}
+const arrEqual = (a: string[], b: string[]) => a.length === b.length && [...a].sort().join("|") === [...b].sort().join("|");
+const diffSnapshot = (cur: PromptSnapshot, snap: PromptSnapshot | null) => {
+  if (!snap) return null;
+  const diff = (a: string[], b: string[]) => ({
+    added: a.filter((x) => !b.includes(x)),
+    removed: b.filter((x) => !a.includes(x)),
+  });
+  const s = diff(cur.skills, snap.skills);
+  const m = diff(cur.mcpServers, snap.mcpServers);
+  const sa = diff(cur.subagents, snap.subagents);
+  const total = s.added.length + s.removed.length + m.added.length + m.removed.length + sa.added.length + sa.removed.length;
+  return total === 0 ? null : { skills: s, mcps: m, subagents: sa, total };
+};
+
+const StructuredConfigView = ({
+  config,
+  onConfigChange,
+  promptSnapshot,
+  onRegeneratePrompt,
+  onDismissPromptSync,
+}: {
+  config: AgentConfig;
+  onConfigChange: (c: AgentConfig) => void;
+  promptSnapshot: PromptSnapshot | null;
+  onRegeneratePrompt: () => Promise<void> | void;
+  onDismissPromptSync: () => void;
+}) => {
   const [toolsOpen, setToolsOpen] = useState(false);
+  const [regenerating, setRegenerating] = useState(false);
+  const cur: PromptSnapshot = { skills: config.skills, mcpServers: config.mcpServers, subagents: config.subagents };
+  const diff = diffSnapshot(cur, promptSnapshot);
+
+  const handleRegen = async () => {
+    setRegenerating(true);
+    try {
+      await onRegeneratePrompt();
+    } finally {
+      setRegenerating(false);
+    }
+  };
 
   return (
     <div className="flex-1 overflow-auto">
+      {diff && (
+        <div className="m-3 rounded-md border border-amber-300/70 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800/60 px-3 py-2.5">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-amber-900 dark:text-amber-100">
+                能力已变更，建议更新 System Prompt
+              </p>
+              <p className="text-[11px] text-amber-800/80 dark:text-amber-200/80 mt-0.5 leading-relaxed">
+                你修改了 {[
+                  (diff.skills.added.length || diff.skills.removed.length) ? `Skill(+${diff.skills.added.length}/-${diff.skills.removed.length})` : "",
+                  (diff.mcps.added.length || diff.mcps.removed.length) ? `MCP(+${diff.mcps.added.length}/-${diff.mcps.removed.length})` : "",
+                  (diff.subagents.added.length || diff.subagents.removed.length) ? `子智能体(+${diff.subagents.added.length}/-${diff.subagents.removed.length})` : "",
+                ].filter(Boolean).join("、")}，System Prompt 可能与新能力不匹配。
+              </p>
+              <div className="flex items-center gap-2 mt-2">
+                <Button
+                  size="sm"
+                  onClick={handleRegen}
+                  disabled={regenerating}
+                  className="h-7 text-[11px] gap-1.5 bg-amber-600 hover:bg-amber-700 text-white"
+                >
+                  {regenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                  {regenerating ? "AI 更新中…" : "用 AI 一键更新"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={onDismissPromptSync}
+                  className="h-7 text-[11px] text-amber-900/80 hover:bg-amber-100 dark:text-amber-200/80 dark:hover:bg-amber-900/40"
+                >
+                  忽略
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="divide-y divide-border">
         {/* 名称在「保存」时弹出确认卡片中编辑，配置区不展示 */}
 
@@ -768,6 +849,7 @@ const CreateAgentPage = () => {
     mcpServers: availableMCPs.slice(0, DEMO_DEFAULT_MCPS_COUNT).map((m) => m.name),
     subagents: availableSubagents.slice(0, DEMO_DEFAULT_SUBAGENTS_COUNT).map((s) => s.name),
   }));
+  const [promptSnapshot, setPromptSnapshot] = useState<PromptSnapshot | null>(null);
   const [agentCreated, setAgentCreated] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
   // Save 确认卡片字段（仿手动组装）
@@ -856,6 +938,7 @@ const CreateAgentPage = () => {
         // First message: assemble the agent
         const newConfig = assembleAgent(userMsg, selectedSkills, selectedMCPs);
         setAgentConfig(newConfig);
+        setPromptSnapshot({ skills: newConfig.skills, mcpServers: newConfig.mcpServers, subagents: newConfig.subagents });
         setAgentCreated(true);
         setSelectedSkills([]);
         setSelectedMCPs([]);
@@ -1239,7 +1322,22 @@ const CreateAgentPage = () => {
           {/* Content */}
           {rightTab === "config" ? (
             configViewMode === "structured" ? (
-              <StructuredConfigView config={agentConfig} onConfigChange={setAgentConfig} />
+              <StructuredConfigView
+                config={agentConfig}
+                onConfigChange={setAgentConfig}
+                promptSnapshot={promptSnapshot}
+                onDismissPromptSync={() => setPromptSnapshot({ skills: agentConfig.skills, mcpServers: agentConfig.mcpServers, subagents: agentConfig.subagents })}
+                onRegeneratePrompt={async () => {
+                  await new Promise((r) => setTimeout(r, 900));
+                  const allSkills = agentConfig.skills;
+                  const allMCPs = agentConfig.mcpServers;
+                  const allSubs = agentConfig.subagents;
+                  const newPrompt = `你是一个专业的AI助手。\n\n## 核心能力\n${agentConfig.name || "根据用户描述提供帮助"}\n\n## 工具使用\n${allSkills.length > 0 ? `你可以使用以下技能：${allSkills.join("、")}` : "暂无外部技能"}\n${allMCPs.length > 0 ? `你可以连接以下服务：${allMCPs.join("、")}` : ""}\n${allSubs.length > 0 ? `你可以调用以下子智能体：${allSubs.join("、")}` : ""}\n\n## 行为准则\n- 始终准确、有帮助地回答问题\n- 在需要时主动使用可用工具与子智能体\n- 输出结构化、易读的结果`;
+                  setAgentConfig({ ...agentConfig, systemPrompt: newPrompt });
+                  setPromptSnapshot({ skills: allSkills, mcpServers: allMCPs, subagents: allSubs });
+                  toast({ title: "System Prompt 已更新", description: "已根据最新的 MCP / Skill / 子智能体重新生成。" });
+                }}
+              />
             ) : (
               <RawConfigView config={agentConfig} />
             )
