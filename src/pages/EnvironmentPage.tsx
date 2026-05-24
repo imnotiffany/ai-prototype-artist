@@ -215,7 +215,7 @@ const EnvironmentPage = () => {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-sm">新建环境</DialogTitle>
+            <DialogTitle className="text-sm">{editingId ? "编辑环境" : "新建环境"}</DialogTitle>
             <DialogDescription className="text-[11px]">配置环境的资源、依赖包与网络策略</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-1">
