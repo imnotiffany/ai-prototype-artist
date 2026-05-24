@@ -83,9 +83,7 @@ const defaultConfig: AgentConfig = {
   model: "aliyun/qwen3.6-plus",
   apiKey: "",
   systemPrompt: "",
-  tools: [
-    { name: "Built-in tools", id: "agent_toolset_20260401", permissions: 8, permissionPolicy: "Always allow" },
-  ],
+  tools: [],
   skills: [],
   mcpServers: [],
   subagents: [],
