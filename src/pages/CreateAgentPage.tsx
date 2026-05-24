@@ -1330,11 +1330,25 @@ const CreateAgentPage = () => {
                 );
               })}
             </div>
-            {rightTab === "debug" && (
-              <div className="flex items-center gap-1 bg-muted/50 rounded p-0.5 shrink-0">
+            {rightTab === "debug" && hasSaved && (
+              <Button
+                size="sm"
+                className="h-7 text-[11px] gap-1.5 px-3 shrink-0"
+                onClick={() => setPublishDialogOpen(true)}
+              >
+                <Rocket className="w-3 h-3" />
+                发布
+              </Button>
+            )}
+          </div>
+
+          {/* 测试子视图切换器（左对齐，紧贴 stepper 下方） */}
+          {rightTab === "debug" && (
+            <div className="border-b border-border px-3 py-2 flex items-center">
+              <div className="inline-flex items-center gap-1 bg-muted/50 rounded p-0.5">
                 <button
                   onClick={() => setDebugSubTab("preview")}
-                  className={`px-2 py-1 text-[11px] rounded transition-colors flex items-center gap-1 ${
+                  className={`px-2.5 py-1 text-[11px] rounded transition-colors flex items-center gap-1 ${
                     debugSubTab === "preview" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -1343,7 +1357,7 @@ const CreateAgentPage = () => {
                 </button>
                 <button
                   onClick={() => setDebugSubTab("logs")}
-                  className={`px-2 py-1 text-[11px] rounded transition-colors flex items-center gap-1 ${
+                  className={`px-2.5 py-1 text-[11px] rounded transition-colors flex items-center gap-1 ${
                     debugSubTab === "logs" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -1351,8 +1365,9 @@ const CreateAgentPage = () => {
                   调试视图
                 </button>
               </div>
-            )}
-          </div>
+            </div>
+          )}
+
 
 
           {/* Content */}
