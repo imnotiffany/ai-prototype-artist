@@ -709,8 +709,9 @@ const AssemblySummaryCard = ({
   // 子智能体可选项 mock：从 active skills 借用名字简化，可后续替换
   const subagentItems = skillItems.slice(0, 6).map((s) => ({ name: `${s.name} 子智能体`, description: `基于「${s.name}」封装的子智能体`, scope: "market" as const }));
 
-  const pending = config.mcpServers.filter((m) => mcpRequiresCredential(m) && !isMcpConfigured(m));
-  const ready = config.mcpServers.filter((m) => !pending.includes(m));
+  // 状态机：① 未添加（不在 MCP 管理列表）② 已添加。不预判凭据状态，凭据问题在调试报错时引导。
+  const notAdded = config.mcpServers.filter((m) => mcpRequiresCredential(m) && !isMcpConfigured(m));
+  const added = config.mcpServers.filter((m) => !notAdded.includes(m));
   const total = config.skills.length + config.mcpServers.length;
   const downscale = total > 8;
 
@@ -760,8 +761,8 @@ const AssemblySummaryCard = ({
           <Server className="w-3.5 h-3.5 text-primary" />
           <span className="text-xs font-semibold text-foreground">MCP 服务</span>
           <Badge variant="outline" className="text-[10px] h-4 px-1.5">{config.mcpServers.length}</Badge>
-          {pending.length > 0 && (
-            <Badge className="text-[10px] h-4 px-1.5 bg-destructive/10 text-destructive border-destructive/30">{pending.length} 待配置</Badge>
+          {notAdded.length > 0 && (
+            <Badge className="text-[10px] h-4 px-1.5 bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30">{notAdded.length} 未添加</Badge>
           )}
           <div className="ml-auto">
             <CapabilityPickerDialog
@@ -778,24 +779,18 @@ const AssemblySummaryCard = ({
           <p className="text-[11px] text-muted-foreground py-1">未匹配到 MCP，可手动添加</p>
         ) : (
           <ul className="space-y-1">
-            {ready.map((m) => (
+            {added.map((m) => (
               <li key={m} className="flex items-center gap-2 text-[11px] py-1">
                 <CheckCircle2 className="w-3 h-3 text-primary shrink-0" />
                 <span className="text-foreground truncate">{m}</span>
-                <span className="text-[10px] text-muted-foreground ml-auto">{mcpRequiresCredential(m) ? "已配置" : "开箱即用"}</span>
+                <span className="text-[10px] text-muted-foreground ml-auto">已添加</span>
               </li>
             ))}
-            {pending.map((m) => (
+            {notAdded.map((m) => (
               <li key={m} className="flex items-center gap-2 text-[11px] py-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-destructive shrink-0" />
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
                 <span className="text-foreground truncate">{m}</span>
-                <Link
-                  to="/vault"
-                  className="ml-auto text-[10px] text-primary hover:underline flex items-center gap-0.5"
-                  title="前往 MCP 管理配置凭据"
-                >
-                  去 MCP 配置 <ExternalLink className="w-2.5 h-2.5" />
-                </Link>
+                <span className="ml-auto text-[10px] text-muted-foreground">MCP 管理中未添加 · 保存时自动添加</span>
               </li>
             ))}
           </ul>
@@ -862,10 +857,10 @@ const AssemblySummaryCard = ({
           <Bug className="w-3.5 h-3.5" /> 立即测试
         </Button>
       </div>
-      {pending.length > 0 && (
+      {notAdded.length > 0 && (
         <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-          <AlertCircle className="w-3 h-3 text-destructive" />
-          仍有 {pending.length} 项 MCP 凭据未配置，配置完成前无法发布到广场
+          <AlertCircle className="w-3 h-3 text-amber-500" />
+          保存时将自动添加 {notAdded.length} 个 MCP 到 MCP 管理；如需凭据请前往 MCP 管理配置
         </p>
       )}
     </div>
@@ -1053,7 +1048,7 @@ const CreateAgentPage = () => {
 
           // Stream assistant response
           const responseId = uid();
-          const fullText = `智能体草稿已生成！\n\n**配置摘要：**\n- 模型：${newConfig.model}\n- 技能：${newConfig.skills.length > 0 ? newConfig.skills.join("、") : "无"}\n- MCP：${newConfig.mcpServers.length > 0 ? newConfig.mcpServers.join("、") : "无"}\n\n下方卡片中可继续添加 MCP / Skill / 子智能体，需要凭据的 MCP 请点击「去 MCP 配置」。`;
+          const fullText = `智能体草稿已生成！\n\n**配置摘要：**\n- 模型：${newConfig.model}\n- 技能：${newConfig.skills.length > 0 ? newConfig.skills.join("、") : "无"}\n- MCP：${newConfig.mcpServers.length > 0 ? newConfig.mcpServers.join("、") : "无"}\n\n保存后将自动把未添加的 MCP 加入 MCP 管理；如需凭据请前往 MCP 管理配置。`;
 
           setMessages((prev) => [...prev, { id: responseId, role: "assistant", content: "", isStreaming: true }]);
           let charIndex = 0;
