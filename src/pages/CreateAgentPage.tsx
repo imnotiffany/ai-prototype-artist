@@ -380,7 +380,7 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
                   >
                     <Server className="w-3 h-3 text-primary shrink-0" />
                     <span className="font-medium max-w-[140px] truncate">{mcpName}</span>
-                    {needsCred ? (
+                    {needsCred && (
                       <Popover>
                         <PopoverTrigger asChild>
                           <button
@@ -417,8 +417,6 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
                           )}
                         </PopoverContent>
                       </Popover>
-                    ) : (
-                      <Badge variant="outline" className="border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30 text-[10px] h-4 px-1">免凭据</Badge>
                     )}
                     <button
                       onClick={() => onConfigChange({ ...config, mcpServers: config.mcpServers.filter((_, j) => j !== i) })}
