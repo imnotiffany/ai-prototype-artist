@@ -208,9 +208,10 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
   return (
     <div className="space-y-3">
       {/* ───── Filter bar ───── */}
-      <div className="border border-border rounded-lg bg-card px-3 py-2 flex items-center gap-2 flex-wrap">
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-[11px] text-muted-foreground">时间范围</span>
         <Select value={rangeKey} onValueChange={(v) => setRangeKey(v as RangeKey)}>
-          <SelectTrigger className="h-8 w-[120px] text-xs">
+          <SelectTrigger className="h-8 w-[110px] text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -223,7 +224,6 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
           </SelectContent>
         </Select>
 
-        <span className="text-[11px] text-muted-foreground">时间范围</span>
         {rangeKey === "custom" ? (
           <>
             <Input
@@ -241,7 +241,14 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
             />
           </>
         ) : (
-          <span className="text-[11px] font-mono text-foreground">{rangeLabel}</span>
+          <button
+            type="button"
+            onClick={() => setRangeKey("custom")}
+            className="text-[11px] font-mono text-muted-foreground hover:text-foreground transition-colors"
+            title="点击切换到自定义"
+          >
+            {rangeLabel}
+          </button>
         )}
 
         <span className="text-[11px] text-muted-foreground ml-2">粒度</span>
@@ -260,27 +267,23 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
 
         <Button
           size="icon"
-          variant="outline"
-          className="h-8 w-8"
+          variant="ghost"
+          className="h-7 w-7"
           onClick={() => setNow(new Date())}
           title="刷新"
         >
           <RefreshCw className="w-3.5 h-3.5" />
         </Button>
 
-        <div className="ml-auto">
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-8 text-xs gap-1.5"
-            asChild
-          >
-            <a href={langfuseUrl} target="_blank" rel="noreferrer">
-              Langfuse 看板
-              <ExternalLink className="w-3 h-3" />
-            </a>
-          </Button>
-        </div>
+        <a
+          href={langfuseUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="ml-auto inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+        >
+          Langfuse 看板
+          <ExternalLink className="w-3 h-3" />
+        </a>
       </div>
 
       {/* ───── Stat cards ───── */}
