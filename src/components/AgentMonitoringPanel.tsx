@@ -371,7 +371,7 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
           </AreaChart>
         </ChartCard>
 
-        <ChartCard title="网络流量" subtitle="（单位：MB/s · 发送 / 接收）">
+        <ChartCard title="网络流量" subtitle="（MB/s · 发送 / 接收）">
           <LineChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
             <XAxis dataKey="t" {...axisProps} />
