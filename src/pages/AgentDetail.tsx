@@ -29,6 +29,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { RunDualView, RunningIndicator, type TranscriptEvent, type DebugEvent } from "@/components/RunViews";
 import { AIStatusPill } from "@/components/AIStatusPill";
 import { AgentMonitoringPanel } from "@/components/AgentMonitoringPanel";
+import { AgentLogsPanel } from "@/components/AgentLogsPanel";
 
 /* ───────── Mock run history ───────── */
 type RunStatus = "success" | "failed" | "running";
