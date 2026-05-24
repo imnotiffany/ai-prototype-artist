@@ -857,10 +857,10 @@ const AssemblySummaryCard = ({
           <Bug className="w-3.5 h-3.5" /> 立即测试
         </Button>
       </div>
-      {pending.length > 0 && (
+      {notAdded.length > 0 && (
         <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-          <AlertCircle className="w-3 h-3 text-destructive" />
-          仍有 {pending.length} 项 MCP 凭据未配置，配置完成前无法发布到广场
+          <AlertCircle className="w-3 h-3 text-amber-500" />
+          保存时将自动添加 {notAdded.length} 个 MCP 到 MCP 管理；如需凭据请前往 MCP 管理配置
         </p>
       )}
     </div>
