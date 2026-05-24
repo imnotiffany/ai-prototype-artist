@@ -1246,30 +1246,21 @@ const CreateAgentPage = () => {
         }, 1300);
 
         setTimeout(() => {
-          setMessages((prev) => [...prev, { id: uid(), role: "system", content: "✅ 智能体草稿已生成，可在右侧微调", type: "confirm" }]);
-
-          // Stream assistant response
-          const responseId = uid();
-          const fullText = `智能体草稿已生成！\n\n**配置摘要：**\n- 模型：${newConfig.model}\n- 技能：${newConfig.skills.length > 0 ? newConfig.skills.join("、") : "无"}\n- MCP：${newConfig.mcpServers.length > 0 ? newConfig.mcpServers.join("、") : "无"}\n\n保存后将自动把未添加的 MCP 加入 MCP 管理；如需凭据请前往 MCP 管理配置。`;
-
-          setMessages((prev) => [...prev, { id: responseId, role: "assistant", content: "", isStreaming: true }]);
-          let charIndex = 0;
-          const interval = setInterval(() => {
-            charIndex += 3;
-            if (charIndex >= fullText.length) {
-              clearInterval(interval);
-              setMessages((prev) =>
-                prev.map((m) => m.id === responseId ? { ...m, content: fullText, isStreaming: false } : m)
-              );
-              // 装配结果直接体现在右侧「配置」面板，无需在对话流插入汇总卡片
-              setIsThinking(false);
-              setThinkingStartedAt(null);
-            } else {
-              setMessages((prev) =>
-                prev.map((m) => m.id === responseId ? { ...m, content: fullText.slice(0, charIndex) } : m)
-              );
-            }
-          }, 20);
+          // Draft 卡片（替代原 markdown 流式文本）
+          setMessages((prev) => [...prev, {
+            id: uid(),
+            role: "assistant",
+            content: "",
+            type: "draft",
+            draft: {
+              model: newConfig.model,
+              skills: newConfig.skills,
+              mcps: newConfig.mcpServers,
+              note: "保存后将自动把未添加的 MCP 加入 MCP 管理；如需凭据请前往 MCP 管理配置。",
+            },
+          }]);
+          setIsThinking(false);
+          setThinkingStartedAt(null);
 
           // Add debug events
           setDebugEvents((prev) => [
