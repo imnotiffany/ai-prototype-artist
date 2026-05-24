@@ -89,7 +89,7 @@ const EnvironmentPage = () => {
     if (editingId) {
       const next = envs.map((x) =>
         x.id === editingId
-          ? { ...x, name: form.name.trim(), description: form.description, spec: specLabel, deps: validDeps.length || x.deps, updatedAt }
+          ? { ...x, name: form.name.trim(), description: form.description, spec: specLabel, deps: validDeps.length, depList: validDeps, network: form.network, updatedAt }
           : x,
       );
       persist(next);
@@ -105,6 +105,8 @@ const EnvironmentPage = () => {
           agents: 0,
           updatedAt,
           description: form.description,
+          depList: validDeps,
+          network: form.network,
         },
         ...envs,
       ];
