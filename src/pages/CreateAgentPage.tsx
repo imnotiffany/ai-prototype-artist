@@ -1626,7 +1626,7 @@ const CreateAgentPage = () => {
                     size="icon"
                     className="h-8 w-8"
                     onClick={handlePreviewSend}
-                    disabled={isAgentRunning || !previewInput.trim()}
+                    disabled={isAgentRunning || !previewInput.trim() || debugLocked}
                   >
                     <Send className="w-3.5 h-3.5" />
                   </Button>
