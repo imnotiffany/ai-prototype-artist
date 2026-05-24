@@ -830,7 +830,7 @@ const AssemblySummaryCard = ({
       {/* 操作按钮 */}
       <div className="flex items-center gap-2 pt-1">
         <Button size="sm" className="h-8 text-xs gap-1.5 flex-1" onClick={onSave}>
-          <Save className="w-3.5 h-3.5" /> 保存
+          <Save className="w-3.5 h-3.5" /> 保存并测试
         </Button>
         <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5 flex-1" onClick={onDebug}>
           <Bug className="w-3.5 h-3.5" /> 立即测试
