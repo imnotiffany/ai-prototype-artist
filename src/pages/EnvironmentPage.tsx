@@ -73,7 +73,7 @@ const EnvironmentPage = () => {
     persist(next);
     toast({ title: "环境已创建", description: `${form.name}` });
     setOpen(false);
-    setForm({ name: "", description: "", spec: "4C8G", deps: [{ manager: "pip", pkg: "", version: "" }], network: "internet" });
+    setForm({ name: "", description: "", spec: "4C8G", deps: [{ manager: "pip", spec: "" }], network: "internet" });
   };
 
   return (
