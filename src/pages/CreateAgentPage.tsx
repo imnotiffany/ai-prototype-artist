@@ -900,7 +900,7 @@ const CreateAgentPage = () => {
     {
       id: uid(),
       role: "system",
-      content: "👋 你好！这里是「智能体共创助手」。\n\n💬 在下方对话框里用一句话描述你想要的智能体，我会自动帮你装配 MCP / Skill / 系统提示词，生成右侧的配置。\n✏️ 之后你可以继续在这里和我聊，例如「换成 deepseek-v4-pro」「加一个网页搜索能力」「优化系统提示词」，右侧配置会同步更新。\n💾 配置完成后，点击右侧的「保存并测试」即可进入第 2 步，向智能体发消息进行真实测试。",
+      content: "「智能体共创助手」\n在下方描述你想要的智能体，我会自动帮你装配配置。",
       type: "text",
     },
   ]);
@@ -1204,7 +1204,14 @@ const CreateAgentPage = () => {
                   </div>
                 ) : msg.role === "system" ? (
                   <div>
-                    <p className="text-xs text-muted-foreground">{msg.content}</p>
+                    {msg.content.includes("\n") ? (
+                      <div className="bg-muted/30 border border-border/60 rounded-lg p-3.5 space-y-1">
+                        <p className="text-xs font-semibold text-foreground">{msg.content.split("\n")[0]}</p>
+                        <p className="text-[11px] text-muted-foreground leading-relaxed">{msg.content.split("\n").slice(1).join("\n")}</p>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">{msg.content}</p>
+                    )}
                     {msg.attachments && msg.attachments.length > 0 && (
                       <div className="mt-2 border border-border rounded-lg p-2.5 bg-muted/30">
                         <div className="flex flex-wrap gap-1.5">
