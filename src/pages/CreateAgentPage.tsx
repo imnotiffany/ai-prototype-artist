@@ -278,7 +278,7 @@ const ProposalCardInline = ({
         <p className="text-[11px] text-muted-foreground">{msg.content}</p>
         <ul className="space-y-1">
           {rowDef.map(([label, added, removed, Icon]) => (
-            <>
+            <React.Fragment key={label}>
               {added.map((x) => (
                 <li key={`a-${label}-${x}`} className="flex items-center gap-1.5 text-[11px]">
                   <Plus className="w-3 h-3 text-primary shrink-0" />
@@ -293,7 +293,7 @@ const ProposalCardInline = ({
                   <span className="text-foreground line-through">移除 {label}：{x}</span>
                 </li>
               ))}
-            </>
+            </React.Fragment>
           ))}
           {diff.promptChanged && (
             <li className="flex items-start gap-1.5 text-[11px]">
