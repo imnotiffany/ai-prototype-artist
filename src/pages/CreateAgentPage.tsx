@@ -881,6 +881,7 @@ const CreateAgentPage = () => {
   const [rightTab, setRightTab] = useState<"config" | "integration" | "debug">("config");
   const [debugSubTab, setDebugSubTab] = useState<"preview" | "logs">("preview");
   const [hasSaved, setHasSaved] = useState(false);
+  const [savedConfigSnapshot, setSavedConfigSnapshot] = useState<string | null>(null);
 
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
@@ -1201,6 +1202,14 @@ const CreateAgentPage = () => {
     { skills: agentConfig.skills, mcpServers: agentConfig.mcpServers, subagents: agentConfig.subagents },
     promptSnapshot,
   );
+  const configSig = JSON.stringify(agentConfig);
+  const configDirty = hasSaved && configSig !== savedConfigSnapshot;
+  const debugLocked = !hasSaved || configDirty;
+  const debugLockedReason = !hasSaved
+    ? "请先保存配置后再调试"
+    : configDirty
+    ? "配置已修改，请重新保存后再调试"
+    : undefined;
   const saveDisabledReason = promptDirty ? "请先同步系统提示词后再保存" : undefined;
   const openSaveDialog = () => {
     setSaveName((prev) => prev || agentConfig.name || "");
@@ -1334,7 +1343,7 @@ const CreateAgentPage = () => {
               {rightTabs.map((tab, i) => {
                 const Icon = tab.icon;
                 const active = rightTab === tab.key;
-                const disabled = tab.key === "debug" && !hasSaved;
+                const disabled = tab.key === "debug" && debugLocked;
                 const sub = tab.sub;
                 const dotCls = disabled
                   ? "bg-muted text-muted-foreground border-border"
@@ -1347,7 +1356,7 @@ const CreateAgentPage = () => {
                       type="button"
                       onClick={() => !disabled && setRightTab(tab.key)}
                       disabled={disabled}
-                      title={disabled ? "请先保存配置后再进行调试" : undefined}
+                      title={disabled ? debugLockedReason : undefined}
                       className="flex items-center gap-2 group min-w-0 shrink-0 disabled:cursor-not-allowed"
                     >
                       <span className={`w-6 h-6 rounded-full border flex items-center justify-center text-[11px] shrink-0 ${dotCls} ${active ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""}`}>
@@ -1617,7 +1626,7 @@ const CreateAgentPage = () => {
                     size="icon"
                     className="h-8 w-8"
                     onClick={handlePreviewSend}
-                    disabled={isAgentRunning || !previewInput.trim()}
+                    disabled={isAgentRunning || !previewInput.trim() || debugLocked}
                   >
                     <Send className="w-3.5 h-3.5" />
                   </Button>
@@ -1721,9 +1730,11 @@ const CreateAgentPage = () => {
                   toast({ title: "请填写智能体名称", variant: "destructive" });
                   return;
                 }
-                setAgentConfig({ ...agentConfig, name: saveName.trim() });
+                const saved = { ...agentConfig, name: saveName.trim() };
+                setAgentConfig(saved);
                 setAgentCreated(true);
                 setHasSaved(true);
+                setSavedConfigSnapshot(JSON.stringify(saved));
                 setPublishOpen(false);
                 setRightTab("debug");
                 setDebugSubTab("preview");

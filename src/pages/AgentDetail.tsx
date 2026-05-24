@@ -167,6 +167,14 @@ const AgentDetail = () => {
   const [debugLogs, setDebugLogs] = useState<LogEntry[]>([]);
   const logIdRef = useRef(0);
 
+  /* 配置变 dirty 时把用户从「调试」子标签踢回「配置」 */
+  useEffect(() => {
+    if (isDirty && configSubTab === "debug") {
+      setConfigSubTab("config");
+      toast({ title: "配置已修改", description: "请保存后再继续调试", variant: "destructive" });
+    }
+  }, [isDirty, configSubTab]);
+
   const pushLog = (level: LogLevel, message: string, meta?: string) => {
     const ts = new Date().toLocaleTimeString("zh-CN", { hour12: false }) + "." + String(Date.now() % 1000).padStart(3, "0");
     setDebugLogs((l) => [...l, { id: ++logIdRef.current, ts, level, message, meta }]);
@@ -216,6 +224,10 @@ const AgentDetail = () => {
 
   const runDebug = () => {
     if (!debugInput.trim() || debugRunning) return;
+    if (isDirty) {
+      toast({ title: "配置未保存", description: "请先保存当前配置后再调试", variant: "destructive" });
+      return;
+    }
     const text = debugInput.trim();
     setRunMessages((m) => [...m, { role: "user", content: text }]);
     setDebugInput("");
@@ -536,10 +548,18 @@ const AgentDetail = () => {
                 <Settings2 className="w-3 h-3" />配置
               </button>
               <button
-                onClick={() => setConfigSubTab("debug")}
+                onClick={() => {
+                  if (isDirty) {
+                    toast({ title: "配置未保存", description: "请先保存当前配置后再调试", variant: "destructive" });
+                    return;
+                  }
+                  setConfigSubTab("debug");
+                }}
+                disabled={isDirty}
+                title={isDirty ? "请先保存配置后再调试" : "调试"}
                 className={`px-3 h-7 text-[11px] rounded inline-flex items-center gap-1.5 transition-colors ${
                   configSubTab === "debug" ? "bg-background text-foreground shadow-sm font-medium" : "text-muted-foreground hover:text-foreground"
-                }`}
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 <Bug className="w-3 h-3" />调试
                 {debugRunning && <RunningIndicator />}
@@ -593,7 +613,7 @@ const AgentDetail = () => {
                     onChange={(e) => setDebugInput(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); runDebug(); } }}
                   />
-                  <Button size="sm" className="h-8 text-xs gap-1.5" onClick={runDebug} disabled={debugRunning || !debugInput.trim()}>
+                  <Button size="sm" className="h-8 text-xs gap-1.5" onClick={runDebug} disabled={debugRunning || !debugInput.trim() || isDirty}>
                     <Send className="w-3 h-3" />发送
                   </Button>
                 </div>
