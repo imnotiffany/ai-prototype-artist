@@ -473,9 +473,10 @@ const AgentDetail = () => {
 
         {/* ───────── 配置 ───────── */}
         <TabsContent value="config" className="mt-4">
-          <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-4 items-stretch">
+          <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-4 items-start">
             {/* 左侧：AI 修改配置助手 */}
-            <aside className="self-stretch border border-border rounded-lg bg-card flex flex-col min-h-[520px]">
+            <aside className="lg:sticky lg:top-4 self-start border border-border rounded-lg bg-card flex flex-col h-[calc(100vh-200px)] min-h-[520px]">
+
 
               <div className="px-3 h-10 shrink-0 border-b border-border flex items-center gap-1.5">
                 <Bot className="w-3.5 h-3.5 text-primary shrink-0" />
