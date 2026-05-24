@@ -1048,7 +1048,7 @@ const CreateAgentPage = () => {
 
           // Stream assistant response
           const responseId = uid();
-          const fullText = `智能体草稿已生成！\n\n**配置摘要：**\n- 模型：${newConfig.model}\n- 技能：${newConfig.skills.length > 0 ? newConfig.skills.join("、") : "无"}\n- MCP：${newConfig.mcpServers.length > 0 ? newConfig.mcpServers.join("、") : "无"}\n\n下方卡片中可继续添加 MCP / Skill / 子智能体，需要凭据的 MCP 请点击「去 MCP 配置」。`;
+          const fullText = `智能体草稿已生成！\n\n**配置摘要：**\n- 模型：${newConfig.model}\n- 技能：${newConfig.skills.length > 0 ? newConfig.skills.join("、") : "无"}\n- MCP：${newConfig.mcpServers.length > 0 ? newConfig.mcpServers.join("、") : "无"}\n\n保存后将自动把未添加的 MCP 加入 MCP 管理；如需凭据请前往 MCP 管理配置。`;
 
           setMessages((prev) => [...prev, { id: responseId, role: "assistant", content: "", isStreaming: true }]);
           let charIndex = 0;
