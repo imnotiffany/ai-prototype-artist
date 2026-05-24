@@ -1322,7 +1322,22 @@ const CreateAgentPage = () => {
           {/* Content */}
           {rightTab === "config" ? (
             configViewMode === "structured" ? (
-              <StructuredConfigView config={agentConfig} onConfigChange={setAgentConfig} />
+              <StructuredConfigView
+                config={agentConfig}
+                onConfigChange={setAgentConfig}
+                promptSnapshot={promptSnapshot}
+                onDismissPromptSync={() => setPromptSnapshot({ skills: agentConfig.skills, mcpServers: agentConfig.mcpServers, subagents: agentConfig.subagents })}
+                onRegeneratePrompt={async () => {
+                  await new Promise((r) => setTimeout(r, 900));
+                  const allSkills = agentConfig.skills;
+                  const allMCPs = agentConfig.mcpServers;
+                  const allSubs = agentConfig.subagents;
+                  const newPrompt = `你是一个专业的AI助手。\n\n## 核心能力\n${agentConfig.name || "根据用户描述提供帮助"}\n\n## 工具使用\n${allSkills.length > 0 ? `你可以使用以下技能：${allSkills.join("、")}` : "暂无外部技能"}\n${allMCPs.length > 0 ? `你可以连接以下服务：${allMCPs.join("、")}` : ""}\n${allSubs.length > 0 ? `你可以调用以下子智能体：${allSubs.join("、")}` : ""}\n\n## 行为准则\n- 始终准确、有帮助地回答问题\n- 在需要时主动使用可用工具与子智能体\n- 输出结构化、易读的结果`;
+                  setAgentConfig({ ...agentConfig, systemPrompt: newPrompt });
+                  setPromptSnapshot({ skills: allSkills, mcpServers: allMCPs, subagents: allSubs });
+                  toast({ title: "System Prompt 已更新", description: "已根据最新的 MCP / Skill / 子智能体重新生成。" });
+                }}
+              />
             ) : (
               <RawConfigView config={agentConfig} />
             )
