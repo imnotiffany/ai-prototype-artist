@@ -163,6 +163,7 @@ const assembleAgent = (
     version: "v0.0.1",
     model,
     apiKey: "",
+    envId: "env-default",
     systemPrompt,
     tools: [{ name: "内置工具", id: "builtin_tools", permissions: 8, permissionPolicy: "Always allow" }],
     skills: allSkills,
