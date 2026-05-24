@@ -1085,7 +1085,15 @@ fengsheng:
           <div className="border border-border rounded-lg overflow-hidden bg-card flex" style={{ height: "calc(100vh - 240px)", minHeight: 480 }}>
             {/* 左侧会话列表 */}
             <aside className="w-48 shrink-0 border-r border-border flex flex-col bg-muted/20">
-              <div className="p-1.5 border-b border-border shrink-0">
+              <div className="p-1.5 border-b border-border shrink-0 space-y-1.5">
+                <Button
+                  size="sm"
+                  className="h-7 w-full text-[11px] gap-1.5"
+                  onClick={() => navigate(`/chat/${id}`)}
+                  title="新建会话"
+                >
+                  <Plus className="w-3 h-3" />新建会话
+                </Button>
                 <div className="relative">
                   <MessageSquare className="w-3 h-3 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
                   <Input
