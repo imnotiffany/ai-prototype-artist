@@ -49,7 +49,7 @@ interface Message {
   id: string;
   role: "user" | "assistant" | "system";
   content: string;
-  type?: "question" | "confirm" | "api-call" | "text" | "assembly" | "tool-calls" | "clarify" | "assembly-summary" | "proposal";
+  type?: "question" | "confirm" | "api-call" | "text" | "assembly" | "tool-calls" | "clarify" | "assembly-summary" | "proposal" | "draft";
   attachments?: { type: "skill" | "mcp"; name: string }[];
   toolCalls?: ToolCall[];
   isStreaming?: boolean;
@@ -57,6 +57,13 @@ interface Message {
   clarifyQuestions?: string[];
   /** proposal 类型：AI 建议的配置变更 */
   proposal?: Proposal;
+  /** draft 类型：初始草稿快照 */
+  draft?: {
+    model: string;
+    skills: string[];
+    mcps: string[];
+    note: string;
+  };
 }
 
 interface PreviewMessage {
