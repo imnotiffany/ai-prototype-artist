@@ -205,62 +205,48 @@ const EnvironmentPage = () => {
               </Select>
             </div>
             <div>
-              <Label className="text-xs flex items-center gap-1.5"><Package className="w-3 h-3" />依赖包</Label>
-              <div className="mt-1.5 space-y-2">
-                <div className="grid grid-cols-[110px_1fr_120px_28px] gap-2 text-[10px] text-muted-foreground px-0.5">
-                  <span>包管理器 <span className="text-destructive">*</span></span>
-                  <span>包名 <span className="text-destructive">*</span></span>
-                  <span>版本号 <span className="text-destructive">*</span></span>
-                  <span></span>
-                </div>
+              <div className="flex items-center justify-between">
+                <Label className="text-xs flex items-center gap-1.5"><Package className="w-3 h-3" />依赖包</Label>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 w-6 p-0"
+                  onClick={() => setForm({ ...form, deps: [...form.deps, { manager: "pip", spec: "" }] })}
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                指定环境中可用的依赖包及版本，多个值使用空格分隔。
+              </p>
+              <div className="mt-2 space-y-2">
                 {form.deps.map((d, i) => (
-                  <div key={i} className="grid grid-cols-[110px_1fr_120px_28px] gap-2 items-center">
+                  <div key={i} className="grid grid-cols-[110px_1fr_28px] gap-2 items-center">
                     <Select
                       value={d.manager}
                       onValueChange={(v) => {
                         const next = [...form.deps];
-                        next[i] = { ...next[i], manager: v as DepRow["manager"] };
+                        next[i] = { ...next[i], manager: v as PkgManager };
                         setForm({ ...form, deps: next });
                       }}
                     >
                       <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="pip" className="text-xs">pip</SelectItem>
-                        <SelectItem value="npm" className="text-xs">npm</SelectItem>
-                        <SelectItem value="apt" className="text-xs">apt</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Select
-                      value={d.pkg}
-                      onValueChange={(v) => {
-                        const next = [...form.deps];
-                        next[i] = { ...next[i], pkg: v, version: "" };
-                        setForm({ ...form, deps: next });
-                      }}
-                    >
-                      <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="选择包名" /></SelectTrigger>
-                      <SelectContent>
-                        {Object.keys(PKG_CATALOG[d.manager]).map((p) => (
-                          <SelectItem key={p} value={p} className="text-xs font-mono">{p}</SelectItem>
+                        {PKG_MANAGERS.map((m) => (
+                          <SelectItem key={m} value={m} className="text-xs">{m}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    <Select
-                      value={d.version}
-                      onValueChange={(v) => {
+                    <Input
+                      className="h-8 text-xs font-mono"
+                      placeholder="package package==1.0.0"
+                      value={d.spec}
+                      onChange={(e) => {
                         const next = [...form.deps];
-                        next[i] = { ...next[i], version: v };
+                        next[i] = { ...next[i], spec: e.target.value };
                         setForm({ ...form, deps: next });
                       }}
-                      disabled={!d.pkg}
-                    >
-                      <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="版本" /></SelectTrigger>
-                      <SelectContent>
-                        {(PKG_CATALOG[d.manager][d.pkg] ?? []).map((v) => (
-                          <SelectItem key={v} value={v} className="text-xs font-mono">{v}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    />
                     <Button
                       size="sm"
                       variant="ghost"
@@ -272,16 +258,9 @@ const EnvironmentPage = () => {
                     </Button>
                   </div>
                 ))}
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-7 text-xs gap-1"
-                  onClick={() => setForm({ ...form, deps: [...form.deps, { manager: "pip", pkg: "", version: "" }] })}
-                >
-                  <Plus className="w-3 h-3" /> 添加依赖
-                </Button>
               </div>
             </div>
+
             <div>
               <Label className="text-xs flex items-center gap-1.5"><Globe className="w-3 h-3" />网络策略</Label>
               <Select value={form.network} onValueChange={(v) => setForm({ ...form, network: v })}>
