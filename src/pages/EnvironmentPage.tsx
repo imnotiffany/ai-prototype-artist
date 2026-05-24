@@ -71,8 +71,8 @@ const EnvironmentPage = () => {
       name: e.name,
       description: e.description || "",
       spec: specToValue(e.spec),
-      deps: [{ manager: "pip", spec: "" }],
-      network: "internet",
+      deps: e.depList && e.depList.length ? e.depList.map((d) => ({ ...d })) : [{ manager: "pip", spec: "" }],
+      network: e.network || "internet",
     });
     setOpen(true);
   };
