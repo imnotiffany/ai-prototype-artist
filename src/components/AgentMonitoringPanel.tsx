@@ -211,11 +211,11 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
     <div className="space-y-3">
       {/* ───── Filter bar ───── */}
       <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-x-3 gap-y-2 flex-wrap min-w-0">
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs text-muted-foreground shrink-0">时间范围</span>
+        <div className="flex items-center gap-x-2 gap-y-2 flex-wrap min-w-0 text-[11px]">
+          <div className="flex items-center gap-1">
+            <span className="text-muted-foreground shrink-0">时间范围</span>
             <Select value={rangeKey} onValueChange={(v) => setRangeKey(v as RangeKey)}>
-              <SelectTrigger className="h-8 w-[96px] text-xs font-medium">
+              <SelectTrigger className="h-7 w-[80px] text-[11px] font-medium px-2">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -229,7 +229,7 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
             </Select>
           </div>
 
-          <div className="flex items-center gap-1.5 min-w-0">
+          <div className="flex items-center gap-1 min-w-0">
             <Input
               type="datetime-local"
               value={rangeKey === "custom" ? customStart : fmtInput(start)}
@@ -238,9 +238,9 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
                 if (rangeKey !== "custom") setCustomEnd(fmtInput(end));
                 setRangeKey("custom");
               }}
-              className="h-8 w-[190px] text-xs pr-2"
+              className="h-7 w-[168px] text-[11px] px-2"
             />
-            <span className="text-xs text-muted-foreground">~</span>
+            <span className="text-muted-foreground">~</span>
             <Input
               type="datetime-local"
               value={rangeKey === "custom" ? customEnd : fmtInput(end)}
@@ -249,14 +249,14 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
                 if (rangeKey !== "custom") setCustomStart(fmtInput(start));
                 setRangeKey("custom");
               }}
-              className="h-8 w-[190px] text-xs pr-2"
+              className="h-7 w-[168px] text-[11px] px-2"
             />
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs text-muted-foreground shrink-0">粒度</span>
+          <div className="flex items-center gap-1">
+            <span className="text-muted-foreground shrink-0">粒度</span>
             <Select value={granKey} onValueChange={(v) => setGranKey(v as GranKey)}>
-              <SelectTrigger className="h-8 w-[84px] text-xs font-medium">
+              <SelectTrigger className="h-7 w-[72px] text-[11px] font-medium px-2">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -272,11 +272,11 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
           <Button
             size="icon"
             variant="ghost"
-            className="h-7 w-7 text-muted-foreground"
+            className="h-6 w-6 text-muted-foreground"
             onClick={() => setNow(new Date())}
             title="刷新"
           >
-            <RefreshCw className="w-3.5 h-3.5" />
+            <RefreshCw className="w-3 h-3" />
           </Button>
         </div>
 
