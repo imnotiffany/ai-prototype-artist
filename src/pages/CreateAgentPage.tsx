@@ -558,7 +558,7 @@ const generateJson = (config: AgentConfig) =>
       description: "An agent that helps users with tasks.",
       model: { id: config.model, speed: "standard" },
       system: config.systemPrompt,
-      tools: [{ type: config.tools[0]?.id || "agent_toolset_20260401", configs: [], default_config: { enabled: true, permission_policy: { type: "always_allow" } } }],
+      tools: config.tools.map(t => ({ type: t.id, configs: [], default_config: { enabled: true, permission_policy: { type: t.permissionPolicy === "Always allow" ? "always_allow" : "user_controlled" } })),
       mcp_servers: config.mcpServers,
       skills: config.skills,
       metadata: {},
