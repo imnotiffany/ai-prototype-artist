@@ -1112,11 +1112,11 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               <Button
                 size="sm"
                 className="h-8 text-xs gap-1.5"
-                disabled={!promptComplete}
-                onClick={() => setCurrentTab("channels")}
-                title={promptComplete ? "下一步：对外接入" : "请完善系统提示词（不少于 20 字）"}
+                disabled={!basicComplete || !promptComplete || savedAndClean}
+                onClick={handleSaveAndContinue}
+                title={savedAndClean ? "配置未变更，已保存" : !promptComplete ? "请完善系统提示词（不少于 20 字）" : "保存配置并进入对外接入"}
               >
-                下一步：对外接入 <ArrowRight className="w-3 h-3" />
+                <Save className="w-3 h-3" /> {savedAndClean ? "已保存 · 进入下一步" : "保存并继续"}
               </Button>
             </div>
           </TabsContent>
