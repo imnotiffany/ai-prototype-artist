@@ -1060,13 +1060,13 @@ fengsheng:
 
         {/* ───────── 集成方式 ───────── */}
         <TabsContent value="apikey" className="mt-4">
-          <Tabs defaultValue="api">
+          <Tabs defaultValue="fengsheng">
             <TabsList className="h-8 bg-muted/40 p-0.5 rounded-md">
-              <TabsTrigger value="api" className="h-7 px-3 text-xs gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                <KeyRound className="w-3.5 h-3.5" />API 调用
-              </TabsTrigger>
               <TabsTrigger value="fengsheng" className="h-7 px-3 text-xs gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                <MessageSquare className="w-3.5 h-3.5" />丰声 NEXT 调用
+                丰声 NEXT 调用
+              </TabsTrigger>
+              <TabsTrigger value="api" className="h-7 px-3 text-xs gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                API 调用
               </TabsTrigger>
             </TabsList>
 
