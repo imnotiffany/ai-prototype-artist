@@ -832,7 +832,7 @@ const AssemblySummaryCard = ({
           <Save className="w-3.5 h-3.5" /> 保存
         </Button>
         <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5 flex-1" onClick={onDebug}>
-          <Bug className="w-3.5 h-3.5" /> 立即调试
+          <Bug className="w-3.5 h-3.5" /> 立即测试
         </Button>
       </div>
       {pending.length > 0 && (
