@@ -22,7 +22,7 @@ const EnvironmentPage = () => {
   const [envs, setEnvs] = useState<EnvItem[]>(getEnvironments().length ? getEnvironments() : defaultEnvironments);
   const [open, setOpen] = useState(false);
   const [keyword, setKeyword] = useState("");
-  type DepRow = { manager: "pip" | "npm" | "apt"; pkg: string; version: string };
+  type DepRow = { manager: PkgManager; spec: string };
   const [form, setForm] = useState<{
     name: string;
     description: string;
@@ -33,9 +33,10 @@ const EnvironmentPage = () => {
     name: "",
     description: "",
     spec: "4C8G",
-    deps: [{ manager: "pip", pkg: "", version: "" }],
+    deps: [{ manager: "pip", spec: "" }],
     network: "internet",
   });
+
 
   const filtered = useMemo(() => {
     const k = keyword.trim().toLowerCase();
