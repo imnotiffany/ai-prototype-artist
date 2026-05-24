@@ -1476,6 +1476,74 @@ const CreateAgentPage = () => {
                 <RawConfigView config={agentConfig} />
               </div>
             )
+          ) : rightTab === "integration" ? (
+            <div className="flex-1 overflow-auto p-5">
+              <div className="max-w-2xl mx-auto">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="min-w-0">
+                    <label className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                      <MessageSquare className="w-3.5 h-3.5" />
+                      对外接入 · 丰声 NEXT
+                      <span className="text-[10px] rounded border border-border px-1 text-muted-foreground/80">可选</span>
+                    </label>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">把智能体接入丰声 NEXT， @ 机器人即可触发</p>
+                  </div>
+                  <Switch
+                    checked={agentConfig.fengsheng.enabled}
+                    onCheckedChange={(v) => setAgentConfig({ ...agentConfig, fengsheng: { ...agentConfig.fengsheng, enabled: v } })}
+                  />
+                </div>
+                {agentConfig.fengsheng.enabled && (
+                  <div className="mt-3 space-y-2.5 border border-border rounded-md p-4 bg-muted/20">
+                    <div>
+                      <label className="text-[11px] text-muted-foreground">Client ID（AppKey）</label>
+                      <input
+                        className="mt-1 h-8 w-full text-xs font-mono rounded-md border border-input bg-background px-3"
+                        placeholder="企业应用 AppKey"
+                        value={agentConfig.fengsheng.appKey}
+                        onChange={(e) => setAgentConfig({ ...agentConfig, fengsheng: { ...agentConfig.fengsheng, appKey: e.target.value, connected: false } })}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] text-muted-foreground">Client Secret（AppSecret）</label>
+                      <input
+                        type="password"
+                        className="mt-1 h-8 w-full text-xs font-mono rounded-md border border-input bg-background px-3"
+                        placeholder="企业应用 AppSecret"
+                        value={agentConfig.fengsheng.appSecret}
+                        onChange={(e) => setAgentConfig({ ...agentConfig, fengsheng: { ...agentConfig.fengsheng, appSecret: e.target.value, connected: false } })}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] text-muted-foreground">Robot Code</label>
+                      <input
+                        className="mt-1 h-8 w-full text-xs font-mono rounded-md border border-input bg-background px-3"
+                        placeholder="机器人编码"
+                        value={agentConfig.fengsheng.robotCode}
+                        onChange={(e) => setAgentConfig({ ...agentConfig, fengsheng: { ...agentConfig.fengsheng, robotCode: e.target.value, connected: false } })}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between pt-1">
+                      <span className={`text-[10px] inline-flex items-center gap-1 ${agentConfig.fengsheng.connected ? "text-emerald-600" : "text-muted-foreground"}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${agentConfig.fengsheng.connected ? "bg-emerald-500" : "bg-muted-foreground/50"}`} />
+                        {agentConfig.fengsheng.connected ? "已连接" : "未连接"}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={!agentConfig.fengsheng.appKey.trim() || !agentConfig.fengsheng.appSecret.trim() || !agentConfig.fengsheng.robotCode.trim() || agentConfig.fengsheng.connected}
+                        onClick={() => {
+                          setAgentConfig({ ...agentConfig, fengsheng: { ...agentConfig.fengsheng, connected: true } });
+                          toast({ title: "丰声 NEXT 机器人已连接", description: `Robot ${agentConfig.fengsheng.robotCode}` });
+                        }}
+                        className="h-7 px-3 text-[11px] rounded-md bg-primary text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1.5"
+                      >
+                        <Link2 className="w-3 h-3" />{agentConfig.fengsheng.connected ? "已连接" : "连接"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           ) : debugSubTab === "preview" ? (
             <div className="flex flex-col flex-1 min-h-0">
               <div ref={rightScrollRef} className="flex-1 overflow-auto p-4">
