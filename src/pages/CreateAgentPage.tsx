@@ -1286,35 +1286,52 @@ const CreateAgentPage = () => {
 
         {/* ── Right: Workspace ── */}
         <ResizablePanel defaultSize={62} minSize={30} className="flex flex-col min-w-0">
-          {/* Header tabs — 能力配置 / 调试 */}
-          <div className="border-b border-border px-4 flex items-center justify-between">
-            <div className="flex gap-1">
-              {rightTabs.map((tab) => {
+          {/* Header — 数字圆圈 + 箭头 stepper 风格 */}
+          <div className="border-b border-border px-4 py-2.5 flex items-center justify-between gap-3">
+            <div className="flex items-center flex-1 min-w-0">
+              {rightTabs.map((tab, i) => {
                 const Icon = tab.icon;
+                const active = rightTab === tab.key;
                 const disabled = tab.key === "debug" && !hasSaved;
+                const sub = tab.key === "config" ? "MCP / Skill / 系统提示词" : "对话视图 / 调试日志";
+                const dotCls = disabled
+                  ? "bg-muted text-muted-foreground border-border"
+                  : active
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-background text-foreground border-border";
                 return (
-                  <button
-                    key={tab.key}
-                    onClick={() => !disabled && setRightTab(tab.key)}
-                    disabled={disabled}
-                    title={disabled ? "请先保存配置后再进行调试" : undefined}
-                    className={`text-xs py-2.5 px-2.5 transition-colors flex items-center gap-1.5 ${
-                      rightTab === tab.key
-                        ? "font-medium text-foreground border-b-2 border-primary"
-                        : disabled
-                        ? "text-muted-foreground/40 cursor-not-allowed"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <Icon className="w-3.5 h-3.5" />
-                    {tab.label}
-                    {disabled && <span className="text-[10px] ml-0.5">（需先保存）</span>}
-                  </button>
+                  <div key={tab.key} className="flex items-center min-w-0">
+                    <button
+                      type="button"
+                      onClick={() => !disabled && setRightTab(tab.key)}
+                      disabled={disabled}
+                      title={disabled ? "请先保存配置后再进行调试" : undefined}
+                      className="flex items-center gap-2 group min-w-0 shrink-0 disabled:cursor-not-allowed"
+                    >
+                      <span className={`w-6 h-6 rounded-full border flex items-center justify-center text-[11px] shrink-0 ${dotCls} ${active ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""}`}>
+                        {i + 1}
+                      </span>
+                      <div className="text-left min-w-0">
+                        <div className={`text-[11px] leading-tight truncate flex items-center gap-1 ${active ? "text-primary font-semibold" : disabled ? "text-muted-foreground" : "text-foreground"}`}>
+                          <Icon className="w-3 h-3" />
+                          {`${i + 1}. ${tab.label}`}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground leading-tight truncate">{sub}</div>
+                      </div>
+                    </button>
+                    {i < rightTabs.length - 1 && (
+                      <div className="mx-3 flex items-center gap-2 min-w-[40px]">
+                        <div className="h-px flex-1 bg-border" />
+                        <ArrowRight className="w-3 h-3 text-muted-foreground shrink-0" />
+                        <div className="h-px flex-1 bg-border" />
+                      </div>
+                    )}
+                  </div>
                 );
               })}
             </div>
             {rightTab === "debug" && (
-              <div className="flex items-center gap-1 bg-muted/50 rounded p-0.5">
+              <div className="flex items-center gap-1 bg-muted/50 rounded p-0.5 shrink-0">
                 <button
                   onClick={() => setDebugSubTab("preview")}
                   className={`px-2 py-1 text-[11px] rounded transition-colors flex items-center gap-1 ${
@@ -1336,6 +1353,7 @@ const CreateAgentPage = () => {
               </div>
             )}
           </div>
+
 
           {/* Content */}
           {rightTab === "config" ? (
