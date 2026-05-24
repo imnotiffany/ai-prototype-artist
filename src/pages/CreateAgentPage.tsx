@@ -401,7 +401,7 @@ const StructuredConfigView = ({
             <SelectContent>
               {availableEnvs.map((e) => (
                 <SelectItem key={e.envId} value={e.envId} className="text-xs">
-                  <span className="font-medium">{e.name}</span>
+                  <span>{e.name}</span>
                   <span className="ml-2 text-[10px] text-muted-foreground">{e.spec} · {e.envId}</span>
                 </SelectItem>
               ))}
