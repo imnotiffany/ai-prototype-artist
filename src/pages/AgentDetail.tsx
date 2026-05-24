@@ -838,17 +838,15 @@ fengsheng:
                         <div key={b.name} className={`border rounded-md p-3 flex items-center justify-between gap-3 ${credMissing ? "border-amber-300 bg-amber-50/40" : "border-border"}`}>
                           <div className="min-w-0 flex items-center gap-2 flex-wrap">
                             <span className="text-xs font-medium truncate">{b.name}</span>
-                            {!needsCred ? (
-                              <Badge variant="outline" className="border-emerald-300 text-emerald-700 bg-emerald-50/60 text-[10px] h-4 px-1.5">免凭据</Badge>
-                            ) : credMissing ? (
+                            {credMissing ? (
                               <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-0 text-[10px] h-4 gap-1">
                                 <AlertTriangle className="w-2.5 h-2.5" />MCP 管理中已移除或未配置
                               </Badge>
-                            ) : (
+                            ) : needsCred ? (
                               <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0 text-[10px] h-4 gap-1">
                                 <CheckCircle2 className="w-2.5 h-2.5" />已就绪 · 凭据由 MCP 管理维护
                               </Badge>
-                            )}
+                            ) : null}
                           </div>
                           <div className="flex items-center gap-1 shrink-0">
                             {credMissing && (
@@ -924,9 +922,6 @@ fengsheng:
                   <h3 className="text-sm font-semibold flex items-center gap-1.5">
                     <Users className="w-3.5 h-3.5 text-primary" />子智能体
                   </h3>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
-                    从项目智能体挑选已发布的智能体作为子智能体；它们继承的 Skill / MCP 会一并展示，未配置凭据的 MCP 需在「<button onClick={() => navigate("/vault")} className="text-primary hover:underline">MCP 管理</button>」中补齐
-                  </p>
                 </div>
                 <CapabilityPickerDialog
                   items={projectSubagents.map((a) => ({ name: a.name, description: a.description, tags: a.category ? [a.category] : [] }))}
@@ -1090,7 +1085,15 @@ fengsheng:
           <div className="border border-border rounded-lg overflow-hidden bg-card flex" style={{ height: "calc(100vh - 240px)", minHeight: 480 }}>
             {/* 左侧会话列表 */}
             <aside className="w-48 shrink-0 border-r border-border flex flex-col bg-muted/20">
-              <div className="p-1.5 border-b border-border shrink-0">
+              <div className="p-1.5 border-b border-border shrink-0 space-y-1.5">
+                <Button
+                  size="sm"
+                  className="h-7 w-full text-[11px] gap-1.5"
+                  onClick={() => navigate(`/chat/${id}`)}
+                  title="新建会话"
+                >
+                  <Plus className="w-3 h-3" />新建会话
+                </Button>
                 <div className="relative">
                   <MessageSquare className="w-3 h-3 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
                   <Input
