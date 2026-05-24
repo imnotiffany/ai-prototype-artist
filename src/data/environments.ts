@@ -20,7 +20,7 @@ export const defaultEnvironments: EnvItem[] = [
     agents: 8,
     updatedAt: "2026-05-20 10:23",
     preset: true,
-    description: "已预装常用基础依赖：Python 3.11 / Node 20 / pandas / numpy / requests / playwright 等",
+    description: "",
   },
 ];
 
