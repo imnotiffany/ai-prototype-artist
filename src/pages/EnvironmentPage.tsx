@@ -129,7 +129,7 @@ const EnvironmentPage = () => {
               Agent 执行任务时使用的一套可复用配置，包含资源规格、基础运行时、依赖包、网络权限、存储和安全配置
             </p>
           </div>
-          <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setOpen(true)}>
+          <Button size="sm" className="h-8 text-xs gap-1.5" onClick={openCreate}>
             <Plus className="w-3.5 h-3.5" /> 新建环境
           </Button>
         </div>
