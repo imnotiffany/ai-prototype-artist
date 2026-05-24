@@ -297,7 +297,7 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
 
       {/* ───── Charts ───── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        <ChartCard title="调用趋势" subtitle="（单位：次）">
+        <ChartCard title="调用趋势" subtitle="（次）">
           <AreaChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="gCalls" x1="0" y1="0" x2="0" y2="1">
