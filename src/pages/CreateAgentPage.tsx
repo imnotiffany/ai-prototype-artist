@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import {
   Send, ChevronRight, CheckCircle2, Copy, Loader2, ChevronDown, Code2, Settings2,
@@ -28,16 +28,35 @@ import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { AlertTriangle, FolderKanban, ArrowRight } from "lucide-react";
 
 /* ── Types ── */
+interface ProposalDiff {
+  addedMcps: string[];
+  removedMcps: string[];
+  addedSkills: string[];
+  removedSkills: string[];
+  promptChanged: boolean;
+  promptNote?: string;
+}
+interface Proposal {
+  diff: ProposalDiff;
+  // 仅保存变更后的关键字段，采纳时合并到 agentConfig
+  nextSkills: string[];
+  nextMcps: string[];
+  nextPrompt: string;
+  status: "pending" | "accepted" | "withdrawn";
+}
+
 interface Message {
   id: string;
   role: "user" | "assistant" | "system";
   content: string;
-  type?: "question" | "confirm" | "api-call" | "text" | "assembly" | "tool-calls" | "clarify" | "assembly-summary";
+  type?: "question" | "confirm" | "api-call" | "text" | "assembly" | "tool-calls" | "clarify" | "assembly-summary" | "proposal";
   attachments?: { type: "skill" | "mcp"; name: string }[];
   toolCalls?: ToolCall[];
   isStreaming?: boolean;
   /** clarify 类型：澄清问题列表 */
   clarifyQuestions?: string[];
+  /** proposal 类型：AI 建议的配置变更 */
+  proposal?: Proposal;
 }
 
 interface PreviewMessage {
@@ -226,6 +245,78 @@ const AttachmentPicker = ({
     </PopoverContent>
   </Popover>
 );
+
+/* ── Proposal Card (AI 建议变更 - 采纳/撤销) ── */
+const ProposalCardInline = ({
+  msg,
+  onAccept,
+  onWithdraw,
+}: {
+  msg: Message;
+  onAccept: () => void;
+  onWithdraw: () => void;
+}) => {
+  const p = msg.proposal!;
+  const { diff, status } = p;
+  const rowDef: Array<[string, string[], string[], (typeof Server) | (typeof Zap)]> = [
+    ["MCP", diff.addedMcps, diff.removedMcps, Server],
+    ["Skill", diff.addedSkills, diff.removedSkills, Zap],
+  ];
+  return (
+    <div className="border border-border rounded-lg bg-card overflow-hidden">
+      <div className="px-3 py-2 border-b border-border bg-muted/30 flex items-center gap-1.5">
+        <Sparkles className="w-3.5 h-3.5 text-primary" />
+        <span className="text-xs font-semibold text-foreground">AI 建议变更</span>
+        {status === "accepted" && (
+          <Badge className="ml-auto h-4 text-[10px] px-1.5 bg-primary/10 text-primary border-primary/30">已采纳</Badge>
+        )}
+        {status === "withdrawn" && (
+          <Badge variant="outline" className="ml-auto h-4 text-[10px] px-1.5 text-muted-foreground">已撤销</Badge>
+        )}
+      </div>
+      <div className="p-3 space-y-2">
+        <p className="text-[11px] text-muted-foreground">{msg.content}</p>
+        <ul className="space-y-1">
+          {rowDef.map(([label, added, removed, Icon]) => (
+            <React.Fragment key={label}>
+              {added.map((x) => (
+                <li key={`a-${label}-${x}`} className="flex items-center gap-1.5 text-[11px]">
+                  <Plus className="w-3 h-3 text-primary shrink-0" />
+                  <Icon className="w-3 h-3 text-muted-foreground shrink-0" />
+                  <span className="text-foreground">新增 {label}：{x}</span>
+                </li>
+              ))}
+              {removed.map((x) => (
+                <li key={`r-${label}-${x}`} className="flex items-center gap-1.5 text-[11px]">
+                  <X className="w-3 h-3 text-destructive shrink-0" />
+                  <Icon className="w-3 h-3 text-muted-foreground shrink-0" />
+                  <span className="text-foreground line-through">移除 {label}：{x}</span>
+                </li>
+              ))}
+            </React.Fragment>
+          ))}
+          {diff.promptChanged && (
+            <li className="flex items-start gap-1.5 text-[11px]">
+              <ScrollText className="w-3 h-3 text-primary shrink-0 mt-0.5" />
+              <span className="text-foreground">更新系统提示词{diff.promptNote ? `：${diff.promptNote.slice(0, 40)}${diff.promptNote.length > 40 ? "…" : ""}` : ""}</span>
+            </li>
+          )}
+        </ul>
+        {status === "pending" && (
+          <div className="flex items-center gap-2 pt-1">
+            <Button size="sm" className="h-7 text-[11px] gap-1 flex-1" onClick={onAccept}>
+              <CheckCircle2 className="w-3 h-3" /> 采纳
+            </Button>
+            <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 flex-1" onClick={onWithdraw}>
+              <X className="w-3 h-3" /> 撤销
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 
 /* ── Structured Config View ── */
 interface PromptSnapshot {
@@ -1079,48 +1170,115 @@ const CreateAgentPage = () => {
           ]);
         }, 2000);
       } else {
-        // Subsequent messages: refine the agent
-        const lower = userMsg.toLowerCase();
-        const responseId = uid();
-        let fullText = "好的，已根据你的需求更新了配置。";
+        // Subsequent messages: 澄清 or 建议变更（采纳/撤销）
+        const trimmed = userMsg.trim();
 
-        if (lower.includes("prompt") || lower.includes("提示词") || lower.includes("系统")) {
-          fullText = "System Prompt 已更新。你可以在配置面板中查看修改后的内容。";
-          setDebugEvents((prev) => [...prev, { id: uid(), type: "update", detail: "System Prompt 已更新", timestamp: new Date() }]);
-        } else if (lower.includes("模型") || lower.includes("model")) {
-          fullText = "模型已更新。建议在调试面板中重新测试智能体表现。";
-          setDebugEvents((prev) => [...prev, { id: uid(), type: "update", detail: "模型配置已更新", timestamp: new Date() }]);
-        } else if (lower.includes("skill") || lower.includes("技能")) {
-          fullText = "技能列表已更新。新添加的技能将在智能体下次运行时生效。";
-          setDebugEvents((prev) => [...prev, { id: uid(), type: "update", detail: "技能配置已更新", timestamp: new Date() }]);
-        } else if (lower.includes("mcp")) {
-          fullText = "MCP 服务已更新。新服务连接将在下次调用时生效。";
-          setDebugEvents((prev) => [...prev, { id: uid(), type: "update", detail: "MCP 服务已更新", timestamp: new Date() }]);
+        // ① 澄清：输入过短或仅是疑问词
+        if (trimmed.length < 5 || /^(怎么|如何|什么|为什么|可以吗|可以么|\?|？)+$/.test(trimmed)) {
+          const clarifyId = uid();
+          setMessages((prev) => [...prev, {
+            id: clarifyId,
+            role: "assistant",
+            content: "为了更准确地调整，我需要再确认几点：",
+            type: "clarify",
+            clarifyQuestions: [
+              "想要修改的是 MCP、Skill 还是系统提示词？",
+              "希望新增、替换还是删除某项能力？",
+              "有具体的能力名称或场景描述吗？",
+            ],
+          }]);
+          setIsThinking(false);
+          setThinkingStartedAt(null);
+          return;
         }
 
-        setMessages((prev) => [...prev, { id: uid(), role: "system", content: "✓ 配置已更新", type: "confirm" }]);
-        setMessages((prev) => [...prev, { id: responseId, role: "assistant", content: "", isStreaming: true }]);
+        // ② 生成提案（不直接落到 agentConfig，等用户采纳）
+        const lower = trimmed.toLowerCase();
+        const allSkills = getActiveSkills().map((s) => s.name);
+        const allMcps = getActiveMCPs().map((m) => m.name);
+        const pickUnused = (pool: string[], used: string[]) => pool.find((x) => !used.includes(x));
 
-        let charIndex = 0;
-        const interval = setInterval(() => {
-          charIndex += 2;
-          if (charIndex >= fullText.length) {
-            clearInterval(interval);
-            setMessages((prev) =>
-              prev.map((m) => m.id === responseId ? { ...m, content: fullText, isStreaming: false } : m)
-            );
-            setIsThinking(false);
-            setThinkingStartedAt(null);
+        const diff: ProposalDiff = {
+          addedMcps: [], removedMcps: [], addedSkills: [], removedSkills: [],
+          promptChanged: false,
+        };
+        let nextSkills = [...agentConfig.skills];
+        let nextMcps = [...agentConfig.mcpServers];
+        let nextPrompt = agentConfig.systemPrompt;
+
+        const isRemove = /删除|去掉|移除|去除/.test(trimmed);
+        if (lower.includes("mcp")) {
+          if (isRemove && nextMcps.length > 0) {
+            const target = nextMcps[nextMcps.length - 1];
+            nextMcps = nextMcps.filter((x) => x !== target);
+            diff.removedMcps.push(target);
           } else {
-            setMessages((prev) =>
-              prev.map((m) => m.id === responseId ? { ...m, content: fullText.slice(0, charIndex) } : m)
-            );
+            const target = pickUnused(allMcps, nextMcps);
+            if (target) { nextMcps.push(target); diff.addedMcps.push(target); }
           }
-        }, 30);
+        } else if (lower.includes("skill") || trimmed.includes("技能")) {
+          if (isRemove && nextSkills.length > 0) {
+            const target = nextSkills[nextSkills.length - 1];
+            nextSkills = nextSkills.filter((x) => x !== target);
+            diff.removedSkills.push(target);
+          } else {
+            const target = pickUnused(allSkills, nextSkills);
+            if (target) { nextSkills.push(target); diff.addedSkills.push(target); }
+          }
+        } else {
+          // 默认视为提示词调整
+          diff.promptChanged = true;
+          diff.promptNote = trimmed;
+          nextPrompt = `${nextPrompt}\n\n// 用户补充要求：${trimmed}`;
+        }
+
+        const hasChange = diff.addedMcps.length || diff.removedMcps.length ||
+                          diff.addedSkills.length || diff.removedSkills.length || diff.promptChanged;
+
+        if (!hasChange) {
+          setMessages((prev) => [...prev, {
+            id: uid(), role: "assistant",
+            content: "我没能从你的描述中提取出明确的变更项，可以再具体说明一下要修改什么吗？例如：「添加一个搜索 MCP」「去掉数据分析 Skill」「在提示词里强调要严谨」。",
+          }]);
+          setIsThinking(false);
+          setThinkingStartedAt(null);
+          return;
+        }
+
+        const proposal: Proposal = {
+          diff, nextSkills, nextMcps, nextPrompt, status: "pending",
+        };
+        setMessages((prev) => [...prev, {
+          id: uid(), role: "assistant",
+          content: "我建议如下变更，确认后将更新右侧配置：",
+          type: "proposal",
+          proposal,
+        }]);
+        setIsThinking(false);
+        setThinkingStartedAt(null);
       }
     }, streamDelay);
   };
   handleSendRef.current = handleSend;
+
+  const handleAcceptProposal = (msgId: string) => {
+    setMessages((prev) => prev.map((m) => {
+      if (m.id !== msgId || !m.proposal || m.proposal.status !== "pending") return m;
+      const p = m.proposal;
+      setAgentConfig((c) => ({ ...c, skills: p.nextSkills, mcpServers: p.nextMcps, systemPrompt: p.nextPrompt }));
+      setDebugEvents((d) => [...d, { id: uid(), type: "update", detail: "已采纳 AI 建议的变更", timestamp: new Date() }]);
+      return { ...m, proposal: { ...p, status: "accepted" } };
+    }));
+  };
+  const handleWithdrawProposal = (msgId: string) => {
+    setMessages((prev) => prev.map((m) =>
+      m.id === msgId && m.proposal && m.proposal.status === "pending"
+        ? { ...m, proposal: { ...m.proposal, status: "withdrawn" } }
+        : m
+    ));
+  };
+
+
 
   const handlePreviewSend = () => {
     if (!previewInput.trim() || isAgentRunning) return;
@@ -1228,6 +1386,24 @@ const CreateAgentPage = () => {
                   </div>
                 ) : msg.type === "tool-calls" && msg.toolCalls ? (
                   <ToolCallGroup calls={msg.toolCalls} />
+                ) : msg.type === "clarify" ? (
+                  <div className="border border-border rounded-lg p-3 bg-card space-y-2">
+                    <p className="text-xs text-foreground">{msg.content}</p>
+                    <ul className="space-y-1.5">
+                      {msg.clarifyQuestions?.map((q, i) => (
+                        <li key={i} className="flex items-start gap-1.5 text-[11px] text-muted-foreground">
+                          <span className="text-primary mt-0.5">•</span>
+                          <span>{q}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : msg.type === "proposal" && msg.proposal ? (
+                  <ProposalCardInline
+                    msg={msg}
+                    onAccept={() => handleAcceptProposal(msg.id)}
+                    onWithdraw={() => handleWithdrawProposal(msg.id)}
+                  />
                 ) : msg.type === "assembly" ? (
                   <div className="flex items-center gap-2 text-xs text-muted-foreground py-1">
                     <Loader2 className="w-3.5 h-3.5 animate-spin text-primary shrink-0" />
