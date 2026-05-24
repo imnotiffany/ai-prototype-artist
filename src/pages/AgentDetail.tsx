@@ -455,9 +455,10 @@ const AgentDetail = () => {
               }}
               title="保存当前修改并进入调试"
             >
-              <Save className="w-3.5 h-3.5" />保存并调试
+              <Save className="w-3.5 h-3.5" />保存
             </Button>
           ) : null}
+
           <Button
             size="sm"
             className="h-8 text-xs gap-1.5"
