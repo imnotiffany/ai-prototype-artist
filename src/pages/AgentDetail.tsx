@@ -14,7 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import {
   ArrowLeft, MessageSquare, Send, Save, Bot, CheckCircle2, Server, Bug, Mic, MicOff, Zap, Plus, X, RotateCcw, EyeOff, Eye, Settings2,
-  AlertTriangle, Copy, Pencil, Rocket, Code2, Layout, Users, KeyRound, Filter, Check, ExternalLink, Activity,
+  AlertTriangle, Copy, Pencil, Rocket, Code2, Layout, Users, KeyRound, Filter, Check, ExternalLink, Activity, Plug,
 } from "lucide-react";
 import { mockAgents, getActiveMCPs, getActiveSkills } from "@/data/mockData";
 import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
@@ -441,7 +441,7 @@ const AgentDetail = () => {
           <TabsTrigger value="config" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><Settings2 className="w-3.5 h-3.5" />配置</TabsTrigger>
           <TabsTrigger value="runs" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><MessageSquare className="w-3.5 h-3.5" />会话记录</TabsTrigger>
           <TabsTrigger value="monitor" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><Activity className="w-3.5 h-3.5" />基础监控</TabsTrigger>
-          <TabsTrigger value="apikey" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><KeyRound className="w-3.5 h-3.5" />API Key</TabsTrigger>
+          <TabsTrigger value="apikey" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><Plug className="w-3.5 h-3.5" />集成方式</TabsTrigger>
         </TabsList>
 
         {/* ───────── 调试 ───────── */}
@@ -894,111 +894,8 @@ fengsheng:
               </div>
             </section>
 
-            {/* 6. 丰声 NEXT 机器人 */}
-            <section className="border border-border rounded-lg bg-card">
-              <header className="px-4 py-2.5 border-b border-border flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <h3 className="text-sm font-semibold flex items-center gap-1.5">
-                    <MessageSquare className="w-3.5 h-3.5 text-primary" />丰声 NEXT 机器人
-                    <span className="text-[10px] px-1.5 h-4 leading-4 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 font-normal">可选</span>
-                  </h3>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">仅在需要把智能体发布为群聊机器人（成员 @ 即可触发）时配置；不配置不影响其他渠道使用</p>
-                </div>
-                {(() => {
-                  const cfg: Record<FsStatus, { dot: string; cls: string; label: string }> = {
-                    empty: { dot: "bg-muted-foreground/50", cls: "text-muted-foreground", label: "未配置" },
-                    draft: { dot: "bg-muted-foreground/50", cls: "text-muted-foreground", label: "未连接" },
-                    connecting: { dot: "bg-primary animate-pulse", cls: "text-primary border-primary/40 bg-primary/10", label: "连接中…" },
-                    connected: { dot: "bg-emerald-500", cls: "text-emerald-600 border-emerald-600/40 bg-emerald-500/10", label: "已连接" },
-                    failed: { dot: "bg-destructive", cls: "text-destructive border-destructive/40 bg-destructive/10", label: "连接失败" },
-                  };
-                  const c = cfg[fsStatus];
-                  return (
-                    <Badge variant="outline" className={`shrink-0 text-[10px] gap-1 ${c.cls}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
-                      {c.label}
-                    </Badge>
-                  );
-                })()}
-              </header>
-              <div className="p-4 space-y-3">
-                <FengshengHowToCard />
-                <div>
-                  <Label className="text-xs">Client ID（AppKey） <span className="text-destructive">*</span></Label>
-                  <Input
-                    className="mt-1.5 h-8 text-xs font-mono"
-                    placeholder="企业应用 AppKey"
-                    value={fsAppKey}
-                    onChange={(e) => { setFsAppKey(e.target.value); onFsFieldChange({ appKey: e.target.value }); }}
-                    id="fs-app-key"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs">Client Secret（AppSecret） <span className="text-destructive">*</span></Label>
-                  <div className="relative mt-1.5">
-                    <Input
-                      className="h-8 text-xs font-mono pr-9"
-                      type={fsSecretVisible ? "text" : "password"}
-                      placeholder="企业应用 AppSecret"
-                      value={fsAppSecret}
-                      onChange={(e) => { setFsAppSecret(e.target.value); onFsFieldChange({ appSecret: e.target.value }); }}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setFsSecretVisible(!fsSecretVisible)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    >
-                      {fsSecretVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                    </button>
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-xs">Robot Code <span className="text-destructive">*</span></Label>
-                  <Input
-                    className="mt-1.5 h-8 text-xs font-mono"
-                    placeholder="机器人编码"
-                    value={fsRobotCode}
-                    onChange={(e) => { setFsRobotCode(e.target.value); onFsFieldChange({ robotCode: e.target.value }); }}
-                  />
-                  <p className="text-[10px] text-muted-foreground mt-1.5">在丰声 NEXT 开发者后台「机器人管理」中获取，凭据将通过「凭据管理」加密存储</p>
-                </div>
+            {/* 丰声 NEXT 机器人配置已移至「集成方式」标签页 */}
 
-                {fsStatus === "failed" && (
-                  <div className="border border-destructive/40 bg-destructive/5 rounded px-2.5 py-2 text-[11px] text-destructive flex items-start gap-1.5">
-                    <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-                    <span>{fsFailMsg || "凭证校验未通过，请检查 Client ID / Client Secret / Robot Code 是否正确"}</span>
-                  </div>
-                )}
-
-                <div className="flex items-center justify-end pt-1">
-                  <Button
-                    size="sm"
-                    variant={fsStatus === "connected" ? "outline" : "default"}
-                    className="h-8 text-xs gap-1.5"
-                    disabled={!fsAppKey.trim() || !fsAppSecret.trim() || !fsRobotCode.trim() || fsStatus === "connecting" || fsStatus === "connected"}
-                    onClick={() => {
-                      setFsStatus("connecting");
-                      setFsFailMsg("");
-                      setTimeout(() => {
-                        // Mock 失败规则：RobotCode 以 _fail 结尾 或 任一字段长度 < 4
-                        const ok = !fsRobotCode.endsWith("_fail") && fsAppKey.length >= 4 && fsAppSecret.length >= 4 && fsRobotCode.length >= 4;
-                        if (ok) {
-                          setFsStatus("connected");
-                          toast({ title: "已连接丰声 NEXT 机器人", description: `Robot Code：${fsRobotCode}` });
-                        } else {
-                          setFsStatus("failed");
-                          setFsFailMsg("凭证校验未通过：请检查 Client ID / Client Secret / Robot Code 是否正确");
-                          toast({ title: "连接失败", description: "凭证校验未通过，请检查后重试", variant: "destructive" });
-                        }
-                      }, 800);
-                    }}
-                  >
-                    {fsStatus === "connecting" ? <RotateCcw className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
-                    {fsStatus === "connected" ? "已连接" : fsStatus === "connecting" ? "连接中…" : fsStatus === "failed" ? "重新连接" : "连接"}
-                  </Button>
-                </div>
-              </div>
-            </section>
 
 
             {/* 子智能体缺口配置 - 独立弹窗，避免在主表单中堆叠 */}
@@ -1161,69 +1058,190 @@ fengsheng:
 
 
 
-        {/* ───────── API Key ───────── */}
+        {/* ───────── 集成方式 ───────── */}
         <TabsContent value="apikey" className="mt-4">
-          <section className="border border-border rounded-lg bg-card overflow-hidden">
-            <header className="px-4 py-3 border-b border-border flex items-center justify-between gap-3">
-              <div className="min-w-0 flex items-center gap-2">
-                <div className="w-7 h-7 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                  <KeyRound className="w-3.5 h-3.5" />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="text-sm font-semibold leading-tight">API Key</h3>
-                  <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
-                    完整密钥仅在生成时展示一次，列表只展示首尾片段
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 shrink-0">
-                <a
-                  href="https://docs.example.com/api"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-xs text-primary hover:underline inline-flex items-center gap-1"
-                >
-                  查看 API 文档 <ExternalLink className="w-3 h-3" />
-                </a>
-                <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => setApiKeyOpen(true)}>
-                  <Plus className="w-3 h-3" />申请 API Key
-                </Button>
-              </div>
-            </header>
-            {apiKeys.length === 0 ? (
-              <div className="py-12 flex flex-col items-center gap-2 text-muted-foreground">
-                <KeyRound className="w-6 h-6 opacity-40" />
-                <p className="text-xs">尚未申请任何 API Key</p>
-              </div>
-            ) : (
-              <ul className="divide-y divide-border">
-                {apiKeys.map((k) => (
-                  <li key={k.id} className="px-4 py-3 flex items-center gap-4 hover:bg-muted/30 transition-colors">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium truncate">{k.name}</span>
-                      </div>
-                      <div className="mt-1 flex items-center gap-3 text-[11px] text-muted-foreground">
-                        <span>创建人 · {k.creator}</span>
-                        <span className="font-mono">{k.createdAt}</span>
-                      </div>
+          <Tabs defaultValue="api">
+            <TabsList className="h-8 bg-muted/40 p-0.5 rounded-md">
+              <TabsTrigger value="api" className="h-7 px-3 text-xs gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                <KeyRound className="w-3.5 h-3.5" />API 调用
+              </TabsTrigger>
+              <TabsTrigger value="fengsheng" className="h-7 px-3 text-xs gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                <MessageSquare className="w-3.5 h-3.5" />丰声 NEXT 调用
+              </TabsTrigger>
+            </TabsList>
+
+            {/* API 调用 */}
+            <TabsContent value="api" className="mt-3">
+              <section className="border border-border rounded-lg bg-card overflow-hidden">
+                <header className="px-4 py-3 border-b border-border flex items-center justify-between gap-3">
+                  <div className="min-w-0 flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <KeyRound className="w-3.5 h-3.5" />
                     </div>
-                    <code className="text-[11px] font-mono px-2 py-1 rounded-md bg-muted/60 text-foreground/80 shrink-0">
-                      {k.masked}
-                    </code>
-                    <button
-                      onClick={() => setApiKeys((prev) => prev.filter((x) => x.id !== k.id))}
-                      className="text-muted-foreground hover:text-destructive p-1 shrink-0"
-                      title="吊销"
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-semibold leading-tight">API Key</h3>
+                      <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                        完整密钥仅在生成时展示一次，列表只展示首尾片段
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <a
+                      href="https://docs.example.com/api"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-xs text-primary hover:underline inline-flex items-center gap-1"
                     >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
+                      查看 API 文档 <ExternalLink className="w-3 h-3" />
+                    </a>
+                    <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => setApiKeyOpen(true)}>
+                      <Plus className="w-3 h-3" />申请 API Key
+                    </Button>
+                  </div>
+                </header>
+                {apiKeys.length === 0 ? (
+                  <div className="py-12 flex flex-col items-center gap-2 text-muted-foreground">
+                    <KeyRound className="w-6 h-6 opacity-40" />
+                    <p className="text-xs">尚未申请任何 API Key</p>
+                  </div>
+                ) : (
+                  <ul className="divide-y divide-border">
+                    {apiKeys.map((k) => (
+                      <li key={k.id} className="px-4 py-3 flex items-center gap-4 hover:bg-muted/30 transition-colors">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-medium truncate">{k.name}</span>
+                          </div>
+                          <div className="mt-1 flex items-center gap-3 text-[11px] text-muted-foreground">
+                            <span>创建人 · {k.creator}</span>
+                            <span className="font-mono">{k.createdAt}</span>
+                          </div>
+                        </div>
+                        <code className="text-[11px] font-mono px-2 py-1 rounded-md bg-muted/60 text-foreground/80 shrink-0">
+                          {k.masked}
+                        </code>
+                        <button
+                          onClick={() => setApiKeys((prev) => prev.filter((x) => x.id !== k.id))}
+                          className="text-muted-foreground hover:text-destructive p-1 shrink-0"
+                          title="吊销"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            </TabsContent>
+
+            {/* 丰声 NEXT 调用 */}
+            <TabsContent value="fengsheng" className="mt-3">
+              <section className="border border-border rounded-lg bg-card">
+                <header className="px-4 py-2.5 border-b border-border flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-semibold flex items-center gap-1.5">
+                      <MessageSquare className="w-3.5 h-3.5 text-primary" />丰声 NEXT 机器人
+                    </h3>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">把智能体发布为群聊机器人，成员 @ 即可触发；不配置不影响其他渠道使用</p>
+                  </div>
+                  {(() => {
+                    const cfg: Record<FsStatus, { dot: string; cls: string; label: string }> = {
+                      empty: { dot: "bg-muted-foreground/50", cls: "text-muted-foreground", label: "未配置" },
+                      draft: { dot: "bg-muted-foreground/50", cls: "text-muted-foreground", label: "未连接" },
+                      connecting: { dot: "bg-primary animate-pulse", cls: "text-primary border-primary/40 bg-primary/10", label: "连接中…" },
+                      connected: { dot: "bg-emerald-500", cls: "text-emerald-600 border-emerald-600/40 bg-emerald-500/10", label: "已连接" },
+                      failed: { dot: "bg-destructive", cls: "text-destructive border-destructive/40 bg-destructive/10", label: "连接失败" },
+                    };
+                    const c = cfg[fsStatus];
+                    return (
+                      <Badge variant="outline" className={`shrink-0 text-[10px] gap-1 ${c.cls}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
+                        {c.label}
+                      </Badge>
+                    );
+                  })()}
+                </header>
+                <div className="p-4 space-y-3">
+                  <FengshengHowToCard />
+                  <div>
+                    <Label className="text-xs">Client ID（AppKey） <span className="text-destructive">*</span></Label>
+                    <Input
+                      className="mt-1.5 h-8 text-xs font-mono"
+                      placeholder="企业应用 AppKey"
+                      value={fsAppKey}
+                      onChange={(e) => { setFsAppKey(e.target.value); onFsFieldChange({ appKey: e.target.value }); }}
+                      id="fs-app-key"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Client Secret（AppSecret） <span className="text-destructive">*</span></Label>
+                    <div className="relative mt-1.5">
+                      <Input
+                        className="h-8 text-xs font-mono pr-9"
+                        type={fsSecretVisible ? "text" : "password"}
+                        placeholder="企业应用 AppSecret"
+                        value={fsAppSecret}
+                        onChange={(e) => { setFsAppSecret(e.target.value); onFsFieldChange({ appSecret: e.target.value }); }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setFsSecretVisible(!fsSecretVisible)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        {fsSecretVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-xs">Robot Code <span className="text-destructive">*</span></Label>
+                    <Input
+                      className="mt-1.5 h-8 text-xs font-mono"
+                      placeholder="机器人编码"
+                      value={fsRobotCode}
+                      onChange={(e) => { setFsRobotCode(e.target.value); onFsFieldChange({ robotCode: e.target.value }); }}
+                    />
+                    <p className="text-[10px] text-muted-foreground mt-1.5">在丰声 NEXT 开发者后台「机器人管理」中获取，凭据将通过「凭据管理」加密存储</p>
+                  </div>
+
+                  {fsStatus === "failed" && (
+                    <div className="border border-destructive/40 bg-destructive/5 rounded px-2.5 py-2 text-[11px] text-destructive flex items-start gap-1.5">
+                      <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                      <span>{fsFailMsg || "凭证校验未通过，请检查 Client ID / Client Secret / Robot Code 是否正确"}</span>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-end pt-1">
+                    <Button
+                      size="sm"
+                      variant={fsStatus === "connected" ? "outline" : "default"}
+                      className="h-8 text-xs gap-1.5"
+                      disabled={!fsAppKey.trim() || !fsAppSecret.trim() || !fsRobotCode.trim() || fsStatus === "connecting" || fsStatus === "connected"}
+                      onClick={() => {
+                        setFsStatus("connecting");
+                        setFsFailMsg("");
+                        setTimeout(() => {
+                          const ok = !fsRobotCode.endsWith("_fail") && fsAppKey.length >= 4 && fsAppSecret.length >= 4 && fsRobotCode.length >= 4;
+                          if (ok) {
+                            setFsStatus("connected");
+                            toast({ title: "已连接丰声 NEXT 机器人", description: `Robot Code：${fsRobotCode}` });
+                          } else {
+                            setFsStatus("failed");
+                            setFsFailMsg("凭证校验未通过：请检查 Client ID / Client Secret / Robot Code 是否正确");
+                            toast({ title: "连接失败", description: "凭证校验未通过，请检查后重试", variant: "destructive" });
+                          }
+                        }, 800);
+                      }}
+                    >
+                      {fsStatus === "connecting" ? <RotateCcw className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
+                      {fsStatus === "connected" ? "已连接" : fsStatus === "connecting" ? "连接中…" : fsStatus === "failed" ? "重新连接" : "连接"}
+                    </Button>
+                  </div>
+                </div>
+              </section>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
+
       </Tabs>
 
       {/* Edit basic info dialog */}
