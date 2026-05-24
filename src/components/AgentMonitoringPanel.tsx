@@ -346,6 +346,24 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
           </LineChart>
         </ChartCard>
 
+        <ChartCard title="错误率" subtitle="（%）">
+          <AreaChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="gErr" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#ef4444" stopOpacity={0.3} />
+                <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+            <XAxis dataKey="t" {...axisProps} />
+            <YAxis {...axisProps} />
+            <Tooltip {...tooltipStyle} />
+            <Area type="monotone" dataKey="errRate" stroke="#ef4444" fill="url(#gErr)" strokeWidth={1.5} />
+          </AreaChart>
+        </ChartCard>
+
+
+
         <ChartCard title="CPU 使用率" subtitle="（%）">
           <AreaChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
             <defs>
