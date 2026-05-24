@@ -1362,12 +1362,13 @@ const CreateAgentPage = () => {
                     <button
                       onClick={() => setConfigViewMode("raw")}
                       className={`p-1 rounded transition-colors ${
-                        configViewMode === "raw" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                        (configViewMode as string) === "raw" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
                       }`}
                       title="代码视图"
                     >
                       <Code2 className="w-3.5 h-3.5" />
                     </button>
+
                   </div>
                 }
                 onRegeneratePrompt={async () => {
