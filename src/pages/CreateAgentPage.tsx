@@ -1314,6 +1314,24 @@ const CreateAgentPage = () => {
                   </div>
                 ) : msg.type === "tool-calls" && msg.toolCalls ? (
                   <ToolCallGroup calls={msg.toolCalls} />
+                ) : msg.type === "clarify" ? (
+                  <div className="border border-border rounded-lg p-3 bg-card space-y-2">
+                    <p className="text-xs text-foreground">{msg.content}</p>
+                    <ul className="space-y-1.5">
+                      {msg.clarifyQuestions?.map((q, i) => (
+                        <li key={i} className="flex items-start gap-1.5 text-[11px] text-muted-foreground">
+                          <span className="text-primary mt-0.5">•</span>
+                          <span>{q}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : msg.type === "proposal" && msg.proposal ? (
+                  <ProposalCardInline
+                    msg={msg}
+                    onAccept={() => handleAcceptProposal(msg.id)}
+                    onWithdraw={() => handleWithdrawProposal(msg.id)}
+                  />
                 ) : msg.type === "assembly" ? (
                   <div className="flex items-center gap-2 text-xs text-muted-foreground py-1">
                     <Loader2 className="w-3.5 h-3.5 animate-spin text-primary shrink-0" />
