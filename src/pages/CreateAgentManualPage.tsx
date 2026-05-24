@@ -16,6 +16,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { toast } from "@/hooks/use-toast";
 import { categories, getActiveSkills, getActiveMCPs, mockAgents, mockCredentials, mockApiKeys } from "@/data/mockData";
+import { getEnvironments } from "@/data/environments";
+import { Box } from "lucide-react";
 import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
 import { AIStatusPill } from "@/components/AIStatusPill";
@@ -102,6 +104,8 @@ const CreateAgentManualPage = () => {
   // Model
   const [model, setModel] = useState("aliyun/qwen3.6-plus");
   const [apiKey, setApiKey] = useState("");
+  const envOptions = getEnvironments();
+  const [envId, setEnvId] = useState(envOptions[0]?.envId ?? "env-default");
 
   // Prompt
   const [systemPrompt, setSystemPrompt] = useState("");
@@ -804,6 +808,21 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                     </Command>
                   </PopoverContent>
                 </Popover>
+
+                {/* 运行环境 */}
+                <Label className="text-xs mt-3 flex items-center gap-1.5"><Box className="w-3 h-3 text-muted-foreground" />运行环境</Label>
+                <Select value={envId} onValueChange={setEnvId}>
+                  <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {envOptions.map((e) => (
+                      <SelectItem key={e.envId} value={e.envId} className="text-xs">
+                        <span className="font-medium">{e.name}</span>
+                        <span className="ml-2 text-[10px] text-muted-foreground">{e.spec} · {e.envId}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-[10px] text-muted-foreground mt-1">Agent 执行任务所使用的运行时环境，可在「环境管理」中创建</p>
               </div>
             </div>
 
