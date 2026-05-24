@@ -238,7 +238,7 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
                 if (rangeKey !== "custom") setCustomEnd(fmtInput(end));
                 setRangeKey("custom");
               }}
-              className="h-7 w-[168px] text-[11px] px-2"
+              className="h-7 w-[176px] min-w-[176px] text-[11px] md:text-[11px] px-2 pr-1 [&::-webkit-calendar-picker-indicator]:ml-1 [&::-webkit-calendar-picker-indicator]:h-3.5 [&::-webkit-calendar-picker-indicator]:w-3.5 [&::-webkit-datetime-edit]:text-[11px]"
             />
             <span className="text-muted-foreground">~</span>
             <Input
@@ -249,7 +249,7 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
                 if (rangeKey !== "custom") setCustomStart(fmtInput(start));
                 setRangeKey("custom");
               }}
-              className="h-7 w-[168px] text-[11px] px-2"
+              className="h-7 w-[176px] min-w-[176px] text-[11px] md:text-[11px] px-2 pr-1 [&::-webkit-calendar-picker-indicator]:ml-1 [&::-webkit-calendar-picker-indicator]:h-3.5 [&::-webkit-calendar-picker-indicator]:w-3.5 [&::-webkit-datetime-edit]:text-[11px]"
             />
           </div>
 
