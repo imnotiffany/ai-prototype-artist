@@ -1343,7 +1343,7 @@ const CreateAgentPage = () => {
               {rightTabs.map((tab, i) => {
                 const Icon = tab.icon;
                 const active = rightTab === tab.key;
-                const disabled = tab.key === "debug" && !hasSaved;
+                const disabled = tab.key === "debug" && debugLocked;
                 const sub = tab.sub;
                 const dotCls = disabled
                   ? "bg-muted text-muted-foreground border-border"
