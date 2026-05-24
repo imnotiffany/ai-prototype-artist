@@ -949,8 +949,10 @@ fengsheng:
             </Dialog>
               </>
             )}
+            </div>
           </div>
         </TabsContent>
+
 
         {/* ───────── 会话记录 ───────── */}
         <TabsContent value="runs" className="mt-4">
