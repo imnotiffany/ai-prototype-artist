@@ -857,29 +857,29 @@ fengsheng:
                       const available = isMcpAvailableInVault(b.name);
                       const credMissing = needsCred && !available;
                       return (
-                        <div key={b.name} className={`border rounded-md p-3 flex items-center justify-between gap-3 ${credMissing ? "border-amber-300 bg-amber-50/40" : "border-border"}`}>
-                          <div className="min-w-0 flex items-center gap-2 flex-wrap">
-                            <span className="text-xs font-medium truncate">{b.name}</span>
-                            {credMissing ? (
-                              <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-0 text-[10px] h-4 gap-1">
-                                <AlertTriangle className="w-2.5 h-2.5" />MCP 管理中未添加
-                              </Badge>
-                            ) : needsCred ? (
-                              <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0 text-[10px] h-4 gap-1">
-                                <CheckCircle2 className="w-2.5 h-2.5" />已就绪 · 凭据由 MCP 管理维护
-                              </Badge>
-                            ) : null}
-                          </div>
-                          <div className="flex items-center gap-1 shrink-0">
-                            {credMissing && (
-                              <Button size="sm" variant="outline" className="h-7 text-[11px]" onClick={() => navigate("/vault")}>
-                                前往 MCP 管理
-                              </Button>
-                            )}
-                            <button onClick={() => removeMcp(i)} className="text-muted-foreground hover:text-destructive p-1" title="移除">
+                        <div key={b.name} className={`border rounded-md p-3 ${credMissing ? "border-destructive/40 bg-destructive/5" : "border-border"}`}>
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="min-w-0 flex items-center gap-2 flex-wrap">
+                              <span className={`text-xs font-medium truncate ${credMissing ? "text-destructive" : ""}`}>{b.name}</span>
+                              {credMissing ? (
+                                <Badge className="bg-destructive/15 text-destructive hover:bg-destructive/15 border-0 text-[10px] h-4 gap-1">
+                                  <AlertTriangle className="w-2.5 h-2.5" />非市场 MCP · 不可用
+                                </Badge>
+                              ) : needsCred ? (
+                                <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0 text-[10px] h-4 gap-1">
+                                  <CheckCircle2 className="w-2.5 h-2.5" />已就绪 · 凭据由 MCP 管理维护
+                                </Badge>
+                              ) : null}
+                            </div>
+                            <button onClick={() => removeMcp(i)} className="text-muted-foreground hover:text-destructive p-1 shrink-0" title="移除">
                               <X className="w-3.5 h-3.5" />
                             </button>
                           </div>
+                          {credMissing && (
+                            <p className="text-[11px] text-destructive/80 mt-1.5 leading-relaxed">
+                              该 MCP 未在「MCP 管理」中配置，当前不可用。请先前往 <button onClick={() => navigate("/vault")} className="underline font-medium hover:text-destructive">MCP 管理</button> 配置好后，再手动添加到本智能体。
+                            </p>
+                          )}
                         </div>
                       );
                     })}
