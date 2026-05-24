@@ -877,9 +877,6 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                             </PopoverContent>
                           </Popover>
                         )}
-                        {!needsCred && (
-                          <Badge variant="outline" className="border-emerald-300 text-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30 text-[10px] h-4 px-1">免凭据</Badge>
-                        )}
                         <button onClick={() => toggle(selMCPs, setSelMCPs, mcpName)} className="text-muted-foreground hover:text-destructive p-0.5" title="移除">
                           <X className="w-3 h-3" />
                         </button>
