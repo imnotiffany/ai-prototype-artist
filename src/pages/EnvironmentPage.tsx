@@ -183,7 +183,7 @@ const EnvironmentPage = () => {
                         size="sm"
                         variant="ghost"
                         className="h-7 w-7 p-0"
-                        onClick={() => toast({ title: "编辑环境", description: `${e.name} · 编辑功能即将上线` })}
+                        onClick={() => openEdit(e)}
                       >
                         <Pencil className="w-3.5 h-3.5" />
                       </Button>
