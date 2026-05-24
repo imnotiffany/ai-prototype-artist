@@ -22,6 +22,7 @@ import { toast } from "@/hooks/use-toast";
 import { AIStatusPill } from "@/components/AIStatusPill";
 import { ToolCallGroup, type ToolCall } from "@/components/ToolCallCard";
 import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
+import { PublishAgentDialog } from "@/components/PublishAgentDialog";
 import { mcpRequiresCredential, mockCredentials, categories, mockApiKeys } from "@/data/mockData";
 import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { AlertTriangle, FolderKanban, ArrowRight } from "lucide-react";
@@ -293,7 +294,7 @@ const StructuredConfigView = ({
             title={saveDisabled ? saveDisabledReason : "保存配置"}
           >
             <Save className="w-3 h-3" />
-            保存
+            保存并测试
           </Button>
         </div>
       </div>
@@ -829,10 +830,10 @@ const AssemblySummaryCard = ({
       {/* 操作按钮 */}
       <div className="flex items-center gap-2 pt-1">
         <Button size="sm" className="h-8 text-xs gap-1.5 flex-1" onClick={onSave}>
-          <Save className="w-3.5 h-3.5" /> 保存
+          <Save className="w-3.5 h-3.5" /> 保存并测试
         </Button>
         <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5 flex-1" onClick={onDebug}>
-          <Bug className="w-3.5 h-3.5" /> 立即调试
+          <Bug className="w-3.5 h-3.5" /> 立即测试
         </Button>
       </div>
       {pending.length > 0 && (
@@ -870,6 +871,7 @@ const CreateAgentPage = () => {
   const [promptSnapshot, setPromptSnapshot] = useState<PromptSnapshot | null>(null);
   const [agentCreated, setAgentCreated] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
+  const [publishDialogOpen, setPublishDialogOpen] = useState(false);
   // Save 确认卡片字段（仿手动组装）
   const [saveName, setSaveName] = useState("");
   const [saveDesc, setSaveDesc] = useState("");
@@ -898,7 +900,7 @@ const CreateAgentPage = () => {
     {
       id: uid(),
       role: "system",
-      content: "👋 描述你想要创建的智能体，可以附带选择需要的 MCP 和 Skill 服务。系统会自动组装并生成配置。",
+      content: "👋 你好！这里是「智能体共创助手」。\n\n💬 在下方对话框里用一句话描述你想要的智能体，我会自动帮你装配 MCP / Skill / 系统提示词，生成右侧的配置。\n✏️ 之后你可以继续在这里和我聊，例如「换成 deepseek-v4-pro」「加一个网页搜索能力」「优化系统提示词」，右侧配置会同步更新。\n💾 配置完成后，点击右侧的「保存并测试」即可进入第 2 步，向智能体发消息进行真实测试。",
       type: "text",
     },
   ]);
@@ -1166,7 +1168,7 @@ const CreateAgentPage = () => {
 
   const rightTabs = [
     { key: "config" as const, label: "能力配置", icon: Settings2 },
-    { key: "debug" as const, label: "调试", icon: Bug },
+    { key: "debug" as const, label: "测试", icon: Bug },
   ];
   const promptDirty = !!diffSnapshot(
     { skills: agentConfig.skills, mcpServers: agentConfig.mcpServers, subagents: agentConfig.subagents },
@@ -1330,11 +1332,25 @@ const CreateAgentPage = () => {
                 );
               })}
             </div>
-            {rightTab === "debug" && (
-              <div className="flex items-center gap-1 bg-muted/50 rounded p-0.5 shrink-0">
+            {rightTab === "debug" && hasSaved && (
+              <Button
+                size="sm"
+                className="h-7 text-[11px] gap-1.5 px-3 shrink-0"
+                onClick={() => setPublishDialogOpen(true)}
+              >
+                <Rocket className="w-3 h-3" />
+                发布
+              </Button>
+            )}
+          </div>
+
+          {/* 测试子视图切换器（左对齐，紧贴 stepper 下方） */}
+          {rightTab === "debug" && (
+            <div className="border-b border-border px-3 py-2 flex items-center">
+              <div className="inline-flex items-center gap-1 bg-muted/50 rounded p-0.5">
                 <button
                   onClick={() => setDebugSubTab("preview")}
-                  className={`px-2 py-1 text-[11px] rounded transition-colors flex items-center gap-1 ${
+                  className={`px-2.5 py-1 text-[11px] rounded transition-colors flex items-center gap-1 ${
                     debugSubTab === "preview" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -1343,7 +1359,7 @@ const CreateAgentPage = () => {
                 </button>
                 <button
                   onClick={() => setDebugSubTab("logs")}
-                  className={`px-2 py-1 text-[11px] rounded transition-colors flex items-center gap-1 ${
+                  className={`px-2.5 py-1 text-[11px] rounded transition-colors flex items-center gap-1 ${
                     debugSubTab === "logs" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -1351,8 +1367,9 @@ const CreateAgentPage = () => {
                   调试视图
                 </button>
               </div>
-            )}
-          </div>
+            </div>
+          )}
+
 
 
           {/* Content */}
@@ -1404,7 +1421,7 @@ const CreateAgentPage = () => {
               <div className="flex-1 flex flex-col min-h-0">
                 <div className="border-b border-border px-3 py-2 flex items-center justify-end gap-2">
                   <Button size="sm" className="h-7 text-[11px] gap-1.5 px-3" onClick={openSaveDialog} disabled={promptDirty} title={saveDisabledReason}>
-                    <Save className="w-3 h-3" /> 保存
+                    <Save className="w-3 h-3" /> 保存并测试
                   </Button>
                 </div>
                 <RawConfigView config={agentConfig} />
@@ -1505,10 +1522,10 @@ const CreateAgentPage = () => {
           <DialogHeader>
             <DialogTitle className="text-sm flex items-center gap-1.5">
               <FolderKanban className="w-4 h-4 text-primary" />
-              保存到项目管理
+              保存并测试
             </DialogTitle>
             <DialogDescription className="text-[11px]">
-              确认基础信息后保存为新版本（{agentConfig.version}）。如需发布，请在项目管理或详情页右上角的「发布」按钮中操作。
+              确认基础信息后保存为新版本（{agentConfig.version}），并立即进入测试。如需发布，请在测试页右上角的「发布」按钮中操作。
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-1">
@@ -1560,20 +1577,6 @@ const CreateAgentPage = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-center justify-between border border-border rounded-lg px-3 py-2">
-              <div>
-                <p className="text-xs text-foreground">支持复制</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">允许其他成员复制本智能体作为模板</p>
-              </div>
-              <Switch checked={saveAllowCopy} onCheckedChange={setSaveAllowCopy} />
-            </div>
-            <div className="flex items-center justify-between border border-border rounded-lg px-3 py-2">
-              <div>
-                <p className="text-xs text-foreground">同步发布到 Agent Hub</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">开启后保存即同步发布，并提供运行监控</p>
-              </div>
-              <Switch checked={savePublishToHub} onCheckedChange={setSavePublishToHub} />
-            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setPublishOpen(false)}>取消</Button>
@@ -1589,18 +1592,30 @@ const CreateAgentPage = () => {
                 setAgentCreated(true);
                 setHasSaved(true);
                 setPublishOpen(false);
+                setRightTab("debug");
+                setDebugSubTab("preview");
 
                 toast({
-                  title: "已保存到项目管理",
-                  description: `${saveName.trim()} · ${saveCategory}${savePublishToHub ? "（已同步发布到 Agent Hub）" : ""}`,
+                  title: "已保存，进入测试",
+                  description: `${saveName.trim()} · ${saveCategory}`,
                 });
               }}
             >
-              <Save className="w-3 h-3" /> 保存
+              <Bug className="w-3 h-3" /> 保存并测试
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* 发布对话框（与其他入口一致） */}
+      <PublishAgentDialog
+        open={publishDialogOpen}
+        onOpenChange={setPublishDialogOpen}
+        agentName={saveName || agentConfig.name || ""}
+        agentDescription={saveDesc}
+        agentCategory={saveCategory}
+        agentAllowCopy={saveAllowCopy}
+      />
     </div>
   );
 };

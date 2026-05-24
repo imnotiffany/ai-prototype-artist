@@ -177,10 +177,10 @@ export function AgentLogsPanel() {
 
         <Select value={instance} onValueChange={setInstance}>
           <SelectTrigger className="h-7 w-[180px] text-[11px]">
-            <SelectValue />
+            <SelectValue placeholder="筛选会话ID" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all" className="text-xs">全部实例</SelectItem>
+            <SelectItem value="all" className="text-xs">筛选会话ID</SelectItem>
             {INSTANCES.map((i) => (
               <SelectItem key={i} value={i} className="text-xs font-mono">
                 {i.slice(0, 18)}…
@@ -189,10 +189,6 @@ export function AgentLogsPanel() {
           </SelectContent>
         </Select>
 
-        <div className="flex items-center gap-1.5">
-          <Switch checked={autoRefresh} onCheckedChange={setAutoRefresh} />
-          <span className="text-[11px] text-muted-foreground">自动刷新</span>
-        </div>
 
         <div className="ml-auto flex items-center gap-0.5">
           <Button
