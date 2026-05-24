@@ -218,10 +218,10 @@ const EnvironmentPage = () => {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-sm">{editingId ? "编辑环境" : "新建环境"}</DialogTitle>
-            <DialogDescription className="text-[11px]">配置环境的资源、依赖包与网络策略</DialogDescription>
+            <DialogTitle className="text-sm">{readOnly ? "查看环境" : editingId ? "编辑环境" : "新建环境"}</DialogTitle>
+            <DialogDescription className="text-[11px]">{readOnly ? "默认环境为系统预置，仅供查看" : "配置环境的资源、依赖包与网络策略"}</DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 py-1">
+          <div className="space-y-3 py-1 max-h-[60vh] overflow-y-auto pr-1">
             <div>
               <Label className="text-xs">环境名称 <span className="text-destructive">*</span></Label>
               <Input
