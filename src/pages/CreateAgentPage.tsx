@@ -246,13 +246,21 @@ const StructuredConfigView = ({
   onConfigChange,
   promptSnapshot,
   onRegeneratePrompt,
-  onDismissPromptSync,
+  onAcknowledgePrompt,
+  onSave,
+  saveDisabled,
+  saveDisabledReason,
+  viewModeSwitcher,
 }: {
   config: AgentConfig;
   onConfigChange: (c: AgentConfig) => void;
   promptSnapshot: PromptSnapshot | null;
   onRegeneratePrompt: () => Promise<void> | void;
-  onDismissPromptSync: () => void;
+  onAcknowledgePrompt: () => void;
+  onSave: () => void;
+  saveDisabled: boolean;
+  saveDisabledReason?: string;
+  viewModeSwitcher?: React.ReactNode;
 }) => {
   const [toolsOpen, setToolsOpen] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
@@ -270,19 +278,38 @@ const StructuredConfigView = ({
 
   return (
     <div className="flex-1 overflow-auto">
+      {/* Sticky 保存栏 */}
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border px-3 py-2 flex items-center gap-2">
+        {viewModeSwitcher}
+        <div className="ml-auto flex items-center gap-2">
+          {saveDisabled && saveDisabledReason && (
+            <span className="text-[11px] text-muted-foreground hidden sm:inline">{saveDisabledReason}</span>
+          )}
+          <Button
+            size="sm"
+            className="h-7 text-[11px] gap-1.5 px-3"
+            onClick={onSave}
+            disabled={saveDisabled}
+            title={saveDisabled ? saveDisabledReason : "保存配置"}
+          >
+            <Save className="w-3 h-3" />
+            保存
+          </Button>
+        </div>
+      </div>
+
       {diff && (
         <div className="mx-3 mt-3 flex items-center gap-2 rounded-md border border-amber-300/60 bg-amber-50/70 dark:bg-amber-950/20 dark:border-amber-800/50 pl-2.5 pr-1.5 py-1 text-[12px]">
           <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
           <span className="text-amber-900 dark:text-amber-100 truncate">
-            能力已变更，System Prompt 待同步
+            能力已变更，请同步更新系统提示词
           </span>
-          <div className="ml-auto flex items-center gap-0.5 shrink-0">
+          <div className="ml-auto flex items-center gap-1 shrink-0">
             <Button
               size="sm"
-              variant="ghost"
               onClick={handleRegen}
               disabled={regenerating}
-              className="h-6 px-2 text-[11px] gap-1 text-amber-900 hover:bg-amber-100 dark:text-amber-100 dark:hover:bg-amber-900/40"
+              className="h-6 px-2 text-[11px] gap-1 bg-amber-500 hover:bg-amber-600 text-white border-0"
             >
               {regenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
               {regenerating ? "更新中" : "AI 更新"}
@@ -290,7 +317,7 @@ const StructuredConfigView = ({
             <Button
               size="icon"
               variant="ghost"
-              onClick={onDismissPromptSync}
+              onClick={onAcknowledgePrompt}
               className="h-6 w-6 text-amber-900/60 hover:bg-amber-100 dark:text-amber-100/60 dark:hover:bg-amber-900/40"
               aria-label="忽略"
             >
@@ -303,14 +330,6 @@ const StructuredConfigView = ({
       <div className="divide-y divide-border">
         {/* 名称在「保存」时弹出确认卡片中编辑，配置区不展示 */}
 
-        {/* Version 在自动创建调试页固定为 v0.0.1，隐藏切换器 */}
-        <div className="px-5 py-4">
-          <label className="text-xs font-medium text-muted-foreground mb-2 block">Version</label>
-          <div className="h-8 px-3 flex items-center text-xs text-foreground bg-muted/30 rounded border border-border">
-            {config.version}
-            <span className="ml-auto text-[10px] text-muted-foreground">首次创建固定版本</span>
-          </div>
-        </div>
 
         {/* Model */}
         <div className="px-5 py-4">
