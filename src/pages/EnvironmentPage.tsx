@@ -18,24 +18,34 @@ type PkgManager = (typeof PKG_MANAGERS)[number];
 
 
 
+const specToValue = (spec: string) => {
+  const s = spec.replace(/\s/g, "");
+  if (s.startsWith("1C")) return "1C2G";
+  if (s.startsWith("2C")) return "2C4G";
+  if (s.startsWith("8C")) return "8C32G";
+  return "4C8G";
+};
+
 const EnvironmentPage = () => {
   const [envs, setEnvs] = useState<EnvItem[]>(getEnvironments().length ? getEnvironments() : defaultEnvironments);
   const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [keyword, setKeyword] = useState("");
   type DepRow = { manager: PkgManager; spec: string };
+  const emptyForm = {
+    name: "",
+    description: "",
+    spec: "4C8G",
+    deps: [{ manager: "pip" as PkgManager, spec: "" }],
+    network: "internet",
+  };
   const [form, setForm] = useState<{
     name: string;
     description: string;
     spec: string;
     deps: DepRow[];
     network: string;
-  }>({
-    name: "",
-    description: "",
-    spec: "4C8G",
-    deps: [{ manager: "pip", spec: "" }],
-    network: "internet",
-  });
+  }>(emptyForm);
 
 
   const filtered = useMemo(() => {
@@ -49,31 +59,61 @@ const EnvironmentPage = () => {
     setEnvironments(next);
   };
 
+  const openCreate = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+    setOpen(true);
+  };
+
+  const openEdit = (e: EnvItem) => {
+    setEditingId(e.id);
+    setForm({
+      name: e.name,
+      description: e.description || "",
+      spec: specToValue(e.spec),
+      deps: [{ manager: "pip", spec: "" }],
+      network: "internet",
+    });
+    setOpen(true);
+  };
+
   const submit = () => {
     if (!form.name.trim()) {
       toast({ title: "请填写环境名称", variant: "destructive" });
       return;
     }
     const validDeps = form.deps.filter((d) => d.spec.trim());
-
     const specLabel = form.spec === "1C2G" ? "1C 2G" : form.spec === "2C4G" ? "2C 4G" : form.spec === "4C8G" ? "4C 8G" : "8C 32G";
-    const next: EnvItem[] = [
-      {
-        id: genEnvId(),
-        envId: genEnvId(),
-        name: form.name.trim(),
-        spec: specLabel,
-        deps: validDeps.length,
-        agents: 0,
-        updatedAt: new Date().toISOString().slice(0, 16).replace("T", " "),
-        description: form.description,
-      },
-      ...envs,
-    ];
-    persist(next);
-    toast({ title: "环境已创建", description: `${form.name}` });
+    const updatedAt = new Date().toISOString().slice(0, 16).replace("T", " ");
+
+    if (editingId) {
+      const next = envs.map((x) =>
+        x.id === editingId
+          ? { ...x, name: form.name.trim(), description: form.description, spec: specLabel, deps: validDeps.length || x.deps, updatedAt }
+          : x,
+      );
+      persist(next);
+      toast({ title: "环境已更新", description: form.name });
+    } else {
+      const next: EnvItem[] = [
+        {
+          id: genEnvId(),
+          envId: genEnvId(),
+          name: form.name.trim(),
+          spec: specLabel,
+          deps: validDeps.length,
+          agents: 0,
+          updatedAt,
+          description: form.description,
+        },
+        ...envs,
+      ];
+      persist(next);
+      toast({ title: "环境已创建", description: form.name });
+    }
     setOpen(false);
-    setForm({ name: "", description: "", spec: "4C8G", deps: [{ manager: "pip", spec: "" }], network: "internet" });
+    setEditingId(null);
+    setForm(emptyForm);
   };
 
   return (
@@ -89,7 +129,7 @@ const EnvironmentPage = () => {
               Agent 执行任务时使用的一套可复用配置，包含资源规格、基础运行时、依赖包、网络权限、存储和安全配置
             </p>
           </div>
-          <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setOpen(true)}>
+          <Button size="sm" className="h-8 text-xs gap-1.5" onClick={openCreate}>
             <Plus className="w-3.5 h-3.5" /> 新建环境
           </Button>
         </div>
@@ -143,7 +183,7 @@ const EnvironmentPage = () => {
                         size="sm"
                         variant="ghost"
                         className="h-7 w-7 p-0"
-                        onClick={() => toast({ title: "编辑环境", description: `${e.name} · 编辑功能即将上线` })}
+                        onClick={() => openEdit(e)}
                       >
                         <Pencil className="w-3.5 h-3.5" />
                       </Button>
@@ -175,7 +215,7 @@ const EnvironmentPage = () => {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-sm">新建环境</DialogTitle>
+            <DialogTitle className="text-sm">{editingId ? "编辑环境" : "新建环境"}</DialogTitle>
             <DialogDescription className="text-[11px]">配置环境的资源、依赖包与网络策略</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-1">
@@ -275,7 +315,7 @@ const EnvironmentPage = () => {
           </div>
           <DialogFooter>
             <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setOpen(false)}>取消</Button>
-            <Button size="sm" className="h-8 text-xs" onClick={submit}>创建</Button>
+            <Button size="sm" className="h-8 text-xs" onClick={submit}>{editingId ? "保存" : "创建"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
