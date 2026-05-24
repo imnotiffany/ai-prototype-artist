@@ -201,6 +201,11 @@ const CreateAgentManualPage = () => {
 
   // Publish flow (single-step save)
 
+  // ── 保存门禁 ── 用于"未保存不能调试/接入"的硬约束
+  const [hasSaved, setHasSaved] = useState(false);
+  const [savedSnapshot, setSavedSnapshot] = useState<string | null>(null);
+
+
 
   // After each run, AI proposes optimization (user must adopt to apply)
   const autoOptimizeAfterRun = (userInput: string) => {
