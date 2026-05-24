@@ -1334,7 +1334,7 @@ const CreateAgentPage = () => {
                 const Icon = tab.icon;
                 const active = rightTab === tab.key;
                 const disabled = tab.key === "debug" && !hasSaved;
-                const sub = tab.key === "config" ? "MCP / Skill / 系统提示词" : "对话视图 / 调试日志";
+                const sub = tab.key === "config" ? "MCP / Skill / 子智能体 / 系统提示词" : "对话视图 / 调试日志";
                 const dotCls = disabled
                   ? "bg-muted text-muted-foreground border-border"
                   : active
