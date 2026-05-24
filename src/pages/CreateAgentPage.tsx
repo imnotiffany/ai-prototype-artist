@@ -1162,10 +1162,20 @@ const CreateAgentPage = () => {
   };
 
   const rightTabs = [
-    { key: "config" as const, label: "配置", icon: FormInput },
-    { key: "preview" as const, label: "对话视图", icon: MessageSquare },
-    { key: "logs" as const, label: "调试视图", icon: History },
+    { key: "config" as const, label: "能力配置", icon: Settings2 },
+    { key: "debug" as const, label: "调试", icon: Bug },
   ];
+  const promptDirty = !!diffSnapshot(
+    { skills: agentConfig.skills, mcpServers: agentConfig.mcpServers, subagents: agentConfig.subagents },
+    promptSnapshot,
+  );
+  const saveDisabledReason = promptDirty ? "请先同步系统提示词后再保存" : undefined;
+  const openSaveDialog = () => {
+    setSaveName((prev) => prev || agentConfig.name || "");
+    setSaveDesc((prev) => prev || initialState.description || "");
+    setPublishOpen(true);
+  };
+
 
   return (
     <div className="flex flex-col h-full animate-fade-in">
