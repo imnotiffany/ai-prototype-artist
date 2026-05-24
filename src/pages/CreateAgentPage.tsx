@@ -1166,7 +1166,7 @@ const CreateAgentPage = () => {
 
   const rightTabs = [
     { key: "config" as const, label: "能力配置", icon: Settings2 },
-    { key: "debug" as const, label: "调试", icon: Bug },
+    { key: "debug" as const, label: "测试", icon: Bug },
   ];
   const promptDirty = !!diffSnapshot(
     { skills: agentConfig.skills, mcpServers: agentConfig.mcpServers, subagents: agentConfig.subagents },
