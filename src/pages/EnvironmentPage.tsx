@@ -144,7 +144,7 @@ const EnvironmentPage = () => {
               onChange={(e) => setKeyword(e.target.value)}
             />
           </div>
-          <span className="text-[11px] text-muted-foreground">共 {filtered.length} 个环境</span>
+          
         </div>
 
         <div className="border border-border rounded-lg bg-card">
