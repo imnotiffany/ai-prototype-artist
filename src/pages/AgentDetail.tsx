@@ -1053,6 +1053,11 @@ fengsheng:
           </div>
         </TabsContent>
 
+        {/* ───────── 日志 ───────── */}
+        <TabsContent value="logs" className="mt-4">
+          <AgentLogsPanel />
+        </TabsContent>
+
         {/* ───────── 基础监控 ───────── */}
         <TabsContent value="monitor" className="mt-4">
           <AgentMonitoringPanel />
