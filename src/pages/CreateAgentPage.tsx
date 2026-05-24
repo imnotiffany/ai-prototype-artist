@@ -222,8 +222,51 @@ const AttachmentPicker = ({
 );
 
 /* ── Structured Config View ── */
-const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig; onConfigChange: (c: AgentConfig) => void }) => {
+interface PromptSnapshot {
+  skills: string[];
+  mcpServers: string[];
+  subagents: string[];
+}
+const arrEqual = (a: string[], b: string[]) => a.length === b.length && [...a].sort().join("|") === [...b].sort().join("|");
+const diffSnapshot = (cur: PromptSnapshot, snap: PromptSnapshot | null) => {
+  if (!snap) return null;
+  const diff = (a: string[], b: string[]) => ({
+    added: a.filter((x) => !b.includes(x)),
+    removed: b.filter((x) => !a.includes(x)),
+  });
+  const s = diff(cur.skills, snap.skills);
+  const m = diff(cur.mcpServers, snap.mcpServers);
+  const sa = diff(cur.subagents, snap.subagents);
+  const total = s.added.length + s.removed.length + m.added.length + m.removed.length + sa.added.length + sa.removed.length;
+  return total === 0 ? null : { skills: s, mcps: m, subagents: sa, total };
+};
+
+const StructuredConfigView = ({
+  config,
+  onConfigChange,
+  promptSnapshot,
+  onRegeneratePrompt,
+  onDismissPromptSync,
+}: {
+  config: AgentConfig;
+  onConfigChange: (c: AgentConfig) => void;
+  promptSnapshot: PromptSnapshot | null;
+  onRegeneratePrompt: () => Promise<void> | void;
+  onDismissPromptSync: () => void;
+}) => {
   const [toolsOpen, setToolsOpen] = useState(false);
+  const [regenerating, setRegenerating] = useState(false);
+  const cur: PromptSnapshot = { skills: config.skills, mcpServers: config.mcpServers, subagents: config.subagents };
+  const diff = diffSnapshot(cur, promptSnapshot);
+
+  const handleRegen = async () => {
+    setRegenerating(true);
+    try {
+      await onRegeneratePrompt();
+    } finally {
+      setRegenerating(false);
+    }
+  };
 
   return (
     <div className="flex-1 overflow-auto">
