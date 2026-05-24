@@ -1193,8 +1193,9 @@ const CreateAgentPage = () => {
   };
 
   const rightTabs = [
-    { key: "config" as const, label: "能力配置", icon: Settings2 },
-    { key: "debug" as const, label: "测试", icon: Bug },
+    { key: "config" as const, label: "能力配置", icon: Settings2, sub: "MCP / Skill / 子智能体 / 系统提示词" },
+    { key: "integration" as const, label: "对外接入", icon: MessageSquare, sub: "丰声 NEXT 机器人（可选）" },
+    { key: "debug" as const, label: "调试", icon: Bug, sub: "对话视图 / 调试日志" },
   ];
   const promptDirty = !!diffSnapshot(
     { skills: agentConfig.skills, mcpServers: agentConfig.mcpServers, subagents: agentConfig.subagents },
