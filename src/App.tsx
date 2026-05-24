@@ -9,6 +9,7 @@ import AgentDetail from "./pages/AgentDetail";
 import ChatPage from "./pages/ChatPage";
 
 import VaultPage from "./pages/VaultPage";
+import EnvironmentPage from "./pages/EnvironmentPage";
 import WorkspacePage from "./pages/WorkspacePage";
 import ProjectAgents from "./pages/ProjectAgents";
 import CreateAgentPage from "./pages/CreateAgentPage";
@@ -35,6 +36,7 @@ const App = () => (
           <Route path="/app/:id" element={<AppLayout><AppRunner /></AppLayout>} />
           
           <Route path="/vault" element={<AppLayout><VaultPage /></AppLayout>} />
+          <Route path="/environments" element={<AppLayout><EnvironmentPage /></AppLayout>} />
           <Route path="/workspace" element={<AppLayout><WorkspacePage /></AppLayout>} />
           <Route path="/project-agents" element={<AppLayout><ProjectAgents /></AppLayout>} />
           <Route path="/create" element={<AppLayout><CreatePage /></AppLayout>} />

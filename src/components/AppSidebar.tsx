@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Compass, Plus, FolderOpen, Server } from "lucide-react";
+import { Compass, Plus, FolderOpen, Server, Box } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const menuSections = [
@@ -15,6 +15,7 @@ const menuSections = [
     items: [
       { name: "智能体管理", path: "/project-agents", icon: FolderOpen },
       { name: "MCP 管理", path: "/vault", icon: Server },
+      { name: "环境管理", path: "/environments", icon: Box },
     ],
   },
 ];
