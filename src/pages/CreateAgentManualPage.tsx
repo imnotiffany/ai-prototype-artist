@@ -450,19 +450,55 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
   const debugComplete = debugPassed && !debugLastError;
   const channelsValid = fsConnected || (!fsAppKey && !fsAppSecret && !fsRobotCode);
 
+  // ── Dirty 检测：step 1-3 任一字段变了 → 重置 hasSaved/调试状态，重新上锁 4/5 ──
+  const currentSig = JSON.stringify({
+    name, avatar: uploadedAvatar, category, description,
+    model, apiKey, envId,
+    systemPrompt,
+    selSkills, selMCPs, selSubagents, mcpCredentialMap,
+  });
+  const configDirty = hasSaved && currentSig !== savedSnapshot;
+  const savedAndClean = hasSaved && !configDirty;
+
+  useEffect(() => {
+    if (!hasSaved) return;
+    if (currentSig === savedSnapshot) return;
+    setHasSaved(false);
+    setSavedSnapshot(null);
+    setDebugPassed(false);
+    setDebugAttempted(false);
+    setDebugLastError(false);
+    setDebugChanges([]);
+    if (currentTab === "channels" || currentTab === "debug") {
+      setCurrentTab("prompt");
+      toast({ title: "配置已修改", description: "请回到「系统提示词」重新保存，再进入对外接入和调试", variant: "destructive" });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentSig]);
+
+  const handleSaveAndContinue = () => {
+    if (!basicComplete) { toast({ title: "请填写智能体名称", variant: "destructive" }); setCurrentTab("basic"); return; }
+    if (!promptComplete) { toast({ title: "请完善系统提示词（不少于 20 字）", variant: "destructive" }); return; }
+    setSavedSnapshot(currentSig);
+    setHasSaved(true);
+    toast({ title: "已保存", description: "现在可以配置对外接入或开始调试了" });
+    setCurrentTab("channels");
+  };
+
   const stepStatus = {
     basic: basicComplete ? "done" : "todo",
     capability: basicComplete ? "done" : "locked",
     prompt: basicComplete ? (promptComplete ? "done" : "todo") : "locked",
-    channels: basicComplete && promptComplete ? "todo" : "locked",
-    debug: basicComplete && promptComplete ? (debugComplete ? "done" : debugAttempted ? (debugLastError ? "warn" : "todo") : "todo") : "locked",
+    channels: savedAndClean ? "todo" : "locked",
+    debug: savedAndClean ? (debugComplete ? "done" : debugAttempted ? (debugLastError ? "warn" : "todo") : "todo") : "locked",
   } as const;
 
   const blockingReasons: { msg: string; jumpTo: string }[] = [];
   if (!basicComplete) blockingReasons.push({ msg: "请填写智能体名称", jumpTo: "basic" });
   if (!promptComplete) blockingReasons.push({ msg: "请完善系统提示词（不少于 20 字）", jumpTo: "prompt" });
+  if (!hasSaved || configDirty) blockingReasons.push({ msg: configDirty ? "配置已修改，请回到「系统提示词」重新保存" : "请先在「系统提示词」点击保存", jumpTo: "prompt" });
   if (!channelsValid) blockingReasons.push({ msg: "已启用的对外接入尚未完成连接，请补齐或关闭", jumpTo: "channels" });
-  if (!debugComplete) blockingReasons.push({ msg: debugLastError ? "上一次调试出现错误，请修复后重新调试" : "保存前必须在「调试」中完成至少一次成功运行", jumpTo: "debug" });
+  if (!debugComplete) blockingReasons.push({ msg: debugLastError ? "上一次调试出现错误，请修复后重新调试" : "发布前必须在「调试」中完成至少一次成功运行", jumpTo: "debug" });
   const canSave = blockingReasons.length === 0;
 
   const fsBlocking: FsAlertStatus | null =
