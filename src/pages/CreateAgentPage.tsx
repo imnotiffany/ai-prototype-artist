@@ -881,6 +881,7 @@ const CreateAgentPage = () => {
   const [rightTab, setRightTab] = useState<"config" | "integration" | "debug">("config");
   const [debugSubTab, setDebugSubTab] = useState<"preview" | "logs">("preview");
   const [hasSaved, setHasSaved] = useState(false);
+  const [savedConfigSnapshot, setSavedConfigSnapshot] = useState<string | null>(null);
 
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
