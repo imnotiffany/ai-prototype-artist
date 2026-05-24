@@ -1232,13 +1232,9 @@ const CreateAgentPage = () => {
                 ) : msg.role === "system" ? (
                   <div>
                     {msg.content === "WELCOME_HERO" ? (
-                      <div className="flex flex-col items-center text-center py-10 px-4">
-                        <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                          <Sparkles className="w-5 h-5 text-primary" />
-                        </div>
-                        <h2 className="text-sm font-semibold text-foreground">描述你想创建的智能体</h2>
-                        <p className="text-xs text-muted-foreground mt-1.5 max-w-[280px] leading-relaxed">
-                          在下方对话框输入需求，AI 会自动帮你生成并装配右侧配置
+                      <div className="px-1 py-2">
+                        <p className="text-[11px] text-muted-foreground leading-relaxed">
+                          描述你想创建的智能体，AI 会自动帮你生成并装配右侧配置。
                         </p>
                       </div>
                     ) : msg.content.includes("\n") ? (
@@ -1468,7 +1464,27 @@ const CreateAgentPage = () => {
               />
             ) : (
               <div className="flex-1 flex flex-col min-h-0">
-                <div className="border-b border-border px-3 py-2 flex items-center justify-end gap-2">
+                <div className="border-b border-border px-3 py-2 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1 bg-muted/50 rounded p-0.5">
+                    <button
+                      onClick={() => setConfigViewMode("structured")}
+                      className={`p-1 rounded transition-colors ${
+                        (configViewMode as string) === "structured" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                      }`}
+                      title="结构化视图"
+                    >
+                      <Settings2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => setConfigViewMode("raw")}
+                      className={`p-1 rounded transition-colors ${
+                        configViewMode === "raw" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                      }`}
+                      title="代码视图"
+                    >
+                      <Code2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                   <Button size="sm" className="h-7 text-[11px] gap-1.5 px-3" onClick={openSaveDialog} disabled={promptDirty} title={saveDisabledReason}>
                     <Save className="w-3 h-3" /> 保存并测试
                   </Button>
