@@ -64,6 +64,7 @@ interface AgentConfig {
   version: string;
   model: string;
   apiKey: string;
+  envId: string;
   systemPrompt: string;
   tools: { name: string; id: string; permissions: number; permissionPolicy: string }[];
   skills: string[];
@@ -83,6 +84,7 @@ const defaultConfig: AgentConfig = {
   version: "v0.0.1",
   model: "aliyun/qwen3.6-plus",
   apiKey: "",
+  envId: "env-default",
   systemPrompt: "",
   tools: [{ name: "内置工具", id: "builtin_tools", permissions: 8, permissionPolicy: "Always allow" }],
 
@@ -99,8 +101,10 @@ const DEMO_DEFAULT_SUBAGENTS_COUNT = 2;
 
 /* ── Available Skills & MCPs (from shared resource library) ── */
 import { getActiveSkills, getActiveMCPs } from "@/data/mockData";
+import { getEnvironments } from "@/data/environments";
 const availableSkills = getActiveSkills();
 const availableMCPs = getActiveMCPs();
+const availableEnvs = getEnvironments();
 const availableSubagents = availableSkills.slice(0, 8).map((s) => ({
   name: `${s.name} 子智能体`,
   description: `基于「${s.name}」封装的子智能体，可被主智能体调用`,
@@ -159,6 +163,7 @@ const assembleAgent = (
     version: "v0.0.1",
     model,
     apiKey: "",
+    envId: "env-default",
     systemPrompt,
     tools: [{ name: "内置工具", id: "builtin_tools", permissions: 8, permissionPolicy: "Always allow" }],
     skills: allSkills,
@@ -386,6 +391,23 @@ const StructuredConfigView = ({
               </Command>
             </PopoverContent>
           </Popover>
+
+          {/* 运行环境 */}
+          <label className="text-xs font-medium text-muted-foreground mb-1 block mt-3">运行环境</label>
+          <Select value={config.envId} onValueChange={(v) => onConfigChange({ ...config, envId: v })}>
+            <SelectTrigger className="h-8 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {availableEnvs.map((e) => (
+                <SelectItem key={e.envId} value={e.envId} className="text-xs">
+                  <span className="font-medium">{e.name}</span>
+                  <span className="ml-2 text-[10px] text-muted-foreground">{e.spec} · {e.envId}</span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-[10px] text-muted-foreground mt-1">在「环境管理」中可创建自定义运行环境</p>
         </div>
 
         {/* 系统提示词 */}
