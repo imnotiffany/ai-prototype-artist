@@ -849,6 +849,7 @@ const CreateAgentPage = () => {
     mcpServers: availableMCPs.slice(0, DEMO_DEFAULT_MCPS_COUNT).map((m) => m.name),
     subagents: availableSubagents.slice(0, DEMO_DEFAULT_SUBAGENTS_COUNT).map((s) => s.name),
   }));
+  const [promptSnapshot, setPromptSnapshot] = useState<PromptSnapshot | null>(null);
   const [agentCreated, setAgentCreated] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
   // Save 确认卡片字段（仿手动组装）
