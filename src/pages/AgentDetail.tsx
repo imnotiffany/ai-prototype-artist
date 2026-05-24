@@ -16,7 +16,11 @@ import {
   ArrowLeft, MessageSquare, Send, Save, Bot, CheckCircle2, Server, Bug, Mic, MicOff, Zap, Plus, X, RotateCcw, EyeOff, Eye, Settings2,
   AlertTriangle, Copy, Pencil, Rocket, Code2, Layout, Users, KeyRound, Filter, Check, ExternalLink, Activity, Plug, FileText,
 } from "lucide-react";
-import { mockAgents, getActiveMCPs, getActiveSkills } from "@/data/mockData";
+import { mockAgents, getActiveMCPs, getActiveSkills, mockApiKeys } from "@/data/mockData";
+import { getEnvironments } from "@/data/environments";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Search, Box } from "lucide-react";
+
 import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { toast } from "@/hooks/use-toast";
 import { PublishAgentDialog } from "@/components/PublishAgentDialog";
@@ -87,7 +91,7 @@ const AgentDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const initialTab = searchParams.get("tab") === "config" ? "config" : "debug";
+  const initialTab = searchParams.get("tab") ?? "config";
   const agent = mockAgents.find((a) => a.id === id);
 
   /* ── Saved snapshot vs current draft (for "未保存" indicator) ── */
@@ -106,6 +110,9 @@ const AgentDetail = () => {
   const [name, setName] = useState(initialSnapshot.name);
   const [description, setDescription] = useState(initialSnapshot.description);
   const [model, setModel] = useState(initialSnapshot.model);
+  const [apiKey, setApiKey] = useState<string>("");
+  const [envId, setEnvId] = useState<string>(getEnvironments()[0]?.envId ?? "env-default");
+
   const [systemPrompt, setSystemPrompt] = useState(initialSnapshot.systemPrompt);
   const [selSkills, setSelSkills] = useState<string[]>(initialSnapshot.skills);
   const [mcpBindings, setMcpBindings] = useState<{ name: string; credential: string }[]>(initialSnapshot.mcpBindings);
@@ -438,79 +445,84 @@ const AgentDetail = () => {
 
       <Tabs defaultValue={initialTab}>
         <TabsList className="h-9 bg-transparent border-b border-border w-full justify-start rounded-none p-0 gap-1">
-          <TabsTrigger value="debug" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><Bug className="w-3.5 h-3.5" />调试</TabsTrigger>
           <TabsTrigger value="config" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><Settings2 className="w-3.5 h-3.5" />配置</TabsTrigger>
           <TabsTrigger value="runs" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><MessageSquare className="w-3.5 h-3.5" />会话记录</TabsTrigger>
-          <TabsTrigger value="logs" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><FileText className="w-3.5 h-3.5" />日志</TabsTrigger>
+          <TabsTrigger value="logs" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><FileText className="w-3.5 h-3.5" />日志记录</TabsTrigger>
           <TabsTrigger value="monitor" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><Activity className="w-3.5 h-3.5" />基础监控</TabsTrigger>
           <TabsTrigger value="apikey" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><Plug className="w-3.5 h-3.5" />集成方式</TabsTrigger>
+
         </TabsList>
 
-        {/* ───────── 调试 ───────── */}
-        <TabsContent value="debug" className="mt-4">
 
-          <div className="border border-border rounded-lg bg-card flex flex-col h-[640px]">
-            <div className="px-3 h-10 shrink-0 border-b border-border flex items-center gap-1.5">
-              <Bot className="w-3.5 h-3.5 text-primary shrink-0" />
-              <span className="text-xs font-semibold shrink-0">智能体运行</span>
-              {debugRunning && <RunningIndicator />}
-            </div>
-            <div className="flex-1 min-h-0">
-              <RunDualView
-                transcriptEvents={(() => {
-                  const evs: TranscriptEvent[] = [];
-                  runMessages.forEach((m, i) => {
-                    if (m.role === "user") evs.push({ id: `u${i}`, type: "user", content: m.content });
-                    else if (m.status === "error") evs.push({ id: `e${i}`, type: "error", message: m.content });
-                    else {
-                      if (m.tool) evs.push({
-                        id: `t${i}`, type: "tools",
-                        calls: [{ id: `c${i}`, kind: "mcp", name: m.tool, summary: "调用成功", status: "success" }],
-                      });
-                      evs.push({ id: `a${i}`, type: "agent", content: m.content });
-                    }
-                  });
-                  return evs;
-                })()}
-                debugEvents={debugLogs.map((l) => ({
-                  id: String(l.id),
-                  ts: l.ts,
-                  type: `log.${l.level}`,
-                  data: { message: l.message, ...(l.meta ? { meta: l.meta } : {}) },
-                }))}
-                showTranscriptSearch={false}
-                transcriptFooter={debugRunning ? <AIStatusPill /> : undefined}
-              />
-            </div>
-            <div className="border-t border-border p-3 flex items-center gap-2 shrink-0">
-              <Button
-                type="button"
-                size="icon"
-                variant={voiceRecording ? "default" : "outline"}
-                className={`h-8 w-8 shrink-0 ${voiceRecording ? "animate-pulse" : ""}`}
-                onClick={toggleVoice}
-                title={voiceRecording ? "结束语音输入" : "语音输入"}
-              >
-                {voiceRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
-              </Button>
-              <Input
-                className="h-8 text-xs"
-                placeholder={voiceRecording ? "正在录音…再次点击麦克风结束" : "输入测试任务，回车发送"}
-                value={debugInput}
-                onChange={(e) => setDebugInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); runDebug(); } }}
-              />
-              <Button size="sm" className="h-8 text-xs gap-1.5" onClick={runDebug} disabled={debugRunning || !debugInput.trim()}>
-                <Send className="w-3 h-3" />发送
-              </Button>
-            </div>
-          </div>
 
-        </TabsContent>
 
         {/* ───────── 配置 ───────── */}
         <TabsContent value="config" className="mt-4">
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-4 items-start">
+            {/* 左侧：AI 改写助手 / 调试对话 */}
+            <aside className="lg:sticky lg:top-4 self-start border border-border rounded-lg bg-card flex flex-col h-[calc(100vh-200px)] min-h-[520px]">
+              <div className="px-3 h-10 shrink-0 border-b border-border flex items-center gap-1.5">
+                <Bot className="w-3.5 h-3.5 text-primary shrink-0" />
+                <span className="text-xs font-semibold shrink-0">描述你想怎样修改智能体</span>
+                {debugRunning && <RunningIndicator />}
+              </div>
+              <p className="px-3 pt-2 text-[11px] text-muted-foreground">
+                在下方对话框输入修改需求，AI 会自动调整右侧配置；也可直接发送测试任务进行调试。
+              </p>
+              <div className="flex-1 min-h-0 mt-1">
+                <RunDualView
+                  transcriptEvents={(() => {
+                    const evs: TranscriptEvent[] = [];
+                    runMessages.forEach((m, i) => {
+                      if (m.role === "user") evs.push({ id: `u${i}`, type: "user", content: m.content });
+                      else if (m.status === "error") evs.push({ id: `e${i}`, type: "error", message: m.content });
+                      else {
+                        if (m.tool) evs.push({
+                          id: `t${i}`, type: "tools",
+                          calls: [{ id: `c${i}`, kind: "mcp", name: m.tool, summary: "调用成功", status: "success" }],
+                        });
+                        evs.push({ id: `a${i}`, type: "agent", content: m.content });
+                      }
+                    });
+                    return evs;
+                  })()}
+                  debugEvents={debugLogs.map((l) => ({
+                    id: String(l.id),
+                    ts: l.ts,
+                    type: `log.${l.level}`,
+                    data: { message: l.message, ...(l.meta ? { meta: l.meta } : {}) },
+                  }))}
+                  showTranscriptSearch={false}
+                  transcriptFooter={debugRunning ? <AIStatusPill /> : undefined}
+                />
+              </div>
+              <div className="border-t border-border p-2 flex items-center gap-2 shrink-0">
+                <Button
+                  type="button"
+                  size="icon"
+                  variant={voiceRecording ? "default" : "outline"}
+                  className={`h-8 w-8 shrink-0 ${voiceRecording ? "animate-pulse" : ""}`}
+                  onClick={toggleVoice}
+                  title={voiceRecording ? "结束语音输入" : "语音输入"}
+                >
+                  {voiceRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                </Button>
+                <Input
+                  className="h-8 text-xs"
+                  placeholder={voiceRecording ? "正在录音…再次点击麦克风结束" : "继续修改或调试智能体…"}
+                  value={debugInput}
+                  onChange={(e) => setDebugInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); runDebug(); } }}
+                />
+                <Button size="sm" className="h-8 text-xs gap-1.5" onClick={runDebug} disabled={debugRunning || !debugInput.trim()}>
+                  <Send className="w-3 h-3" />发送
+                </Button>
+              </div>
+            </aside>
+
+            {/* 右侧：配置区 */}
+            <div className="space-y-4 min-w-0">
+
             {isDirty && (
               <div className="border-2 border-amber-400 bg-amber-50 dark:bg-amber-950/30 rounded-lg px-4 py-3 flex items-center justify-between gap-3 shadow-sm animate-fade-in">
                 <div className="flex items-center gap-2 min-w-0">
@@ -661,7 +673,50 @@ fengsheng:
                 </Select>
               </div>
               <div>
+                <Label className="text-xs">API Key</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" role="combobox" className="mt-1.5 h-8 w-full justify-between text-xs font-normal px-3">
+                      {apiKey ? mockApiKeys.find((k) => k.id === apiKey)?.name ?? "选择 API Key" : "选择 API Key"}
+                      <Search className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="搜索 API Key..." className="h-9 text-xs" />
+                      <CommandList>
+                        <CommandEmpty className="text-xs py-3">未找到匹配的 API Key</CommandEmpty>
+                        <CommandGroup>
+                          {mockApiKeys.map((k) => (
+                            <CommandItem key={k.id} value={k.name} onSelect={() => setApiKey(k.id)} className="text-xs">
+                              <span className="font-medium">{k.name}</span>
+                              <span className="ml-2 text-[10px] text-muted-foreground">{k.keyMask}</span>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div>
+                <Label className="text-xs flex items-center gap-1.5"><Box className="w-3 h-3 text-muted-foreground" />运行环境</Label>
+                <Select value={envId} onValueChange={setEnvId}>
+                  <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {getEnvironments().map((e) => (
+                      <SelectItem key={e.envId} value={e.envId} className="text-xs">
+                        <span>{e.name}</span>
+                        <span className="ml-2 text-[10px] text-muted-foreground">{e.spec} · {e.envId}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-[10px] text-muted-foreground mt-1">在「环境管理」中可创建自定义运行环境</p>
+              </div>
+              <div>
                 <Label className="text-xs">系统提示词</Label>
+
                 <Textarea value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)} rows={8}
                   className="mt-1.5 font-mono text-xs leading-relaxed bg-card" />
               </div>
@@ -944,8 +999,10 @@ fengsheng:
             </Dialog>
               </>
             )}
+            </div>
           </div>
         </TabsContent>
+
 
         {/* ───────── 会话记录 ───────── */}
         <TabsContent value="runs" className="mt-4">
