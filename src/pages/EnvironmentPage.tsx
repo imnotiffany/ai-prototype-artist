@@ -136,7 +136,12 @@ const EnvironmentPage = () => {
                   <TableCell className="text-xs text-muted-foreground">{e.updatedAt}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
-                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0" disabled>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0"
+                        onClick={() => toast({ title: "编辑环境", description: `${e.name} · 编辑功能即将上线` })}
+                      >
                         <Pencil className="w-3.5 h-3.5" />
                       </Button>
                       <Button
