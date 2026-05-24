@@ -28,6 +28,7 @@ import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { RunDualView, RunningIndicator, type TranscriptEvent, type DebugEvent } from "@/components/RunViews";
 import { AIStatusPill } from "@/components/AIStatusPill";
+import { AgentMonitoringPanel } from "@/components/AgentMonitoringPanel";
 
 /* ───────── Mock run history ───────── */
 type RunStatus = "success" | "failed" | "running";
