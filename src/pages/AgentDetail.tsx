@@ -460,62 +460,63 @@ const AgentDetail = () => {
         {/* ───────── 配置 ───────── */}
         <TabsContent value="config" className="mt-4">
           <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-4 items-start">
-            {/* 左侧：AI 改写助手 / 调试对话 */}
+            {/* 左侧：AI 修改配置助手 */}
             <aside className="lg:sticky lg:top-4 self-start border border-border rounded-lg bg-card flex flex-col h-[calc(100vh-200px)] min-h-[520px]">
               <div className="px-3 h-10 shrink-0 border-b border-border flex items-center gap-1.5">
                 <Bot className="w-3.5 h-3.5 text-primary shrink-0" />
                 <span className="text-xs font-semibold shrink-0">描述你想怎样修改智能体</span>
-                {debugRunning && <RunningIndicator />}
               </div>
-              <p className="px-3 pt-2 text-[11px] text-muted-foreground">
-                在下方对话框输入修改需求，AI 会自动调整右侧配置；也可直接发送测试任务进行调试。
+              <p className="px-3 pt-2 text-[11px] text-muted-foreground leading-relaxed">
+                输入修改需求，AI 会给出建议并帮你调整右侧配置；想运行测试请切到右侧「调试」。
               </p>
-              <div className="flex-1 min-h-0 mt-1">
-                <RunDualView
-                  transcriptEvents={(() => {
-                    const evs: TranscriptEvent[] = [];
-                    runMessages.forEach((m, i) => {
-                      if (m.role === "user") evs.push({ id: `u${i}`, type: "user", content: m.content });
-                      else if (m.status === "error") evs.push({ id: `e${i}`, type: "error", message: m.content });
-                      else {
-                        if (m.tool) evs.push({
-                          id: `t${i}`, type: "tools",
-                          calls: [{ id: `c${i}`, kind: "mcp", name: m.tool, summary: "调用成功", status: "success" }],
-                        });
-                        evs.push({ id: `a${i}`, type: "agent", content: m.content });
-                      }
-                    });
-                    return evs;
-                  })()}
-                  debugEvents={debugLogs.map((l) => ({
-                    id: String(l.id),
-                    ts: l.ts,
-                    type: `log.${l.level}`,
-                    data: { message: l.message, ...(l.meta ? { meta: l.meta } : {}) },
-                  }))}
-                  showTranscriptSearch={false}
-                  transcriptFooter={debugRunning ? <AIStatusPill /> : undefined}
-                />
+              <div className="flex-1 min-h-0 overflow-auto p-3 space-y-2">
+                {assistantMessages.length === 0 ? (
+                  <div className="text-[11px] text-muted-foreground text-center py-6 px-2 leading-relaxed">
+                    例如：「让它更擅长数据分析」「补充对失败任务的重试策略」
+                  </div>
+                ) : (
+                  assistantMessages.map((m, i) => (
+                    <div key={i}>
+                      {m.role === "user" ? (
+                        <div className="flex justify-end">
+                          <div className="max-w-[85%] rounded-lg px-3 py-2 text-xs bg-primary text-primary-foreground whitespace-pre-wrap">
+                            {m.content}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-1.5">
+                          <div className="text-xs text-foreground whitespace-pre-wrap leading-relaxed">{m.content}</div>
+                          {m.suggestion && (
+                            <div className="border border-border rounded-md p-2 bg-muted/30 space-y-1.5">
+                              <p className="text-[10px] text-muted-foreground">建议追加到系统提示词：</p>
+                              <pre className="text-[11px] font-mono whitespace-pre-wrap leading-relaxed">{m.suggestion.addition.trim()}</pre>
+                              {m.suggestion.status === "pending" ? (
+                                <div className="flex items-center gap-1.5 pt-1">
+                                  <Button size="sm" className="h-6 text-[11px]" onClick={() => adoptSuggestion(m.suggestion!)}>采纳</Button>
+                                  <Button size="sm" variant="outline" className="h-6 text-[11px]" onClick={() => rejectSuggestion(m.suggestion!)}>拒绝</Button>
+                                </div>
+                              ) : (
+                                <Badge variant="outline" className="text-[10px] h-4">
+                                  {m.suggestion.status === "adopted" ? "已采纳" : "已拒绝"}
+                                </Badge>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
               </div>
               <div className="border-t border-border p-2 flex items-center gap-2 shrink-0">
-                <Button
-                  type="button"
-                  size="icon"
-                  variant={voiceRecording ? "default" : "outline"}
-                  className={`h-8 w-8 shrink-0 ${voiceRecording ? "animate-pulse" : ""}`}
-                  onClick={toggleVoice}
-                  title={voiceRecording ? "结束语音输入" : "语音输入"}
-                >
-                  {voiceRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
-                </Button>
                 <Input
                   className="h-8 text-xs"
-                  placeholder={voiceRecording ? "正在录音…再次点击麦克风结束" : "继续修改或调试智能体…"}
-                  value={debugInput}
-                  onChange={(e) => setDebugInput(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); runDebug(); } }}
+                  placeholder="描述你想怎样修改智能体…"
+                  value={assistantInput}
+                  onChange={(e) => setAssistantInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendAssistantMessage(); } }}
                 />
-                <Button size="sm" className="h-8 text-xs gap-1.5" onClick={runDebug} disabled={debugRunning || !debugInput.trim()}>
+                <Button size="sm" className="h-8 text-xs gap-1.5" onClick={sendAssistantMessage} disabled={!assistantInput.trim()}>
                   <Send className="w-3 h-3" />发送
                 </Button>
               </div>
