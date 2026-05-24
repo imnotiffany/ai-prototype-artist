@@ -1176,7 +1176,7 @@ const CreateAgentPage = () => {
                 )}
               </div>
             ))}
-            {isThinking && !messages.some((m) => m.isStreaming) && (
+            {isThinking && (
               <AIStatusPill stageIndex={thinkingStage} startedAt={thinkingStartedAt ?? undefined} />
             )}
           </div>
