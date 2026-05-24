@@ -307,50 +307,43 @@ const StructuredConfigView = ({ config, onConfigChange }: { config: AgentConfig;
           </div>
         </div>
 
-        {/* Built-in Tools */}
+        {/* Built-in Tools — 紧凑单行 */}
         {config.tools.length > 0 && (
-          <div className="px-5 py-4">
-            <label className="text-xs font-medium text-muted-foreground block mb-3">内置工具</label>
-            {config.tools.map((tool, i) => (
-              <div key={i} className="border border-border rounded-lg p-3 mb-2">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded bg-muted flex items-center justify-center">
-                    <Settings2 className="w-4 h-4 text-muted-foreground" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-foreground">{tool.name}</p>
-                    <p className="text-[10px] text-muted-foreground font-mono">{tool.id}</p>
-                  </div>
-                </div>
-                <Collapsible open={toolsOpen} onOpenChange={setToolsOpen}>
-                  <CollapsibleTrigger className="flex items-center justify-between w-full mt-3 pt-2 border-t border-border">
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <ChevronDown className={`w-3 h-3 transition-transform ${toolsOpen ? "rotate-180" : ""}`} />
-                      <span>Tool permissions</span>
-                      <Badge variant="secondary" className="text-[10px] h-4 px-1.5">{tool.permissions}</Badge>
-                    </div>
-                    <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3" />
-                      {tool.permissionPolicy}
-                    </span>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="pt-2">
-                    <div className="text-[10px] text-muted-foreground space-y-1 pl-4">
-                      <p>• web_search — allowed</p>
-                      <p>• file_read — allowed</p>
-                      <p>• file_write — allowed</p>
-                      <p>• bash — allowed</p>
-                      <p>• code_exec — allowed</p>
-                      <p>• browser — allowed</p>
-                      <p>• mcp_call — allowed</p>
-                      <p>• api_request — allowed</p>
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
+          <div className="px-5 py-3">
+            <div className="flex items-center justify-between gap-2">
+              <label className="text-xs font-medium text-muted-foreground shrink-0">内置工具</label>
+              <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                {config.tools.map((tool, i) => (
+                  <Popover key={i}>
+                    <PopoverTrigger asChild>
+                      <button className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2 py-1 text-xs hover:bg-muted transition-colors">
+                        <Settings2 className="w-3 h-3 text-muted-foreground" />
+                        <span className="font-medium">{tool.name}</span>
+                        <Badge variant="secondary" className="text-[10px] h-4 px-1.5">{tool.permissions}</Badge>
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-60 p-3" align="end">
+                      <p className="text-[11px] font-medium mb-1.5">{tool.name}</p>
+                      <p className="text-[10px] text-muted-foreground font-mono mb-2">{tool.id}</p>
+                      <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-2 pb-2 border-b border-border">
+                        <span>权限策略</span>
+                        <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3" />{tool.permissionPolicy}</span>
+                      </div>
+                      <div className="text-[10px] text-muted-foreground space-y-0.5">
+                        <p>• web_search · file_read · file_write</p>
+                        <p>• bash · code_exec · browser</p>
+                        <p>• mcp_call · api_request</p>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
         )}
+
+
 
         {/* MCPs */}
         <div className="px-5 py-4">
