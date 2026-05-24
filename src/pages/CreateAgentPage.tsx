@@ -246,13 +246,21 @@ const StructuredConfigView = ({
   onConfigChange,
   promptSnapshot,
   onRegeneratePrompt,
-  onDismissPromptSync,
+  onAcknowledgePrompt,
+  onSave,
+  saveDisabled,
+  saveDisabledReason,
+  viewModeSwitcher,
 }: {
   config: AgentConfig;
   onConfigChange: (c: AgentConfig) => void;
   promptSnapshot: PromptSnapshot | null;
   onRegeneratePrompt: () => Promise<void> | void;
-  onDismissPromptSync: () => void;
+  onAcknowledgePrompt: () => void;
+  onSave: () => void;
+  saveDisabled: boolean;
+  saveDisabledReason?: string;
+  viewModeSwitcher?: React.ReactNode;
 }) => {
   const [toolsOpen, setToolsOpen] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
@@ -270,19 +278,38 @@ const StructuredConfigView = ({
 
   return (
     <div className="flex-1 overflow-auto">
+      {/* Sticky 保存栏 */}
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border px-3 py-2 flex items-center gap-2">
+        {viewModeSwitcher}
+        <div className="ml-auto flex items-center gap-2">
+          {saveDisabled && saveDisabledReason && (
+            <span className="text-[11px] text-muted-foreground hidden sm:inline">{saveDisabledReason}</span>
+          )}
+          <Button
+            size="sm"
+            className="h-7 text-[11px] gap-1.5 px-3"
+            onClick={onSave}
+            disabled={saveDisabled}
+            title={saveDisabled ? saveDisabledReason : "保存配置"}
+          >
+            <Save className="w-3 h-3" />
+            保存
+          </Button>
+        </div>
+      </div>
+
       {diff && (
         <div className="mx-3 mt-3 flex items-center gap-2 rounded-md border border-amber-300/60 bg-amber-50/70 dark:bg-amber-950/20 dark:border-amber-800/50 pl-2.5 pr-1.5 py-1 text-[12px]">
           <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
           <span className="text-amber-900 dark:text-amber-100 truncate">
-            能力已变更，System Prompt 待同步
+            能力已变更，请同步更新系统提示词
           </span>
-          <div className="ml-auto flex items-center gap-0.5 shrink-0">
+          <div className="ml-auto flex items-center gap-1 shrink-0">
             <Button
               size="sm"
-              variant="ghost"
               onClick={handleRegen}
               disabled={regenerating}
-              className="h-6 px-2 text-[11px] gap-1 text-amber-900 hover:bg-amber-100 dark:text-amber-100 dark:hover:bg-amber-900/40"
+              className="h-6 px-2 text-[11px] gap-1 bg-amber-500 hover:bg-amber-600 text-white border-0"
             >
               {regenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
               {regenerating ? "更新中" : "AI 更新"}
@@ -290,7 +317,7 @@ const StructuredConfigView = ({
             <Button
               size="icon"
               variant="ghost"
-              onClick={onDismissPromptSync}
+              onClick={onAcknowledgePrompt}
               className="h-6 w-6 text-amber-900/60 hover:bg-amber-100 dark:text-amber-100/60 dark:hover:bg-amber-900/40"
               aria-label="忽略"
             >
@@ -303,14 +330,6 @@ const StructuredConfigView = ({
       <div className="divide-y divide-border">
         {/* 名称在「保存」时弹出确认卡片中编辑，配置区不展示 */}
 
-        {/* Version 在自动创建调试页固定为 v0.0.1，隐藏切换器 */}
-        <div className="px-5 py-4">
-          <label className="text-xs font-medium text-muted-foreground mb-2 block">Version</label>
-          <div className="h-8 px-3 flex items-center text-xs text-foreground bg-muted/30 rounded border border-border">
-            {config.version}
-            <span className="ml-auto text-[10px] text-muted-foreground">首次创建固定版本</span>
-          </div>
-        </div>
 
         {/* Model */}
         <div className="px-5 py-4">
@@ -368,18 +387,22 @@ const StructuredConfigView = ({
           </Popover>
         </div>
 
-        {/* System Prompt */}
+        {/* 系统提示词 */}
         <div className="px-5 py-4">
-          <label className="text-xs font-medium text-muted-foreground mb-2 block">System prompt</label>
+          <label className="text-xs font-medium text-muted-foreground mb-2 block">系统提示词</label>
           <div className="bg-muted/30 rounded-lg p-3 border border-border">
             <textarea
               value={config.systemPrompt}
-              onChange={(e) => onConfigChange({ ...config, systemPrompt: e.target.value })}
+              onChange={(e) => {
+                onConfigChange({ ...config, systemPrompt: e.target.value });
+                onAcknowledgePrompt();
+              }}
               className="w-full bg-transparent text-xs text-foreground font-mono leading-relaxed resize-none focus:outline-none min-h-[120px]"
               spellCheck={false}
             />
           </div>
         </div>
+
 
         {/* Built-in Tools — 紧凑单行 */}
         {config.tools.length > 0 && (
@@ -828,7 +851,10 @@ const CreateAgentPage = () => {
   const location = useLocation();
   const initialState = (location.state ?? {}) as { description?: string; autoStart?: boolean };
   const [configViewMode, setConfigViewMode] = useState<"structured" | "raw">("structured");
-  const [rightTab, setRightTab] = useState<"config" | "preview" | "logs">("config");
+  const [rightTab, setRightTab] = useState<"config" | "debug">("config");
+  const [debugSubTab, setDebugSubTab] = useState<"preview" | "logs">("preview");
+  const [hasSaved, setHasSaved] = useState(false);
+
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
   const [thinkingStartedAt, setThinkingStartedAt] = useState<number | null>(null);
@@ -1139,10 +1165,20 @@ const CreateAgentPage = () => {
   };
 
   const rightTabs = [
-    { key: "config" as const, label: "配置", icon: FormInput },
-    { key: "preview" as const, label: "对话视图", icon: MessageSquare },
-    { key: "logs" as const, label: "调试视图", icon: History },
+    { key: "config" as const, label: "能力配置", icon: Settings2 },
+    { key: "debug" as const, label: "调试", icon: Bug },
   ];
+  const promptDirty = !!diffSnapshot(
+    { skills: agentConfig.skills, mcpServers: agentConfig.mcpServers, subagents: agentConfig.subagents },
+    promptSnapshot,
+  );
+  const saveDisabledReason = promptDirty ? "请先同步系统提示词后再保存" : undefined;
+  const openSaveDialog = () => {
+    setSaveName((prev) => prev || agentConfig.name || "");
+    setSaveDesc((prev) => prev || initialState.description || "");
+    setPublishOpen(true);
+  };
+
 
   return (
     <div className="flex flex-col h-full animate-fade-in">
@@ -1250,65 +1286,55 @@ const CreateAgentPage = () => {
 
         {/* ── Right: Workspace ── */}
         <ResizablePanel defaultSize={62} minSize={30} className="flex flex-col min-w-0">
-          {/* Header tabs */}
+          {/* Header tabs — 能力配置 / 调试 */}
           <div className="border-b border-border px-4 flex items-center justify-between">
             <div className="flex gap-1">
               {rightTabs.map((tab) => {
                 const Icon = tab.icon;
+                const disabled = tab.key === "debug" && !hasSaved;
                 return (
                   <button
                     key={tab.key}
-                    onClick={() => setRightTab(tab.key)}
+                    onClick={() => !disabled && setRightTab(tab.key)}
+                    disabled={disabled}
+                    title={disabled ? "请先保存配置后再进行调试" : undefined}
                     className={`text-xs py-2.5 px-2.5 transition-colors flex items-center gap-1.5 ${
                       rightTab === tab.key
                         ? "font-medium text-foreground border-b-2 border-primary"
+                        : disabled
+                        ? "text-muted-foreground/40 cursor-not-allowed"
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
                     <Icon className="w-3.5 h-3.5" />
                     {tab.label}
+                    {disabled && <span className="text-[10px] ml-0.5">（需先保存）</span>}
                   </button>
                 );
               })}
             </div>
-            <div className="flex items-center gap-2">
-              {/* Toggle structured / raw when on config tab */}
-              {rightTab === "config" && (
-                <div className="flex items-center gap-1 bg-muted/50 rounded p-0.5">
-                  <button
-                    onClick={() => setConfigViewMode("structured")}
-                    className={`p-1 rounded transition-colors ${
-                      configViewMode === "structured" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-                    }`}
-                    title="结构化视图"
-                  >
-                    <Settings2 className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => setConfigViewMode("raw")}
-                    className={`p-1 rounded transition-colors ${
-                      configViewMode === "raw" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-                    }`}
-                    title="代码视图"
-                  >
-                    <Code2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              )}
-              {/* Save button — 始终展示，点击弹出确认卡片 */}
-              <Button
-                size="sm"
-                className="h-7 text-[11px] gap-1.5 px-3"
-                onClick={() => {
-                  setSaveName((prev) => prev || agentConfig.name || "");
-                  setSaveDesc((prev) => prev || initialState.description || "");
-                  setPublishOpen(true);
-                }}
-              >
-                <Save className="w-3 h-3" />
-                保存
-              </Button>
-            </div>
+            {rightTab === "debug" && (
+              <div className="flex items-center gap-1 bg-muted/50 rounded p-0.5">
+                <button
+                  onClick={() => setDebugSubTab("preview")}
+                  className={`px-2 py-1 text-[11px] rounded transition-colors flex items-center gap-1 ${
+                    debugSubTab === "preview" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <MessageSquare className="w-3 h-3" />
+                  对话视图
+                </button>
+                <button
+                  onClick={() => setDebugSubTab("logs")}
+                  className={`px-2 py-1 text-[11px] rounded transition-colors flex items-center gap-1 ${
+                    debugSubTab === "logs" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <History className="w-3 h-3" />
+                  调试视图
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Content */}
@@ -1318,7 +1344,33 @@ const CreateAgentPage = () => {
                 config={agentConfig}
                 onConfigChange={setAgentConfig}
                 promptSnapshot={promptSnapshot}
-                onDismissPromptSync={() => setPromptSnapshot({ skills: agentConfig.skills, mcpServers: agentConfig.mcpServers, subagents: agentConfig.subagents })}
+                onAcknowledgePrompt={() => setPromptSnapshot({ skills: agentConfig.skills, mcpServers: agentConfig.mcpServers, subagents: agentConfig.subagents })}
+                onSave={openSaveDialog}
+                saveDisabled={promptDirty}
+                saveDisabledReason={saveDisabledReason}
+                viewModeSwitcher={
+                  <div className="flex items-center gap-1 bg-muted/50 rounded p-0.5">
+                    <button
+                      onClick={() => setConfigViewMode("structured")}
+                      className={`p-1 rounded transition-colors ${
+                        configViewMode === "structured" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                      }`}
+                      title="结构化视图"
+                    >
+                      <Settings2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => setConfigViewMode("raw")}
+                      className={`p-1 rounded transition-colors ${
+                        (configViewMode as string) === "raw" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                      }`}
+                      title="代码视图"
+                    >
+                      <Code2 className="w-3.5 h-3.5" />
+                    </button>
+
+                  </div>
+                }
                 onRegeneratePrompt={async () => {
                   await new Promise((r) => setTimeout(r, 900));
                   const allSkills = agentConfig.skills;
@@ -1327,13 +1379,20 @@ const CreateAgentPage = () => {
                   const newPrompt = `你是一个专业的AI助手。\n\n## 核心能力\n${agentConfig.name || "根据用户描述提供帮助"}\n\n## 工具使用\n${allSkills.length > 0 ? `你可以使用以下技能：${allSkills.join("、")}` : "暂无外部技能"}\n${allMCPs.length > 0 ? `你可以连接以下服务：${allMCPs.join("、")}` : ""}\n${allSubs.length > 0 ? `你可以调用以下子智能体：${allSubs.join("、")}` : ""}\n\n## 行为准则\n- 始终准确、有帮助地回答问题\n- 在需要时主动使用可用工具与子智能体\n- 输出结构化、易读的结果`;
                   setAgentConfig({ ...agentConfig, systemPrompt: newPrompt });
                   setPromptSnapshot({ skills: allSkills, mcpServers: allMCPs, subagents: allSubs });
-                  toast({ title: "System Prompt 已更新", description: "已根据最新的 MCP / Skill / 子智能体重新生成。" });
+                  toast({ title: "系统提示词已更新", description: "已根据最新的 MCP / Skill / 子智能体重新生成。" });
                 }}
               />
             ) : (
-              <RawConfigView config={agentConfig} />
+              <div className="flex-1 flex flex-col min-h-0">
+                <div className="border-b border-border px-3 py-2 flex items-center justify-end gap-2">
+                  <Button size="sm" className="h-7 text-[11px] gap-1.5 px-3" onClick={openSaveDialog} disabled={promptDirty} title={saveDisabledReason}>
+                    <Save className="w-3 h-3" /> 保存
+                  </Button>
+                </div>
+                <RawConfigView config={agentConfig} />
+              </div>
             )
-          ) : rightTab === "preview" ? (
+          ) : debugSubTab === "preview" ? (
             <div className="flex flex-col flex-1 min-h-0">
               <div ref={rightScrollRef} className="flex-1 overflow-auto p-4">
                 {previewMessages.length === 0 ? (
@@ -1398,7 +1457,7 @@ const CreateAgentPage = () => {
               </div>
             </div>
           ) : (
-            /* Logs tab */
+            /* Logs view */
             <div className="flex-1 overflow-auto p-4">
               {debugEvents.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
@@ -1418,6 +1477,7 @@ const CreateAgentPage = () => {
               )}
             </div>
           )}
+
         </ResizablePanel>
       </ResizablePanelGroup>
 
@@ -1509,7 +1569,9 @@ const CreateAgentPage = () => {
                 }
                 setAgentConfig({ ...agentConfig, name: saveName.trim() });
                 setAgentCreated(true);
+                setHasSaved(true);
                 setPublishOpen(false);
+
                 toast({
                   title: "已保存到项目管理",
                   description: `${saveName.trim()} · ${saveCategory}${savePublishToHub ? "（已同步发布到 Agent Hub）" : ""}`,
