@@ -1421,7 +1421,7 @@ const CreateAgentPage = () => {
               <div className="flex-1 flex flex-col min-h-0">
                 <div className="border-b border-border px-3 py-2 flex items-center justify-end gap-2">
                   <Button size="sm" className="h-7 text-[11px] gap-1.5 px-3" onClick={openSaveDialog} disabled={promptDirty} title={saveDisabledReason}>
-                    <Save className="w-3 h-3" /> 保存
+                    <Save className="w-3 h-3" /> 保存并测试
                   </Button>
                 </div>
                 <RawConfigView config={agentConfig} />
