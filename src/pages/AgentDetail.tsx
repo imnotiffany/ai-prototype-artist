@@ -488,7 +488,7 @@ const AgentDetail = () => {
               <div className="flex-1 min-h-0 overflow-auto p-3 space-y-2">
                 {assistantMessages.length === 0 ? (
                   <div className="text-[11px] text-muted-foreground text-center py-6 px-2 leading-relaxed">
-                    例如：「让它更擅长数据分析」「补充对失败任务的重试策略」
+                    输入你的修改需求，AI 会给出建议
                   </div>
                 ) : (
                   assistantMessages.map((m, i) => (
