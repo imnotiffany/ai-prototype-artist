@@ -17,11 +17,18 @@ const EnvironmentPage = () => {
   const [envs, setEnvs] = useState<EnvItem[]>(getEnvironments().length ? getEnvironments() : defaultEnvironments);
   const [open, setOpen] = useState(false);
   const [keyword, setKeyword] = useState("");
-  const [form, setForm] = useState({
+  type DepRow = { manager: "pip" | "npm" | "apt"; pkg: string; version: string };
+  const [form, setForm] = useState<{
+    name: string;
+    description: string;
+    spec: string;
+    deps: DepRow[];
+    network: string;
+  }>({
     name: "",
     description: "",
     spec: "4C8G",
-    deps: "",
+    deps: [{ manager: "pip", pkg: "", version: "" }],
     network: "internet",
   });
 
@@ -41,6 +48,11 @@ const EnvironmentPage = () => {
       toast({ title: "请填写环境名称", variant: "destructive" });
       return;
     }
+    const validDeps = form.deps.filter((d) => d.pkg.trim() && d.version.trim());
+    if (form.deps.some((d) => (d.pkg.trim() || d.version.trim()) && (!d.pkg.trim() || !d.version.trim()))) {
+      toast({ title: "依赖包信息不完整", description: "包名和版本号均为必填", variant: "destructive" });
+      return;
+    }
     const specLabel = form.spec === "1C2G" ? "1C 2G" : form.spec === "2C4G" ? "2C 4G" : form.spec === "4C8G" ? "4C 8G" : "8C 32G";
     const next: EnvItem[] = [
       {
@@ -48,7 +60,7 @@ const EnvironmentPage = () => {
         envId: genEnvId(),
         name: form.name.trim(),
         spec: specLabel,
-        deps: form.deps.split(",").filter((d) => d.trim()).length,
+        deps: validDeps.length,
         agents: 0,
         updatedAt: new Date().toISOString().slice(0, 16).replace("T", " "),
         description: form.description,
@@ -58,7 +70,7 @@ const EnvironmentPage = () => {
     persist(next);
     toast({ title: "环境已创建", description: `${form.name}` });
     setOpen(false);
-    setForm({ name: "", description: "", spec: "4C8G", deps: "", network: "internet" });
+    setForm({ name: "", description: "", spec: "4C8G", deps: [{ manager: "pip", pkg: "", version: "" }], network: "internet" });
   };
 
   return (
@@ -186,8 +198,71 @@ const EnvironmentPage = () => {
             </div>
             <div>
               <Label className="text-xs flex items-center gap-1.5"><Package className="w-3 h-3" />依赖包</Label>
-              <Textarea className="mt-1.5 text-xs font-mono" rows={3} value={form.deps} onChange={(e) => setForm({ ...form, deps: e.target.value })} placeholder="例如：numpy, pandas, requests" />
-              <p className="text-[10px] text-muted-foreground mt-1">英文逗号分隔，可指定版本：pandas==2.0.3</p>
+              <div className="mt-1.5 space-y-2">
+                <div className="grid grid-cols-[110px_1fr_120px_28px] gap-2 text-[10px] text-muted-foreground px-0.5">
+                  <span>包管理器 <span className="text-destructive">*</span></span>
+                  <span>包名 <span className="text-destructive">*</span></span>
+                  <span>版本号 <span className="text-destructive">*</span></span>
+                  <span></span>
+                </div>
+                {form.deps.map((d, i) => (
+                  <div key={i} className="grid grid-cols-[110px_1fr_120px_28px] gap-2 items-center">
+                    <Select
+                      value={d.manager}
+                      onValueChange={(v) => {
+                        const next = [...form.deps];
+                        next[i] = { ...next[i], manager: v as DepRow["manager"] };
+                        setForm({ ...form, deps: next });
+                      }}
+                    >
+                      <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pip" className="text-xs">pip</SelectItem>
+                        <SelectItem value="npm" className="text-xs">npm</SelectItem>
+                        <SelectItem value="apt" className="text-xs">apt</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      className="h-8 text-xs font-mono"
+                      placeholder={d.manager === "pip" ? "pandas" : d.manager === "npm" ? "lodash" : "curl"}
+                      value={d.pkg}
+                      onChange={(e) => {
+                        const next = [...form.deps];
+                        next[i] = { ...next[i], pkg: e.target.value };
+                        setForm({ ...form, deps: next });
+                      }}
+                    />
+                    <Input
+                      className="h-8 text-xs font-mono"
+                      placeholder="2.2.0"
+                      value={d.version}
+                      onChange={(e) => {
+                        const next = [...form.deps];
+                        next[i] = { ...next[i], version: e.target.value };
+                        setForm({ ...form, deps: next });
+                      }}
+                    />
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                      onClick={() => setForm({ ...form, deps: form.deps.filter((_, j) => j !== i) })}
+                      disabled={form.deps.length === 1}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs gap-1"
+                  onClick={() => setForm({ ...form, deps: [...form.deps, { manager: "pip", pkg: "", version: "" }] })}
+                >
+                  <Plus className="w-3 h-3" /> 添加依赖
+                </Button>
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1.5">pip 安装 Python 包，npm 安装 Node 包，apt 安装系统工具</p>
             </div>
             <div>
               <Label className="text-xs flex items-center gap-1.5"><Globe className="w-3 h-3" />网络策略</Label>
