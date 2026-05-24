@@ -1174,7 +1174,7 @@ fengsheng:
                   rel="noreferrer"
                   className="text-xs text-primary hover:underline inline-flex items-center gap-1"
                 >
-                  查看 API 调用文档 <ExternalLink className="w-3 h-3" />
+                  查看 API 文档 <ExternalLink className="w-3 h-3" />
                 </a>
                 <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => setApiKeyOpen(true)}>
                   <Plus className="w-3 h-3" />申请 API Key
