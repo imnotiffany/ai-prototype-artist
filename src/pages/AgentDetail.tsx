@@ -605,7 +605,7 @@ const AgentDetail = () => {
                     onChange={(e) => setDebugInput(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); runDebug(); } }}
                   />
-                  <Button size="sm" className="h-8 text-xs gap-1.5" onClick={runDebug} disabled={debugRunning || !debugInput.trim()}>
+                  <Button size="sm" className="h-8 text-xs gap-1.5" onClick={runDebug} disabled={debugRunning || !debugInput.trim() || isDirty}>
                     <Send className="w-3 h-3" />发送
                   </Button>
                 </div>
