@@ -1496,7 +1496,9 @@ const CreateAgentPage = () => {
                     {msg.content}
                   </div>
                 ) : msg.type === "tool-calls" && msg.toolCalls ? (
-                  <ToolCallGroup calls={msg.toolCalls} />
+                  <ToolCallStrip calls={msg.toolCalls} />
+                ) : msg.type === "draft" && msg.draft ? (
+                  <DraftCard draft={msg.draft} />
                 ) : msg.type === "clarify" ? (
                   <div className="border border-border rounded-lg p-3 bg-card space-y-2">
                     <p className="text-xs text-foreground">{msg.content}</p>
