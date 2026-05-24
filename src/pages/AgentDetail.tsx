@@ -161,6 +161,7 @@ const AgentDetail = () => {
   const [assistantMessages, setAssistantMessages] = useState<ChatMsg[]>([]);
   const [debugInput, setDebugInput] = useState("");
   const [runMessages, setRunMessages] = useState<RunMsg[]>([]);
+  const [configSubTab, setConfigSubTab] = useState<"config" | "debug">("config");
   const [debugRunning, setDebugRunning] = useState(false);
   const [voiceRecording, setVoiceRecording] = useState(false);
   const [debugLogs, setDebugLogs] = useState<LogEntry[]>([]);
