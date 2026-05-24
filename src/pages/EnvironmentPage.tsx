@@ -71,8 +71,8 @@ const EnvironmentPage = () => {
       name: e.name,
       description: e.description || "",
       spec: specToValue(e.spec),
-      deps: [{ manager: "pip", spec: "" }],
-      network: "internet",
+      deps: e.depList && e.depList.length ? e.depList.map((d) => ({ ...d })) : [{ manager: "pip", spec: "" }],
+      network: e.network || "internet",
     });
     setOpen(true);
   };
@@ -89,7 +89,7 @@ const EnvironmentPage = () => {
     if (editingId) {
       const next = envs.map((x) =>
         x.id === editingId
-          ? { ...x, name: form.name.trim(), description: form.description, spec: specLabel, deps: validDeps.length || x.deps, updatedAt }
+          ? { ...x, name: form.name.trim(), description: form.description, spec: specLabel, deps: validDeps.length, depList: validDeps, network: form.network, updatedAt }
           : x,
       );
       persist(next);
@@ -105,6 +105,8 @@ const EnvironmentPage = () => {
           agents: 0,
           updatedAt,
           description: form.description,
+          depList: validDeps,
+          network: form.network,
         },
         ...envs,
       ];
@@ -115,6 +117,9 @@ const EnvironmentPage = () => {
     setEditingId(null);
     setForm(emptyForm);
   };
+
+  const editingEnv = editingId ? envs.find((x) => x.id === editingId) : null;
+  const readOnly = !!editingEnv?.preset;
 
   return (
     <div className="flex-1 overflow-auto">
@@ -144,7 +149,7 @@ const EnvironmentPage = () => {
               onChange={(e) => setKeyword(e.target.value)}
             />
           </div>
-          <span className="text-[11px] text-muted-foreground">共 {filtered.length} 个环境</span>
+          
         </div>
 
         <div className="border border-border rounded-lg bg-card">
@@ -215,10 +220,10 @@ const EnvironmentPage = () => {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-sm">{editingId ? "编辑环境" : "新建环境"}</DialogTitle>
-            <DialogDescription className="text-[11px]">配置环境的资源、依赖包与网络策略</DialogDescription>
+            <DialogTitle className="text-sm">{readOnly ? "查看环境" : editingId ? "编辑环境" : "新建环境"}</DialogTitle>
+            <DialogDescription className="text-[11px]">{readOnly ? "默认环境为系统预置，仅供查看" : "配置环境的资源、依赖包与网络策略"}</DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 py-1">
+          <div className="space-y-3 py-1 max-h-[60vh] overflow-y-auto pr-1">
             <div>
               <Label className="text-xs">环境名称 <span className="text-destructive">*</span></Label>
               <Input
@@ -226,15 +231,16 @@ const EnvironmentPage = () => {
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="例如：数据分析环境"
+                disabled={readOnly}
               />
             </div>
             <div>
               <Label className="text-xs">描述</Label>
-              <Textarea className="mt-1.5 text-xs" rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="简要描述环境用途" />
+              <Textarea className="mt-1.5 text-xs" rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="简要描述环境用途" disabled={readOnly} />
             </div>
             <div>
               <Label className="text-xs flex items-center gap-1.5"><Cpu className="w-3 h-3" />资源配置</Label>
-              <Select value={form.spec} onValueChange={(v) => setForm({ ...form, spec: v })}>
+              <Select value={form.spec} onValueChange={(v) => setForm({ ...form, spec: v })} disabled={readOnly}>
                 <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="1C2G" className="text-xs">1 核 2G</SelectItem>
@@ -246,19 +252,26 @@ const EnvironmentPage = () => {
             </div>
             <div>
               <div className="flex items-center justify-between">
-                <Label className="text-xs flex items-center gap-1.5"><Package className="w-3 h-3" />依赖包</Label>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-6 w-6 p-0"
-                  onClick={() => setForm({ ...form, deps: [...form.deps, { manager: "pip", spec: "" }] })}
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </Button>
+                <Label className="text-xs flex items-center gap-1.5">
+                  <Package className="w-3 h-3" />依赖包
+                  <span className="text-[11px] text-muted-foreground font-normal">（{form.deps.filter((d) => d.spec.trim()).length}）</span>
+                </Label>
+                {!readOnly && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 w-6 p-0"
+                    onClick={() => setForm({ ...form, deps: [...form.deps, { manager: "pip", spec: "" }] })}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </Button>
+                )}
               </div>
-              <p className="text-[11px] text-muted-foreground mt-1">
-                指定环境中可用的依赖包及版本，多个值使用空格分隔。
-              </p>
+              {!readOnly && (
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  指定环境中可用的依赖包及版本。
+                </p>
+              )}
               <div className="mt-2 space-y-2">
                 {form.deps.map((d, i) => (
                   <div key={i} className="grid grid-cols-[110px_1fr_28px] gap-2 items-center">
@@ -269,6 +282,7 @@ const EnvironmentPage = () => {
                         next[i] = { ...next[i], manager: v as PkgManager };
                         setForm({ ...form, deps: next });
                       }}
+                      disabled={readOnly}
                     >
                       <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -279,23 +293,28 @@ const EnvironmentPage = () => {
                     </Select>
                     <Input
                       className="h-8 text-xs font-mono"
-                      placeholder="package package==1.0.0"
+                      placeholder="package==1.0.0"
                       value={d.spec}
                       onChange={(e) => {
                         const next = [...form.deps];
                         next[i] = { ...next[i], spec: e.target.value };
                         setForm({ ...form, deps: next });
                       }}
+                      disabled={readOnly}
                     />
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                      onClick={() => setForm({ ...form, deps: form.deps.filter((_, j) => j !== i) })}
-                      disabled={form.deps.length === 1}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
+                    {!readOnly ? (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                        onClick={() => setForm({ ...form, deps: form.deps.filter((_, j) => j !== i) })}
+                        disabled={form.deps.length === 1}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    ) : (
+                      <span />
+                    )}
                   </div>
                 ))}
               </div>
@@ -303,7 +322,7 @@ const EnvironmentPage = () => {
 
             <div>
               <Label className="text-xs flex items-center gap-1.5"><Globe className="w-3 h-3" />网络策略</Label>
-              <Select value={form.network} onValueChange={(v) => setForm({ ...form, network: v })}>
+              <Select value={form.network} onValueChange={(v) => setForm({ ...form, network: v })} disabled={readOnly}>
                 <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="internet" className="text-xs">允许公网访问</SelectItem>
@@ -314,8 +333,10 @@ const EnvironmentPage = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setOpen(false)}>取消</Button>
-            <Button size="sm" className="h-8 text-xs" onClick={submit}>{editingId ? "保存" : "创建"}</Button>
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setOpen(false)}>{readOnly ? "关闭" : "取消"}</Button>
+            {!readOnly && (
+              <Button size="sm" className="h-8 text-xs" onClick={submit}>{editingId ? "保存" : "创建"}</Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
