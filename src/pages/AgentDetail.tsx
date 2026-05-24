@@ -216,6 +216,10 @@ const AgentDetail = () => {
 
   const runDebug = () => {
     if (!debugInput.trim() || debugRunning) return;
+    if (isDirty) {
+      toast({ title: "配置未保存", description: "请先保存当前配置后再调试", variant: "destructive" });
+      return;
+    }
     const text = debugInput.trim();
     setRunMessages((m) => [...m, { role: "user", content: text }]);
     setDebugInput("");
