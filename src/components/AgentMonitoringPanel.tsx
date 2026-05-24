@@ -323,7 +323,7 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
           </BarChart>
         </ChartCard>
 
-        <ChartCard title="响应时间" subtitle="（P50 / P90 / P95 / P99 / 平均 / 最大，单位：ms）">
+        <ChartCard title="响应时间" subtitle="（ms）">
           <LineChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
             <XAxis dataKey="t" {...axisProps} />
