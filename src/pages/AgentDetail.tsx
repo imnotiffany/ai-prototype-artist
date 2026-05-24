@@ -838,17 +838,15 @@ fengsheng:
                         <div key={b.name} className={`border rounded-md p-3 flex items-center justify-between gap-3 ${credMissing ? "border-amber-300 bg-amber-50/40" : "border-border"}`}>
                           <div className="min-w-0 flex items-center gap-2 flex-wrap">
                             <span className="text-xs font-medium truncate">{b.name}</span>
-                            {!needsCred ? (
-                              <Badge variant="outline" className="border-emerald-300 text-emerald-700 bg-emerald-50/60 text-[10px] h-4 px-1.5">免凭据</Badge>
-                            ) : credMissing ? (
+                            {credMissing ? (
                               <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-0 text-[10px] h-4 gap-1">
                                 <AlertTriangle className="w-2.5 h-2.5" />MCP 管理中已移除或未配置
                               </Badge>
-                            ) : (
+                            ) : needsCred ? (
                               <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0 text-[10px] h-4 gap-1">
                                 <CheckCircle2 className="w-2.5 h-2.5" />已就绪 · 凭据由 MCP 管理维护
                               </Badge>
-                            )}
+                            ) : null}
                           </div>
                           <div className="flex items-center gap-1 shrink-0">
                             {credMissing && (
