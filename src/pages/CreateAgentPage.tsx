@@ -1241,11 +1241,13 @@ const CreateAgentPage = () => {
                 ) : msg.role === "system" ? (
                   <div>
                     {msg.content === "WELCOME_HERO" ? (
-                      <div className="px-1 py-2">
+                      <div className="px-1 py-2 space-y-1">
+                        <p className="text-xs font-semibold text-foreground">描述你想搭建怎样的智能体</p>
                         <p className="text-[11px] text-muted-foreground leading-relaxed">
                           描述你想创建的智能体，AI 会自动帮你生成。
                         </p>
                       </div>
+
                     ) : msg.content.includes("\n") ? (
                       <div className="bg-muted/30 border border-border/60 rounded-lg p-3.5 space-y-1">
                         <p className="text-xs font-semibold text-foreground">{msg.content.split("\n")[0]}</p>
