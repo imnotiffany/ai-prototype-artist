@@ -709,8 +709,9 @@ const AssemblySummaryCard = ({
   // 子智能体可选项 mock：从 active skills 借用名字简化，可后续替换
   const subagentItems = skillItems.slice(0, 6).map((s) => ({ name: `${s.name} 子智能体`, description: `基于「${s.name}」封装的子智能体`, scope: "market" as const }));
 
-  const pending = config.mcpServers.filter((m) => mcpRequiresCredential(m) && !isMcpConfigured(m));
-  const ready = config.mcpServers.filter((m) => !pending.includes(m));
+  // 状态机：① 未添加（不在 MCP 管理列表）② 已添加。不预判凭据状态，凭据问题在调试报错时引导。
+  const notAdded = config.mcpServers.filter((m) => mcpRequiresCredential(m) && !isMcpConfigured(m));
+  const added = config.mcpServers.filter((m) => !notAdded.includes(m));
   const total = config.skills.length + config.mcpServers.length;
   const downscale = total > 8;
 
