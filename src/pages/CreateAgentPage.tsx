@@ -387,18 +387,22 @@ const StructuredConfigView = ({
           </Popover>
         </div>
 
-        {/* System Prompt */}
+        {/* 系统提示词 */}
         <div className="px-5 py-4">
-          <label className="text-xs font-medium text-muted-foreground mb-2 block">System prompt</label>
+          <label className="text-xs font-medium text-muted-foreground mb-2 block">系统提示词</label>
           <div className="bg-muted/30 rounded-lg p-3 border border-border">
             <textarea
               value={config.systemPrompt}
-              onChange={(e) => onConfigChange({ ...config, systemPrompt: e.target.value })}
+              onChange={(e) => {
+                onConfigChange({ ...config, systemPrompt: e.target.value });
+                onAcknowledgePrompt();
+              }}
               className="w-full bg-transparent text-xs text-foreground font-mono leading-relaxed resize-none focus:outline-none min-h-[120px]"
               spellCheck={false}
             />
           </div>
         </div>
+
 
         {/* Built-in Tools — 紧凑单行 */}
         {config.tools.length > 0 && (
