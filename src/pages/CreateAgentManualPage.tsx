@@ -642,22 +642,6 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
           </Button>
           <Button
             size="sm"
-            variant="outline"
-            className="h-8 text-xs gap-1.5"
-            onClick={() => {
-              if (!name.trim()) {
-                toast({ title: "请填写智能体名称", variant: "destructive" });
-                return;
-              }
-              toast({ title: "草稿已保存", description: `${name} · 可稍后继续编辑或发布` });
-            }}
-            title="保存当前配置为草稿，不发布"
-          >
-            <Save className="w-3.5 h-3.5" />
-            保存草稿
-          </Button>
-          <Button
-            size="sm"
             className="h-8 text-xs gap-1.5"
             onClick={openPublish}
             disabled={!canSave}
