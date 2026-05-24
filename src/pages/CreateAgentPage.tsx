@@ -1098,44 +1098,92 @@ const CreateAgentPage = () => {
           ]);
         }, 2000);
       } else {
-        // Subsequent messages: refine the agent
-        const lower = userMsg.toLowerCase();
-        const responseId = uid();
-        let fullText = "好的，已根据你的需求更新了配置。";
+        // Subsequent messages: 澄清 or 建议变更（采纳/撤销）
+        const trimmed = userMsg.trim();
 
-        if (lower.includes("prompt") || lower.includes("提示词") || lower.includes("系统")) {
-          fullText = "System Prompt 已更新。你可以在配置面板中查看修改后的内容。";
-          setDebugEvents((prev) => [...prev, { id: uid(), type: "update", detail: "System Prompt 已更新", timestamp: new Date() }]);
-        } else if (lower.includes("模型") || lower.includes("model")) {
-          fullText = "模型已更新。建议在调试面板中重新测试智能体表现。";
-          setDebugEvents((prev) => [...prev, { id: uid(), type: "update", detail: "模型配置已更新", timestamp: new Date() }]);
-        } else if (lower.includes("skill") || lower.includes("技能")) {
-          fullText = "技能列表已更新。新添加的技能将在智能体下次运行时生效。";
-          setDebugEvents((prev) => [...prev, { id: uid(), type: "update", detail: "技能配置已更新", timestamp: new Date() }]);
-        } else if (lower.includes("mcp")) {
-          fullText = "MCP 服务已更新。新服务连接将在下次调用时生效。";
-          setDebugEvents((prev) => [...prev, { id: uid(), type: "update", detail: "MCP 服务已更新", timestamp: new Date() }]);
+        // ① 澄清：输入过短或仅是疑问词
+        if (trimmed.length < 5 || /^(怎么|如何|什么|为什么|可以吗|可以么|\?|？)+$/.test(trimmed)) {
+          const clarifyId = uid();
+          setMessages((prev) => [...prev, {
+            id: clarifyId,
+            role: "assistant",
+            content: "为了更准确地调整，我需要再确认几点：",
+            type: "clarify",
+            clarifyQuestions: [
+              "想要修改的是 MCP、Skill 还是系统提示词？",
+              "希望新增、替换还是删除某项能力？",
+              "有具体的能力名称或场景描述吗？",
+            ],
+          }]);
+          setIsThinking(false);
+          setThinkingStartedAt(null);
+          return;
         }
 
-        setMessages((prev) => [...prev, { id: uid(), role: "system", content: "✓ 配置已更新", type: "confirm" }]);
-        setMessages((prev) => [...prev, { id: responseId, role: "assistant", content: "", isStreaming: true }]);
+        // ② 生成提案（不直接落到 agentConfig，等用户采纳）
+        const lower = trimmed.toLowerCase();
+        const allSkills = getActiveSkills().map((s) => s.name);
+        const allMcps = getActiveMCPs().map((m) => m.name);
+        const pickUnused = (pool: string[], used: string[]) => pool.find((x) => !used.includes(x));
 
-        let charIndex = 0;
-        const interval = setInterval(() => {
-          charIndex += 2;
-          if (charIndex >= fullText.length) {
-            clearInterval(interval);
-            setMessages((prev) =>
-              prev.map((m) => m.id === responseId ? { ...m, content: fullText, isStreaming: false } : m)
-            );
-            setIsThinking(false);
-            setThinkingStartedAt(null);
+        const diff: ProposalDiff = {
+          addedMcps: [], removedMcps: [], addedSkills: [], removedSkills: [],
+          promptChanged: false,
+        };
+        let nextSkills = [...agentConfig.skills];
+        let nextMcps = [...agentConfig.mcpServers];
+        let nextPrompt = agentConfig.systemPrompt;
+
+        const isRemove = /删除|去掉|移除|去除/.test(trimmed);
+        if (lower.includes("mcp")) {
+          if (isRemove && nextMcps.length > 0) {
+            const target = nextMcps[nextMcps.length - 1];
+            nextMcps = nextMcps.filter((x) => x !== target);
+            diff.removedMcps.push(target);
           } else {
-            setMessages((prev) =>
-              prev.map((m) => m.id === responseId ? { ...m, content: fullText.slice(0, charIndex) } : m)
-            );
+            const target = pickUnused(allMcps, nextMcps);
+            if (target) { nextMcps.push(target); diff.addedMcps.push(target); }
           }
-        }, 30);
+        } else if (lower.includes("skill") || trimmed.includes("技能")) {
+          if (isRemove && nextSkills.length > 0) {
+            const target = nextSkills[nextSkills.length - 1];
+            nextSkills = nextSkills.filter((x) => x !== target);
+            diff.removedSkills.push(target);
+          } else {
+            const target = pickUnused(allSkills, nextSkills);
+            if (target) { nextSkills.push(target); diff.addedSkills.push(target); }
+          }
+        } else {
+          // 默认视为提示词调整
+          diff.promptChanged = true;
+          diff.promptNote = trimmed;
+          nextPrompt = `${nextPrompt}\n\n// 用户补充要求：${trimmed}`;
+        }
+
+        const hasChange = diff.addedMcps.length || diff.removedMcps.length ||
+                          diff.addedSkills.length || diff.removedSkills.length || diff.promptChanged;
+
+        if (!hasChange) {
+          setMessages((prev) => [...prev, {
+            id: uid(), role: "assistant",
+            content: "我没能从你的描述中提取出明确的变更项，可以再具体说明一下要修改什么吗？例如：「添加一个搜索 MCP」「去掉数据分析 Skill」「在提示词里强调要严谨」。",
+          }]);
+          setIsThinking(false);
+          setThinkingStartedAt(null);
+          return;
+        }
+
+        const proposal: Proposal = {
+          diff, nextSkills, nextMcps, nextPrompt, status: "pending",
+        };
+        setMessages((prev) => [...prev, {
+          id: uid(), role: "assistant",
+          content: "我建议如下变更，确认后将更新右侧配置：",
+          type: "proposal",
+          proposal,
+        }]);
+        setIsThinking(false);
+        setThinkingStartedAt(null);
       }
     }, streamDelay);
   };
