@@ -59,31 +59,61 @@ const EnvironmentPage = () => {
     setEnvironments(next);
   };
 
+  const openCreate = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+    setOpen(true);
+  };
+
+  const openEdit = (e: EnvItem) => {
+    setEditingId(e.id);
+    setForm({
+      name: e.name,
+      description: e.description || "",
+      spec: specToValue(e.spec),
+      deps: [{ manager: "pip", spec: "" }],
+      network: "internet",
+    });
+    setOpen(true);
+  };
+
   const submit = () => {
     if (!form.name.trim()) {
       toast({ title: "请填写环境名称", variant: "destructive" });
       return;
     }
     const validDeps = form.deps.filter((d) => d.spec.trim());
-
     const specLabel = form.spec === "1C2G" ? "1C 2G" : form.spec === "2C4G" ? "2C 4G" : form.spec === "4C8G" ? "4C 8G" : "8C 32G";
-    const next: EnvItem[] = [
-      {
-        id: genEnvId(),
-        envId: genEnvId(),
-        name: form.name.trim(),
-        spec: specLabel,
-        deps: validDeps.length,
-        agents: 0,
-        updatedAt: new Date().toISOString().slice(0, 16).replace("T", " "),
-        description: form.description,
-      },
-      ...envs,
-    ];
-    persist(next);
-    toast({ title: "环境已创建", description: `${form.name}` });
+    const updatedAt = new Date().toISOString().slice(0, 16).replace("T", " ");
+
+    if (editingId) {
+      const next = envs.map((x) =>
+        x.id === editingId
+          ? { ...x, name: form.name.trim(), description: form.description, spec: specLabel, deps: validDeps.length || x.deps, updatedAt }
+          : x,
+      );
+      persist(next);
+      toast({ title: "环境已更新", description: form.name });
+    } else {
+      const next: EnvItem[] = [
+        {
+          id: genEnvId(),
+          envId: genEnvId(),
+          name: form.name.trim(),
+          spec: specLabel,
+          deps: validDeps.length,
+          agents: 0,
+          updatedAt,
+          description: form.description,
+        },
+        ...envs,
+      ];
+      persist(next);
+      toast({ title: "环境已创建", description: form.name });
+    }
     setOpen(false);
-    setForm({ name: "", description: "", spec: "4C8G", deps: [{ manager: "pip", spec: "" }], network: "internet" });
+    setEditingId(null);
+    setForm(emptyForm);
   };
 
   return (
