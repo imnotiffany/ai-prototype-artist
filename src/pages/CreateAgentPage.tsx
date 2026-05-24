@@ -83,9 +83,7 @@ const defaultConfig: AgentConfig = {
   model: "aliyun/qwen3.6-plus",
   apiKey: "",
   systemPrompt: "",
-  tools: [
-    { name: "Built-in tools", id: "agent_toolset_20260401", permissions: 8, permissionPolicy: "Always allow" },
-  ],
+  tools: [],
   skills: [],
   mcpServers: [],
   subagents: [],
@@ -160,9 +158,7 @@ const assembleAgent = (
     model,
     apiKey: "",
     systemPrompt,
-    tools: [
-      { name: "Built-in tools", id: "agent_toolset_20260401", permissions: 8, permissionPolicy: "Always allow" },
-    ],
+    tools: [],
     skills: allSkills,
     mcpServers: allMCPs,
     subagents: demoSubagents,
@@ -545,12 +541,12 @@ model:
 system: |-
   ${config.systemPrompt.split("\n").join("\n  ")}
 tools:
-  - type: ${config.tools[0]?.id || "agent_toolset_20260401"}
+${config.tools.map(t => `  - type: ${t.id}
     configs: []
     default_config:
       enabled: true
       permission_policy:
-        type: always_allow
+        type: ${t.permissionPolicy === "Always allow" ? "always_allow" : "user_controlled"}`).join("\n") || "  []"}
 mcp_servers: [${config.mcpServers.map(s => `"${s}"`).join(", ")}]
 skills: [${config.skills.map(s => `"${s}"`).join(", ")}]
 metadata: {}`;
@@ -562,7 +558,10 @@ const generateJson = (config: AgentConfig) =>
       description: "An agent that helps users with tasks.",
       model: { id: config.model, speed: "standard" },
       system: config.systemPrompt,
-      tools: [{ type: config.tools[0]?.id || "agent_toolset_20260401", configs: [], default_config: { enabled: true, permission_policy: { type: "always_allow" } } }],
+      tools: config.tools.map(t => {
+        const policyType = t.permissionPolicy === "Always allow" ? "always_allow" : "user_controlled";
+        return { type: t.id, configs: [], default_config: { enabled: true, permission_policy: { type: policyType } } };
+      }),
       mcp_servers: config.mcpServers,
       skills: config.skills,
       metadata: {},
