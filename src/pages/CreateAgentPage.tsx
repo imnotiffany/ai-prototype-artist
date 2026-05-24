@@ -1189,6 +1189,25 @@ const CreateAgentPage = () => {
   };
   handleSendRef.current = handleSend;
 
+  const handleAcceptProposal = (msgId: string) => {
+    setMessages((prev) => prev.map((m) => {
+      if (m.id !== msgId || !m.proposal || m.proposal.status !== "pending") return m;
+      const p = m.proposal;
+      setAgentConfig((c) => ({ ...c, skills: p.nextSkills, mcpServers: p.nextMcps, systemPrompt: p.nextPrompt }));
+      setDebugEvents((d) => [...d, { id: uid(), type: "update", detail: "已采纳 AI 建议的变更", timestamp: new Date() }]);
+      return { ...m, proposal: { ...p, status: "accepted" } };
+    }));
+  };
+  const handleWithdrawProposal = (msgId: string) => {
+    setMessages((prev) => prev.map((m) =>
+      m.id === msgId && m.proposal && m.proposal.status === "pending"
+        ? { ...m, proposal: { ...m.proposal, status: "withdrawn" } }
+        : m
+    ));
+  };
+
+
+
   const handlePreviewSend = () => {
     if (!previewInput.trim() || isAgentRunning) return;
     const msg = previewInput.trim();
