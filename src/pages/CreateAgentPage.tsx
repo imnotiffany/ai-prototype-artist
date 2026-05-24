@@ -506,34 +506,7 @@ const StructuredConfigView = ({
         </div>
       </div>
 
-      {diff && (
-        <div className="mx-3 mt-3 flex items-center gap-2 rounded-md border border-amber-300/60 bg-amber-50/70 dark:bg-amber-950/20 dark:border-amber-800/50 pl-2.5 pr-1.5 py-1 text-[12px]">
-          <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
-          <span className="text-amber-900 dark:text-amber-100 truncate">
-            能力已变更，请同步更新系统提示词
-          </span>
-          <div className="ml-auto flex items-center gap-1 shrink-0">
-            <Button
-              size="sm"
-              onClick={handleRegen}
-              disabled={regenerating}
-              className="h-6 px-2 text-[11px] gap-1 bg-amber-500 hover:bg-amber-600 text-white border-0"
-            >
-              {regenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-              {regenerating ? "更新中" : "AI 更新"}
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={onAcknowledgePrompt}
-              className="h-6 w-6 text-amber-900/60 hover:bg-amber-100 dark:text-amber-100/60 dark:hover:bg-amber-900/40"
-              aria-label="忽略"
-            >
-              <X className="w-3 h-3" />
-            </Button>
-          </div>
-        </div>
-      )}
+      {/* 通过 AI 对话更新能力时会同步重写系统提示词，无需横幅提醒 */}
 
       <div className="divide-y divide-border">
         {/* 名称在「保存」时弹出确认卡片中编辑，配置区不展示 */}
