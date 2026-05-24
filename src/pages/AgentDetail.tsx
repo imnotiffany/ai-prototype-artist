@@ -1154,6 +1154,13 @@ fengsheng:
           </div>
         </TabsContent>
 
+        {/* ───────── 基础监控 ───────── */}
+        <TabsContent value="monitor" className="mt-4">
+          <AgentMonitoringPanel />
+        </TabsContent>
+
+
+
         {/* ───────── API Key ───────── */}
         <TabsContent value="apikey" className="mt-4">
           <section className="border border-border rounded-lg bg-card overflow-hidden">
