@@ -540,10 +540,18 @@ const AgentDetail = () => {
                 <Settings2 className="w-3 h-3" />配置
               </button>
               <button
-                onClick={() => setConfigSubTab("debug")}
+                onClick={() => {
+                  if (isDirty) {
+                    toast({ title: "配置未保存", description: "请先保存当前配置后再调试", variant: "destructive" });
+                    return;
+                  }
+                  setConfigSubTab("debug");
+                }}
+                disabled={isDirty}
+                title={isDirty ? "请先保存配置后再调试" : "调试"}
                 className={`px-3 h-7 text-[11px] rounded inline-flex items-center gap-1.5 transition-colors ${
                   configSubTab === "debug" ? "bg-background text-foreground shadow-sm font-medium" : "text-muted-foreground hover:text-foreground"
-                }`}
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 <Bug className="w-3 h-3" />调试
                 {debugRunning && <RunningIndicator />}
