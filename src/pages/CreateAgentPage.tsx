@@ -4,7 +4,7 @@ import {
   Send, ChevronRight, CheckCircle2, Copy, Loader2, ChevronDown, Code2, Settings2,
   Zap, Server, Plus, X, Rocket, Package, Bot, ScrollText, MessageSquare, Bug,
   History, FormInput, KeyRound, Link2, Eye, EyeOff, AlertCircle, ExternalLink, Save, Sparkles, RefreshCw,
-  Search,
+  Search, Terminal,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
@@ -401,7 +401,7 @@ const StructuredConfigView = ({
             <SelectContent>
               {availableEnvs.map((e) => (
                 <SelectItem key={e.envId} value={e.envId} className="text-xs">
-                  <span className="font-medium">{e.name}</span>
+                  <span>{e.name}</span>
                   <span className="ml-2 text-[10px] text-muted-foreground">{e.spec} · {e.envId}</span>
                 </SelectItem>
               ))}
@@ -1334,7 +1334,7 @@ const CreateAgentPage = () => {
                 const Icon = tab.icon;
                 const active = rightTab === tab.key;
                 const disabled = tab.key === "debug" && !hasSaved;
-                const sub = tab.key === "config" ? "MCP / Skill / 系统提示词" : "对话视图 / 调试日志";
+                const sub = tab.key === "config" ? "MCP / Skill / 子智能体 / 系统提示词" : "对话视图 / 调试日志";
                 const dotCls = disabled
                   ? "bg-muted text-muted-foreground border-border"
                   : active
@@ -1386,11 +1386,13 @@ const CreateAgentPage = () => {
           {/* 测试子视图切换器（左对齐，紧贴 stepper 下方） */}
           {rightTab === "debug" && (
             <div className="border-b border-border px-3 py-2 flex items-center">
-              <div className="inline-flex items-center gap-1 bg-muted/50 rounded p-0.5">
+              <div className="inline-flex items-center bg-muted rounded-md p-0.5">
                 <button
                   onClick={() => setDebugSubTab("preview")}
                   className={`px-2.5 py-1 text-[11px] rounded transition-colors flex items-center gap-1 ${
-                    debugSubTab === "preview" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                    debugSubTab === "preview"
+                      ? "bg-background text-foreground shadow-sm font-medium"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   <MessageSquare className="w-3 h-3" />
@@ -1399,15 +1401,18 @@ const CreateAgentPage = () => {
                 <button
                   onClick={() => setDebugSubTab("logs")}
                   className={`px-2.5 py-1 text-[11px] rounded transition-colors flex items-center gap-1 ${
-                    debugSubTab === "logs" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                    debugSubTab === "logs"
+                      ? "bg-background text-foreground shadow-sm font-medium"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  <History className="w-3 h-3" />
+                  <Terminal className="w-3 h-3" />
                   调试视图
                 </button>
               </div>
             </div>
           )}
+
 
 
 

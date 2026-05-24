@@ -816,7 +816,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   <SelectContent>
                     {envOptions.map((e) => (
                       <SelectItem key={e.envId} value={e.envId} className="text-xs">
-                        <span className="font-medium">{e.name}</span>
+                        <span>{e.name}</span>
                         <span className="ml-2 text-[10px] text-muted-foreground">{e.spec} · {e.envId}</span>
                       </SelectItem>
                     ))}
