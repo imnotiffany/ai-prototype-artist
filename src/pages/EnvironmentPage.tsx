@@ -54,11 +54,8 @@ const EnvironmentPage = () => {
       toast({ title: "请填写环境名称", variant: "destructive" });
       return;
     }
-    const validDeps = form.deps.filter((d) => d.pkg.trim() && d.version.trim());
-    if (form.deps.some((d) => (d.pkg.trim() || d.version.trim()) && (!d.pkg.trim() || !d.version.trim()))) {
-      toast({ title: "依赖包信息不完整", description: "包名和版本号均为必填", variant: "destructive" });
-      return;
-    }
+    const validDeps = form.deps.filter((d) => d.spec.trim());
+
     const specLabel = form.spec === "1C2G" ? "1C 2G" : form.spec === "2C4G" ? "2C 4G" : form.spec === "4C8G" ? "4C 8G" : "8C 32G";
     const next: EnvItem[] = [
       {
