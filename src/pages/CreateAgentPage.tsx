@@ -878,7 +878,7 @@ const CreateAgentPage = () => {
   const location = useLocation();
   const initialState = (location.state ?? {}) as { description?: string; autoStart?: boolean };
   const [configViewMode, setConfigViewMode] = useState<"structured" | "raw">("structured");
-  const [rightTab, setRightTab] = useState<"config" | "debug">("config");
+  const [rightTab, setRightTab] = useState<"config" | "integration" | "debug">("config");
   const [debugSubTab, setDebugSubTab] = useState<"preview" | "logs">("preview");
   const [hasSaved, setHasSaved] = useState(false);
 
