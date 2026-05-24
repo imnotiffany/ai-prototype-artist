@@ -1730,9 +1730,11 @@ const CreateAgentPage = () => {
                   toast({ title: "请填写智能体名称", variant: "destructive" });
                   return;
                 }
-                setAgentConfig({ ...agentConfig, name: saveName.trim() });
+                const saved = { ...agentConfig, name: saveName.trim() };
+                setAgentConfig(saved);
                 setAgentCreated(true);
                 setHasSaved(true);
+                setSavedConfigSnapshot(JSON.stringify(saved));
                 setPublishOpen(false);
                 setRightTab("debug");
                 setDebugSubTab("preview");
