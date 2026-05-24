@@ -862,7 +862,7 @@ fengsheng:
                             <span className="text-xs font-medium truncate">{b.name}</span>
                             {credMissing ? (
                               <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-0 text-[10px] h-4 gap-1">
-                                <AlertTriangle className="w-2.5 h-2.5" />MCP 管理中已移除或未配置
+                                <AlertTriangle className="w-2.5 h-2.5" />MCP 管理中未添加
                               </Badge>
                             ) : needsCred ? (
                               <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0 text-[10px] h-4 gap-1">
