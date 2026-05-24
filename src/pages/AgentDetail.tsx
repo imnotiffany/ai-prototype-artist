@@ -167,6 +167,14 @@ const AgentDetail = () => {
   const [debugLogs, setDebugLogs] = useState<LogEntry[]>([]);
   const logIdRef = useRef(0);
 
+  /* 配置变 dirty 时把用户从「调试」子标签踢回「配置」 */
+  useEffect(() => {
+    if (isDirty && configSubTab === "debug") {
+      setConfigSubTab("config");
+      toast({ title: "配置已修改", description: "请保存后再继续调试", variant: "destructive" });
+    }
+  }, [isDirty, configSubTab]);
+
   const pushLog = (level: LogLevel, message: string, meta?: string) => {
     const ts = new Date().toLocaleTimeString("zh-CN", { hour12: false }) + "." + String(Date.now() % 1000).padStart(3, "0");
     setDebugLogs((l) => [...l, { id: ++logIdRef.current, ts, level, message, meta }]);
