@@ -28,16 +28,35 @@ import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { AlertTriangle, FolderKanban, ArrowRight } from "lucide-react";
 
 /* ── Types ── */
+interface ProposalDiff {
+  addedMcps: string[];
+  removedMcps: string[];
+  addedSkills: string[];
+  removedSkills: string[];
+  promptChanged: boolean;
+  promptNote?: string;
+}
+interface Proposal {
+  diff: ProposalDiff;
+  // 仅保存变更后的关键字段，采纳时合并到 agentConfig
+  nextSkills: string[];
+  nextMcps: string[];
+  nextPrompt: string;
+  status: "pending" | "accepted" | "withdrawn";
+}
+
 interface Message {
   id: string;
   role: "user" | "assistant" | "system";
   content: string;
-  type?: "question" | "confirm" | "api-call" | "text" | "assembly" | "tool-calls" | "clarify" | "assembly-summary";
+  type?: "question" | "confirm" | "api-call" | "text" | "assembly" | "tool-calls" | "clarify" | "assembly-summary" | "proposal";
   attachments?: { type: "skill" | "mcp"; name: string }[];
   toolCalls?: ToolCall[];
   isStreaming?: boolean;
   /** clarify 类型：澄清问题列表 */
   clarifyQuestions?: string[];
+  /** proposal 类型：AI 建议的配置变更 */
+  proposal?: Proposal;
 }
 
 interface PreviewMessage {
