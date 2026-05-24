@@ -652,7 +652,22 @@ const AgentDetail = () => {
 
 
             <div className="flex items-center justify-end gap-3 px-1">
+              {isDirty && !fsBlocking ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-[11px] gap-1.5 border-amber-400 bg-amber-50 hover:bg-amber-100 text-amber-900 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-700 animate-fade-in"
+                  onClick={() => {
+                    handleSave();
+                    setConfigSubTab("debug");
+                  }}
+                  title="保存当前修改并进入调试"
+                >
+                  <Save className="w-3 h-3" />保存并调试
+                </Button>
+              ) : null}
               <div className="inline-flex items-center shrink-0 gap-0.5">
+
                 <button
                   onClick={() => setConfigView("form")}
                   title="表单视图"
