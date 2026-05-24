@@ -99,6 +99,7 @@ function buildSeries(start: Date, end: Date, granMin: number): Point[] {
       mem: +seeded(i, 55, 12, 0.35).toFixed(1),
       sent: +seeded(i, 1.6, 0.9, 0.7).toFixed(2),
       recv: +seeded(i, 2.4, 1.2, 0.45).toFixed(2),
+      errRate: +seeded(i, 1.2, 1.0, 0.55).toFixed(2),
     });
   }
   return points;
