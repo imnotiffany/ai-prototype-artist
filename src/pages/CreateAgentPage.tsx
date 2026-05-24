@@ -271,43 +271,35 @@ const StructuredConfigView = ({
   return (
     <div className="flex-1 overflow-auto">
       {diff && (
-        <div className="m-3 rounded-md border border-amber-300/70 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800/60 px-3 py-2.5">
-          <div className="flex items-start gap-2">
-            <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-amber-900 dark:text-amber-100">
-                能力已变更，建议更新 System Prompt
-              </p>
-              <p className="text-[11px] text-amber-800/80 dark:text-amber-200/80 mt-0.5 leading-relaxed">
-                你修改了 {[
-                  (diff.skills.added.length || diff.skills.removed.length) ? `Skill(+${diff.skills.added.length}/-${diff.skills.removed.length})` : "",
-                  (diff.mcps.added.length || diff.mcps.removed.length) ? `MCP(+${diff.mcps.added.length}/-${diff.mcps.removed.length})` : "",
-                  (diff.subagents.added.length || diff.subagents.removed.length) ? `子智能体(+${diff.subagents.added.length}/-${diff.subagents.removed.length})` : "",
-                ].filter(Boolean).join("、")}，System Prompt 可能与新能力不匹配。
-              </p>
-              <div className="flex items-center gap-2 mt-2">
-                <Button
-                  size="sm"
-                  onClick={handleRegen}
-                  disabled={regenerating}
-                  className="h-7 text-[11px] gap-1.5 bg-amber-600 hover:bg-amber-700 text-white"
-                >
-                  {regenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-                  {regenerating ? "AI 更新中…" : "用 AI 一键更新"}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={onDismissPromptSync}
-                  className="h-7 text-[11px] text-amber-900/80 hover:bg-amber-100 dark:text-amber-200/80 dark:hover:bg-amber-900/40"
-                >
-                  忽略
-                </Button>
-              </div>
-            </div>
+        <div className="mx-3 mt-3 flex items-center gap-2 rounded-md border border-amber-300/60 bg-amber-50/70 dark:bg-amber-950/20 dark:border-amber-800/50 pl-2.5 pr-1.5 py-1 text-[12px]">
+          <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
+          <span className="text-amber-900 dark:text-amber-100 truncate">
+            能力已变更，System Prompt 待同步
+          </span>
+          <div className="ml-auto flex items-center gap-0.5 shrink-0">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleRegen}
+              disabled={regenerating}
+              className="h-6 px-2 text-[11px] gap-1 text-amber-900 hover:bg-amber-100 dark:text-amber-100 dark:hover:bg-amber-900/40"
+            >
+              {regenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+              {regenerating ? "更新中" : "AI 更新"}
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={onDismissPromptSync}
+              className="h-6 w-6 text-amber-900/60 hover:bg-amber-100 dark:text-amber-100/60 dark:hover:bg-amber-900/40"
+              aria-label="忽略"
+            >
+              <X className="w-3 h-3" />
+            </Button>
           </div>
         </div>
       )}
+
       <div className="divide-y divide-border">
         {/* 名称在「保存」时弹出确认卡片中编辑，配置区不展示 */}
 
