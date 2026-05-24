@@ -70,6 +70,7 @@ interface Point {
   mem: number;
   sent: number;
   recv: number;
+  errRate: number;
 }
 
 function buildSeries(start: Date, end: Date, granMin: number): Point[] {
