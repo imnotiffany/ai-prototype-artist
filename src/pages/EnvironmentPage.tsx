@@ -13,31 +13,9 @@ import { defaultEnvironments, getEnvironments, setEnvironments, type EnvItem } f
 
 const genEnvId = () => `env-${Math.random().toString(36).slice(2, 8)}`;
 
-const PKG_CATALOG: Record<"pip" | "npm" | "apt", Record<string, string[]>> = {
-  pip: {
-    pandas: ["2.2.0", "2.1.4", "2.0.3", "1.5.3"],
-    numpy: ["1.26.4", "1.26.0", "1.24.3"],
-    requests: ["2.32.0", "2.31.0", "2.28.2"],
-    fastapi: ["0.111.0", "0.110.0", "0.104.1"],
-    pydantic: ["2.7.0", "2.6.0", "1.10.13"],
-    playwright: ["1.44.0", "1.42.0"],
-    openai: ["1.30.0", "1.20.0"],
-  },
-  npm: {
-    lodash: ["4.17.21", "4.17.20"],
-    axios: ["1.7.2", "1.6.7", "0.27.2"],
-    typescript: ["5.4.5", "5.3.3", "5.2.2"],
-    zod: ["3.23.8", "3.22.4"],
-    playwright: ["1.44.0", "1.42.0"],
-  },
-  apt: {
-    curl: ["8.5.0", "7.88.1"],
-    git: ["2.43.0", "2.39.2"],
-    "ffmpeg": ["6.1.1", "5.1.4"],
-    "imagemagick": ["7.1.1", "6.9.12"],
-    wget: ["1.21.4", "1.21.3"],
-  },
-};
+const PKG_MANAGERS = ["apt", "cargo", "gem", "go", "npm", "pip"] as const;
+type PkgManager = (typeof PKG_MANAGERS)[number];
+
 
 
 const EnvironmentPage = () => {
