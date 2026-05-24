@@ -446,67 +446,8 @@ const AgentDetail = () => {
 
         </TabsList>
 
-        {/* ───────── 调试 ───────── */}
-        <TabsContent value="debug" className="mt-4">
 
-          <div className="border border-border rounded-lg bg-card flex flex-col h-[640px]">
-            <div className="px-3 h-10 shrink-0 border-b border-border flex items-center gap-1.5">
-              <Bot className="w-3.5 h-3.5 text-primary shrink-0" />
-              <span className="text-xs font-semibold shrink-0">智能体运行</span>
-              {debugRunning && <RunningIndicator />}
-            </div>
-            <div className="flex-1 min-h-0">
-              <RunDualView
-                transcriptEvents={(() => {
-                  const evs: TranscriptEvent[] = [];
-                  runMessages.forEach((m, i) => {
-                    if (m.role === "user") evs.push({ id: `u${i}`, type: "user", content: m.content });
-                    else if (m.status === "error") evs.push({ id: `e${i}`, type: "error", message: m.content });
-                    else {
-                      if (m.tool) evs.push({
-                        id: `t${i}`, type: "tools",
-                        calls: [{ id: `c${i}`, kind: "mcp", name: m.tool, summary: "调用成功", status: "success" }],
-                      });
-                      evs.push({ id: `a${i}`, type: "agent", content: m.content });
-                    }
-                  });
-                  return evs;
-                })()}
-                debugEvents={debugLogs.map((l) => ({
-                  id: String(l.id),
-                  ts: l.ts,
-                  type: `log.${l.level}`,
-                  data: { message: l.message, ...(l.meta ? { meta: l.meta } : {}) },
-                }))}
-                showTranscriptSearch={false}
-                transcriptFooter={debugRunning ? <AIStatusPill /> : undefined}
-              />
-            </div>
-            <div className="border-t border-border p-3 flex items-center gap-2 shrink-0">
-              <Button
-                type="button"
-                size="icon"
-                variant={voiceRecording ? "default" : "outline"}
-                className={`h-8 w-8 shrink-0 ${voiceRecording ? "animate-pulse" : ""}`}
-                onClick={toggleVoice}
-                title={voiceRecording ? "结束语音输入" : "语音输入"}
-              >
-                {voiceRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
-              </Button>
-              <Input
-                className="h-8 text-xs"
-                placeholder={voiceRecording ? "正在录音…再次点击麦克风结束" : "输入测试任务，回车发送"}
-                value={debugInput}
-                onChange={(e) => setDebugInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); runDebug(); } }}
-              />
-              <Button size="sm" className="h-8 text-xs gap-1.5" onClick={runDebug} disabled={debugRunning || !debugInput.trim()}>
-                <Send className="w-3 h-3" />发送
-              </Button>
-            </div>
-          </div>
 
-        </TabsContent>
 
         {/* ───────── 配置 ───────── */}
         <TabsContent value="config" className="mt-4">
