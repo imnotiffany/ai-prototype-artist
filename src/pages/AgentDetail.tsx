@@ -673,7 +673,50 @@ fengsheng:
                 </Select>
               </div>
               <div>
+                <Label className="text-xs">API Key</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" role="combobox" className="mt-1.5 h-8 w-full justify-between text-xs font-normal px-3">
+                      {apiKey ? mockApiKeys.find((k) => k.id === apiKey)?.name ?? "选择 API Key" : "选择 API Key"}
+                      <Search className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="搜索 API Key..." className="h-9 text-xs" />
+                      <CommandList>
+                        <CommandEmpty className="text-xs py-3">未找到匹配的 API Key</CommandEmpty>
+                        <CommandGroup>
+                          {mockApiKeys.map((k) => (
+                            <CommandItem key={k.id} value={k.name} onSelect={() => setApiKey(k.id)} className="text-xs">
+                              <span className="font-medium">{k.name}</span>
+                              <span className="ml-2 text-[10px] text-muted-foreground">{k.keyMask}</span>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div>
+                <Label className="text-xs flex items-center gap-1.5"><Box className="w-3 h-3 text-muted-foreground" />运行环境</Label>
+                <Select value={envId} onValueChange={setEnvId}>
+                  <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {getEnvironments().map((e) => (
+                      <SelectItem key={e.envId} value={e.envId} className="text-xs">
+                        <span>{e.name}</span>
+                        <span className="ml-2 text-[10px] text-muted-foreground">{e.spec} · {e.envId}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-[10px] text-muted-foreground mt-1">在「环境管理」中可创建自定义运行环境</p>
+              </div>
+              <div>
                 <Label className="text-xs">系统提示词</Label>
+
                 <Textarea value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)} rows={8}
                   className="mt-1.5 font-mono text-xs leading-relaxed bg-card" />
               </div>
