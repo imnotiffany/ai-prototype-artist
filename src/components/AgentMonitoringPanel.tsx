@@ -313,7 +313,7 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
           </AreaChart>
         </ChartCard>
 
-        <ChartCard title="QPM" subtitle="（每分钟请求数）">
+        <ChartCard title="每分钟请求数">
           <BarChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
             <XAxis dataKey="t" {...axisProps} />
