@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -7,11 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Cpu, Package, Globe, ShieldCheck, Pencil, Trash2, Box } from "lucide-react";
+import { Plus, Cpu, Package, Globe, Pencil, Trash2, Box, Search, Tag } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface EnvItem {
   id: string;
+  identifier: string;
   name: string;
   spec: string;
   status: "running" | "ready" | "building";
@@ -24,10 +25,10 @@ interface EnvItem {
 }
 
 const initialEnvs: EnvItem[] = [
-  { id: "env-default-py", name: "Python 默认环境", spec: "2C 4G", status: "ready", deps: 24, agents: 8, version: "v1.0.3", updatedAt: "2026-05-20 10:23", preset: true, description: "Python 3.11 + 常用数据科学库" },
-  { id: "env-default-node", name: "Node 默认环境", spec: "2C 4G", status: "ready", deps: 18, agents: 5, version: "v1.0.1", updatedAt: "2026-05-18 09:11", preset: true, description: "Node 20 + TypeScript + 常用工具" },
-  { id: "env-gpu", name: "GPU 推理环境", spec: "8C 32G · 1×A10", status: "running", deps: 36, agents: 3, version: "v0.4.2", updatedAt: "2026-05-22 14:08", description: "PyTorch 2.3 + CUDA 12.1" },
-  { id: "env-web-crawl", name: "网页爬取环境", spec: "4C 8G", status: "ready", deps: 12, agents: 2, version: "v0.2.0", updatedAt: "2026-05-19 16:45", description: "Playwright + 代理池" },
+  { id: "env-default-py", identifier: "default-python", name: "Python 默认环境", spec: "2C 4G", status: "ready", deps: 24, agents: 8, version: "v1.0.3", updatedAt: "2026-05-20 10:23", preset: true, description: "Python 3.11 + 常用数据科学库" },
+  { id: "env-default-node", identifier: "default-node", name: "Node 默认环境", spec: "2C 4G", status: "ready", deps: 18, agents: 5, version: "v1.0.1", updatedAt: "2026-05-18 09:11", preset: true, description: "Node 20 + TypeScript + 常用工具" },
+  { id: "env-gpu", identifier: "gpu-inference", name: "GPU 推理环境", spec: "8C 32G · 1×A10", status: "running", deps: 36, agents: 3, version: "v0.4.2", updatedAt: "2026-05-22 14:08", description: "PyTorch 2.3 + CUDA 12.1" },
+  { id: "env-web-crawl", identifier: "web-crawler", name: "网页爬取环境", spec: "4C 8G", status: "ready", deps: 12, agents: 2, version: "v0.2.0", updatedAt: "2026-05-19 16:45", description: "Playwright + 代理池" },
 ];
 
 const statusMap = {
@@ -36,26 +37,45 @@ const statusMap = {
   building: { label: "构建中", className: "bg-amber-500/15 text-amber-600 border-amber-500/30" },
 } as const;
 
+const slugify = (s: string) =>
+  s.toLowerCase().trim().replace(/[^a-z0-9\u4e00-\u9fa5]+/g, "-").replace(/^-|-$/g, "") || "env";
+
 const EnvironmentPage = () => {
   const [envs, setEnvs] = useState<EnvItem[]>(initialEnvs);
   const [open, setOpen] = useState(false);
+  const [keyword, setKeyword] = useState("");
   const [form, setForm] = useState({
     name: "",
+    identifier: "",
     description: "",
     spec: "2C4G",
     deps: "",
     network: "internet",
   });
 
+  const filtered = useMemo(() => {
+    const k = keyword.trim().toLowerCase();
+    if (!k) return envs;
+    return envs.filter(
+      (e) => e.name.toLowerCase().includes(k) || e.identifier.toLowerCase().includes(k)
+    );
+  }, [envs, keyword]);
+
   const submit = () => {
     if (!form.name.trim()) {
       toast({ title: "请填写环境名称", variant: "destructive" });
+      return;
+    }
+    const identifier = (form.identifier.trim() || slugify(form.name));
+    if (envs.some((e) => e.identifier === identifier)) {
+      toast({ title: "标识符已存在", description: "请更换一个唯一标识符", variant: "destructive" });
       return;
     }
     const specLabel = form.spec === "1C2G" ? "1C 2G" : form.spec === "2C4G" ? "2C 4G" : form.spec === "4C8G" ? "4C 8G" : "8C 32G";
     setEnvs((prev) => [
       {
         id: `env-${Date.now()}`,
+        identifier,
         name: form.name.trim(),
         spec: specLabel,
         status: "building",
@@ -69,13 +89,13 @@ const EnvironmentPage = () => {
     ]);
     toast({ title: "环境已创建", description: `${form.name} 正在构建` });
     setOpen(false);
-    setForm({ name: "", description: "", spec: "2C4G", deps: "", network: "internet" });
+    setForm({ name: "", identifier: "", description: "", spec: "2C4G", deps: "", network: "internet" });
   };
 
   return (
     <div className="flex-1 overflow-auto">
       <div className="max-w-6xl mx-auto p-6">
-        <div className="flex items-start justify-between mb-5">
+        <div className="flex items-start justify-between mb-4">
           <div>
             <h1 className="text-lg font-semibold flex items-center gap-2">
               <Box className="w-4 h-4 text-primary" />
@@ -90,11 +110,25 @@ const EnvironmentPage = () => {
           </Button>
         </div>
 
+        <div className="flex items-center gap-2 mb-3">
+          <div className="relative w-72">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <Input
+              className="h-8 text-xs pl-8"
+              placeholder="搜索环境名称或标识符"
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+            />
+          </div>
+          <span className="text-[11px] text-muted-foreground">共 {filtered.length} 个环境</span>
+        </div>
+
         <div className="border border-border rounded-lg bg-card">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="text-xs">环境名称</TableHead>
+                <TableHead className="text-xs">标识符</TableHead>
                 <TableHead className="text-xs">规格</TableHead>
                 <TableHead className="text-xs">状态</TableHead>
                 <TableHead className="text-xs">依赖包</TableHead>
@@ -105,7 +139,7 @@ const EnvironmentPage = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {envs.map((e) => {
+              {filtered.map((e) => {
                 const s = statusMap[e.status];
                 return (
                   <TableRow key={e.id}>
@@ -115,6 +149,9 @@ const EnvironmentPage = () => {
                         {e.preset && <Badge variant="secondary" className="h-4 text-[10px] px-1.5">默认</Badge>}
                       </div>
                       {e.description && <p className="text-[11px] text-muted-foreground mt-0.5">{e.description}</p>}
+                    </TableCell>
+                    <TableCell className="text-xs">
+                      <code className="text-[11px] font-mono text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">{e.identifier}</code>
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">{e.spec}</TableCell>
                     <TableCell><Badge variant="outline" className={`h-5 text-[10px] ${s.className}`}>{s.label}</Badge></TableCell>
@@ -135,6 +172,13 @@ const EnvironmentPage = () => {
                   </TableRow>
                 );
               })}
+              {filtered.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={9} className="text-center text-xs text-muted-foreground py-8">
+                    没有匹配的环境
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </div>
@@ -149,7 +193,30 @@ const EnvironmentPage = () => {
           <div className="space-y-3 py-1">
             <div>
               <Label className="text-xs">环境名称 <span className="text-destructive">*</span></Label>
-              <Input className="mt-1.5 h-8 text-xs" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="例如：数据分析环境" />
+              <Input
+                className="mt-1.5 h-8 text-xs"
+                value={form.name}
+                onChange={(e) => {
+                  const name = e.target.value;
+                  setForm((f) => ({
+                    ...f,
+                    name,
+                    // 标识符未手动改过时跟随名称自动生成
+                    identifier: f.identifier && f.identifier !== slugify(f.name) ? f.identifier : slugify(name),
+                  }));
+                }}
+                placeholder="例如：数据分析环境"
+              />
+            </div>
+            <div>
+              <Label className="text-xs flex items-center gap-1.5"><Tag className="w-3 h-3" />标识符 <span className="text-destructive">*</span></Label>
+              <Input
+                className="mt-1.5 h-8 text-xs font-mono"
+                value={form.identifier}
+                onChange={(e) => setForm({ ...form, identifier: e.target.value })}
+                placeholder="data-analysis"
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">用于在 Agent 配置 / API 中引用，仅支持小写字母、数字和短横线</p>
             </div>
             <div>
               <Label className="text-xs">描述</Label>
