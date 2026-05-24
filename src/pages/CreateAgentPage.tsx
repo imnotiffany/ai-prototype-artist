@@ -1468,7 +1468,27 @@ const CreateAgentPage = () => {
               />
             ) : (
               <div className="flex-1 flex flex-col min-h-0">
-                <div className="border-b border-border px-3 py-2 flex items-center justify-end gap-2">
+                <div className="border-b border-border px-3 py-2 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1 bg-muted/50 rounded p-0.5">
+                    <button
+                      onClick={() => setConfigViewMode("structured")}
+                      className={`p-1 rounded transition-colors ${
+                        (configViewMode as string) === "structured" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                      }`}
+                      title="结构化视图"
+                    >
+                      <Settings2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => setConfigViewMode("raw")}
+                      className={`p-1 rounded transition-colors ${
+                        configViewMode === "raw" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                      }`}
+                      title="代码视图"
+                    >
+                      <Code2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                   <Button size="sm" className="h-7 text-[11px] gap-1.5 px-3" onClick={openSaveDialog} disabled={promptDirty} title={saveDisabledReason}>
                     <Save className="w-3 h-3" /> 保存并测试
                   </Button>
