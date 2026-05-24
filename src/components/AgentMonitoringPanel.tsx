@@ -208,82 +208,88 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
   return (
     <div className="space-y-3">
       {/* ───── Filter bar ───── */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-[11px] text-muted-foreground">时间范围</span>
-        <Select value={rangeKey} onValueChange={(v) => setRangeKey(v as RangeKey)}>
-          <SelectTrigger className="h-8 w-[110px] text-xs">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {RANGE_PRESETS.map((p) => (
-              <SelectItem key={p.key} value={p.key} className="text-xs">
-                {p.label}
-              </SelectItem>
-            ))}
-            <SelectItem value="custom" className="text-xs">自定义</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs text-muted-foreground">时间范围</span>
+          <Select value={rangeKey} onValueChange={(v) => setRangeKey(v as RangeKey)}>
+            <SelectTrigger className="h-8 w-[100px] text-xs font-medium">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {RANGE_PRESETS.map((p) => (
+                <SelectItem key={p.key} value={p.key} className="text-xs">
+                  {p.label}
+                </SelectItem>
+              ))}
+              <SelectItem value="custom" className="text-xs">自定义</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
         {rangeKey === "custom" ? (
-          <>
+          <div className="flex items-center gap-1.5">
             <Input
               type="datetime-local"
               value={customStart}
               onChange={(e) => setCustomStart(e.target.value)}
-              className="h-8 w-[180px] text-xs"
+              className="h-8 w-[170px] text-xs"
             />
-            <span className="text-[11px] text-muted-foreground">~</span>
+            <span className="text-xs text-muted-foreground">~</span>
             <Input
               type="datetime-local"
               value={customEnd}
               onChange={(e) => setCustomEnd(e.target.value)}
-              className="h-8 w-[180px] text-xs"
+              className="h-8 w-[170px] text-xs"
             />
-          </>
+          </div>
         ) : (
           <button
             type="button"
             onClick={() => setRangeKey("custom")}
-            className="text-[11px] font-mono text-muted-foreground hover:text-foreground transition-colors"
+            className="text-xs font-mono text-foreground/80 hover:text-foreground transition-colors"
             title="点击切换到自定义"
           >
             {rangeLabel}
           </button>
         )}
 
-        <span className="text-[11px] text-muted-foreground ml-2">粒度</span>
-        <Select value={granKey} onValueChange={(v) => setGranKey(v as GranKey)}>
-          <SelectTrigger className="h-8 w-[90px] text-xs">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {GRAN_OPTIONS.map((g) => (
-              <SelectItem key={g.key} value={g.key} className="text-xs">
-                {g.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs text-muted-foreground">粒度</span>
+          <Select value={granKey} onValueChange={(v) => setGranKey(v as GranKey)}>
+            <SelectTrigger className="h-8 w-[88px] text-xs font-medium">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {GRAN_OPTIONS.map((g) => (
+                <SelectItem key={g.key} value={g.key} className="text-xs">
+                  {g.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
         <Button
           size="icon"
           variant="ghost"
-          className="h-7 w-7"
+          className="h-7 w-7 text-muted-foreground"
           onClick={() => setNow(new Date())}
           title="刷新"
         >
           <RefreshCw className="w-3.5 h-3.5" />
         </Button>
 
-        <a
-          href={langfuseUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="ml-auto inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+        <Button
+          asChild
+          size="sm"
+          variant="secondary"
+          className="ml-auto h-8 text-xs gap-1.5"
         >
-          Langfuse 看板
-          <ExternalLink className="w-3 h-3" />
-        </a>
+          <a href={langfuseUrl} target="_blank" rel="noreferrer">
+            Langfuse 看板
+            <ExternalLink className="w-3 h-3" />
+          </a>
+        </Button>
       </div>
 
       {/* ───── Stat cards ───── */}
