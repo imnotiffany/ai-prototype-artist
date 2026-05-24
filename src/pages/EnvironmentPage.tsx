@@ -315,7 +315,7 @@ const EnvironmentPage = () => {
           </div>
           <DialogFooter>
             <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setOpen(false)}>取消</Button>
-            <Button size="sm" className="h-8 text-xs" onClick={submit}>创建</Button>
+            <Button size="sm" className="h-8 text-xs" onClick={submit}>{editingId ? "保存" : "创建"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
