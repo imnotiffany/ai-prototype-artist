@@ -16,7 +16,11 @@ import {
   ArrowLeft, MessageSquare, Send, Save, Bot, CheckCircle2, Server, Bug, Mic, MicOff, Zap, Plus, X, RotateCcw, EyeOff, Eye, Settings2,
   AlertTriangle, Copy, Pencil, Rocket, Code2, Layout, Users, KeyRound, Filter, Check, ExternalLink, Activity, Plug, FileText,
 } from "lucide-react";
-import { mockAgents, getActiveMCPs, getActiveSkills } from "@/data/mockData";
+import { mockAgents, getActiveMCPs, getActiveSkills, mockApiKeys } from "@/data/mockData";
+import { getEnvironments } from "@/data/environments";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Search, Box } from "lucide-react";
+
 import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { toast } from "@/hooks/use-toast";
 import { PublishAgentDialog } from "@/components/PublishAgentDialog";
