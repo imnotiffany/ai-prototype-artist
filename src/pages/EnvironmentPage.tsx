@@ -18,24 +18,34 @@ type PkgManager = (typeof PKG_MANAGERS)[number];
 
 
 
+const specToValue = (spec: string) => {
+  const s = spec.replace(/\s/g, "");
+  if (s.startsWith("1C")) return "1C2G";
+  if (s.startsWith("2C")) return "2C4G";
+  if (s.startsWith("8C")) return "8C32G";
+  return "4C8G";
+};
+
 const EnvironmentPage = () => {
   const [envs, setEnvs] = useState<EnvItem[]>(getEnvironments().length ? getEnvironments() : defaultEnvironments);
   const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [keyword, setKeyword] = useState("");
   type DepRow = { manager: PkgManager; spec: string };
+  const emptyForm = {
+    name: "",
+    description: "",
+    spec: "4C8G",
+    deps: [{ manager: "pip" as PkgManager, spec: "" }],
+    network: "internet",
+  };
   const [form, setForm] = useState<{
     name: string;
     description: string;
     spec: string;
     deps: DepRow[];
     network: string;
-  }>({
-    name: "",
-    description: "",
-    spec: "4C8G",
-    deps: [{ manager: "pip", spec: "" }],
-    network: "internet",
-  });
+  }>(emptyForm);
 
 
   const filtered = useMemo(() => {
