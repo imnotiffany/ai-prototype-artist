@@ -294,7 +294,7 @@ const StructuredConfigView = ({
             title={saveDisabled ? saveDisabledReason : "保存配置"}
           >
             <Save className="w-3 h-3" />
-            保存
+            保存并测试
           </Button>
         </div>
       </div>
