@@ -17,11 +17,18 @@ const EnvironmentPage = () => {
   const [envs, setEnvs] = useState<EnvItem[]>(getEnvironments().length ? getEnvironments() : defaultEnvironments);
   const [open, setOpen] = useState(false);
   const [keyword, setKeyword] = useState("");
-  const [form, setForm] = useState({
+  type DepRow = { manager: "pip" | "npm" | "apt"; pkg: string; version: string };
+  const [form, setForm] = useState<{
+    name: string;
+    description: string;
+    spec: string;
+    deps: DepRow[];
+    network: string;
+  }>({
     name: "",
     description: "",
     spec: "4C8G",
-    deps: "",
+    deps: [{ manager: "pip", pkg: "", version: "" }],
     network: "internet",
   });
 
@@ -41,6 +48,11 @@ const EnvironmentPage = () => {
       toast({ title: "请填写环境名称", variant: "destructive" });
       return;
     }
+    const validDeps = form.deps.filter((d) => d.pkg.trim() && d.version.trim());
+    if (form.deps.some((d) => (d.pkg.trim() || d.version.trim()) && (!d.pkg.trim() || !d.version.trim()))) {
+      toast({ title: "依赖包信息不完整", description: "包名和版本号均为必填", variant: "destructive" });
+      return;
+    }
     const specLabel = form.spec === "1C2G" ? "1C 2G" : form.spec === "2C4G" ? "2C 4G" : form.spec === "4C8G" ? "4C 8G" : "8C 32G";
     const next: EnvItem[] = [
       {
@@ -48,7 +60,7 @@ const EnvironmentPage = () => {
         envId: genEnvId(),
         name: form.name.trim(),
         spec: specLabel,
-        deps: form.deps.split(",").filter((d) => d.trim()).length,
+        deps: validDeps.length,
         agents: 0,
         updatedAt: new Date().toISOString().slice(0, 16).replace("T", " "),
         description: form.description,
@@ -58,7 +70,7 @@ const EnvironmentPage = () => {
     persist(next);
     toast({ title: "环境已创建", description: `${form.name}` });
     setOpen(false);
-    setForm({ name: "", description: "", spec: "4C8G", deps: "", network: "internet" });
+    setForm({ name: "", description: "", spec: "4C8G", deps: [{ manager: "pip", pkg: "", version: "" }], network: "internet" });
   };
 
   return (
