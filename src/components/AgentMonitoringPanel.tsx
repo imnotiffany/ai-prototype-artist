@@ -208,80 +208,81 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
   return (
     <div className="space-y-3">
       {/* ───── Filter bar ───── */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs text-muted-foreground">时间范围</span>
-          <Select value={rangeKey} onValueChange={(v) => setRangeKey(v as RangeKey)}>
-            <SelectTrigger className="h-8 w-[100px] text-xs font-medium">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {RANGE_PRESETS.map((p) => (
-                <SelectItem key={p.key} value={p.key} className="text-xs">
-                  {p.label}
-                </SelectItem>
-              ))}
-              <SelectItem value="custom" className="text-xs">自定义</SelectItem>
-            </SelectContent>
-          </Select>
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-x-3 gap-y-2 flex-wrap min-w-0">
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-muted-foreground shrink-0">时间范围</span>
+            <Select value={rangeKey} onValueChange={(v) => setRangeKey(v as RangeKey)}>
+              <SelectTrigger className="h-8 w-[96px] text-xs font-medium">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {RANGE_PRESETS.map((p) => (
+                  <SelectItem key={p.key} value={p.key} className="text-xs">
+                    {p.label}
+                  </SelectItem>
+                ))}
+                <SelectItem value="custom" className="text-xs">自定义</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center gap-1.5 min-w-0">
+            <Input
+              type="datetime-local"
+              value={rangeKey === "custom" ? customStart : fmtInput(start)}
+              onChange={(e) => {
+                setCustomStart(e.target.value);
+                if (rangeKey !== "custom") setCustomEnd(fmtInput(end));
+                setRangeKey("custom");
+              }}
+              className="h-8 w-[190px] text-xs pr-2"
+            />
+            <span className="text-xs text-muted-foreground">~</span>
+            <Input
+              type="datetime-local"
+              value={rangeKey === "custom" ? customEnd : fmtInput(end)}
+              onChange={(e) => {
+                setCustomEnd(e.target.value);
+                if (rangeKey !== "custom") setCustomStart(fmtInput(start));
+                setRangeKey("custom");
+              }}
+              className="h-8 w-[190px] text-xs pr-2"
+            />
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-muted-foreground shrink-0">粒度</span>
+            <Select value={granKey} onValueChange={(v) => setGranKey(v as GranKey)}>
+              <SelectTrigger className="h-8 w-[84px] text-xs font-medium">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {GRAN_OPTIONS.map((g) => (
+                  <SelectItem key={g.key} value={g.key} className="text-xs">
+                    {g.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-7 w-7 text-muted-foreground"
+            onClick={() => setNow(new Date())}
+            title="刷新"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+          </Button>
         </div>
-
-        <div className="flex items-center gap-1.5">
-          <Input
-            type="datetime-local"
-            value={rangeKey === "custom" ? customStart : fmtInput(start)}
-            onChange={(e) => {
-              setCustomStart(e.target.value);
-              if (rangeKey !== "custom") setCustomEnd(fmtInput(end));
-              setRangeKey("custom");
-            }}
-            className="h-8 w-[200px] text-xs pr-2"
-          />
-          <span className="text-xs text-muted-foreground">~</span>
-          <Input
-            type="datetime-local"
-            value={rangeKey === "custom" ? customEnd : fmtInput(end)}
-            onChange={(e) => {
-              setCustomEnd(e.target.value);
-              if (rangeKey !== "custom") setCustomStart(fmtInput(start));
-              setRangeKey("custom");
-            }}
-            className="h-8 w-[200px] text-xs pr-2"
-          />
-        </div>
-
-
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs text-muted-foreground">粒度</span>
-          <Select value={granKey} onValueChange={(v) => setGranKey(v as GranKey)}>
-            <SelectTrigger className="h-8 w-[88px] text-xs font-medium">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {GRAN_OPTIONS.map((g) => (
-                <SelectItem key={g.key} value={g.key} className="text-xs">
-                  {g.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <Button
-          size="icon"
-          variant="ghost"
-          className="h-7 w-7 text-muted-foreground"
-          onClick={() => setNow(new Date())}
-          title="刷新"
-        >
-          <RefreshCw className="w-3.5 h-3.5" />
-        </Button>
 
         <Button
           asChild
           size="sm"
           variant="secondary"
-          className="ml-auto h-8 text-xs gap-1.5"
+          className="h-8 text-xs gap-1.5 shrink-0"
         >
           <a href={langfuseUrl} target="_blank" rel="noreferrer">
             Langfuse 看板
