@@ -1232,13 +1232,9 @@ const CreateAgentPage = () => {
                 ) : msg.role === "system" ? (
                   <div>
                     {msg.content === "WELCOME_HERO" ? (
-                      <div className="flex flex-col items-center text-center py-10 px-4">
-                        <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                          <Sparkles className="w-5 h-5 text-primary" />
-                        </div>
-                        <h2 className="text-sm font-semibold text-foreground">描述你想创建的智能体</h2>
-                        <p className="text-xs text-muted-foreground mt-1.5 max-w-[280px] leading-relaxed">
-                          在下方对话框输入需求，AI 会自动帮你生成并装配右侧配置
+                      <div className="px-1 py-2">
+                        <p className="text-[11px] text-muted-foreground leading-relaxed">
+                          描述你想创建的智能体，AI 会自动帮你生成并装配右侧配置。
                         </p>
                       </div>
                     ) : msg.content.includes("\n") ? (
