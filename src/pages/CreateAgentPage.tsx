@@ -1386,11 +1386,13 @@ const CreateAgentPage = () => {
           {/* 测试子视图切换器（左对齐，紧贴 stepper 下方） */}
           {rightTab === "debug" && (
             <div className="border-b border-border px-3 py-2 flex items-center">
-              <div className="inline-flex items-center gap-1 bg-muted/50 rounded p-0.5">
+              <div className="inline-flex items-center bg-muted rounded-md p-0.5">
                 <button
                   onClick={() => setDebugSubTab("preview")}
                   className={`px-2.5 py-1 text-[11px] rounded transition-colors flex items-center gap-1 ${
-                    debugSubTab === "preview" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                    debugSubTab === "preview"
+                      ? "bg-background text-foreground shadow-sm font-medium"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   <MessageSquare className="w-3 h-3" />
@@ -1399,15 +1401,18 @@ const CreateAgentPage = () => {
                 <button
                   onClick={() => setDebugSubTab("logs")}
                   className={`px-2.5 py-1 text-[11px] rounded transition-colors flex items-center gap-1 ${
-                    debugSubTab === "logs" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                    debugSubTab === "logs"
+                      ? "bg-background text-foreground shadow-sm font-medium"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  <History className="w-3 h-3" />
+                  <Terminal className="w-3 h-3" />
                   调试视图
                 </button>
               </div>
             </div>
           )}
+
 
 
 
