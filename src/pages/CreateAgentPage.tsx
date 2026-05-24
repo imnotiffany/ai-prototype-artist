@@ -541,12 +541,12 @@ model:
 system: |-
   ${config.systemPrompt.split("\n").join("\n  ")}
 tools:
-  - type: ${config.tools[0]?.id || "agent_toolset_20260401"}
+${config.tools.map(t => `  - type: ${t.id}
     configs: []
     default_config:
       enabled: true
       permission_policy:
-        type: always_allow
+        type: ${t.permissionPolicy === "Always allow" ? "always_allow" : "user_controlled"}`).join("\n") || "  []"}
 mcp_servers: [${config.mcpServers.map(s => `"${s}"`).join(", ")}]
 skills: [${config.skills.map(s => `"${s}"`).join(", ")}]
 metadata: {}`;
