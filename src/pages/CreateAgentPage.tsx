@@ -1545,7 +1545,9 @@ const CreateAgentPage = () => {
                 }
                 setAgentConfig({ ...agentConfig, name: saveName.trim() });
                 setAgentCreated(true);
+                setHasSaved(true);
                 setPublishOpen(false);
+
                 toast({
                   title: "已保存到项目管理",
                   description: `${saveName.trim()} · ${saveCategory}${savePublishToHub ? "（已同步发布到 Agent Hub）" : ""}`,
