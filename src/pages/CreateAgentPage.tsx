@@ -253,6 +253,102 @@ const AttachmentPicker = ({
   </Popover>
 );
 
+/* ── Tool Call Strip (折叠为薄条 - "N steps completed") ── */
+const ToolCallStrip = ({ calls }: { calls: ToolCall[] }) => {
+  const [open, setOpen] = useState(false);
+  const done = calls.filter((c) => c.status === "success").length;
+  const failed = calls.filter((c) => c.status === "failed").length;
+  const running = calls.filter((c) => c.status === "running").length;
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="group w-full flex items-center justify-between px-3 py-1.5 bg-muted/60 hover:bg-muted border border-border rounded-lg transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <div className="flex items-center -space-x-1">
+            {calls.slice(0, 4).map((c) => (
+              <span
+                key={c.id}
+                className={cn(
+                  "w-1.5 h-1.5 rounded-full border border-background",
+                  c.status === "success" && "bg-green-500",
+                  c.status === "failed" && "bg-destructive",
+                  c.status === "running" && "bg-primary animate-pulse",
+                )}
+              />
+            ))}
+          </div>
+          <span className="text-[11px] font-medium text-muted-foreground">
+            {running > 0 ? `进行中 · ${calls.length} 步` : failed > 0 ? `${done} 步完成 · ${failed} 失败` : `${done} 步完成`}
+          </span>
+        </div>
+        <ChevronDown className={cn("w-3.5 h-3.5 text-muted-foreground transition-transform", open && "rotate-180")} />
+      </button>
+      {open && (
+        <div className="mt-1.5">
+          <ToolCallGroup calls={calls} />
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ── Draft Card (初始草稿，结构化展示) ── */
+const DraftCard = ({ draft }: { draft: NonNullable<Message["draft"]> }) => (
+  <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
+    <div className="p-4 flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-foreground">智能体草稿已生成</h3>
+        <span className="px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-bold rounded uppercase tracking-wider">Draft</span>
+      </div>
+
+      <div className="space-y-1.5">
+        <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Model</label>
+        <div className="flex items-center gap-2 p-2 bg-muted/40 rounded-lg border border-border">
+          <div className="w-5 h-5 bg-primary rounded flex items-center justify-center shrink-0">
+            <div className="w-1.5 h-1.5 bg-primary-foreground rounded-full" />
+          </div>
+          <span className="text-[12px] text-foreground font-medium font-mono truncate">{draft.model}</span>
+        </div>
+      </div>
+
+      <div className="space-y-1.5">
+        <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Skills ({draft.skills.length})</label>
+        <div className="flex flex-wrap gap-1.5">
+          {draft.skills.length === 0 ? (
+            <span className="text-[11px] text-muted-foreground italic">无</span>
+          ) : draft.skills.map((s) => (
+            <span key={s} className="px-2 py-0.5 bg-muted text-foreground text-[11px] rounded-md border border-border">
+              {s}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-1.5">
+        <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">MCPs ({draft.mcps.length})</label>
+        <div className="flex flex-wrap gap-1.5">
+          {draft.mcps.length === 0 ? (
+            <span className="text-[11px] text-muted-foreground italic">无</span>
+          ) : draft.mcps.map((m) => (
+            <span key={m} className="px-2 py-0.5 bg-primary/5 text-primary text-[11px] rounded-md border border-primary/20 font-medium">
+              {m}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {draft.note && (
+        <p className="text-[11px] text-muted-foreground leading-relaxed pt-2 border-t border-border">
+          {draft.note}
+        </p>
+      )}
+    </div>
+  </div>
+);
+
 /* ── Proposal Card (AI 建议变更 - 采纳/撤销) ── */
 const ProposalCardInline = ({
   msg,
@@ -265,57 +361,62 @@ const ProposalCardInline = ({
 }) => {
   const p = msg.proposal!;
   const { diff, status } = p;
-  const rowDef: Array<[string, string[], string[], (typeof Server) | (typeof Zap)]> = [
-    ["MCP", diff.addedMcps, diff.removedMcps, Server],
-    ["Skill", diff.addedSkills, diff.removedSkills, Zap],
+  type Row = { kind: "add" | "remove" | "prompt"; label: string; text: string };
+  const rows: Row[] = [
+    ...diff.addedMcps.map<Row>((x) => ({ kind: "add", label: "MCP", text: x })),
+    ...diff.removedMcps.map<Row>((x) => ({ kind: "remove", label: "MCP", text: x })),
+    ...diff.addedSkills.map<Row>((x) => ({ kind: "add", label: "Skill", text: x })),
+    ...diff.removedSkills.map<Row>((x) => ({ kind: "remove", label: "Skill", text: x })),
+    ...(diff.promptChanged ? [{ kind: "prompt" as const, label: "提示词", text: diff.promptNote ? `${diff.promptNote.slice(0, 40)}${diff.promptNote.length > 40 ? "…" : ""}` : "更新系统提示词" }] : []),
   ];
   return (
-    <div className="border border-border rounded-lg bg-card overflow-hidden">
-      <div className="px-3 py-2 border-b border-border bg-muted/30 flex items-center gap-1.5">
-        <Sparkles className="w-3.5 h-3.5 text-primary" />
-        <span className="text-xs font-semibold text-foreground">AI 建议变更</span>
-        {status === "accepted" && (
-          <Badge className="ml-auto h-4 text-[10px] px-1.5 bg-primary/10 text-primary border-primary/30">已采纳</Badge>
-        )}
-        {status === "withdrawn" && (
-          <Badge variant="outline" className="ml-auto h-4 text-[10px] px-1.5 text-muted-foreground">已撤销</Badge>
-        )}
-      </div>
-      <div className="p-3 space-y-2">
-        <p className="text-[11px] text-muted-foreground">{msg.content}</p>
-        <ul className="space-y-1">
-          {rowDef.map(([label, added, removed, Icon]) => (
-            <React.Fragment key={label}>
-              {added.map((x) => (
-                <li key={`a-${label}-${x}`} className="flex items-center gap-1.5 text-[11px]">
-                  <Plus className="w-3 h-3 text-primary shrink-0" />
-                  <Icon className="w-3 h-3 text-muted-foreground shrink-0" />
-                  <span className="text-foreground">新增 {label}：{x}</span>
-                </li>
-              ))}
-              {removed.map((x) => (
-                <li key={`r-${label}-${x}`} className="flex items-center gap-1.5 text-[11px]">
-                  <X className="w-3 h-3 text-destructive shrink-0" />
-                  <Icon className="w-3 h-3 text-muted-foreground shrink-0" />
-                  <span className="text-foreground line-through">移除 {label}：{x}</span>
-                </li>
-              ))}
-            </React.Fragment>
-          ))}
-          {diff.promptChanged && (
-            <li className="flex items-start gap-1.5 text-[11px]">
-              <ScrollText className="w-3 h-3 text-primary shrink-0 mt-0.5" />
-              <span className="text-foreground">更新系统提示词{diff.promptNote ? `：${diff.promptNote.slice(0, 40)}${diff.promptNote.length > 40 ? "…" : ""}` : ""}</span>
-            </li>
+    <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
+      <div className="p-4 space-y-3">
+        <div className="flex items-center gap-2">
+          <div className={cn(
+            "w-1.5 h-1.5 rounded-full",
+            status === "pending" && "bg-primary",
+            status === "accepted" && "bg-green-500",
+            status === "withdrawn" && "bg-muted-foreground",
+          )} />
+          <h3 className="text-sm font-semibold text-foreground">建议变更</h3>
+          {status === "accepted" && (
+            <span className="ml-auto px-1.5 py-0.5 bg-green-50 text-green-700 text-[10px] font-bold rounded uppercase dark:bg-green-950/40 dark:text-green-400">已采纳</span>
           )}
-        </ul>
+          {status === "withdrawn" && (
+            <span className="ml-auto px-1.5 py-0.5 bg-muted text-muted-foreground text-[10px] font-bold rounded uppercase">已撤销</span>
+          )}
+        </div>
+
+        <div className="space-y-1">
+          {rows.map((r, i) => (
+            <div
+              key={i}
+              className={cn(
+                "flex items-center gap-2 px-2 py-1.5 rounded text-[11px] border",
+                r.kind === "add" && "bg-green-50/60 border-green-200/70 text-green-700 dark:bg-green-950/20 dark:border-green-900/40 dark:text-green-400",
+                r.kind === "remove" && "bg-red-50/60 border-red-200/70 text-red-600 dark:bg-red-950/20 dark:border-red-900/40 dark:text-red-400",
+                r.kind === "prompt" && "bg-primary/5 border-primary/20 text-primary",
+              )}
+            >
+              <span className="font-bold w-3 text-center shrink-0">
+                {r.kind === "add" ? "+" : r.kind === "remove" ? "−" : "✎"}
+              </span>
+              <span className={cn("text-muted-foreground", r.kind === "add" && "text-green-700/80 dark:text-green-400/80", r.kind === "remove" && "text-red-600/80 dark:text-red-400/80", r.kind === "prompt" && "text-primary/80")}>
+                {r.kind === "add" ? "新增" : r.kind === "remove" ? "移除" : "更新"} {r.label}:
+              </span>
+              <span className={cn("font-medium", r.kind === "remove" && "line-through")}>{r.text}</span>
+            </div>
+          ))}
+        </div>
+
         {status === "pending" && (
           <div className="flex items-center gap-2 pt-1">
-            <Button size="sm" className="h-7 text-[11px] gap-1 flex-1" onClick={onAccept}>
-              <CheckCircle2 className="w-3 h-3" /> 采纳
+            <Button size="sm" className="h-7 text-[11px] flex-1" onClick={onAccept}>
+              采纳变更
             </Button>
-            <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 flex-1" onClick={onWithdraw}>
-              <X className="w-3 h-3" /> 撤销
+            <Button size="sm" variant="outline" className="h-7 text-[11px] px-3" onClick={onWithdraw}>
+              撤销
             </Button>
           </div>
         )}
@@ -323,6 +424,8 @@ const ProposalCardInline = ({
     </div>
   );
 };
+
+
 
 
 /* ── Structured Config View ── */
