@@ -1201,6 +1201,14 @@ const CreateAgentPage = () => {
     { skills: agentConfig.skills, mcpServers: agentConfig.mcpServers, subagents: agentConfig.subagents },
     promptSnapshot,
   );
+  const configSig = JSON.stringify(agentConfig);
+  const configDirty = hasSaved && configSig !== savedConfigSnapshot;
+  const debugLocked = !hasSaved || configDirty;
+  const debugLockedReason = !hasSaved
+    ? "请先保存配置后再调试"
+    : configDirty
+    ? "配置已修改，请重新保存后再调试"
+    : undefined;
   const saveDisabledReason = promptDirty ? "请先同步系统提示词后再保存" : undefined;
   const openSaveDialog = () => {
     setSaveName((prev) => prev || agentConfig.name || "");
