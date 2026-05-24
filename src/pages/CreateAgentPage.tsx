@@ -1356,7 +1356,7 @@ const CreateAgentPage = () => {
                       type="button"
                       onClick={() => !disabled && setRightTab(tab.key)}
                       disabled={disabled}
-                      title={disabled ? "请先保存配置后再进行调试" : undefined}
+                      title={disabled ? debugLockedReason : undefined}
                       className="flex items-center gap-2 group min-w-0 shrink-0 disabled:cursor-not-allowed"
                     >
                       <span className={`w-6 h-6 rounded-full border flex items-center justify-center text-[11px] shrink-0 ${dotCls} ${active ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""}`}>
