@@ -761,8 +761,8 @@ const AssemblySummaryCard = ({
           <Server className="w-3.5 h-3.5 text-primary" />
           <span className="text-xs font-semibold text-foreground">MCP 服务</span>
           <Badge variant="outline" className="text-[10px] h-4 px-1.5">{config.mcpServers.length}</Badge>
-          {pending.length > 0 && (
-            <Badge className="text-[10px] h-4 px-1.5 bg-destructive/10 text-destructive border-destructive/30">{pending.length} 待配置</Badge>
+          {notAdded.length > 0 && (
+            <Badge className="text-[10px] h-4 px-1.5 bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30">{notAdded.length} 未添加</Badge>
           )}
           <div className="ml-auto">
             <CapabilityPickerDialog
@@ -779,24 +779,18 @@ const AssemblySummaryCard = ({
           <p className="text-[11px] text-muted-foreground py-1">未匹配到 MCP，可手动添加</p>
         ) : (
           <ul className="space-y-1">
-            {ready.map((m) => (
+            {added.map((m) => (
               <li key={m} className="flex items-center gap-2 text-[11px] py-1">
                 <CheckCircle2 className="w-3 h-3 text-primary shrink-0" />
                 <span className="text-foreground truncate">{m}</span>
-                <span className="text-[10px] text-muted-foreground ml-auto">{mcpRequiresCredential(m) ? "已配置" : "开箱即用"}</span>
+                <span className="text-[10px] text-muted-foreground ml-auto">已添加</span>
               </li>
             ))}
-            {pending.map((m) => (
+            {notAdded.map((m) => (
               <li key={m} className="flex items-center gap-2 text-[11px] py-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-destructive shrink-0" />
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
                 <span className="text-foreground truncate">{m}</span>
-                <Link
-                  to="/vault"
-                  className="ml-auto text-[10px] text-primary hover:underline flex items-center gap-0.5"
-                  title="前往 MCP 管理配置凭据"
-                >
-                  去 MCP 配置 <ExternalLink className="w-2.5 h-2.5" />
-                </Link>
+                <span className="ml-auto text-[10px] text-muted-foreground">MCP 管理中未添加 · 保存时自动添加</span>
               </li>
             ))}
           </ul>
