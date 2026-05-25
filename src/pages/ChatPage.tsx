@@ -50,6 +50,9 @@ const ChatPage = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [stageIndex, setStageIndex] = useState(0);
   const stages = ["分析问题", "选择工具", "调用工具", "整理回答"];
+  const [artifactsCollapsed, setArtifactsCollapsed] = useState(false);
+  const [hasArtifacts, setHasArtifacts] = useState(false);
+  const showInlinePanel = hasArtifacts && !artifactsCollapsed;
 
   if (!agent) return <div className="p-6">智能体不存在</div>;
 
@@ -355,21 +358,49 @@ const ChatPage = () => {
         </div>
 
         {/* Messages — 同步对话视图与调试视图 */}
-        <div className="flex-1 min-h-0 relative">
-          <RunDualView
-            showTranscriptSearch={false}
-            showAvatars
-            agentAvatar={agent.avatar}
-            transcriptEvents={messages.map<TranscriptEvent>((m, i) => {
-              if (m.role === "tools") return { id: `t${i}`, type: "tools", calls: m.calls };
-              if (m.role === "user") return { id: `u${i}`, type: "user", content: m.content };
-              return { id: `a${i}`, type: "agent", content: m.content };
-            })}
-            debugEvents={debugEvents}
-            debugMeta={debugMeta}
-            transcriptFooter={isRunning ? <AIStatusPill /> : undefined}
-          />
-          <FloatingArtifactsPanel title={`${agent.name} · 产物`} />
+        <div className="flex-1 min-h-0 flex relative">
+          <div className="flex-1 min-w-0 relative">
+            <RunDualView
+              showTranscriptSearch={false}
+              showAvatars
+              agentAvatar={agent.avatar}
+              transcriptEvents={messages.map<TranscriptEvent>((m, i) => {
+                if (m.role === "tools") return { id: `t${i}`, type: "tools", calls: m.calls };
+                if (m.role === "user") return { id: `u${i}`, type: "user", content: m.content };
+                return { id: `a${i}`, type: "agent", content: m.content };
+              })}
+              debugEvents={debugEvents}
+              debugMeta={debugMeta}
+              transcriptFooter={isRunning ? <AIStatusPill /> : undefined}
+            />
+            {/* 收起态的吸边药丸悬浮在对话区右侧 */}
+            {hasArtifacts && artifactsCollapsed && (
+              <FloatingArtifactsPanel
+                title={`${agent.name} · 产物`}
+                collapsed
+                onCollapsedChange={setArtifactsCollapsed}
+                onHasArtifactsChange={setHasArtifacts}
+              />
+            )}
+          </div>
+          {/* 展开态：作为侧栏并排渲染，挤压对话宽度而非覆盖 */}
+          {showInlinePanel && (
+            <FloatingArtifactsPanel
+              title={`${agent.name} · 产物`}
+              collapsed={false}
+              onCollapsedChange={setArtifactsCollapsed}
+              onHasArtifactsChange={setHasArtifacts}
+            />
+          )}
+          {/* 当尚未有产物时，挂一个隐形探测器以更新 hasArtifacts */}
+          {!hasArtifacts && (
+            <FloatingArtifactsPanel
+              title={`${agent.name} · 产物`}
+              collapsed
+              onCollapsedChange={setArtifactsCollapsed}
+              onHasArtifactsChange={setHasArtifacts}
+            />
+          )}
         </div>
 
         {/* Input */}
