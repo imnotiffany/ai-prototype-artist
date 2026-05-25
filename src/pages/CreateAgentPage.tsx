@@ -2047,7 +2047,7 @@ const CreateAgentPage = () => {
         agentAllowCopy={saveAllowCopy}
       />
 
-      <ArtifactsDrawer open={artifactsOpen} onOpenChange={setArtifactsOpen} title="文件" />
+      <ArtifactsDrawer open={artifactsOpen} onOpenChange={setArtifactsOpen} title="文件" artifacts={mergedArtifacts} />
     </div>
   );
 };
