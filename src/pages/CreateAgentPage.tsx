@@ -1532,7 +1532,7 @@ const CreateAgentPage = () => {
           </div>
 
           {/* Input area with attachments */}
-          <div className="border-t border-border p-3 space-y-2">
+          <div className="border-t border-border p-2 space-y-2">
             {/* Selected attachments */}
             {(selectedSkills.length > 0 || selectedMCPs.length > 0) && (
               <div className="flex flex-wrap gap-1">
