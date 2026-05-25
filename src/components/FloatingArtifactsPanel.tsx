@@ -105,24 +105,22 @@ export const FloatingArtifactsPanel = ({
 
   if (count === 0) return null;
 
-  // ─ 收起态：右上角矩形按钮 ─
+  // ─ 收起态：右上角按钮（与详情页"产物"按钮保持一致的视觉语言）─
   if (collapsed) {
     return (
-      <button
+      <Button
+        size="sm"
+        variant="outline"
         onClick={() => setCollapsed(false)}
-        className={cn(
-          "absolute right-3 top-3 z-20",
-          "h-8 px-2.5 flex items-center gap-1.5",
-          "rounded-md border border-border bg-card shadow-sm hover:shadow-md hover:bg-accent transition-all",
-        )}
+        className="absolute right-3 top-3 z-20 h-7 text-xs gap-1.5 pr-1.5 shadow-sm hover:shadow"
         title="展开产物面板"
       >
         <FolderOpen className="w-3.5 h-3.5 text-primary" />
-        <span className="text-[11px] font-medium text-foreground">{title}</span>
-        <Badge variant="secondary" className="text-[9px] h-4 px-1 min-w-4 justify-center">
+        <span>{title}</span>
+        <span className="ml-0.5 inline-flex items-center justify-center min-w-4 h-4 px-1 rounded-sm bg-muted text-[10px] font-medium tabular-nums text-muted-foreground">
           {count}
-        </Badge>
-      </button>
+        </span>
+      </Button>
     );
   }
 
