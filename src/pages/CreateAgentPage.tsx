@@ -1977,6 +1977,8 @@ const CreateAgentPage = () => {
         agentCategory={saveCategory}
         agentAllowCopy={saveAllowCopy}
       />
+
+      <ArtifactsDrawer open={artifactsOpen} onOpenChange={setArtifactsOpen} title="文件" />
     </div>
   );
 };
