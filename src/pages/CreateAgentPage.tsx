@@ -1906,15 +1906,16 @@ const CreateAgentPage = () => {
                 <ChatComposer
                   value={previewInput}
                   onChange={setPreviewInput}
-                  onSend={({ text }) => {
-                    setPreviewInput(text);
+                  onSend={(payload) => {
+                    ingestUploads(payload);
+                    setPreviewInput(payload.text);
                     handlePreviewSend();
                   }}
                   placeholder="向智能体发送消息来测试…"
                   disabled={isAgentRunning || debugLocked}
                   compact
                   onOpenFiles={() => setArtifactsOpen(true)}
-                  mentionableFiles={mockArtifacts}
+                  mentionableFiles={mergedArtifacts}
                 />
               </div>
             </div>
