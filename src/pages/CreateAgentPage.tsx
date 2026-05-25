@@ -259,45 +259,44 @@ const ToolCallStrip = ({ calls }: { calls: ToolCall[] }) => (
   <ToolCallGroup calls={calls} />
 );
 
-/* ── Draft Card (初始草稿，结构化展示) ── */
+/* ── Draft Card (初始草稿，紧凑展示) ── */
 const DraftCard = ({ draft }: { draft: NonNullable<Message["draft"]> }) => (
-  <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
-    <div className="p-4 flex flex-col gap-4">
+  <div className="bg-card border border-border rounded-lg shadow-sm">
+    <div className="px-3 py-2.5 flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-foreground">智能体草稿已生成</h3>
-        <span className="px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-bold rounded uppercase tracking-wider">Draft</span>
+        <h3 className="text-xs font-semibold text-foreground">智能体草稿</h3>
+        <span className="px-1.5 py-0.5 bg-primary/10 text-primary text-[9px] font-bold rounded tracking-wider">DRAFT</span>
       </div>
 
-      <div className="space-y-1.5">
-        <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Model</label>
-        <div className="flex items-center gap-2 p-2 bg-muted/40 rounded-lg border border-border">
-          <div className="w-5 h-5 bg-primary rounded flex items-center justify-center shrink-0">
-            <div className="w-1.5 h-1.5 bg-primary-foreground rounded-full" />
-          </div>
-          <span className="text-[12px] text-foreground font-medium font-mono truncate">{draft.model}</span>
-        </div>
+      <div className="flex items-center gap-1.5 text-[11px]">
+        <span className="text-[10px] text-muted-foreground shrink-0">模型</span>
+        <span className="font-mono text-foreground truncate">{draft.model}</span>
       </div>
 
-      <div className="space-y-1.5">
-        <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Skills ({draft.skills.length})</label>
-        <div className="flex flex-wrap gap-1.5">
+      <div className="flex items-start gap-1.5 text-[11px]">
+        <span className="text-[10px] text-muted-foreground shrink-0 pt-0.5">
+          技能 · {draft.skills.length}
+        </span>
+        <div className="flex flex-wrap gap-1 min-w-0">
           {draft.skills.length === 0 ? (
-            <span className="text-[11px] text-muted-foreground italic">无</span>
+            <span className="text-muted-foreground italic">无</span>
           ) : draft.skills.map((s) => (
-            <span key={s} className="px-2 py-0.5 bg-muted text-foreground text-[11px] rounded-md border border-border">
+            <span key={s} className="px-1.5 py-0 bg-muted text-foreground text-[10px] rounded">
               {s}
             </span>
           ))}
         </div>
       </div>
 
-      <div className="space-y-1.5">
-        <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">MCPs ({draft.mcps.length})</label>
-        <div className="flex flex-wrap gap-1.5">
+      <div className="flex items-start gap-1.5 text-[11px]">
+        <span className="text-[10px] text-muted-foreground shrink-0 pt-0.5">
+          MCP · {draft.mcps.length}
+        </span>
+        <div className="flex flex-wrap gap-1 min-w-0">
           {draft.mcps.length === 0 ? (
-            <span className="text-[11px] text-muted-foreground italic">无</span>
+            <span className="text-muted-foreground italic">无</span>
           ) : draft.mcps.map((m) => (
-            <span key={m} className="px-2 py-0.5 bg-primary/5 text-primary text-[11px] rounded-md border border-primary/20 font-medium">
+            <span key={m} className="px-1.5 py-0 bg-primary/5 text-primary text-[10px] rounded border border-primary/20">
               {m}
             </span>
           ))}
@@ -305,7 +304,7 @@ const DraftCard = ({ draft }: { draft: NonNullable<Message["draft"]> }) => (
       </div>
 
       {draft.note && (
-        <p className="text-[11px] text-muted-foreground leading-relaxed pt-2 border-t border-border">
+        <p className="text-[10px] text-muted-foreground leading-snug pt-1.5 mt-0.5 border-t border-border">
           {draft.note}
         </p>
       )}
