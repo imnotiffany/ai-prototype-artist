@@ -267,6 +267,7 @@ const AgentDetail = () => {
     // 复用聊天页继续会话
     navigate(`/chat/${id}?run=${activeRunId}&q=${encodeURIComponent(text)}`);
   };
+  const [artifactsOpen, setArtifactsOpen] = useState(false);
   const [runSourceFilter, setRunSourceFilter] = useState<"all" | "丰声 NEXT" | "Web 端" | "API" | "测试调试">("all");
   const activeRun = mockRuns.find((r) => r.id === activeRunId) ?? null;
   const filteredRuns = mockRuns.filter((r) => {
