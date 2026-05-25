@@ -8,10 +8,12 @@ interface Props {
   /** Suggested questions (optional, mainly for chat agents) */
   suggestions?: string[];
   onSuggestionClick?: (q: string) => void;
+  /** Default collapsed state */
+  defaultCollapsed?: boolean;
 }
 
-export const AgentInfoPanel = ({ agent, suggestions, onSuggestionClick }: Props) => {
-  const [collapsed, setCollapsed] = useState(false);
+export const AgentInfoPanel = ({ agent, suggestions, onSuggestionClick, defaultCollapsed }: Props) => {
+  const [collapsed, setCollapsed] = useState(defaultCollapsed ?? false);
   const isApp = agent.kind === "app";
 
   if (collapsed) {
