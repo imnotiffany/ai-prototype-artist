@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import {
   Send, ChevronRight, CheckCircle2, Copy, Loader2, ChevronDown, Code2, Settings2,
@@ -27,9 +27,9 @@ import { PublishAgentDialog } from "@/components/PublishAgentDialog";
 import { mcpRequiresCredential, mockCredentials, categories, mockApiKeys } from "@/data/mockData";
 import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { AlertTriangle, FolderKanban, FolderOpen, ArrowRight } from "lucide-react";
-import { ChatComposer } from "@/components/ChatComposer";
+import { ChatComposer, type ChatComposerPayload } from "@/components/ChatComposer";
 import { ArtifactsDrawer } from "@/components/ArtifactsDrawer";
-import { mockArtifacts } from "@/data/artifacts";
+import { mockArtifacts, type Artifact, guessTypeFromName } from "@/data/artifacts";
 
 /* ── Types ── */
 interface ProposalDiff {
@@ -1035,6 +1035,25 @@ const CreateAgentPage = () => {
   const [publishOpen, setPublishOpen] = useState(false);
   const [publishDialogOpen, setPublishDialogOpen] = useState(false);
   const [artifactsOpen, setArtifactsOpen] = useState(false);
+  /** 会话内用户上传的文件（左右两侧 ChatComposer 共享，合并入「文件」面板与 @ 引用列表） */
+  const [sessionArtifacts, setSessionArtifacts] = useState<Artifact[]>([]);
+  const mergedArtifacts = useMemo(() => [...sessionArtifacts, ...mockArtifacts], [sessionArtifacts]);
+  const ingestUploads = useCallback((payload: ChatComposerPayload) => {
+    if (!payload.attachments?.length) return;
+    const now = new Date().toISOString();
+    const newOnes: Artifact[] = payload.attachments.map((a) => ({
+      id: `up-${a.id}`,
+      path: a.name,
+      name: a.name,
+      type: a.type ?? guessTypeFromName(a.name),
+      mime: a.mime ?? "application/octet-stream",
+      size: a.size,
+      url: a.url ?? "#",
+      createdAt: now,
+      source: "user_upload",
+    }));
+    setSessionArtifacts((prev) => [...newOnes, ...prev]);
+  }, []);
   // Save 确认卡片字段（仿手动组装）
   const [saveName, setSaveName] = useState("");
   const [saveDesc, setSaveDesc] = useState("");
@@ -1533,19 +1552,19 @@ const CreateAgentPage = () => {
                 ))}
               </div>
             )}
-            <div className="flex items-center gap-2">
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-                placeholder={agentCreated ? "继续修改或完善智能体…" : "描述你想创建的智能体…"}
-                disabled={isThinking}
-                className="flex-1 h-8 text-xs"
-              />
-              <Button size="icon" className="h-8 w-8 shrink-0" onClick={handleSend} disabled={isThinking || !input.trim()}>
-                <Send className="w-3.5 h-3.5" />
-              </Button>
-            </div>
+            <ChatComposer
+              value={input}
+              onChange={setInput}
+              onSend={(payload) => {
+                ingestUploads(payload);
+                handleSend();
+              }}
+              placeholder={agentCreated ? "继续修改或完善智能体…" : "描述你想创建的智能体…"}
+              disabled={isThinking}
+              compact
+              onOpenFiles={() => setArtifactsOpen(true)}
+              mentionableFiles={mergedArtifacts}
+            />
           </div>
         </ResizablePanel>
 
@@ -1597,21 +1616,36 @@ const CreateAgentPage = () => {
                 );
               })}
             </div>
-            {rightTab === "debug" && hasSaved && (
+            <div className="flex items-center gap-2 shrink-0">
               <Button
                 size="sm"
-                className="h-7 text-[11px] gap-1.5 px-3 shrink-0"
-                onClick={() => setPublishDialogOpen(true)}
+                variant="outline"
+                className="h-7 text-[11px] gap-1.5 px-2.5 relative"
+                onClick={() => setArtifactsOpen(true)}
+                title="查看会话内文件（传入 / 产物）"
               >
-                <Rocket className="w-3 h-3" />
-                发布
+                <FolderOpen className="w-3.5 h-3.5" />
+                文件
+                {mergedArtifacts.length > 0 && (
+                  <span className="ml-0.5 text-[10px] text-muted-foreground">{mergedArtifacts.length}</span>
+                )}
               </Button>
-            )}
+              {rightTab === "debug" && hasSaved && (
+                <Button
+                  size="sm"
+                  className="h-7 text-[11px] gap-1.5 px-3"
+                  onClick={() => setPublishDialogOpen(true)}
+                >
+                  <Rocket className="w-3 h-3" />
+                  发布
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* 测试子视图切换器（左对齐，紧贴 stepper 下方） */}
           {rightTab === "debug" && (
-            <div className="border-b border-border px-3 py-2 flex items-center justify-between gap-2">
+            <div className="border-b border-border px-3 py-2 flex items-center gap-2">
               <div className="inline-flex items-center bg-muted rounded-md p-0.5">
                 <button
                   onClick={() => setDebugSubTab("preview")}
@@ -1636,15 +1670,6 @@ const CreateAgentPage = () => {
                   调试视图
                 </button>
               </div>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-7 text-xs gap-1.5"
-                onClick={() => setArtifactsOpen(true)}
-              >
-                <FolderOpen className="w-3.5 h-3.5" />
-                文件
-              </Button>
             </div>
           )}
 
@@ -1881,15 +1906,16 @@ const CreateAgentPage = () => {
                 <ChatComposer
                   value={previewInput}
                   onChange={setPreviewInput}
-                  onSend={({ text }) => {
-                    setPreviewInput(text);
+                  onSend={(payload) => {
+                    ingestUploads(payload);
+                    setPreviewInput(payload.text);
                     handlePreviewSend();
                   }}
                   placeholder="向智能体发送消息来测试…"
                   disabled={isAgentRunning || debugLocked}
                   compact
                   onOpenFiles={() => setArtifactsOpen(true)}
-                  mentionableFiles={mockArtifacts}
+                  mentionableFiles={mergedArtifacts}
                 />
               </div>
             </div>
@@ -2021,7 +2047,7 @@ const CreateAgentPage = () => {
         agentAllowCopy={saveAllowCopy}
       />
 
-      <ArtifactsDrawer open={artifactsOpen} onOpenChange={setArtifactsOpen} title="文件" />
+      <ArtifactsDrawer open={artifactsOpen} onOpenChange={setArtifactsOpen} title="文件" artifacts={mergedArtifacts} />
     </div>
   );
 };
