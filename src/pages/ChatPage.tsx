@@ -52,9 +52,48 @@ const ChatPage = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [stageIndex, setStageIndex] = useState(0);
   const stages = ["分析问题", "选择工具", "调用工具", "整理回答"];
-  const [artifactsCollapsed, setArtifactsCollapsed] = useState(false);
-  const [hasArtifacts, setHasArtifacts] = useState(false);
-  const showInlinePanel = hasArtifacts && !artifactsCollapsed;
+  /** 「文件」侧栏开关 + 用户上传的会话文件 */
+  const [artifactsOpen, setArtifactsOpen] = useState(false);
+  const [sessionArtifacts, setSessionArtifacts] = useState<Artifact[]>([]);
+  const mergedArtifacts = useMemo(() => [...sessionArtifacts, ...mockArtifacts], [sessionArtifacts]);
+  /** 自动弹开记号：首次上传 / 首次产物，各只触发一次；用户主动收起后均不再自动弹开 */
+  const autoOpenedRef = useRef({ upload: false, output: false });
+  const handleArtifactsOpenChange = useCallback((v: boolean) => {
+    setArtifactsOpen(v);
+    if (!v) autoOpenedRef.current = { upload: true, output: true };
+  }, []);
+  const prevRunningRef = useRef(false);
+  useEffect(() => {
+    if (prevRunningRef.current && !isRunning) {
+      if (!autoOpenedRef.current.output) {
+        autoOpenedRef.current.output = true;
+        setArtifactsOpen(true);
+      }
+    }
+    prevRunningRef.current = isRunning;
+  }, [isRunning]);
+  const ingestUploads = useCallback((payload: ChatComposerPayload) => {
+    if (!payload.attachments?.length) return;
+    const now = new Date().toISOString();
+    const fresh: Artifact[] = payload.attachments.map((a) => ({
+      id: `up-${a.id}`,
+      path: a.name,
+      name: a.name,
+      type: a.type ?? guessTypeFromName(a.name),
+      mime: a.mime ?? "application/octet-stream",
+      size: a.size,
+      url: a.url ?? "#",
+      createdAt: now,
+      source: "user_upload",
+    }));
+    setSessionArtifacts((prev) => {
+      if (prev.length === 0 && !autoOpenedRef.current.upload) {
+        autoOpenedRef.current.upload = true;
+        setArtifactsOpen(true);
+      }
+      return [...fresh, ...prev];
+    });
+  }, []);
 
   if (!agent) return <div className="p-6">智能体不存在</div>;
 
