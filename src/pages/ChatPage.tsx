@@ -376,7 +376,7 @@ const ChatPage = () => {
             {/* 收起态的吸边药丸悬浮在对话区右侧 */}
             {hasArtifacts && artifactsCollapsed && (
               <FloatingArtifactsPanel
-                title={`${agent.name} · 产物`}
+                title="文件"
                 collapsed
                 onCollapsedChange={setArtifactsCollapsed}
                 onHasArtifactsChange={setHasArtifacts}
@@ -386,7 +386,7 @@ const ChatPage = () => {
           {/* 展开态：作为侧栏并排渲染，挤压对话宽度而非覆盖 */}
           {showInlinePanel && (
             <FloatingArtifactsPanel
-              title={`${agent.name} · 产物`}
+              title="文件"
               collapsed={false}
               onCollapsedChange={setArtifactsCollapsed}
               onHasArtifactsChange={setHasArtifacts}
@@ -395,7 +395,7 @@ const ChatPage = () => {
           {/* 当尚未有产物时，挂一个隐形探测器以更新 hasArtifacts */}
           {!hasArtifacts && (
             <FloatingArtifactsPanel
-              title={`${agent.name} · 产物`}
+              title="文件"
               collapsed
               onCollapsedChange={setArtifactsCollapsed}
               onHasArtifactsChange={setHasArtifacts}
