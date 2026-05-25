@@ -10,6 +10,7 @@ import { RunDualView, type TranscriptEvent, type DebugEvent } from "@/components
 import { SessionDrawer, type SessionListItem } from "@/components/SessionDrawer";
 import { ChatComposer } from "@/components/ChatComposer";
 import { FloatingArtifactsPanel } from "@/components/FloatingArtifactsPanel";
+import { mockArtifacts } from "@/data/artifacts";
 
 type Message = ChatMessage;
 
