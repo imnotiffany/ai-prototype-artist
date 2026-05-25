@@ -1038,6 +1038,15 @@ const CreateAgentPage = () => {
   /** 会话内用户上传的文件（左右两侧 ChatComposer 共享，合并入「文件」面板与 @ 引用列表） */
   const [sessionArtifacts, setSessionArtifacts] = useState<Artifact[]>([]);
   const mergedArtifacts = useMemo(() => [...sessionArtifacts, ...mockArtifacts], [sessionArtifacts]);
+  /** 用户是否已主动收起过「文件」面板：true 后不再自动弹开 */
+  const artifactsAutoOpenedRef = useRef({ upload: false, output: false });
+  const handleArtifactsOpenChange = useCallback((v: boolean) => {
+    setArtifactsOpen(v);
+    if (!v) {
+      // 一旦用户关闭，则两个自动触发都视为已经"用过"，后续不再自动弹开
+      artifactsAutoOpenedRef.current = { upload: true, output: true };
+    }
+  }, []);
   const ingestUploads = useCallback((payload: ChatComposerPayload) => {
     if (!payload.attachments?.length) return;
     const now = new Date().toISOString();
@@ -1052,7 +1061,14 @@ const CreateAgentPage = () => {
       createdAt: now,
       source: "user_upload",
     }));
-    setSessionArtifacts((prev) => [...newOnes, ...prev]);
+    setSessionArtifacts((prev) => {
+      // 首次上传 → 自动弹开"文件"侧栏，提示用户文件去了哪里
+      if (prev.length === 0 && !artifactsAutoOpenedRef.current.upload) {
+        artifactsAutoOpenedRef.current.upload = true;
+        setArtifactsOpen(true);
+      }
+      return [...newOnes, ...prev];
+    });
   }, []);
   // Save 确认卡片字段（仿手动组装）
   const [saveName, setSaveName] = useState("");
@@ -1532,7 +1548,7 @@ const CreateAgentPage = () => {
           </div>
 
           {/* Input area with attachments */}
-          <div className="border-t border-border p-3 space-y-2">
+          <div className="border-t border-border p-2 space-y-2">
             {/* Selected attachments */}
             {(selectedSkills.length > 0 || selectedMCPs.length > 0) && (
               <div className="flex flex-wrap gap-1">
@@ -1754,19 +1770,13 @@ const CreateAgentPage = () => {
           ) : rightTab === "integration" ? (
             <div className="flex-1 overflow-auto p-5">
               <div className="max-w-2xl mx-auto">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="min-w-0">
-                    <label className="text-xs font-medium text-foreground flex items-center gap-1.5">
-                      <MessageSquare className="w-3.5 h-3.5" />
-                      对外接入 · 丰声 NEXT
-                      <span className="text-[10px] rounded border border-border px-1 text-muted-foreground/80">可选</span>
-                    </label>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">把智能体接入丰声 NEXT， @ 机器人即可触发</p>
-                  </div>
-                  <Switch
-                    checked={agentConfig.fengsheng.enabled}
-                    onCheckedChange={(v) => setAgentConfig({ ...agentConfig, fengsheng: { ...agentConfig.fengsheng, enabled: v } })}
-                  />
+                <div className="mb-2">
+                  <label className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    对外接入 · 丰声 NEXT
+                    <span className="text-[10px] rounded border border-border px-1 text-muted-foreground/80">可选</span>
+                  </label>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">把智能体接入丰声 NEXT， @ 机器人即可触发；不需要可点击下方「跳过，直接调试」。</p>
                 </div>
                 {agentConfig.fengsheng.enabled && (
                   <div className="mt-3 space-y-2.5 border border-border rounded-md p-4 bg-muted/20">
@@ -2047,7 +2057,7 @@ const CreateAgentPage = () => {
         agentAllowCopy={saveAllowCopy}
       />
 
-      <ArtifactsDrawer open={artifactsOpen} onOpenChange={setArtifactsOpen} title="文件" artifacts={mergedArtifacts} />
+      <ArtifactsDrawer open={artifactsOpen} onOpenChange={handleArtifactsOpenChange} title="文件" artifacts={mergedArtifacts} />
     </div>
   );
 };

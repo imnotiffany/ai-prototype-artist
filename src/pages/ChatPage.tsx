@@ -1,16 +1,17 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, FolderOpen } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { mockAgents, getSessionsByAgent, getChatSession, type ChatMessage } from "@/data/mockData";
 import { AgentInfoPanel } from "@/components/AgentInfoPanel";
 import { type ToolCall } from "@/components/ToolCallCard";
 import { AIStatusPill } from "@/components/AIStatusPill";
 import { RunDualView, type TranscriptEvent, type DebugEvent } from "@/components/RunViews";
 import { SessionDrawer, type SessionListItem } from "@/components/SessionDrawer";
-import { ChatComposer } from "@/components/ChatComposer";
-import { FloatingArtifactsPanel } from "@/components/FloatingArtifactsPanel";
-import { mockArtifacts } from "@/data/artifacts";
+import { ChatComposer, type ChatComposerPayload } from "@/components/ChatComposer";
+import { ArtifactsDrawer } from "@/components/ArtifactsDrawer";
+import { mockArtifacts, guessTypeFromName, type Artifact } from "@/data/artifacts";
 
 type Message = ChatMessage;
 
@@ -51,9 +52,48 @@ const ChatPage = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [stageIndex, setStageIndex] = useState(0);
   const stages = ["分析问题", "选择工具", "调用工具", "整理回答"];
-  const [artifactsCollapsed, setArtifactsCollapsed] = useState(false);
-  const [hasArtifacts, setHasArtifacts] = useState(false);
-  const showInlinePanel = hasArtifacts && !artifactsCollapsed;
+  /** 「文件」侧栏开关 + 用户上传的会话文件 */
+  const [artifactsOpen, setArtifactsOpen] = useState(false);
+  const [sessionArtifacts, setSessionArtifacts] = useState<Artifact[]>([]);
+  const mergedArtifacts = useMemo(() => [...sessionArtifacts, ...mockArtifacts], [sessionArtifacts]);
+  /** 自动弹开记号：首次上传 / 首次产物，各只触发一次；用户主动收起后均不再自动弹开 */
+  const autoOpenedRef = useRef({ upload: false, output: false });
+  const handleArtifactsOpenChange = useCallback((v: boolean) => {
+    setArtifactsOpen(v);
+    if (!v) autoOpenedRef.current = { upload: true, output: true };
+  }, []);
+  const prevRunningRef = useRef(false);
+  useEffect(() => {
+    if (prevRunningRef.current && !isRunning) {
+      if (!autoOpenedRef.current.output) {
+        autoOpenedRef.current.output = true;
+        setArtifactsOpen(true);
+      }
+    }
+    prevRunningRef.current = isRunning;
+  }, [isRunning]);
+  const ingestUploads = useCallback((payload: ChatComposerPayload) => {
+    if (!payload.attachments?.length) return;
+    const now = new Date().toISOString();
+    const fresh: Artifact[] = payload.attachments.map((a) => ({
+      id: `up-${a.id}`,
+      path: a.name,
+      name: a.name,
+      type: a.type ?? guessTypeFromName(a.name),
+      mime: a.mime ?? "application/octet-stream",
+      size: a.size,
+      url: a.url ?? "#",
+      createdAt: now,
+      source: "user_upload",
+    }));
+    setSessionArtifacts((prev) => {
+      if (prev.length === 0 && !autoOpenedRef.current.upload) {
+        autoOpenedRef.current.upload = true;
+        setArtifactsOpen(true);
+      }
+      return [...fresh, ...prev];
+    });
+  }, []);
 
   if (!agent) return <div className="p-6">智能体不存在</div>;
 
@@ -356,6 +396,19 @@ const ChatPage = () => {
               </Badge>
             </div>
           </div>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-[11px] gap-1.5 px-2.5"
+            onClick={() => setArtifactsOpen(true)}
+            title="查看会话内文件（传入 / 产物）"
+          >
+            <FolderOpen className="w-3.5 h-3.5" />
+            文件
+            {mergedArtifacts.length > 0 && (
+              <span className="ml-0.5 text-[10px] text-muted-foreground">{mergedArtifacts.length}</span>
+            )}
+          </Button>
         </div>
 
         {/* Messages — 同步对话视图与调试视图 */}
@@ -374,34 +427,7 @@ const ChatPage = () => {
               debugMeta={debugMeta}
               transcriptFooter={isRunning ? <AIStatusPill /> : undefined}
             />
-            {/* 收起态的吸边药丸悬浮在对话区右侧 */}
-            {hasArtifacts && artifactsCollapsed && (
-              <FloatingArtifactsPanel
-                title="文件"
-                collapsed
-                onCollapsedChange={setArtifactsCollapsed}
-                onHasArtifactsChange={setHasArtifacts}
-              />
-            )}
           </div>
-          {/* 展开态：作为侧栏并排渲染，挤压对话宽度而非覆盖 */}
-          {showInlinePanel && (
-            <FloatingArtifactsPanel
-              title="文件"
-              collapsed={false}
-              onCollapsedChange={setArtifactsCollapsed}
-              onHasArtifactsChange={setHasArtifacts}
-            />
-          )}
-          {/* 当尚未有产物时，挂一个隐形探测器以更新 hasArtifacts */}
-          {!hasArtifacts && (
-            <FloatingArtifactsPanel
-              title="文件"
-              collapsed
-              onCollapsedChange={setArtifactsCollapsed}
-              onHasArtifactsChange={setHasArtifacts}
-            />
-          )}
         </div>
 
         {/* Input */}
@@ -409,17 +435,26 @@ const ChatPage = () => {
           <ChatComposer
             value={input}
             onChange={setInput}
-            onSend={({ text }) => handleSend(text)}
+            onSend={(payload) => {
+              ingestUploads(payload);
+              handleSend(payload.text);
+            }}
             isStreaming={isRunning}
             onStop={stop}
             placeholder="输入消息，Enter 发送"
-            onOpenFiles={() => setArtifactsCollapsed(false)}
-            mentionableFiles={mockArtifacts}
+            onOpenFiles={() => setArtifactsOpen(true)}
+            mentionableFiles={mergedArtifacts}
           />
         </div>
       </div>
 
       <AgentInfoPanel agent={agent} suggestions={suggestions} onSuggestionClick={(q) => handleSend(q)} defaultCollapsed />
+      <ArtifactsDrawer
+        open={artifactsOpen}
+        onOpenChange={handleArtifactsOpenChange}
+        title="文件"
+        artifacts={mergedArtifacts}
+      />
     </div>
   );
 };
