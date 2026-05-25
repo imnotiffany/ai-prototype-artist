@@ -1836,25 +1836,18 @@ const CreateAgentPage = () => {
                 )}
               </div>
               {/* Debug chat input */}
-              <div className="border-t border-border p-3">
-                <div className="flex items-center gap-2">
-                  <Input
-                    value={previewInput}
-                    onChange={(e) => setPreviewInput(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handlePreviewSend()}
-                    placeholder="向智能体发送消息来测试…"
-                    disabled={isAgentRunning}
-                    className="flex-1 h-8 text-xs"
-                  />
-                  <Button
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={handlePreviewSend}
-                    disabled={isAgentRunning || !previewInput.trim() || debugLocked}
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
+              <div className="border-t border-border p-2">
+                <ChatComposer
+                  value={previewInput}
+                  onChange={setPreviewInput}
+                  onSend={({ text }) => {
+                    setPreviewInput(text);
+                    handlePreviewSend();
+                  }}
+                  placeholder="向智能体发送消息来测试…"
+                  disabled={isAgentRunning || debugLocked}
+                  compact
+                />
               </div>
             </div>
           ) : (
