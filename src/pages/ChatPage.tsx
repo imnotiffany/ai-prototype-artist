@@ -355,7 +355,7 @@ const ChatPage = () => {
         </div>
 
         {/* Messages — 同步对话视图与调试视图 */}
-        <div className="flex-1 min-h-0">
+        <div className="flex-1 min-h-0 relative">
           <RunDualView
             showTranscriptSearch={false}
             showAvatars
@@ -368,13 +368,8 @@ const ChatPage = () => {
             debugEvents={debugEvents}
             debugMeta={debugMeta}
             transcriptFooter={isRunning ? <AIStatusPill /> : undefined}
-            toolbarRight={
-              <Button size="sm" variant="outline" className="h-7 text-xs gap-1.5" onClick={() => setArtifactsOpen(true)}>
-                <FolderOpen className="w-3.5 h-3.5" />
-                产物
-              </Button>
-            }
           />
+          <FloatingArtifactsPanel title={`${agent.name} · 产物`} />
         </div>
 
         {/* Input */}
@@ -389,8 +384,6 @@ const ChatPage = () => {
           />
         </div>
       </div>
-
-      <ArtifactsDrawer open={artifactsOpen} onOpenChange={setArtifactsOpen} title={`${agent.name} · 产物`} />
 
       <AgentInfoPanel agent={agent} suggestions={suggestions} onSuggestionClick={(q) => handleSend(q)} />
     </div>
