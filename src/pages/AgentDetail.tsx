@@ -652,6 +652,8 @@ const AgentDetail = () => {
                     placeholder="发送测试任务以调试智能体…"
                     disabled={debugRunning || isDirty}
                     compact
+                    onOpenFiles={() => setArtifactsOpen(true)}
+                    mentionableFiles={mockArtifacts}
                   />
                 </div>
               </div>
