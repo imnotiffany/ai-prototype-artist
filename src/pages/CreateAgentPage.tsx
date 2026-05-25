@@ -1848,6 +1848,8 @@ const CreateAgentPage = () => {
                   placeholder="向智能体发送消息来测试…"
                   disabled={isAgentRunning || debugLocked}
                   compact
+                  onOpenFiles={() => setArtifactsOpen(true)}
+                  mentionableFiles={mockArtifacts}
                 />
               </div>
             </div>
