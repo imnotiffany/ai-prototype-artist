@@ -190,19 +190,17 @@ export const FloatingArtifactsPanel = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [count]);
 
-  if (count === 0) return null;
-
-
-
-  // ─ 收起态：右上角"文件"按钮 ─
-  if (collapsed) {
+  // 空态也保留入口：默认折叠为右上角按钮
+  // ─ 收起态 / 空态：右上角"文件"按钮 ─
+  if (collapsed || count === 0) {
     return (
       <Button
         size="sm"
         variant="outline"
-        onClick={() => setCollapsed(false)}
-        className="absolute right-3 top-1.5 z-20 h-7 text-xs gap-1.5 pr-1.5 shadow-sm hover:shadow bg-background"
-        title="展开文件"
+        onClick={() => count > 0 && setCollapsed(false)}
+        disabled={count === 0}
+        className="absolute right-3 top-1.5 z-20 h-7 text-xs gap-1.5 pr-1.5 shadow-sm hover:shadow bg-background disabled:opacity-70 disabled:cursor-default"
+        title={count === 0 ? "暂无文件" : "展开文件"}
       >
         <FolderOpen className="w-3.5 h-3.5 text-primary" />
         <span>{title}</span>
