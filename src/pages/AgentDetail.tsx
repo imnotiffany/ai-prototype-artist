@@ -257,6 +257,7 @@ const AgentDetail = () => {
   };
 
   /* ── Run history ── */
+  const [runs, setRuns] = useState<RunRecord[]>(mockRuns);
   const [activeRunId, setActiveRunId] = useState<string>(mockRuns[0]?.id ?? "");
   const [runQuery, setRunQuery] = useState("");
   const [runReplyInput, setRunReplyInput] = useState("");
@@ -264,13 +265,30 @@ const AgentDetail = () => {
     const text = runReplyInput.trim();
     if (!text) return;
     setRunReplyInput("");
+    // 如果是空白新会话：把首条问题写入并就地开始
+    setRuns((prev) => prev.map((r) => (r.id === activeRunId && !r.prompt ? { ...r, prompt: text, startedAt: new Date().toLocaleString("sv-SE").replace("T", " ") } : r)));
     // 复用聊天页继续会话
     navigate(`/chat/${id}?run=${activeRunId}&q=${encodeURIComponent(text)}`);
   };
+  const handleNewRun = () => {
+    const newId = `run-new-${Date.now()}`;
+    const now = new Date().toLocaleString("sv-SE").replace("T", " ");
+    const newRun: RunRecord = {
+      id: newId,
+      source: "测试调试",
+      trigger: "你",
+      startedAt: now,
+      duration: "—",
+      status: "running",
+      prompt: "",
+    };
+    setRuns((prev) => [newRun, ...prev]);
+    setActiveRunId(newId);
+  };
   const [artifactsOpen, setArtifactsOpen] = useState(false);
   const [runSourceFilter, setRunSourceFilter] = useState<"all" | "丰声 NEXT" | "Web 端" | "API" | "测试调试">("all");
-  const activeRun = mockRuns.find((r) => r.id === activeRunId) ?? null;
-  const filteredRuns = mockRuns.filter((r) => {
+  const activeRun = runs.find((r) => r.id === activeRunId) ?? null;
+  const filteredRuns = runs.filter((r) => {
     if (runSourceFilter !== "all" && r.source !== runSourceFilter) return false;
     const k = runQuery.trim().toLowerCase();
     if (!k) return true;
