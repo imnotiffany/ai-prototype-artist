@@ -1241,21 +1241,6 @@ fengsheng:
                 </>
               ) : (
                 <div className="flex-1 flex items-center justify-center text-xs text-muted-foreground">
-
-      {/* Artifacts drawer (会话产物) */}
-      </>
-      </>
-      <>
-      </>
-      </>
-      </>
-      </>
-      </>
-      </>
-      </>
-      </>
-      </>
-      </>
                   从左侧选择一个会话
                 </div>
               )}
