@@ -50,6 +50,9 @@ const ChatPage = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [stageIndex, setStageIndex] = useState(0);
   const stages = ["分析问题", "选择工具", "调用工具", "整理回答"];
+  const [artifactsCollapsed, setArtifactsCollapsed] = useState(false);
+  const [hasArtifacts, setHasArtifacts] = useState(false);
+  const showInlinePanel = hasArtifacts && !artifactsCollapsed;
 
   if (!agent) return <div className="p-6">智能体不存在</div>;
 
