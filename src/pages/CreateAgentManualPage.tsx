@@ -1312,6 +1312,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   isStreaming={debugRunning}
                   placeholder="输入测试任务，回车发送（支持文件 / 图片 / 语音）"
                   compact
+                  mentionableFiles={mockArtifacts}
                 />
               </div>
             </div>
