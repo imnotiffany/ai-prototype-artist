@@ -1257,6 +1257,8 @@ fengsheng:
                             }}
                             placeholder="继续这个会话…"
                             compact
+                            onOpenFiles={() => setArtifactsOpen(true)}
+                            mentionableFiles={mockArtifacts}
                           />
                         </div>
                       }
