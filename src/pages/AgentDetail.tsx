@@ -256,6 +256,14 @@ const AgentDetail = () => {
   /* ── Run history ── */
   const [activeRunId, setActiveRunId] = useState<string>(mockRuns[0]?.id ?? "");
   const [runQuery, setRunQuery] = useState("");
+  const [runReplyInput, setRunReplyInput] = useState("");
+  const handleRunReplySend = () => {
+    const text = runReplyInput.trim();
+    if (!text) return;
+    setRunReplyInput("");
+    // 复用聊天页继续会话
+    navigate(`/chat/${id}?run=${activeRunId}&q=${encodeURIComponent(text)}`);
+  };
   const [runSourceFilter, setRunSourceFilter] = useState<"all" | "丰声 NEXT" | "Web 端" | "API" | "测试调试">("all");
   const activeRun = mockRuns.find((r) => r.id === activeRunId) ?? null;
   const filteredRuns = mockRuns.filter((r) => {
@@ -1204,6 +1212,33 @@ fengsheng:
                         { label: "总耗时", value: activeRun.duration },
                         { label: "总 tokens", value: "1552" },
                       ]}
+                      transcriptInput={
+                        <div className="p-2.5">
+                          <div className="relative">
+                            <Textarea
+                              value={runReplyInput}
+                              onChange={(e) => setRunReplyInput(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" && !e.shiftKey) {
+                                  e.preventDefault();
+                                  handleRunReplySend();
+                                }
+                              }}
+                              placeholder="继续这个会话…"
+                              rows={2}
+                              className="resize-none pr-10 text-xs min-h-0"
+                            />
+                            <Button
+                              size="icon"
+                              className="absolute right-1.5 bottom-1.5 h-6 w-6"
+                              onClick={handleRunReplySend}
+                              disabled={!runReplyInput.trim()}
+                            >
+                              <Send className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      }
                     />
                   </div>
                 </>

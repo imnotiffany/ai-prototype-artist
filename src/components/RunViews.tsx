@@ -249,6 +249,7 @@ export const RunDualView = ({
   toolbarRight,
   showTranscriptSearch = true,
   transcriptFooter,
+  transcriptInput,
   agentAvatar,
   showAvatars = false,
 }: {
@@ -259,6 +260,8 @@ export const RunDualView = ({
   showTranscriptSearch?: boolean;
   /** 渲染在对话视图消息列表末尾的内容（如"思考中"指示器） */
   transcriptFooter?: React.ReactNode;
+  /** 渲染在对话视图底部的输入框（仅对话视图显示） */
+  transcriptInput?: React.ReactNode;
   agentAvatar?: string;
   showAvatars?: boolean;
 }) => {
@@ -299,15 +302,24 @@ export const RunDualView = ({
         </div>
         {toolbarRight}
       </div>
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0 flex flex-col">
         {view === "transcript" ? (
-          <RunTranscriptView
-            events={transcriptEvents}
-            showSearch={showTranscriptSearch}
-            footer={transcriptFooter}
-            agentAvatar={agentAvatar}
-            showAvatars={showAvatars}
-          />
+          <>
+            <div className="flex-1 min-h-0">
+              <RunTranscriptView
+                events={transcriptEvents}
+                showSearch={showTranscriptSearch}
+                footer={transcriptFooter}
+                agentAvatar={agentAvatar}
+                showAvatars={showAvatars}
+              />
+            </div>
+            {transcriptInput && (
+              <div className="shrink-0 border-t border-border bg-background">
+                {transcriptInput}
+              </div>
+            )}
+          </>
         ) : (
           <RunDebugView events={debugEvents} meta={debugMeta} />
         )}
@@ -315,6 +327,7 @@ export const RunDualView = ({
     </div>
   );
 };
+
 
 export const RunningIndicator = () => (
   <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
