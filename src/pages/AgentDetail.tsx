@@ -1141,7 +1141,7 @@ fengsheng:
                 <Button
                   size="sm"
                   className="h-7 w-full text-[11px] gap-1.5"
-                  onClick={() => navigate(`/chat/${id}`)}
+                  onClick={handleNewRun}
                   title="新建会话"
                 >
                   <Plus className="w-3 h-3" />新建会话
