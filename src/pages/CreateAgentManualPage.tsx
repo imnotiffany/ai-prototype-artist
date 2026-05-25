@@ -1302,27 +1302,15 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   ]}
                 />
               </div>
-              <div className="border-t border-border p-3 flex items-center gap-2 shrink-0">
-                <Button
-                  type="button"
-                  size="icon"
-                  variant={voiceRecording ? "default" : "outline"}
-                  className={`h-8 w-8 shrink-0 ${voiceRecording ? "animate-pulse" : ""}`}
-                  onClick={toggleVoice}
-                  title={voiceRecording ? "结束语音输入" : "语音输入"}
-                >
-                  {voiceRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
-                </Button>
-                <Input
-                  className="h-8 text-xs"
-                  placeholder={voiceRecording ? "正在录音…再次点击麦克风结束" : "输入测试任务，回车发送"}
+              <div className="border-t border-border p-2 shrink-0">
+                <ChatComposer
                   value={debugInput}
-                  onChange={(e) => setDebugInput(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); runDebug(); } }}
+                  onChange={setDebugInput}
+                  onSend={() => runDebug()}
+                  isStreaming={debugRunning}
+                  placeholder="输入测试任务，回车发送（支持文件 / 图片 / 语音）"
+                  compact
                 />
-                <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => runDebug()} disabled={debugRunning || !debugInput.trim()}>
-                  <Send className="w-3 h-3" /> 发送
-                </Button>
               </div>
             </div>
           </TabsContent>
