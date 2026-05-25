@@ -75,6 +75,8 @@ export const FloatingArtifactsPanel = ({
   };
 
   const [selected, setSelected] = useState<Artifact | null>(null);
+  const [activeDir, setActiveDir] = useState<string | null>(null);
+
 
   // 通知外层是否存在产物
   useEffect(() => {
