@@ -350,18 +350,7 @@ export const ChatComposer = ({
         </div>
       )}
 
-      {/* 附件气泡区 */}
-      {attachments.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mb-2">
-          {attachments.map((a) => (
-            <AttachmentChip
-              key={a.id}
-              att={a}
-              onRemove={() => setAttachments((prev) => prev.filter((x) => x.id !== a.id))}
-            />
-          ))}
-        </div>
-      )}
+      {/* 已上传文件直接进入「文件」侧栏 + 顶部 chip 轻提示，输入区不再重复展示附件气泡 */}
 
       {/* 录音条 */}
       {recording && (
