@@ -32,6 +32,9 @@ import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { RunDualView, RunningIndicator, type TranscriptEvent, type DebugEvent } from "@/components/RunViews";
 import { AIStatusPill } from "@/components/AIStatusPill";
+import { ChatComposer } from "@/components/ChatComposer";
+import { ArtifactsDrawer } from "@/components/ArtifactsDrawer";
+import { FolderOpen } from "lucide-react";
 import { AgentMonitoringPanel } from "@/components/AgentMonitoringPanel";
 import { AgentLogsPanel } from "@/components/AgentLogsPanel";
 
