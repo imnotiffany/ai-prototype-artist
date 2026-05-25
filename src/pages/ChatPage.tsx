@@ -1,16 +1,17 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, FolderOpen } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { mockAgents, getSessionsByAgent, getChatSession, type ChatMessage } from "@/data/mockData";
 import { AgentInfoPanel } from "@/components/AgentInfoPanel";
 import { type ToolCall } from "@/components/ToolCallCard";
 import { AIStatusPill } from "@/components/AIStatusPill";
 import { RunDualView, type TranscriptEvent, type DebugEvent } from "@/components/RunViews";
 import { SessionDrawer, type SessionListItem } from "@/components/SessionDrawer";
-import { ChatComposer } from "@/components/ChatComposer";
-import { FloatingArtifactsPanel } from "@/components/FloatingArtifactsPanel";
-import { mockArtifacts } from "@/data/artifacts";
+import { ChatComposer, type ChatComposerPayload } from "@/components/ChatComposer";
+import { ArtifactsDrawer } from "@/components/ArtifactsDrawer";
+import { mockArtifacts, guessTypeFromName, type Artifact } from "@/data/artifacts";
 
 type Message = ChatMessage;
 
