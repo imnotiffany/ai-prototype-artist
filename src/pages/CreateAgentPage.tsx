@@ -27,9 +27,9 @@ import { PublishAgentDialog } from "@/components/PublishAgentDialog";
 import { mcpRequiresCredential, mockCredentials, categories, mockApiKeys } from "@/data/mockData";
 import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { AlertTriangle, FolderKanban, FolderOpen, ArrowRight } from "lucide-react";
-import { ChatComposer } from "@/components/ChatComposer";
+import { ChatComposer, type ChatComposerPayload } from "@/components/ChatComposer";
 import { ArtifactsDrawer } from "@/components/ArtifactsDrawer";
-import { mockArtifacts } from "@/data/artifacts";
+import { mockArtifacts, type Artifact, guessTypeFromName } from "@/data/artifacts";
 
 /* ── Types ── */
 interface ProposalDiff {
