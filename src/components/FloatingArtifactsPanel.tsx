@@ -28,6 +28,12 @@ import {
 interface Props {
   artifacts?: Artifact[];
   title?: string;
+  /** 受控收起状态 */
+  collapsed?: boolean;
+  onCollapsedChange?: (collapsed: boolean) => void;
+  /** 当存在产物时回调，便于外层布局调整 */
+  onHasArtifactsChange?: (hasArtifacts: boolean) => void;
+  className?: string;
 }
 
 const IconForType = ({ type, className }: { type: ArtifactType; className?: string }) => {
@@ -45,22 +51,43 @@ const IconForType = ({ type, className }: { type: ArtifactType; className?: stri
 };
 
 /**
- * 浮窗式产物面板：
- * - 当存在产物时自动展开（除非用户手动收起）
- * - 收起后变为右侧吸边的小药丸，点击可重新展开
+ * 产物侧栏面板（受控）：
+ * - 展开时：作为 flex 列内嵌渲染（由父布局腾出空间，不覆盖对话）
+ * - 收起时：变为右侧吸边小药丸，点击可重新展开
+ * - 当首次出现新产物时自动展开
  */
-export const FloatingArtifactsPanel = ({ artifacts, title = "产物" }: Props) => {
+export const FloatingArtifactsPanel = ({
+  artifacts,
+  title = "产物",
+  collapsed: collapsedProp,
+  onCollapsedChange,
+  onHasArtifactsChange,
+  className,
+}: Props) => {
   const data = artifacts ?? mockArtifacts;
   const count = data.length;
 
-  const [collapsed, setCollapsed] = useState(false);
+  const [innerCollapsed, setInnerCollapsed] = useState(false);
+  const collapsed = collapsedProp ?? innerCollapsed;
+  const setCollapsed = (v: boolean) => {
+    onCollapsedChange?.(v);
+    if (collapsedProp === undefined) setInnerCollapsed(v);
+  };
+
   const [selected, setSelected] = useState<Artifact | null>(null);
-  // 当首次出现产物时自动展开（重置 collapsed）
+
+  // 通知外层是否存在产物
+  useEffect(() => {
+    onHasArtifactsChange?.(count > 0);
+  }, [count, onHasArtifactsChange]);
+
+  // 新产物出现时自动展开
   const [lastCount, setLastCount] = useState(count);
   useEffect(() => {
     if (count > lastCount) setCollapsed(false);
     setLastCount(count);
-  }, [count, lastCount]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [count]);
 
   // 按目录聚合
   const grouped = useMemo(() => {
@@ -76,7 +103,7 @@ export const FloatingArtifactsPanel = ({ artifacts, title = "产物" }: Props) =
 
   if (count === 0) return null;
 
-  // ─ 收起态：右侧吸边药丸 ─
+  // ─ 收起态：右侧吸边药丸（绝对定位，浮在对话上方但只占一点点） ─
   if (collapsed) {
     return (
       <button
@@ -85,8 +112,7 @@ export const FloatingArtifactsPanel = ({ artifacts, title = "产物" }: Props) =
           "absolute right-3 top-1/2 -translate-y-1/2 z-20",
           "flex flex-col items-center gap-1.5 px-1.5 py-3",
           "rounded-l-full rounded-r-md border border-r-0 border-border",
-          "bg-card shadow-md hover:shadow-lg transition-all",
-          "hover:bg-accent group",
+          "bg-card shadow-md hover:shadow-lg transition-all hover:bg-accent",
         )}
         title="展开产物面板"
       >
@@ -101,13 +127,14 @@ export const FloatingArtifactsPanel = ({ artifacts, title = "产物" }: Props) =
     );
   }
 
-  // ─ 展开态：浮窗 ─
+  // ─ 展开态：内嵌侧栏（由父布局并排显示，不覆盖对话）─
   return (
     <div
       className={cn(
-        "absolute right-4 top-4 bottom-4 z-20 w-[360px]",
-        "rounded-xl border border-border bg-card/95 backdrop-blur-sm shadow-xl",
+        "h-full w-[360px] shrink-0",
+        "border-l border-border bg-card/95 backdrop-blur-sm",
         "flex flex-col overflow-hidden animate-in slide-in-from-right-4 fade-in duration-200",
+        className,
       )}
     >
       {/* 头部 */}
