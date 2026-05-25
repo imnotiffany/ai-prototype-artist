@@ -26,7 +26,9 @@ import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
 import { PublishAgentDialog } from "@/components/PublishAgentDialog";
 import { mcpRequiresCredential, mockCredentials, categories, mockApiKeys } from "@/data/mockData";
 import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
-import { AlertTriangle, FolderKanban, ArrowRight } from "lucide-react";
+import { AlertTriangle, FolderKanban, FolderOpen, ArrowRight } from "lucide-react";
+import { ChatComposer } from "@/components/ChatComposer";
+import { ArtifactsDrawer } from "@/components/ArtifactsDrawer";
 
 /* ── Types ── */
 interface ProposalDiff {
@@ -1031,6 +1033,7 @@ const CreateAgentPage = () => {
   const [agentCreated, setAgentCreated] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
   const [publishDialogOpen, setPublishDialogOpen] = useState(false);
+  const [artifactsOpen, setArtifactsOpen] = useState(false);
   // Save 确认卡片字段（仿手动组装）
   const [saveName, setSaveName] = useState("");
   const [saveDesc, setSaveDesc] = useState("");
@@ -1607,7 +1610,7 @@ const CreateAgentPage = () => {
 
           {/* 测试子视图切换器（左对齐，紧贴 stepper 下方） */}
           {rightTab === "debug" && (
-            <div className="border-b border-border px-3 py-2 flex items-center">
+            <div className="border-b border-border px-3 py-2 flex items-center justify-between gap-2">
               <div className="inline-flex items-center bg-muted rounded-md p-0.5">
                 <button
                   onClick={() => setDebugSubTab("preview")}
@@ -1632,6 +1635,15 @@ const CreateAgentPage = () => {
                   调试视图
                 </button>
               </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-xs gap-1.5"
+                onClick={() => setArtifactsOpen(true)}
+              >
+                <FolderOpen className="w-3.5 h-3.5" />
+                文件
+              </Button>
             </div>
           )}
 
@@ -1824,25 +1836,18 @@ const CreateAgentPage = () => {
                 )}
               </div>
               {/* Debug chat input */}
-              <div className="border-t border-border p-3">
-                <div className="flex items-center gap-2">
-                  <Input
-                    value={previewInput}
-                    onChange={(e) => setPreviewInput(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handlePreviewSend()}
-                    placeholder="向智能体发送消息来测试…"
-                    disabled={isAgentRunning}
-                    className="flex-1 h-8 text-xs"
-                  />
-                  <Button
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={handlePreviewSend}
-                    disabled={isAgentRunning || !previewInput.trim() || debugLocked}
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
+              <div className="border-t border-border p-2">
+                <ChatComposer
+                  value={previewInput}
+                  onChange={setPreviewInput}
+                  onSend={({ text }) => {
+                    setPreviewInput(text);
+                    handlePreviewSend();
+                  }}
+                  placeholder="向智能体发送消息来测试…"
+                  disabled={isAgentRunning || debugLocked}
+                  compact
+                />
               </div>
             </div>
           ) : (
@@ -1972,6 +1977,8 @@ const CreateAgentPage = () => {
         agentCategory={saveCategory}
         agentAllowCopy={saveAllowCopy}
       />
+
+      <ArtifactsDrawer open={artifactsOpen} onOpenChange={setArtifactsOpen} title="文件" />
     </div>
   );
 };
