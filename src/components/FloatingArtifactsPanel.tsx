@@ -183,7 +183,7 @@ export const FloatingArtifactsPanel = ({
         size="sm"
         variant="outline"
         onClick={() => setCollapsed(false)}
-        className="absolute right-3 top-3 z-20 h-7 text-xs gap-1.5 pr-1.5 shadow-sm hover:shadow"
+        className="absolute right-3 top-1.5 z-20 h-7 text-xs gap-1.5 pr-1.5 shadow-sm hover:shadow bg-background"
         title="展开文件"
       >
         <FolderOpen className="w-3.5 h-3.5 text-primary" />
