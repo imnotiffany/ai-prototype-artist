@@ -1956,16 +1956,16 @@ const CreateAgentPage = () => {
                 setHasSaved(true);
                 setSavedConfigSnapshot(JSON.stringify(saved));
                 setPublishOpen(false);
-                setRightTab("debug");
-                setDebugSubTab("preview");
+                // 默认进入"对外接入"步骤，让用户先配置丰声 NEXT；不需要可手动跳过
+                setRightTab("integration");
 
                 toast({
-                  title: "已保存，进入测试",
+                  title: "已保存，请配置对外接入",
                   description: `${saveName.trim()} · ${saveCategory}`,
                 });
               }}
             >
-              <Bug className="w-3 h-3" /> 保存并测试
+              <MessageSquare className="w-3 h-3" /> 保存并接入
             </Button>
           </DialogFooter>
         </DialogContent>
