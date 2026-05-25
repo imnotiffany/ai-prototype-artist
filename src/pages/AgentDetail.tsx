@@ -1227,7 +1227,7 @@ fengsheng:
                   </header>
                   <div className="flex-1 min-h-0">
                     <RunDualView
-                      transcriptEvents={buildMockTranscript(activeRun.prompt)}
+                      transcriptEvents={activeRun.prompt ? buildMockTranscript(activeRun.prompt) : []}
                       debugEvents={mockDebugEvents}
                       debugMeta={[
                         { label: "模型", value: "claude-sonnet-4-6" },
