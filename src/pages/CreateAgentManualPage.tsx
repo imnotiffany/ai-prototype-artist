@@ -27,6 +27,7 @@ import { AvatarPicker } from "@/components/AvatarPicker";
 import { FengshengIncompleteDialog, type FsAlertStatus } from "@/components/FengshengIncompleteDialog";
 import { FengshengHowToCard } from "@/components/FengshengHowToCard";
 import { ChatComposer } from "@/components/ChatComposer";
+import { mockArtifacts } from "@/data/artifacts";
 
 // 基于 Anthropic 对 Claude 的 prompting 最佳实践，提供一份"脚手架"模板，
 // 帮助用户按结构补全自己的提示词，而不是套用某个具体行业的成品。
