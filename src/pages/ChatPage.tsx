@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Send, Square, Mic, MicOff } from "lucide-react";
+import { ArrowLeft, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { mockAgents, getSessionsByAgent, getChatSession, type ChatMessage } from "@/data/mockData";
 import { AgentInfoPanel } from "@/components/AgentInfoPanel";
@@ -10,6 +9,8 @@ import { type ToolCall } from "@/components/ToolCallCard";
 import { AIStatusPill } from "@/components/AIStatusPill";
 import { RunDualView, type TranscriptEvent, type DebugEvent } from "@/components/RunViews";
 import { SessionDrawer, type SessionListItem } from "@/components/SessionDrawer";
+import { ChatComposer } from "@/components/ChatComposer";
+import { ArtifactsDrawer } from "@/components/ArtifactsDrawer";
 
 type Message = ChatMessage;
 
