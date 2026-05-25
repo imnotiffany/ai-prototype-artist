@@ -192,6 +192,8 @@ export const FloatingArtifactsPanel = ({
 
   if (count === 0) return null;
 
+
+
   // ─ 收起态：右上角"文件"按钮 ─
   if (collapsed) {
     return (
