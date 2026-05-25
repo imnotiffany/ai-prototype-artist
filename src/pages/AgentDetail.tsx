@@ -34,6 +34,7 @@ import { RunDualView, RunningIndicator, type TranscriptEvent, type DebugEvent } 
 import { AIStatusPill } from "@/components/AIStatusPill";
 import { ChatComposer } from "@/components/ChatComposer";
 import { ArtifactsDrawer } from "@/components/ArtifactsDrawer";
+import { mockArtifacts } from "@/data/artifacts";
 import { FolderOpen } from "lucide-react";
 import { AgentMonitoringPanel } from "@/components/AgentMonitoringPanel";
 import { AgentLogsPanel } from "@/components/AgentLogsPanel";
