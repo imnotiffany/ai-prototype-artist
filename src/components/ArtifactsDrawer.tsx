@@ -65,13 +65,12 @@ const SourceBadge = ({ source }: { source: Artifact["source"]; toolName?: string
     <Badge
       variant="outline"
       className={cn(
-        "text-[10px] h-4 px-1 gap-1",
+        "text-[10px] h-4 px-1.5",
         isUpload
           ? "border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-500/5"
-          : "border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/5",
+          : "border-border text-muted-foreground bg-muted",
       )}
     >
-      {isUpload ? <Upload className="w-2.5 h-2.5" /> : <Sparkles className="w-2.5 h-2.5" />}
       {isUpload ? "传入" : "产物"}
     </Badge>
   );
