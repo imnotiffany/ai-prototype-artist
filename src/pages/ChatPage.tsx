@@ -396,6 +396,19 @@ const ChatPage = () => {
               </Badge>
             </div>
           </div>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-[11px] gap-1.5 px-2.5"
+            onClick={() => setArtifactsOpen(true)}
+            title="查看会话内文件（传入 / 产物）"
+          >
+            <FolderOpen className="w-3.5 h-3.5" />
+            文件
+            {mergedArtifacts.length > 0 && (
+              <span className="ml-0.5 text-[10px] text-muted-foreground">{mergedArtifacts.length}</span>
+            )}
+          </Button>
         </div>
 
         {/* Messages — 同步对话视图与调试视图 */}
@@ -414,34 +427,7 @@ const ChatPage = () => {
               debugMeta={debugMeta}
               transcriptFooter={isRunning ? <AIStatusPill /> : undefined}
             />
-            {/* 收起态的吸边药丸悬浮在对话区右侧 */}
-            {hasArtifacts && artifactsCollapsed && (
-              <FloatingArtifactsPanel
-                title="文件"
-                collapsed
-                onCollapsedChange={setArtifactsCollapsed}
-                onHasArtifactsChange={setHasArtifacts}
-              />
-            )}
           </div>
-          {/* 展开态：作为侧栏并排渲染，挤压对话宽度而非覆盖 */}
-          {showInlinePanel && (
-            <FloatingArtifactsPanel
-              title="文件"
-              collapsed={false}
-              onCollapsedChange={setArtifactsCollapsed}
-              onHasArtifactsChange={setHasArtifacts}
-            />
-          )}
-          {/* 当尚未有产物时，挂一个隐形探测器以更新 hasArtifacts */}
-          {!hasArtifacts && (
-            <FloatingArtifactsPanel
-              title="文件"
-              collapsed
-              onCollapsedChange={setArtifactsCollapsed}
-              onHasArtifactsChange={setHasArtifacts}
-            />
-          )}
         </div>
 
         {/* Input */}
@@ -449,12 +435,15 @@ const ChatPage = () => {
           <ChatComposer
             value={input}
             onChange={setInput}
-            onSend={({ text }) => handleSend(text)}
+            onSend={(payload) => {
+              ingestUploads(payload);
+              handleSend(payload.text);
+            }}
             isStreaming={isRunning}
             onStop={stop}
             placeholder="输入消息，Enter 发送"
-            onOpenFiles={() => setArtifactsCollapsed(false)}
-            mentionableFiles={mockArtifacts}
+            onOpenFiles={() => setArtifactsOpen(true)}
+            mentionableFiles={mergedArtifacts}
           />
         </div>
       </div>
