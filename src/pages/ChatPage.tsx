@@ -47,7 +47,6 @@ const ChatPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agent?.id]);
   const [input, setInput] = useState("");
-  const [artifactsOpen, setArtifactsOpen] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [stageIndex, setStageIndex] = useState(0);
   const stages = ["分析问题", "选择工具", "调用工具", "整理回答"];
