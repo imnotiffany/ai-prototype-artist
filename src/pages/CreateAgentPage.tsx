@@ -1616,21 +1616,36 @@ const CreateAgentPage = () => {
                 );
               })}
             </div>
-            {rightTab === "debug" && hasSaved && (
+            <div className="flex items-center gap-2 shrink-0">
               <Button
                 size="sm"
-                className="h-7 text-[11px] gap-1.5 px-3 shrink-0"
-                onClick={() => setPublishDialogOpen(true)}
+                variant="outline"
+                className="h-7 text-[11px] gap-1.5 px-2.5 relative"
+                onClick={() => setArtifactsOpen(true)}
+                title="查看会话内文件（传入 / 产物）"
               >
-                <Rocket className="w-3 h-3" />
-                发布
+                <FolderOpen className="w-3.5 h-3.5" />
+                文件
+                {mergedArtifacts.length > 0 && (
+                  <span className="ml-0.5 text-[10px] text-muted-foreground">{mergedArtifacts.length}</span>
+                )}
               </Button>
-            )}
+              {rightTab === "debug" && hasSaved && (
+                <Button
+                  size="sm"
+                  className="h-7 text-[11px] gap-1.5 px-3"
+                  onClick={() => setPublishDialogOpen(true)}
+                >
+                  <Rocket className="w-3 h-3" />
+                  发布
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* 测试子视图切换器（左对齐，紧贴 stepper 下方） */}
           {rightTab === "debug" && (
-            <div className="border-b border-border px-3 py-2 flex items-center justify-between gap-2">
+            <div className="border-b border-border px-3 py-2 flex items-center gap-2">
               <div className="inline-flex items-center bg-muted rounded-md p-0.5">
                 <button
                   onClick={() => setDebugSubTab("preview")}
@@ -1655,15 +1670,6 @@ const CreateAgentPage = () => {
                   调试视图
                 </button>
               </div>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-7 text-xs gap-1.5"
-                onClick={() => setArtifactsOpen(true)}
-              >
-                <FolderOpen className="w-3.5 h-3.5" />
-                文件
-              </Button>
             </div>
           )}
 
