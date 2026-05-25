@@ -1552,19 +1552,19 @@ const CreateAgentPage = () => {
                 ))}
               </div>
             )}
-            <div className="flex items-center gap-2">
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-                placeholder={agentCreated ? "继续修改或完善智能体…" : "描述你想创建的智能体…"}
-                disabled={isThinking}
-                className="flex-1 h-8 text-xs"
-              />
-              <Button size="icon" className="h-8 w-8 shrink-0" onClick={handleSend} disabled={isThinking || !input.trim()}>
-                <Send className="w-3.5 h-3.5" />
-              </Button>
-            </div>
+            <ChatComposer
+              value={input}
+              onChange={setInput}
+              onSend={(payload) => {
+                ingestUploads(payload);
+                handleSend();
+              }}
+              placeholder={agentCreated ? "继续修改或完善智能体…" : "描述你想创建的智能体…"}
+              disabled={isThinking}
+              compact
+              onOpenFiles={() => setArtifactsOpen(true)}
+              mentionableFiles={mergedArtifacts}
+            />
           </div>
         </ResizablePanel>
 
