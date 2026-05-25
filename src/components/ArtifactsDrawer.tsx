@@ -15,7 +15,6 @@ import {
   File as FileIcon,
   Sparkles,
   Upload,
-  Wrench,
 } from "lucide-react";
 import {
   Sheet,
