@@ -138,14 +138,13 @@ const TreeNode = ({
       <span className="truncate flex-1">{node.name}</span>
       <span
         className={cn(
-          "shrink-0 inline-flex items-center gap-0.5 px-1 h-3.5 rounded-sm text-[9px] font-medium",
+          "shrink-0 inline-flex items-center px-1 h-3.5 rounded-sm text-[9px] font-medium",
           isUpload
             ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
-            : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+            : "bg-muted text-muted-foreground",
         )}
         title={isUpload ? "用户传入" : "AI 产出"}
       >
-        {isUpload ? <Upload className="w-2 h-2" /> : <Sparkles className="w-2 h-2" />}
         {isUpload ? "传入" : "产物"}
       </span>
     </button>
