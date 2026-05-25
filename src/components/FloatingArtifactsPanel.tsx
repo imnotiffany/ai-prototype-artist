@@ -75,6 +75,8 @@ export const FloatingArtifactsPanel = ({
   };
 
   const [selected, setSelected] = useState<Artifact | null>(null);
+  const [activeDir, setActiveDir] = useState<string | null>(null);
+
 
   // 通知外层是否存在产物
   useEffect(() => {
@@ -127,102 +129,144 @@ export const FloatingArtifactsPanel = ({
     );
   }
 
-  // ─ 展开态：内嵌侧栏（由父布局并排显示，不覆盖对话）─
+  // 默认选中第一个目录
+  const currentDir = activeDir ?? grouped[0]?.[0] ?? null;
+  const currentFiles = grouped.find(([d]) => d === currentDir)?.[1] ?? [];
+
+  // ─ 展开态：浮窗（与四周保留间距，不与边缘贴合）─
   return (
     <div
       className={cn(
-        "h-full w-[360px] shrink-0",
-        "border-l border-border bg-card/95 backdrop-blur-sm",
-        "flex flex-col overflow-hidden animate-in slide-in-from-right-4 fade-in duration-200",
+        "h-full w-[420px] shrink-0 p-3 pl-2",
+        "flex flex-col",
         className,
       )}
     >
-      {/* 头部 */}
-      <div className="h-11 px-3 flex items-center gap-2 border-b border-border shrink-0">
-        {selected ? (
-          <button
-            onClick={() => setSelected(null)}
-            className="p-1 -ml-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
-            title="返回列表"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-          </button>
-        ) : (
-          <FolderOpen className="w-4 h-4 text-primary" />
+      <div
+        className={cn(
+          "flex-1 min-h-0 flex flex-col overflow-hidden",
+          "rounded-xl border border-border bg-card shadow-lg",
+          "animate-in slide-in-from-right-4 fade-in duration-200",
         )}
-        <div className="flex-1 min-w-0 flex items-center gap-2">
-          <span className="text-sm font-medium truncate">
-            {selected ? selected.name : title}
-          </span>
-          {!selected && (
-            <Badge variant="secondary" className="text-[10px] h-4 px-1.5">
-              {count}
-            </Badge>
+      >
+        {/* 头部 */}
+        <div className="h-10 px-2.5 flex items-center gap-1.5 border-b border-border shrink-0">
+          {selected ? (
+            <button
+              onClick={() => setSelected(null)}
+              className="p-1 -ml-0.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
+              title="返回"
+            >
+              <ArrowLeft className="w-3 h-3" />
+            </button>
+          ) : (
+            <FolderOpen className="w-3.5 h-3.5 text-primary" />
+          )}
+          <div className="flex-1 min-w-0 flex items-center gap-1.5">
+            <span className="text-[12px] font-medium truncate">
+              {selected ? selected.name : title}
+            </span>
+            {!selected && (
+              <Badge variant="secondary" className="text-[9px] h-3.5 px-1">
+                {count}
+              </Badge>
+            )}
+          </div>
+          {selected && (
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-6 w-6"
+              onClick={() => toast({ title: "已开始下载", description: selected.name })}
+              title="下载"
+            >
+              <Download className="w-3 h-3" />
+            </Button>
+          )}
+          <button
+            onClick={() => setCollapsed(true)}
+            className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
+            title="收起"
+          >
+            <Minus className="w-3 h-3" />
+          </button>
+        </div>
+
+        {/* 主体 */}
+        <div className="flex-1 min-h-0 overflow-hidden">
+          {selected ? (
+            <ArtifactPreview a={selected} />
+          ) : (
+            <div className="h-full flex">
+              {/* 左：文件夹列表 */}
+              <div className="w-[120px] shrink-0 border-r border-border overflow-auto py-1.5">
+                {grouped.map(([dir, items]) => {
+                  const active = dir === currentDir;
+                  // 仅展示目录最后一段作为标签，整路径在 title 中
+                  const label = dir === "根目录" ? dir : dir.split("/").pop() ?? dir;
+                  return (
+                    <button
+                      key={dir}
+                      onClick={() => setActiveDir(dir)}
+                      title={dir}
+                      className={cn(
+                        "w-full flex items-center gap-1.5 px-2 py-1 text-left transition-colors",
+                        "border-l-2",
+                        active
+                          ? "border-primary bg-muted/60 text-foreground"
+                          : "border-transparent text-muted-foreground hover:bg-muted/30 hover:text-foreground",
+                      )}
+                    >
+                      <Folder
+                        className={cn(
+                          "w-3 h-3 shrink-0",
+                          active ? "text-amber-500" : "text-amber-500/70",
+                        )}
+                      />
+                      <span className="text-[11px] truncate flex-1">{label}</span>
+                      <span className="text-[9px] tabular-nums opacity-60">
+                        {items.length}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* 右：当前文件夹下的文件 */}
+              <div className="flex-1 min-w-0 overflow-auto py-1.5 px-1.5 space-y-0.5">
+                {currentFiles.map((a) => (
+                  <button
+                    key={a.id}
+                    onClick={() => setSelected(a)}
+                    className="w-full flex items-center gap-1.5 px-1.5 py-1 rounded border border-transparent hover:border-border hover:bg-muted/40 transition-colors text-left"
+                  >
+                    <IconForType type={a.type} className="w-3 h-3 text-foreground/60 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[11px] text-foreground truncate leading-tight">
+                        {a.name}
+                      </div>
+                      <div className="text-[9px] text-muted-foreground flex items-center gap-1 leading-tight mt-0.5">
+                        <span>{formatBytes(a.size)}</span>
+                        <span>·</span>
+                        <span className="truncate">{a.createdAt}</span>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+                {currentFiles.length === 0 && (
+                  <div className="text-[10px] text-muted-foreground px-2 py-4 text-center">
+                    暂无文件
+                  </div>
+                )}
+              </div>
+            </div>
           )}
         </div>
-        {selected && (
-          <Button
-            size="icon"
-            variant="ghost"
-            className="h-7 w-7"
-            onClick={() => toast({ title: "已开始下载", description: selected.name })}
-            title="下载"
-          >
-            <Download className="w-3.5 h-3.5" />
-          </Button>
-        )}
-        <button
-          onClick={() => setCollapsed(true)}
-          className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
-          title="收起"
-        >
-          <Minus className="w-3.5 h-3.5" />
-        </button>
-      </div>
-
-      {/* 主体 */}
-      <div className="flex-1 min-h-0 overflow-auto">
-        {selected ? (
-          <ArtifactPreview a={selected} />
-        ) : (
-          <div className="p-2 space-y-3">
-            {grouped.map(([dir, items]) => (
-              <div key={dir}>
-                <div className="flex items-center gap-1.5 px-1.5 py-1 text-[11px] text-muted-foreground">
-                  <Folder className="w-3 h-3 text-amber-500/80" />
-                  <span className="truncate font-medium">{dir}</span>
-                  <span className="ml-auto text-[10px]">{items.length}</span>
-                </div>
-                <div className="space-y-1">
-                  {items.map((a) => (
-                    <button
-                      key={a.id}
-                      onClick={() => setSelected(a)}
-                      className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md border border-transparent hover:border-border hover:bg-muted/40 transition-colors text-left"
-                    >
-                      <div className="w-7 h-7 rounded bg-muted flex items-center justify-center shrink-0">
-                        <IconForType type={a.type} className="w-3.5 h-3.5 text-foreground/70" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="text-xs text-foreground truncate">{a.name}</div>
-                        <div className="text-[10px] text-muted-foreground flex items-center gap-1.5">
-                          <span>{formatBytes(a.size)}</span>
-                          <span>·</span>
-                          <span className="truncate">{a.createdAt}</span>
-                        </div>
-                      </div>
-                      <ChevronRight className="w-3 h-3 text-muted-foreground/60 shrink-0" />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );
 };
+
 
 const ArtifactPreview = ({ a }: { a: Artifact }) => (
   <div className="h-full flex flex-col">
