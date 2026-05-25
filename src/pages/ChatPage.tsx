@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, FolderOpen } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { mockAgents, getSessionsByAgent, getChatSession, type ChatMessage } from "@/data/mockData";
 import { AgentInfoPanel } from "@/components/AgentInfoPanel";
@@ -10,7 +9,7 @@ import { AIStatusPill } from "@/components/AIStatusPill";
 import { RunDualView, type TranscriptEvent, type DebugEvent } from "@/components/RunViews";
 import { SessionDrawer, type SessionListItem } from "@/components/SessionDrawer";
 import { ChatComposer } from "@/components/ChatComposer";
-import { ArtifactsDrawer } from "@/components/ArtifactsDrawer";
+import { FloatingArtifactsPanel } from "@/components/FloatingArtifactsPanel";
 
 type Message = ChatMessage;
 
