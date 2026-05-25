@@ -26,7 +26,9 @@ import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
 import { PublishAgentDialog } from "@/components/PublishAgentDialog";
 import { mcpRequiresCredential, mockCredentials, categories, mockApiKeys } from "@/data/mockData";
 import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
-import { AlertTriangle, FolderKanban, ArrowRight } from "lucide-react";
+import { AlertTriangle, FolderKanban, FolderOpen, ArrowRight } from "lucide-react";
+import { ChatComposer } from "@/components/ChatComposer";
+import { ArtifactsDrawer } from "@/components/ArtifactsDrawer";
 
 /* ── Types ── */
 interface ProposalDiff {
