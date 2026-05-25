@@ -602,6 +602,18 @@ const AgentDetail = () => {
 
             {configSubTab === "debug" ? (
               <div className="border border-border rounded-lg bg-card flex flex-col" style={{ height: "calc(100vh - 260px)", minHeight: 480 }}>
+                <div className="px-3 h-9 flex items-center justify-between border-b border-border shrink-0">
+                  <span className="text-xs text-muted-foreground">调试会话</span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs gap-1.5"
+                    onClick={() => setArtifactsOpen(true)}
+                  >
+                    <FolderOpen className="w-3.5 h-3.5" />
+                    文件
+                  </Button>
+                </div>
                 <div className="flex-1 min-h-0">
                   <RunDualView
                     transcriptEvents={(() => {
@@ -629,27 +641,18 @@ const AgentDetail = () => {
                     transcriptFooter={debugRunning ? <AIStatusPill /> : undefined}
                   />
                 </div>
-                <div className="border-t border-border p-2 flex items-center gap-2 shrink-0">
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant={voiceRecording ? "default" : "outline"}
-                    className={`h-8 w-8 shrink-0 ${voiceRecording ? "animate-pulse" : ""}`}
-                    onClick={toggleVoice}
-                    title={voiceRecording ? "结束语音输入" : "语音输入"}
-                  >
-                    {voiceRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
-                  </Button>
-                  <Input
-                    className="h-8 text-xs flex-1"
-                    placeholder={voiceRecording ? "正在录音…再次点击麦克风结束" : "发送测试任务以调试智能体…"}
+                <div className="border-t border-border p-2 shrink-0">
+                  <ChatComposer
                     value={debugInput}
-                    onChange={(e) => setDebugInput(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); runDebug(); } }}
+                    onChange={setDebugInput}
+                    onSend={({ text }) => {
+                      setDebugInput(text);
+                      runDebug();
+                    }}
+                    placeholder="发送测试任务以调试智能体…"
+                    disabled={debugRunning || isDirty}
+                    compact
                   />
-                  <Button size="sm" className="h-8 text-xs gap-1.5" onClick={runDebug} disabled={debugRunning || !debugInput.trim() || isDirty}>
-                    <Send className="w-3 h-3" />发送
-                  </Button>
                 </div>
               </div>
             ) : (
@@ -1237,7 +1240,7 @@ fengsheng:
                       toolbarRight={
                         <Button size="sm" variant="outline" className="h-7 text-xs gap-1.5" onClick={() => setArtifactsOpen(true)}>
                           <FolderOpen className="w-3.5 h-3.5" />
-                          产物
+                          文件
                         </Button>
                       }
                       transcriptInput={
@@ -1576,7 +1579,7 @@ fengsheng:
         </DialogContent>
       </Dialog>
 
-      <ArtifactsDrawer open={artifactsOpen} onOpenChange={setArtifactsOpen} title="会话产物" />
+      <ArtifactsDrawer open={artifactsOpen} onOpenChange={setArtifactsOpen} title="文件" />
     </div>
   );
 };

@@ -3,6 +3,8 @@ import {
   Folder,
   FolderOpen,
   ChevronRight,
+  ChevronDown,
+  Search,
   Minus,
   Download,
   FileText,
@@ -12,26 +14,26 @@ import {
   Music,
   Video,
   File as FileIcon,
-  ArrowLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import {
   type Artifact,
+  type ArtifactTreeNode,
   type ArtifactType,
+  buildArtifactTree,
   formatBytes,
   mockArtifacts,
 } from "@/data/artifacts";
 
 interface Props {
   artifacts?: Artifact[];
+  /** 面板标题，默认"文件" */
   title?: string;
-  /** 受控收起状态 */
   collapsed?: boolean;
   onCollapsedChange?: (collapsed: boolean) => void;
-  /** 当存在产物时回调，便于外层布局调整 */
   onHasArtifactsChange?: (hasArtifacts: boolean) => void;
   className?: string;
 }
@@ -50,15 +52,97 @@ const IconForType = ({ type, className }: { type: ArtifactType; className?: stri
   return map[type] ?? <FileIcon className={className} />;
 };
 
+const hasMatch = (node: ArtifactTreeNode, q: string): boolean => {
+  if (node.name.toLowerCase().includes(q.toLowerCase())) return true;
+  return (node.children ?? []).some((c) => hasMatch(c, q));
+};
+
+const TreeNode = ({
+  node,
+  depth,
+  selectedPath,
+  onSelect,
+  search,
+}: {
+  node: ArtifactTreeNode;
+  depth: number;
+  selectedPath: string | null;
+  onSelect: (a: Artifact) => void;
+  search: string;
+}) => {
+  const [open, setOpen] = useState(true);
+
+  if (search) {
+    const matchSelf = node.name.toLowerCase().includes(search.toLowerCase());
+    if (node.isFolder) {
+      const filteredChildren = (node.children ?? []).filter((c) => hasMatch(c, search));
+      if (!matchSelf && filteredChildren.length === 0) return null;
+      return (
+        <>
+          <div
+            className="flex items-center gap-1 py-1 px-1.5 text-[11px] text-foreground"
+            style={{ paddingLeft: depth * 12 + 6 }}
+          >
+            <FolderOpen className="w-3 h-3 text-amber-500/80" />
+            <span className="truncate">{node.name}</span>
+          </div>
+          {filteredChildren.map((c) => (
+            <TreeNode key={c.path} node={c} depth={depth + 1} selectedPath={selectedPath} onSelect={onSelect} search={search} />
+          ))}
+        </>
+      );
+    }
+    if (!matchSelf) return null;
+  }
+
+  if (node.isFolder) {
+    return (
+      <div>
+        <button
+          onClick={() => setOpen(!open)}
+          className="w-full flex items-center gap-1 py-1 px-1.5 text-[11px] hover:bg-muted/50 rounded transition-colors text-foreground"
+          style={{ paddingLeft: depth * 12 + 6 }}
+        >
+          {open ? <ChevronDown className="w-3 h-3 shrink-0" /> : <ChevronRight className="w-3 h-3 shrink-0" />}
+          {open ? (
+            <FolderOpen className="w-3 h-3 shrink-0 text-amber-500/80" />
+          ) : (
+            <Folder className="w-3 h-3 shrink-0 text-amber-500/80" />
+          )}
+          <span className="truncate">{node.name}</span>
+        </button>
+        {open &&
+          node.children?.map((c) => (
+            <TreeNode key={c.path} node={c} depth={depth + 1} selectedPath={selectedPath} onSelect={onSelect} search={search} />
+          ))}
+      </div>
+    );
+  }
+
+  const a = node.artifact!;
+  const selected = selectedPath === a.path;
+  return (
+    <button
+      onClick={() => onSelect(a)}
+      className={cn(
+        "w-full flex items-center gap-1.5 py-1 px-1.5 text-[11px] rounded transition-colors text-left",
+        selected ? "bg-primary/10 text-foreground" : "hover:bg-muted/50 text-muted-foreground hover:text-foreground",
+      )}
+      style={{ paddingLeft: depth * 12 + 18 }}
+    >
+      <IconForType type={a.type} className="w-3 h-3 shrink-0 text-foreground/50" />
+      <span className="truncate flex-1">{node.name}</span>
+    </button>
+  );
+};
+
 /**
- * 产物侧栏面板（受控）：
- * - 展开时：作为 flex 列内嵌渲染（由父布局腾出空间，不覆盖对话）
- * - 收起时：变为右侧吸边小药丸，点击可重新展开
- * - 当首次出现新产物时自动展开
+ * 文件面板（受控）：左侧目录树 + 右侧预览。
+ * - 跟随会话存在；收起后变成右上角"文件"按钮。
  */
 export const FloatingArtifactsPanel = ({
   artifacts,
-  title = "产物",
+  title = "文件",
   collapsed: collapsedProp,
   onCollapsedChange,
   onHasArtifactsChange,
@@ -75,10 +159,9 @@ export const FloatingArtifactsPanel = ({
   };
 
   const [selected, setSelected] = useState<Artifact | null>(null);
-  const [activeDir, setActiveDir] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const tree = useMemo(() => buildArtifactTree(data), [data]);
 
-
-  // 通知外层是否存在产物
   useEffect(() => {
     onHasArtifactsChange?.(count > 0);
   }, [count, onHasArtifactsChange]);
@@ -91,21 +174,9 @@ export const FloatingArtifactsPanel = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [count]);
 
-  // 按目录聚合
-  const grouped = useMemo(() => {
-    const m = new Map<string, Artifact[]>();
-    data.forEach((a) => {
-      const parts = a.path.split("/");
-      const dir = parts.length > 1 ? parts.slice(0, -1).join("/") : "根目录";
-      if (!m.has(dir)) m.set(dir, []);
-      m.get(dir)!.push(a);
-    });
-    return Array.from(m.entries());
-  }, [data]);
-
   if (count === 0) return null;
 
-  // ─ 收起态：右上角按钮（与详情页"产物"按钮保持一致的视觉语言）─
+  // ─ 收起态：右上角"文件"按钮 ─
   if (collapsed) {
     return (
       <Button
@@ -113,7 +184,7 @@ export const FloatingArtifactsPanel = ({
         variant="outline"
         onClick={() => setCollapsed(false)}
         className="absolute right-3 top-3 z-20 h-7 text-xs gap-1.5 pr-1.5 shadow-sm hover:shadow"
-        title="展开产物面板"
+        title="展开文件"
       >
         <FolderOpen className="w-3.5 h-3.5 text-primary" />
         <span>{title}</span>
@@ -124,60 +195,23 @@ export const FloatingArtifactsPanel = ({
     );
   }
 
-  // 默认选中第一个目录
-  const currentDir = activeDir ?? grouped[0]?.[0] ?? null;
-  const currentFiles = grouped.find(([d]) => d === currentDir)?.[1] ?? [];
-
-  // ─ 展开态：浮窗（与四周保留间距，不与边缘贴合）─
+  // ─ 展开态：树 + 预览，与抽屉版样式一致 ─
   return (
-    <div
-      className={cn(
-        "h-full w-[420px] shrink-0 p-3 pl-2",
-        "flex flex-col",
-        className,
-      )}
-    >
-      <div
-        className={cn(
-          "flex-1 min-h-0 flex flex-col overflow-hidden",
-          "rounded-xl border border-border bg-card shadow-lg",
-          "animate-in slide-in-from-right-4 fade-in duration-200",
-        )}
-      >
+    <div className={cn("h-full w-[560px] shrink-0 p-3 pl-2 flex flex-col", className)}>
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-lg animate-in slide-in-from-right-4 fade-in duration-200">
         {/* 头部 */}
-        <div className="h-10 px-2.5 flex items-center gap-1.5 border-b border-border shrink-0">
-          {selected ? (
-            <button
-              onClick={() => setSelected(null)}
-              className="p-1 -ml-0.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
-              title="返回"
-            >
-              <ArrowLeft className="w-3 h-3" />
-            </button>
-          ) : (
-            <FolderOpen className="w-3.5 h-3.5 text-primary" />
-          )}
-          <div className="flex-1 min-w-0 flex items-center gap-1.5">
-            <span className="text-[12px] font-medium truncate">
-              {selected ? selected.name : title}
-            </span>
-            {!selected && (
-              <Badge variant="secondary" className="text-[9px] h-3.5 px-1">
-                {count}
-              </Badge>
-            )}
-          </div>
-          {selected && (
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-6 w-6"
-              onClick={() => toast({ title: "已开始下载", description: selected.name })}
-              title="下载"
-            >
-              <Download className="w-3 h-3" />
-            </Button>
-          )}
+        <div className="h-10 px-3 flex items-center gap-2 border-b border-border shrink-0">
+          <FolderOpen className="w-3.5 h-3.5 text-primary" />
+          <span className="text-[12px] font-medium flex-1">{title}</span>
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-6 w-6"
+            title="打包下载全部"
+            onClick={() => toast({ title: "开始打包下载", description: `共 ${count} 个文件` })}
+          >
+            <Download className="w-3 h-3" />
+          </Button>
           <button
             onClick={() => setCollapsed(true)}
             className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
@@ -187,121 +221,103 @@ export const FloatingArtifactsPanel = ({
           </button>
         </div>
 
-        {/* 主体 */}
-        <div className="flex-1 min-h-0 overflow-hidden">
-          {selected ? (
-            <ArtifactPreview a={selected} />
-          ) : (
-            <div className="h-full flex">
-              {/* 左：文件夹列表 */}
-              <div className="w-[120px] shrink-0 border-r border-border overflow-auto py-1.5">
-                {grouped.map(([dir, items]) => {
-                  const active = dir === currentDir;
-                  // 仅展示目录最后一段作为标签，整路径在 title 中
-                  const label = dir === "根目录" ? dir : dir.split("/").pop() ?? dir;
-                  return (
-                    <button
-                      key={dir}
-                      onClick={() => setActiveDir(dir)}
-                      title={dir}
-                      className={cn(
-                        "w-full flex items-center gap-1.5 px-2 py-1 text-left transition-colors",
-                        "border-l-2",
-                        active
-                          ? "border-primary bg-muted/60 text-foreground"
-                          : "border-transparent text-muted-foreground hover:bg-muted/30 hover:text-foreground",
-                      )}
-                    >
-                      <Folder
-                        className={cn(
-                          "w-3 h-3 shrink-0",
-                          active ? "text-amber-500" : "text-amber-500/70",
-                        )}
-                      />
-                      <span className="text-[11px] truncate flex-1">{label}</span>
-                      <span className="text-[9px] tabular-nums opacity-60">
-                        {items.length}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* 右：当前文件夹下的文件 */}
-              <div className="flex-1 min-w-0 overflow-auto py-1.5 px-1.5 space-y-0.5">
-                {currentFiles.map((a) => (
-                  <button
-                    key={a.id}
-                    onClick={() => setSelected(a)}
-                    className="w-full flex items-center gap-1.5 px-1.5 py-1 rounded border border-transparent hover:border-border hover:bg-muted/40 transition-colors text-left"
-                  >
-                    <IconForType type={a.type} className="w-3 h-3 text-foreground/60 shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <div className="text-[11px] text-foreground truncate leading-tight">
-                        {a.name}
-                      </div>
-                      <div className="text-[9px] text-muted-foreground flex items-center gap-1 leading-tight mt-0.5">
-                        <span>{formatBytes(a.size)}</span>
-                        <span>·</span>
-                        <span className="truncate">{a.createdAt}</span>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-                {currentFiles.length === 0 && (
-                  <div className="text-[10px] text-muted-foreground px-2 py-4 text-center">
-                    暂无文件
-                  </div>
-                )}
+        {/* 主体：左树 + 右预览 */}
+        <div className="flex-1 min-h-0 flex">
+          {/* 左：树 + 搜索 */}
+          <div className="w-[220px] shrink-0 border-r border-border flex flex-col bg-muted/10">
+            <div className="p-2 border-b border-border">
+              <div className="relative">
+                <Search className="w-3 h-3 text-muted-foreground absolute left-2 top-1/2 -translate-y-1/2" />
+                <Input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="搜索文件…"
+                  className="h-7 text-xs pl-7"
+                />
               </div>
             </div>
-          )}
+            <div className="flex-1 overflow-auto p-1">
+              {tree.length === 0 ? (
+                <div className="text-[11px] text-muted-foreground text-center py-6">暂无文件</div>
+              ) : (
+                tree.map((n) => (
+                  <TreeNode
+                    key={n.path}
+                    node={n}
+                    depth={0}
+                    selectedPath={selected?.path ?? null}
+                    onSelect={setSelected}
+                    search={search}
+                  />
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* 右：预览 */}
+          <div className="flex-1 min-w-0">
+            <ArtifactPreview a={selected} />
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-
-const ArtifactPreview = ({ a }: { a: Artifact }) => (
-  <div className="h-full flex flex-col">
-    <div className="px-3 py-2 border-b border-border text-[10px] text-muted-foreground flex items-center gap-2 shrink-0">
-      <span>{formatBytes(a.size)}</span>
-      <span>·</span>
-      <span>{a.createdAt}</span>
-      {a.toolName && (
-        <>
+const ArtifactPreview = ({ a }: { a: Artifact | null }) => {
+  if (!a) {
+    return (
+      <div className="h-full flex items-center justify-center text-xs text-muted-foreground">
+        选择要查看的文件
+      </div>
+    );
+  }
+  return (
+    <div className="h-full flex flex-col">
+      <div className="px-3 py-2 border-b border-border text-[10px] text-muted-foreground flex items-center justify-between gap-2 shrink-0">
+        <div className="min-w-0 flex items-center gap-2">
+          <IconForType type={a.type} className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+          <span className="text-[11px] font-medium text-foreground truncate">{a.name}</span>
           <span>·</span>
-          <span className="truncate">{a.toolName}</span>
-        </>
-      )}
-    </div>
-    <div className="flex-1 overflow-auto p-3">
-      {a.type === "image" ? (
-        <img src={a.url} alt={a.name} className="max-w-full rounded border border-border" />
-      ) : a.type === "audio" ? (
-        <audio src={a.url} controls className="w-full" />
-      ) : a.type === "video" ? (
-        <video src={a.url} controls className="w-full rounded border border-border" />
-      ) : a.preview ? (
-        <pre className="text-[11px] font-mono leading-relaxed text-foreground whitespace-pre-wrap">
-          {a.preview}
-        </pre>
-      ) : (
-        <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground gap-3 py-10">
-          <FileIcon className="w-10 h-10 opacity-30" />
-          <div className="text-xs">该类型暂不支持预览</div>
-          <Button
-            size="sm"
-            variant="outline"
-            className="text-xs gap-1.5"
-            onClick={() => toast({ title: "已开始下载", description: a.name })}
-          >
-            <Download className="w-3 h-3" />
-            下载查看
-          </Button>
+          <span>{formatBytes(a.size)}</span>
         </div>
-      )}
+        <Button
+          size="icon"
+          variant="ghost"
+          className="h-6 w-6 shrink-0"
+          onClick={() => toast({ title: "已开始下载", description: a.name })}
+          title="下载"
+        >
+          <Download className="w-3 h-3" />
+        </Button>
+      </div>
+      <div className="flex-1 overflow-auto p-3">
+        {a.type === "image" ? (
+          <img src={a.url} alt={a.name} className="max-w-full rounded border border-border" />
+        ) : a.type === "audio" ? (
+          <audio src={a.url} controls className="w-full" />
+        ) : a.type === "video" ? (
+          <video src={a.url} controls className="w-full rounded border border-border" />
+        ) : a.preview ? (
+          <pre className="text-[11px] font-mono leading-relaxed text-foreground whitespace-pre-wrap">
+            {a.preview}
+          </pre>
+        ) : (
+          <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground gap-3 py-10">
+            <FileIcon className="w-10 h-10 opacity-30" />
+            <div className="text-xs">该类型暂不支持预览</div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-xs gap-1.5"
+              onClick={() => toast({ title: "已开始下载", description: a.name })}
+            >
+              <Download className="w-3 h-3" />
+              下载查看
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
