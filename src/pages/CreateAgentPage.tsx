@@ -121,7 +121,7 @@ const defaultConfig: AgentConfig = {
   skills: [],
   mcpServers: [],
   subagents: [],
-  fengsheng: { enabled: false, appKey: "", appSecret: "", robotCode: "", connected: false },
+  fengsheng: { enabled: true, appKey: "", appSecret: "", robotCode: "", connected: false },
 };
 
 // Demo 默认绑定（无论用户输入什么，都先帮 Ta 装好这几个）
