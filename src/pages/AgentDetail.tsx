@@ -1237,7 +1237,7 @@ fengsheng:
                       toolbarRight={
                         <Button size="sm" variant="outline" className="h-7 text-xs gap-1.5" onClick={() => setArtifactsOpen(true)}>
                           <FolderOpen className="w-3.5 h-3.5" />
-                          产物
+                          文件
                         </Button>
                       }
                       transcriptInput={
