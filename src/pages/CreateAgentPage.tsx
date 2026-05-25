@@ -254,47 +254,10 @@ const AttachmentPicker = ({
   </Popover>
 );
 
-/* ── Tool Call Strip (折叠为薄条 - "N steps completed") ── */
-const ToolCallStrip = ({ calls }: { calls: ToolCall[] }) => {
-  const [open, setOpen] = useState(false);
-  const done = calls.filter((c) => c.status === "success").length;
-  const failed = calls.filter((c) => c.status === "failed").length;
-  const running = calls.filter((c) => c.status === "running").length;
-  return (
-    <div>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="group w-full flex items-center justify-between px-3 py-1.5 bg-muted/60 hover:bg-muted border border-border rounded-lg transition-colors"
-      >
-        <div className="flex items-center gap-2">
-          <div className="flex items-center -space-x-1">
-            {calls.slice(0, 4).map((c) => (
-              <span
-                key={c.id}
-                className={cn(
-                  "w-1.5 h-1.5 rounded-full border border-background",
-                  c.status === "success" && "bg-green-500",
-                  c.status === "failed" && "bg-destructive",
-                  c.status === "running" && "bg-primary animate-pulse",
-                )}
-              />
-            ))}
-          </div>
-          <span className="text-[11px] font-medium text-muted-foreground">
-            {running > 0 ? `进行中 · ${calls.length} 步` : failed > 0 ? `${done} 步完成 · ${failed} 失败` : `${done} 步完成`}
-          </span>
-        </div>
-        <ChevronDown className={cn("w-3.5 h-3.5 text-muted-foreground transition-transform", open && "rotate-180")} />
-      </button>
-      {open && (
-        <div className="mt-1.5">
-          <ToolCallGroup calls={calls} />
-        </div>
-      )}
-    </div>
-  );
-};
+/* ── Tool Call Strip (始终展开，不折叠) ── */
+const ToolCallStrip = ({ calls }: { calls: ToolCall[] }) => (
+  <ToolCallGroup calls={calls} />
+);
 
 /* ── Draft Card (初始草稿，结构化展示) ── */
 const DraftCard = ({ draft }: { draft: NonNullable<Message["draft"]> }) => (
