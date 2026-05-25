@@ -191,20 +191,6 @@ export function AgentLogsPanel() {
 
 
         <div className="ml-auto flex items-center gap-0.5">
-          <Button
-            size="icon" variant="ghost" className="h-7 w-7"
-            onClick={() => scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" })}
-            title="回到顶部"
-          >
-            <ChevronUp className="w-3.5 h-3.5" />
-          </Button>
-          <Button
-            size="icon" variant="ghost" className="h-7 w-7"
-            onClick={() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" })}
-            title="跳到底部"
-          >
-            <ChevronDown className="w-3.5 h-3.5" />
-          </Button>
           <Button size="icon" variant="ghost" className="h-7 w-7" onClick={copyAll} title="复制">
             <Copy className="w-3.5 h-3.5" />
           </Button>
