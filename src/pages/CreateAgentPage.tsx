@@ -1792,6 +1792,46 @@ const CreateAgentPage = () => {
                     </div>
                   </div>
                 )}
+
+                {/* 步骤操作：跳过 or 下一步 */}
+                <div className="mt-5 flex items-center justify-between gap-2 pt-4 border-t border-border">
+                  <p className="text-[11px] text-muted-foreground">
+                    {agentConfig.fengsheng.enabled
+                      ? agentConfig.fengsheng.connected
+                        ? "已连接丰声 NEXT，可进入调试"
+                        : "填写凭证并点击「连接」，或直接跳过"
+                      : "已关闭对外接入，可直接进入调试"}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 text-xs"
+                      onClick={() => {
+                        setAgentConfig({
+                          ...agentConfig,
+                          fengsheng: { ...agentConfig.fengsheng, enabled: false },
+                        });
+                        setRightTab("debug");
+                        setDebugSubTab("preview");
+                      }}
+                    >
+                      跳过，直接调试
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="h-7 text-xs gap-1.5"
+                      disabled={agentConfig.fengsheng.enabled && !agentConfig.fengsheng.connected}
+                      onClick={() => {
+                        setRightTab("debug");
+                        setDebugSubTab("preview");
+                      }}
+                    >
+                      <Bug className="w-3 h-3" />
+                      下一步：调试
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
           ) : debugSubTab === "preview" ? (
