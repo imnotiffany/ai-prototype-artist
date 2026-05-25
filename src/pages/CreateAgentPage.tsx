@@ -1754,19 +1754,13 @@ const CreateAgentPage = () => {
           ) : rightTab === "integration" ? (
             <div className="flex-1 overflow-auto p-5">
               <div className="max-w-2xl mx-auto">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="min-w-0">
-                    <label className="text-xs font-medium text-foreground flex items-center gap-1.5">
-                      <MessageSquare className="w-3.5 h-3.5" />
-                      对外接入 · 丰声 NEXT
-                      <span className="text-[10px] rounded border border-border px-1 text-muted-foreground/80">可选</span>
-                    </label>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">把智能体接入丰声 NEXT， @ 机器人即可触发</p>
-                  </div>
-                  <Switch
-                    checked={agentConfig.fengsheng.enabled}
-                    onCheckedChange={(v) => setAgentConfig({ ...agentConfig, fengsheng: { ...agentConfig.fengsheng, enabled: v } })}
-                  />
+                <div className="mb-2">
+                  <label className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    对外接入 · 丰声 NEXT
+                    <span className="text-[10px] rounded border border-border px-1 text-muted-foreground/80">可选</span>
+                  </label>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">把智能体接入丰声 NEXT， @ 机器人即可触发；不需要可点击下方「跳过，直接调试」。</p>
                 </div>
                 {agentConfig.fengsheng.enabled && (
                   <div className="mt-3 space-y-2.5 border border-border rounded-md p-4 bg-muted/20">
