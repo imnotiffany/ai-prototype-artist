@@ -256,6 +256,14 @@ const AgentDetail = () => {
   /* ── Run history ── */
   const [activeRunId, setActiveRunId] = useState<string>(mockRuns[0]?.id ?? "");
   const [runQuery, setRunQuery] = useState("");
+  const [runReplyInput, setRunReplyInput] = useState("");
+  const handleRunReplySend = () => {
+    const text = runReplyInput.trim();
+    if (!text) return;
+    setRunReplyInput("");
+    // 复用聊天页继续会话
+    navigate(`/chat/${id}?run=${activeRunId}&q=${encodeURIComponent(text)}`);
+  };
   const [runSourceFilter, setRunSourceFilter] = useState<"all" | "丰声 NEXT" | "Web 端" | "API" | "测试调试">("all");
   const activeRun = mockRuns.find((r) => r.id === activeRunId) ?? null;
   const filteredRuns = mockRuns.filter((r) => {
