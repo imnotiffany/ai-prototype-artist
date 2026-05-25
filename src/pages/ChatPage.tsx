@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, FolderOpen } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { mockAgents, getSessionsByAgent, getChatSession, type ChatMessage } from "@/data/mockData";
 import { AgentInfoPanel } from "@/components/AgentInfoPanel";
@@ -10,7 +9,7 @@ import { AIStatusPill } from "@/components/AIStatusPill";
 import { RunDualView, type TranscriptEvent, type DebugEvent } from "@/components/RunViews";
 import { SessionDrawer, type SessionListItem } from "@/components/SessionDrawer";
 import { ChatComposer } from "@/components/ChatComposer";
-import { ArtifactsDrawer } from "@/components/ArtifactsDrawer";
+import { FloatingArtifactsPanel } from "@/components/FloatingArtifactsPanel";
 
 type Message = ChatMessage;
 
@@ -48,7 +47,6 @@ const ChatPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agent?.id]);
   const [input, setInput] = useState("");
-  const [artifactsOpen, setArtifactsOpen] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [stageIndex, setStageIndex] = useState(0);
   const stages = ["分析问题", "选择工具", "调用工具", "整理回答"];
@@ -357,7 +355,7 @@ const ChatPage = () => {
         </div>
 
         {/* Messages — 同步对话视图与调试视图 */}
-        <div className="flex-1 min-h-0">
+        <div className="flex-1 min-h-0 relative">
           <RunDualView
             showTranscriptSearch={false}
             showAvatars
@@ -370,13 +368,8 @@ const ChatPage = () => {
             debugEvents={debugEvents}
             debugMeta={debugMeta}
             transcriptFooter={isRunning ? <AIStatusPill /> : undefined}
-            toolbarRight={
-              <Button size="sm" variant="outline" className="h-7 text-xs gap-1.5" onClick={() => setArtifactsOpen(true)}>
-                <FolderOpen className="w-3.5 h-3.5" />
-                产物
-              </Button>
-            }
           />
+          <FloatingArtifactsPanel title={`${agent.name} · 产物`} />
         </div>
 
         {/* Input */}
@@ -391,8 +384,6 @@ const ChatPage = () => {
           />
         </div>
       </div>
-
-      <ArtifactsDrawer open={artifactsOpen} onOpenChange={setArtifactsOpen} title={`${agent.name} · 产物`} />
 
       <AgentInfoPanel agent={agent} suggestions={suggestions} onSuggestionClick={(q) => handleSend(q)} />
     </div>
