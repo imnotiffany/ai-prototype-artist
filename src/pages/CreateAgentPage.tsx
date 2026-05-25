@@ -121,7 +121,7 @@ const defaultConfig: AgentConfig = {
   skills: [],
   mcpServers: [],
   subagents: [],
-  fengsheng: { enabled: false, appKey: "", appSecret: "", robotCode: "", connected: false },
+  fengsheng: { enabled: true, appKey: "", appSecret: "", robotCode: "", connected: false },
 };
 
 // Demo 默认绑定（无论用户输入什么，都先帮 Ta 装好这几个）
@@ -199,7 +199,7 @@ const assembleAgent = (
     skills: allSkills,
     mcpServers: allMCPs,
     subagents: demoSubagents,
-    fengsheng: { enabled: false, appKey: "", appSecret: "", robotCode: "", connected: false },
+    fengsheng: { enabled: true, appKey: "", appSecret: "", robotCode: "", connected: false },
   };
 };
 
@@ -1792,6 +1792,46 @@ const CreateAgentPage = () => {
                     </div>
                   </div>
                 )}
+
+                {/* 步骤操作：跳过 or 下一步 */}
+                <div className="mt-5 flex items-center justify-between gap-2 pt-4 border-t border-border">
+                  <p className="text-[11px] text-muted-foreground">
+                    {agentConfig.fengsheng.enabled
+                      ? agentConfig.fengsheng.connected
+                        ? "已连接丰声 NEXT，可进入调试"
+                        : "填写凭证并点击「连接」，或直接跳过"
+                      : "已关闭对外接入，可直接进入调试"}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 text-xs"
+                      onClick={() => {
+                        setAgentConfig({
+                          ...agentConfig,
+                          fengsheng: { ...agentConfig.fengsheng, enabled: false },
+                        });
+                        setRightTab("debug");
+                        setDebugSubTab("preview");
+                      }}
+                    >
+                      跳过，直接调试
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="h-7 text-xs gap-1.5"
+                      disabled={agentConfig.fengsheng.enabled && !agentConfig.fengsheng.connected}
+                      onClick={() => {
+                        setRightTab("debug");
+                        setDebugSubTab("preview");
+                      }}
+                    >
+                      <Bug className="w-3 h-3" />
+                      下一步：调试
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
           ) : debugSubTab === "preview" ? (
@@ -1956,16 +1996,16 @@ const CreateAgentPage = () => {
                 setHasSaved(true);
                 setSavedConfigSnapshot(JSON.stringify(saved));
                 setPublishOpen(false);
-                setRightTab("debug");
-                setDebugSubTab("preview");
+                // 默认进入"对外接入"步骤，让用户先配置丰声 NEXT；不需要可手动跳过
+                setRightTab("integration");
 
                 toast({
-                  title: "已保存，进入测试",
+                  title: "已保存，请配置对外接入",
                   description: `${saveName.trim()} · ${saveCategory}`,
                 });
               }}
             >
-              <Bug className="w-3 h-3" /> 保存并测试
+              <MessageSquare className="w-3 h-3" /> 保存并接入
             </Button>
           </DialogFooter>
         </DialogContent>
