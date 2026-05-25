@@ -60,25 +60,20 @@ const IconForType = ({ type, className }: { type: ArtifactType; className?: stri
   return map[type] ?? <FileIcon className={className} />;
 };
 
-const SourceBadge = ({ source, toolName }: { source: Artifact["source"]; toolName?: string }) => {
-  if (source === "user_upload")
-    return (
-      <Badge variant="outline" className="text-[10px] h-4 px-1 gap-1 border-blue-500/30 text-blue-600 dark:text-blue-400">
-        <Upload className="w-2.5 h-2.5" />
-        用户上传
-      </Badge>
-    );
-  if (source === "tool")
-    return (
-      <Badge variant="outline" className="text-[10px] h-4 px-1 gap-1 border-emerald-500/30 text-emerald-600 dark:text-emerald-400">
-        <Wrench className="w-2.5 h-2.5" />
-        {toolName ?? "工具"}
-      </Badge>
-    );
+const SourceBadge = ({ source }: { source: Artifact["source"]; toolName?: string }) => {
+  const isUpload = source === "user_upload";
   return (
-    <Badge variant="outline" className="text-[10px] h-4 px-1 gap-1 border-primary/30 text-primary">
-      <Sparkles className="w-2.5 h-2.5" />
-      智能体
+    <Badge
+      variant="outline"
+      className={cn(
+        "text-[10px] h-4 px-1 gap-1",
+        isUpload
+          ? "border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-500/5"
+          : "border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/5",
+      )}
+    >
+      {isUpload ? <Upload className="w-2.5 h-2.5" /> : <Sparkles className="w-2.5 h-2.5" />}
+      {isUpload ? "传入" : "产物"}
     </Badge>
   );
 };
