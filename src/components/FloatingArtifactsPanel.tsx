@@ -14,9 +14,12 @@ import {
   Music,
   Video,
   File as FileIcon,
+  Upload,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import {
@@ -121,6 +124,7 @@ const TreeNode = ({
 
   const a = node.artifact!;
   const selected = selectedPath === a.path;
+  const isUpload = a.source === "user_upload";
   return (
     <button
       onClick={() => onSelect(a)}
@@ -132,6 +136,18 @@ const TreeNode = ({
     >
       <IconForType type={a.type} className="w-3 h-3 shrink-0 text-foreground/50" />
       <span className="truncate flex-1">{node.name}</span>
+      <span
+        className={cn(
+          "shrink-0 inline-flex items-center gap-0.5 px-1 h-3.5 rounded-sm text-[9px] font-medium",
+          isUpload
+            ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+            : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+        )}
+        title={isUpload ? "用户传入" : "AI 产出"}
+      >
+        {isUpload ? <Upload className="w-2 h-2" /> : <Sparkles className="w-2 h-2" />}
+        {isUpload ? "传入" : "产物"}
+      </span>
     </button>
   );
 };
@@ -174,17 +190,17 @@ export const FloatingArtifactsPanel = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [count]);
 
-  if (count === 0) return null;
-
-  // ─ 收起态：右上角"文件"按钮 ─
-  if (collapsed) {
+  // 空态也保留入口：默认折叠为右上角按钮
+  // ─ 收起态 / 空态：右上角"文件"按钮 ─
+  if (collapsed || count === 0) {
     return (
       <Button
         size="sm"
         variant="outline"
-        onClick={() => setCollapsed(false)}
-        className="absolute right-3 top-1.5 z-20 h-7 text-xs gap-1.5 pr-1.5 shadow-sm hover:shadow bg-background"
-        title="展开文件"
+        onClick={() => count > 0 && setCollapsed(false)}
+        disabled={count === 0}
+        className="absolute right-3 top-1.5 z-20 h-7 text-xs gap-1.5 pr-1.5 shadow-sm hover:shadow bg-background disabled:opacity-70 disabled:cursor-default"
+        title={count === 0 ? "暂无文件" : "展开文件"}
       >
         <FolderOpen className="w-3.5 h-3.5 text-primary" />
         <span>{title}</span>
