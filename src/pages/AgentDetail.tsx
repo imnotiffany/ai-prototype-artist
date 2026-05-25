@@ -1557,6 +1557,8 @@ fengsheng:
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ArtifactsDrawer open={artifactsOpen} onOpenChange={setArtifactsOpen} title="会话产物" />
     </div>
   );
 };
