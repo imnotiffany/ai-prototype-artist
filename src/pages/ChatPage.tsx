@@ -412,6 +412,8 @@ const ChatPage = () => {
             isStreaming={isRunning}
             onStop={stop}
             placeholder="输入消息，Enter 发送"
+            onOpenFiles={() => setArtifactsCollapsed(false)}
+            mentionableFiles={mockArtifacts}
           />
         </div>
       </div>
