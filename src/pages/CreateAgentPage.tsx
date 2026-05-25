@@ -29,6 +29,7 @@ import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { AlertTriangle, FolderKanban, FolderOpen, ArrowRight } from "lucide-react";
 import { ChatComposer } from "@/components/ChatComposer";
 import { ArtifactsDrawer } from "@/components/ArtifactsDrawer";
+import { mockArtifacts } from "@/data/artifacts";
 
 /* ── Types ── */
 interface ProposalDiff {
@@ -1847,6 +1848,8 @@ const CreateAgentPage = () => {
                   placeholder="向智能体发送消息来测试…"
                   disabled={isAgentRunning || debugLocked}
                   compact
+                  onOpenFiles={() => setArtifactsOpen(true)}
+                  mentionableFiles={mockArtifacts}
                 />
               </div>
             </div>

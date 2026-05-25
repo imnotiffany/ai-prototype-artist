@@ -34,6 +34,7 @@ import { RunDualView, RunningIndicator, type TranscriptEvent, type DebugEvent } 
 import { AIStatusPill } from "@/components/AIStatusPill";
 import { ChatComposer } from "@/components/ChatComposer";
 import { ArtifactsDrawer } from "@/components/ArtifactsDrawer";
+import { mockArtifacts } from "@/data/artifacts";
 import { FolderOpen } from "lucide-react";
 import { AgentMonitoringPanel } from "@/components/AgentMonitoringPanel";
 import { AgentLogsPanel } from "@/components/AgentLogsPanel";
@@ -652,6 +653,8 @@ const AgentDetail = () => {
                     placeholder="发送测试任务以调试智能体…"
                     disabled={debugRunning || isDirty}
                     compact
+                    onOpenFiles={() => setArtifactsOpen(true)}
+                    mentionableFiles={mockArtifacts}
                   />
                 </div>
               </div>
@@ -1254,6 +1257,8 @@ fengsheng:
                             }}
                             placeholder="继续这个会话…"
                             compact
+                            onOpenFiles={() => setArtifactsOpen(true)}
+                            mentionableFiles={mockArtifacts}
                           />
                         </div>
                       }
