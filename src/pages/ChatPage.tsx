@@ -416,7 +416,7 @@ const ChatPage = () => {
         </div>
       </div>
 
-      <AgentInfoPanel agent={agent} suggestions={suggestions} onSuggestionClick={(q) => handleSend(q)} />
+      <AgentInfoPanel agent={agent} suggestions={suggestions} onSuggestionClick={(q) => handleSend(q)} defaultCollapsed />
     </div>
   );
 };
