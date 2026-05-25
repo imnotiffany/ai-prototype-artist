@@ -1035,6 +1035,25 @@ const CreateAgentPage = () => {
   const [publishOpen, setPublishOpen] = useState(false);
   const [publishDialogOpen, setPublishDialogOpen] = useState(false);
   const [artifactsOpen, setArtifactsOpen] = useState(false);
+  /** 会话内用户上传的文件（左右两侧 ChatComposer 共享，合并入「文件」面板与 @ 引用列表） */
+  const [sessionArtifacts, setSessionArtifacts] = useState<Artifact[]>([]);
+  const mergedArtifacts = useMemo(() => [...sessionArtifacts, ...mockArtifacts], [sessionArtifacts]);
+  const ingestUploads = useCallback((payload: ChatComposerPayload) => {
+    if (!payload.attachments?.length) return;
+    const now = new Date().toISOString();
+    const newOnes: Artifact[] = payload.attachments.map((a) => ({
+      id: `up-${a.id}`,
+      path: a.name,
+      name: a.name,
+      type: a.type ?? guessTypeFromName(a.name),
+      mime: a.mime ?? "application/octet-stream",
+      size: a.size,
+      url: a.url ?? "#",
+      createdAt: now,
+      source: "user_upload",
+    }));
+    setSessionArtifacts((prev) => [...newOnes, ...prev]);
+  }, []);
   // Save 确认卡片字段（仿手动组装）
   const [saveName, setSaveName] = useState("");
   const [saveDesc, setSaveDesc] = useState("");
