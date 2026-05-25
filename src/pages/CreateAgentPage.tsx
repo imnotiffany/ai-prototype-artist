@@ -29,6 +29,7 @@ import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { AlertTriangle, FolderKanban, FolderOpen, ArrowRight } from "lucide-react";
 import { ChatComposer } from "@/components/ChatComposer";
 import { ArtifactsDrawer } from "@/components/ArtifactsDrawer";
+import { mockArtifacts } from "@/data/artifacts";
 
 /* ── Types ── */
 interface ProposalDiff {
