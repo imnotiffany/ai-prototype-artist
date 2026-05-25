@@ -449,6 +449,12 @@ const ChatPage = () => {
       </div>
 
       <AgentInfoPanel agent={agent} suggestions={suggestions} onSuggestionClick={(q) => handleSend(q)} defaultCollapsed />
+      <ArtifactsDrawer
+        open={artifactsOpen}
+        onOpenChange={handleArtifactsOpenChange}
+        title="文件"
+        artifacts={mergedArtifacts}
+      />
     </div>
   );
 };
