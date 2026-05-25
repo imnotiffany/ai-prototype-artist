@@ -32,6 +32,9 @@ import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { RunDualView, RunningIndicator, type TranscriptEvent, type DebugEvent } from "@/components/RunViews";
 import { AIStatusPill } from "@/components/AIStatusPill";
+import { ChatComposer } from "@/components/ChatComposer";
+import { ArtifactsDrawer } from "@/components/ArtifactsDrawer";
+import { FolderOpen } from "lucide-react";
 import { AgentMonitoringPanel } from "@/components/AgentMonitoringPanel";
 import { AgentLogsPanel } from "@/components/AgentLogsPanel";
 
@@ -264,6 +267,7 @@ const AgentDetail = () => {
     // 复用聊天页继续会话
     navigate(`/chat/${id}?run=${activeRunId}&q=${encodeURIComponent(text)}`);
   };
+  const [artifactsOpen, setArtifactsOpen] = useState(false);
   const [runSourceFilter, setRunSourceFilter] = useState<"all" | "丰声 NEXT" | "Web 端" | "API" | "测试调试">("all");
   const activeRun = mockRuns.find((r) => r.id === activeRunId) ?? null;
   const filteredRuns = mockRuns.filter((r) => {
@@ -1212,31 +1216,24 @@ fengsheng:
                         { label: "总耗时", value: activeRun.duration },
                         { label: "总 tokens", value: "1552" },
                       ]}
+                      toolbarRight={
+                        <Button size="sm" variant="outline" className="h-7 text-xs gap-1.5" onClick={() => setArtifactsOpen(true)}>
+                          <FolderOpen className="w-3.5 h-3.5" />
+                          产物
+                        </Button>
+                      }
                       transcriptInput={
                         <div className="p-2.5">
-                          <div className="relative">
-                            <Textarea
-                              value={runReplyInput}
-                              onChange={(e) => setRunReplyInput(e.target.value)}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" && !e.shiftKey) {
-                                  e.preventDefault();
-                                  handleRunReplySend();
-                                }
-                              }}
-                              placeholder="继续这个会话…"
-                              rows={2}
-                              className="resize-none pr-10 text-xs min-h-0"
-                            />
-                            <Button
-                              size="icon"
-                              className="absolute right-1.5 bottom-1.5 h-6 w-6"
-                              onClick={handleRunReplySend}
-                              disabled={!runReplyInput.trim()}
-                            >
-                              <Send className="w-3 h-3" />
-                            </Button>
-                          </div>
+                          <ChatComposer
+                            value={runReplyInput}
+                            onChange={setRunReplyInput}
+                            onSend={({ text }) => {
+                              setRunReplyInput(text);
+                              handleRunReplySend();
+                            }}
+                            placeholder="继续这个会话…"
+                            compact
+                          />
                         </div>
                       }
                     />
@@ -1560,6 +1557,8 @@ fengsheng:
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ArtifactsDrawer open={artifactsOpen} onOpenChange={setArtifactsOpen} title="会话产物" />
     </div>
   );
 };
