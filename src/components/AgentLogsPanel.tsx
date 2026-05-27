@@ -179,20 +179,11 @@ export function AgentLogsPanel() {
 
 
         <div className="ml-auto flex items-center gap-0.5">
-          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={copyAll} title="复制">
-            <Copy className="w-3.5 h-3.5" />
-          </Button>
           <Button size="icon" variant="ghost" className="h-7 w-7" onClick={downloadAll} title="下载">
             <Download className="w-3.5 h-3.5" />
           </Button>
-          <Button
-            size="icon" variant="ghost" className="h-7 w-7"
-            onClick={() => setFullscreen((v) => !v)}
-            title={fullscreen ? "退出全屏" : "全屏"}
-          >
-            <Maximize2 className="w-3.5 h-3.5" />
-          </Button>
         </div>
+
       </div>
 
       {/* terminal */}
