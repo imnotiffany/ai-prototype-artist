@@ -860,7 +860,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 <Label className="text-xs flex items-center gap-1.5"><Wrench className="w-3.5 h-3.5 text-muted-foreground" />内置工具</Label>
                 <p className="text-[10px] text-muted-foreground mt-0.5">智能体可直接调用的基础工具，运行在 Agent 沙箱环境中</p>
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 {[
                   { name: "Bash", desc: "在沙箱中执行 shell 命令", icon: Terminal },
                   { name: "Read", desc: "读取文件内容", icon: FileCode },
@@ -877,19 +877,13 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                     <button
                       key={t.name}
                       type="button"
+                      title={t.desc}
                       onClick={() => toggle(selBuiltinTools, setSelBuiltinTools, t.name)}
-                      className={`text-left border rounded-md px-2.5 py-2 transition-colors flex items-start gap-2 ${sel ? "border-primary bg-primary/5 ring-1 ring-primary/30" : "border-border hover:border-primary/40 bg-card"}`}
+                      className={`inline-flex items-center gap-1 rounded-full border px-2.5 h-7 text-xs transition-colors ${sel ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"}`}
                     >
-                      <div className={`w-6 h-6 rounded flex items-center justify-center shrink-0 ${sel ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
-                        <Icon className="w-3 h-3" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs font-medium">{t.name}</span>
-                          {sel && <CheckCircle2 className="w-3 h-3 text-primary" />}
-                        </div>
-                        <p className="text-[10px] text-muted-foreground leading-snug truncate">{t.desc}</p>
-                      </div>
+                      <Icon className="w-3 h-3" />
+                      <span className="font-medium">{t.name}</span>
+                      {sel && <CheckCircle2 className="w-3 h-3" />}
                     </button>
                   );
                 })}
