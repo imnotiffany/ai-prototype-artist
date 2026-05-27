@@ -366,6 +366,22 @@ export function AgentMonitoringPanel({ langfuseUrl = "https://cloud.langfuse.com
 
 
 
+        <ChartCard title="Pod 数量" subtitle="（个）">
+          <AreaChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="gPods" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#14b8a6" stopOpacity={0.35} />
+                <stop offset="100%" stopColor="#14b8a6" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+            <XAxis dataKey="t" {...axisProps} />
+            <YAxis allowDecimals={false} {...axisProps} />
+            <Tooltip {...tooltipStyle} />
+            <Area type="stepAfter" dataKey="pods" stroke="#14b8a6" fill="url(#gPods)" strokeWidth={1.5} />
+          </AreaChart>
+        </ChartCard>
+
         <ChartCard title="CPU 使用率" subtitle="（%）">
           <AreaChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
             <defs>
