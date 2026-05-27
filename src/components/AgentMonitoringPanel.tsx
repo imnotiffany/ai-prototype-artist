@@ -71,6 +71,7 @@ interface Point {
   sent: number;
   recv: number;
   errRate: number;
+  pods: number;
 }
 
 function buildSeries(start: Date, end: Date, granMin: number): Point[] {
