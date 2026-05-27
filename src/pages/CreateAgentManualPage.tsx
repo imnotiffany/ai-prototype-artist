@@ -118,6 +118,7 @@ const CreateAgentManualPage = () => {
   const [selSkills, setSelSkills] = useState<string[]>([]);
   const [selMCPs, setSelMCPs] = useState<string[]>([]);
   const [selSubagents, setSelSubagents] = useState<string[]>([]);
+  const [selBuiltinTools, setSelBuiltinTools] = useState<string[]>(["Bash", "Read", "Write", "Edit"]);
   const [subagentGapOpen, setSubagentGapOpen] = useState(false);
 
   // Subscribe to MCP vault store so missing-credential badges live update
