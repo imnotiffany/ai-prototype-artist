@@ -158,23 +158,22 @@ export function AgentLogsPanel() {
           />
         </div>
 
-        <div className="relative">
-          <Search className="w-3 h-3 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="搜索关键字"
-            className="h-7 pl-7 text-[11px] w-[200px]"
-          />
-        </div>
-
-        <Select value={instance} onValueChange={setInstance}>
-          <SelectTrigger className="h-7 w-[180px] text-[11px]">
-            <SelectValue placeholder="筛选会话ID" />
+        <Select value={env} onValueChange={(v) => setEnv(v as "debug" | "prod")}>
+          <SelectTrigger className="h-7 w-[100px] text-[11px]">
+            <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all" className="text-xs">筛选会话ID</SelectItem>
-            {INSTANCES.map((i) => (
+            <SelectItem value="debug" className="text-xs">调试环境</SelectItem>
+            <SelectItem value="prod" className="text-xs">生产环境</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Input
+          value={sessionId}
+          onChange={(e) => setSessionId(e.target.value)}
+          placeholder="输入会话 ID 过滤"
+          className="h-7 text-[11px] w-[220px] font-mono"
+        />
               <SelectItem key={i} value={i} className="text-xs font-mono">
                 {i.slice(0, 18)}…
               </SelectItem>
