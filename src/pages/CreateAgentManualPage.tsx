@@ -854,6 +854,48 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               </div>
             </div>
 
+            {/* 内置工具 */}
+            <div className="border border-border rounded-lg p-5 bg-card">
+              <div className="mb-3">
+                <Label className="text-xs flex items-center gap-1.5"><Wrench className="w-3.5 h-3.5 text-muted-foreground" />内置工具</Label>
+                <p className="text-[10px] text-muted-foreground mt-0.5">智能体可直接调用的基础工具，运行在 Agent 沙箱环境中</p>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { name: "Bash", desc: "在沙箱中执行 shell 命令", icon: Terminal },
+                  { name: "Read", desc: "读取文件内容", icon: FileCode },
+                  { name: "Write", desc: "创建或覆盖文件", icon: FileEdit },
+                  { name: "Edit", desc: "对文件进行片段替换", icon: FileEdit },
+                  { name: "Glob", desc: "按通配符匹配文件路径", icon: Search },
+                  { name: "Grep", desc: "在文件内容中搜索文本", icon: Search },
+                  { name: "WebFetch", desc: "抓取网页内容并解析", icon: ExternalLink },
+                  { name: "WebSearch", desc: "联网搜索信息", icon: Search },
+                ].map((t) => {
+                  const sel = selBuiltinTools.includes(t.name);
+                  const Icon = t.icon;
+                  return (
+                    <button
+                      key={t.name}
+                      type="button"
+                      onClick={() => toggle(selBuiltinTools, setSelBuiltinTools, t.name)}
+                      className={`text-left border rounded-md px-2.5 py-2 transition-colors flex items-start gap-2 ${sel ? "border-primary bg-primary/5 ring-1 ring-primary/30" : "border-border hover:border-primary/40 bg-card"}`}
+                    >
+                      <div className={`w-6 h-6 rounded flex items-center justify-center shrink-0 ${sel ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
+                        <Icon className="w-3 h-3" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-medium">{t.name}</span>
+                          {sel && <CheckCircle2 className="w-3 h-3 text-primary" />}
+                        </div>
+                        <p className="text-[10px] text-muted-foreground leading-snug truncate">{t.desc}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* MCP 绑定 */}
             <div className="border border-border rounded-lg p-5 bg-card">
               <div className="flex items-center justify-between mb-3">
