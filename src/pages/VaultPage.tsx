@@ -138,10 +138,13 @@ const VaultPage = () => {
       setTestResult((r) => ({ ...r, [id]: ok ? "ok" : "fail" }));
       setTestingId(null);
       toast({
-        title: ok ? "连接成功" : "连接失败",
-        description: ok ? `${label} 已与目标服务完成握手` : `${label} 无法连接，请检查端点 URL 或服务可达性`,
+        title: ok ? "✓ 连接成功" : "✗ 连接失败",
+        description: ok
+          ? `${label} 已成功连接`
+          : `${label} 连接失败，请检查服务地址、请求头等配置`,
         variant: ok ? "default" : "destructive",
       });
+
     }, 900);
   };
 
