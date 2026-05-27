@@ -174,12 +174,8 @@ export function AgentLogsPanel() {
           placeholder="输入会话 ID 过滤"
           className="h-7 text-[11px] w-[220px] font-mono"
         />
-              <SelectItem key={i} value={i} className="text-xs font-mono">
-                {i.slice(0, 18)}…
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+
+
 
 
         <div className="ml-auto flex items-center gap-0.5">
