@@ -143,19 +143,22 @@ const VaultPage = () => {
   const runTest = (id: string, label: string) => {
     setTestingId(id);
     setTimeout(() => {
-      const ok = Math.random() > 0.2;
+      // 演示用：服务地址包含 fail / invalid / error 关键字时强制返回失败，便于复现 badcase
+      const entry = credMcps.find((m) => m.id === id);
+      const forceFail = !!entry?.endpoint && /(fail|invalid|error|broken)/i.test(entry.endpoint);
+      const ok = forceFail ? false : Math.random() > 0.3;
       setTestResult((r) => ({ ...r, [id]: ok ? "ok" : "fail" }));
       setTestingId(null);
       toast({
         title: ok ? "✓ 连接成功" : "✗ 连接失败",
         description: ok
           ? `${label} 已成功连接`
-          : `${label} 连接失败，请检查服务地址、请求头等配置`,
+          : `${label} 无法连接：请检查服务地址是否可达、请求头/凭据是否正确`,
         variant: ok ? "default" : "destructive",
       });
-
     }, 900);
   };
+
 
   const openCreate = () => {
     reset();
