@@ -745,7 +745,7 @@ const VaultPage = () => {
               取消
             </Button>
             <Button onClick={handleSave} disabled={!canSave}>
-              添加并授权
+              添加并连接
             </Button>
           </DialogFooter>
         </DialogContent>
