@@ -198,14 +198,17 @@ const VaultPage = () => {
       toast({ title: "MCP 已更新", description: `${name} 已保存` });
     } else {
       const id = `m_${Date.now()}`;
-      setCredMcps((arr) => [{
+      const newEntry: McpEntry = {
         id, name, identifier, endpoint, deployment: "Remote",
         createdAt: new Date().toISOString().slice(0, 10),
         requiresCredential: true, type: mcpType,
         fromMarket: locked, description, headers, stdioCommand, stdioArgs, envVars,
-      }, ...arr]);
+      };
+      setCredMcps((arr) => [newEntry, ...arr]);
       setMcpConfigured(name, true);
-      toast({ title: "MCP 已添加", description: `${name} 已加入 MCP 管理` });
+      toast({ title: "MCP 已添加", description: `${name} 已加入 MCP 管理，正在测试连通性…` });
+      // 创建后自动触发一次连通性测试
+      setTimeout(() => runTest(id, name), 200);
     }
     setCreateOpen(false);
     setMarketFormOpen(false);
