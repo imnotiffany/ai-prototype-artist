@@ -578,6 +578,25 @@ const VaultPage = () => {
                 </TableCell>
                 <TableCell className="py-2 whitespace-nowrap">
                   <div className="flex items-center gap-0.5">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 px-1.5 gap-1 text-[11px]"
+                      title="测试连通性"
+                      disabled={testingId === m.id}
+                      onClick={(e) => { e.stopPropagation(); runTest(m.id, m.name); }}
+                    >
+                      {testingId === m.id ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : testResult[m.id] === "ok" ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                      ) : testResult[m.id] === "fail" ? (
+                        <XCircle className="w-3.5 h-3.5 text-destructive" />
+                      ) : (
+                        <Activity className="w-3.5 h-3.5" />
+                      )}
+                      <span className="hidden sm:inline">测试</span>
+                    </Button>
                     <Button size="sm" variant="ghost" className="h-7 w-7 p-0" title="编辑"
                       onClick={(e) => { e.stopPropagation(); openEdit(m); }}>
                       <Pencil className="w-3.5 h-3.5" />
