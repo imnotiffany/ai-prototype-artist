@@ -101,6 +101,7 @@ function buildSeries(start: Date, end: Date, granMin: number): Point[] {
       sent: +seeded(i, 1.6, 0.9, 0.7).toFixed(2),
       recv: +seeded(i, 2.4, 1.2, 0.45).toFixed(2),
       errRate: +seeded(i, 1.2, 1.0, 0.55).toFixed(2),
+      pods: Math.max(1, Math.round(seeded(i, 4, 2, 0.25))),
     });
   }
   return points;
