@@ -80,7 +80,16 @@ const VaultPage = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<McpEntry | null>(null);
   const [testingId, setTestingId] = useState<string | null>(null);
-  const [testResult, setTestResult] = useState<Record<string, "ok" | "fail">>({});
+  const [testResult, setTestResult] = useState<Record<string, "ok" | "fail">>(() => {
+    // 预置一些示例：让列表里同时存在「连接成功」「连接失败」状态，方便演示
+    const r: Record<string, "ok" | "fail"> = {};
+    freeMcps.forEach((m, i) => {
+      if (i % 3 === 0) r[m.id] = "fail";
+      else r[m.id] = "ok";
+    });
+    return r;
+  });
+
 
   // 字段锁定（来自 MCP 广场添加时，地址/名称/标识不可改）
   const [locked, setLocked] = useState(false);
