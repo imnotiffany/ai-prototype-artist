@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
+
 import { Button } from "@/components/ui/button";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Search, Copy, Download, Maximize2 } from "lucide-react";
+import { Copy, Download, Maximize2 } from "lucide-react";
 
 /* deterministic color for instance ids */
 const INSTANCE_COLORS = [
@@ -90,25 +90,18 @@ export function AgentLogsPanel() {
   const [now, setNow] = useState(() => new Date());
   const [start, setStart] = useState(() => fmtInputLocal(new Date(Date.now() - 60 * 60_000)));
   const [end, setEnd] = useState(() => fmtInputLocal(new Date()));
-  const [query, setQuery] = useState("");
-  const [instance, setInstance] = useState<string>("all");
+  const [env, setEnv] = useState<"debug" | "prod">("debug");
+  const [sessionId, setSessionId] = useState("");
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [fullscreen, setFullscreen] = useState(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
-  const all = useMemo(() => buildLines(new Date(start), 60), [start, now]);
+  const all = useMemo(() => buildLines(new Date(start), 60), [start, now, env]);
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return all.filter((l) => {
-      if (instance !== "all" && l.instance !== instance) return false;
-      if (!q) return true;
-      return (
-        l.text.toLowerCase().includes(q) ||
-        l.instance.toLowerCase().includes(q) ||
-        (l.source || "").toLowerCase().includes(q)
-      );
-    });
-  }, [all, query, instance]);
+    const q = sessionId.trim().toLowerCase();
+    if (!q) return all;
+    return all.filter((l) => l.instance.toLowerCase().includes(q));
+  }, [all, sessionId]);
 
   useEffect(() => {
     if (!autoRefresh) return;
@@ -165,29 +158,24 @@ export function AgentLogsPanel() {
           />
         </div>
 
-        <div className="relative">
-          <Search className="w-3 h-3 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="搜索关键字"
-            className="h-7 pl-7 text-[11px] w-[200px]"
-          />
-        </div>
-
-        <Select value={instance} onValueChange={setInstance}>
-          <SelectTrigger className="h-7 w-[180px] text-[11px]">
-            <SelectValue placeholder="筛选会话ID" />
+        <Select value={env} onValueChange={(v) => setEnv(v as "debug" | "prod")}>
+          <SelectTrigger className="h-7 w-[100px] text-[11px]">
+            <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all" className="text-xs">筛选会话ID</SelectItem>
-            {INSTANCES.map((i) => (
-              <SelectItem key={i} value={i} className="text-xs font-mono">
-                {i.slice(0, 18)}…
-              </SelectItem>
-            ))}
+            <SelectItem value="debug" className="text-xs">调试环境</SelectItem>
+            <SelectItem value="prod" className="text-xs">生产环境</SelectItem>
           </SelectContent>
         </Select>
+
+        <Input
+          value={sessionId}
+          onChange={(e) => setSessionId(e.target.value)}
+          placeholder="输入会话 ID 过滤"
+          className="h-7 text-[11px] w-[220px] font-mono"
+        />
+
+
 
 
         <div className="ml-auto flex items-center gap-0.5">

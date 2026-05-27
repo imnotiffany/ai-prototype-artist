@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Pencil, Trash2, Server, AlertTriangle, Bot, Plug, Loader2, CheckCircle2, XCircle, Link2, X, Search, KeyRound, ShieldCheck, Lock, Tag, ExternalLink } from "lucide-react";
+import { Plus, Pencil, Trash2, Server, AlertTriangle, Bot, Plug, Loader2, CheckCircle2, XCircle, Link2, X, Search, KeyRound, ShieldCheck, Lock, Tag, ExternalLink, Activity } from "lucide-react";
 
 type McpType = "studio" | "sse" | "http";
 import { sharedResources, mockAgents, getCredentialFreeMcps, getCredentialRequiredMcps } from "@/data/mockData";
@@ -198,14 +198,17 @@ const VaultPage = () => {
       toast({ title: "MCP 已更新", description: `${name} 已保存` });
     } else {
       const id = `m_${Date.now()}`;
-      setCredMcps((arr) => [{
+      const newEntry: McpEntry = {
         id, name, identifier, endpoint, deployment: "Remote",
         createdAt: new Date().toISOString().slice(0, 10),
         requiresCredential: true, type: mcpType,
         fromMarket: locked, description, headers, stdioCommand, stdioArgs, envVars,
-      }, ...arr]);
+      };
+      setCredMcps((arr) => [newEntry, ...arr]);
       setMcpConfigured(name, true);
-      toast({ title: "MCP 已添加", description: `${name} 已加入 MCP 管理` });
+      toast({ title: "MCP 已添加", description: `${name} 已加入 MCP 管理，正在测试连通性…` });
+      // 创建后自动触发一次连通性测试
+      setTimeout(() => runTest(id, name), 200);
     }
     setCreateOpen(false);
     setMarketFormOpen(false);
@@ -536,7 +539,7 @@ const VaultPage = () => {
               <TableHead className="text-xs h-9 whitespace-nowrap">服务端点</TableHead>
               <TableHead className="text-xs h-9 whitespace-nowrap w-[130px]">类型</TableHead>
               
-              <TableHead className="text-xs h-9 whitespace-nowrap w-[120px]">操作</TableHead>
+              <TableHead className="text-xs h-9 whitespace-nowrap w-[180px]">操作</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -575,6 +578,25 @@ const VaultPage = () => {
                 </TableCell>
                 <TableCell className="py-2 whitespace-nowrap">
                   <div className="flex items-center gap-0.5">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 px-1.5 gap-1 text-[11px]"
+                      title="测试连通性"
+                      disabled={testingId === m.id}
+                      onClick={(e) => { e.stopPropagation(); runTest(m.id, m.name); }}
+                    >
+                      {testingId === m.id ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : testResult[m.id] === "ok" ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                      ) : testResult[m.id] === "fail" ? (
+                        <XCircle className="w-3.5 h-3.5 text-destructive" />
+                      ) : (
+                        <Activity className="w-3.5 h-3.5" />
+                      )}
+                      <span className="hidden sm:inline">测试</span>
+                    </Button>
                     <Button size="sm" variant="ghost" className="h-7 w-7 p-0" title="编辑"
                       onClick={(e) => { e.stopPropagation(); openEdit(m); }}>
                       <Pencil className="w-3.5 h-3.5" />
