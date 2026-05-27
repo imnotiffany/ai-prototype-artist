@@ -90,25 +90,18 @@ export function AgentLogsPanel() {
   const [now, setNow] = useState(() => new Date());
   const [start, setStart] = useState(() => fmtInputLocal(new Date(Date.now() - 60 * 60_000)));
   const [end, setEnd] = useState(() => fmtInputLocal(new Date()));
-  const [query, setQuery] = useState("");
-  const [instance, setInstance] = useState<string>("all");
+  const [env, setEnv] = useState<"debug" | "prod">("debug");
+  const [sessionId, setSessionId] = useState("");
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [fullscreen, setFullscreen] = useState(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
-  const all = useMemo(() => buildLines(new Date(start), 60), [start, now]);
+  const all = useMemo(() => buildLines(new Date(start), 60), [start, now, env]);
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return all.filter((l) => {
-      if (instance !== "all" && l.instance !== instance) return false;
-      if (!q) return true;
-      return (
-        l.text.toLowerCase().includes(q) ||
-        l.instance.toLowerCase().includes(q) ||
-        (l.source || "").toLowerCase().includes(q)
-      );
-    });
-  }, [all, query, instance]);
+    const q = sessionId.trim().toLowerCase();
+    if (!q) return all;
+    return all.filter((l) => l.instance.toLowerCase().includes(q));
+  }, [all, sessionId]);
 
   useEffect(() => {
     if (!autoRefresh) return;
