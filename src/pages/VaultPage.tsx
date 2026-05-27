@@ -721,7 +721,7 @@ const VaultPage = () => {
             </Button>
             {(createMode === "manual" || editingId) && (
               <Button onClick={handleSave} disabled={!canSave}>
-                {editingId ? "保存" : "添加并授权"}
+                {editingId ? "保存" : "添加并连接"}
               </Button>
             )}
           </DialogFooter>
