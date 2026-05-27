@@ -7,16 +7,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Cpu, Package, Globe, Pencil, Trash2, Box, Search } from "lucide-react";
+import { Plus, Cpu, Image as ImageIcon, Pencil, Trash2, Box, Search, Server, Layers, HelpCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { defaultEnvironments, getEnvironments, setEnvironments, type EnvItem } from "@/data/environments";
+import { defaultEnvironments, getEnvironments, setEnvironments, projectImages, type EnvItem } from "@/data/environments";
 
 const genEnvId = () => `env-${Math.random().toString(36).slice(2, 8)}`;
 
-const PKG_MANAGERS = ["apt", "cargo", "gem", "go", "npm", "pip"] as const;
-type PkgManager = (typeof PKG_MANAGERS)[number];
-
-
+const DU_OPTIONS = [
+  "TEST-SYSTEM-TIME-AI-MODELSERVICE",
+  "AOP-EXPECT-INFO-AI-MODELSERVICE",
+  "CDN-INFO-AI-MODELSERVICE",
+  "CDN-AI-MODELSERVICE",
+  "ENDEPT-A-DUBBO-K8S-AI-MODELSERVICE",
+  "TST01453613-AI-MODELSERVICE",
+  "ZY-TEST02-AI-MODELSERVICE",
+  "SMART-BRIEFING-MCP3-AI-MODELSERVICE",
+];
 
 const specToValue = (spec: string) => {
   const s = spec.replace(/\s/g, "");
@@ -31,22 +37,17 @@ const EnvironmentPage = () => {
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [keyword, setKeyword] = useState("");
-  type DepRow = { manager: PkgManager; spec: string };
+
   const emptyForm = {
     name: "",
     description: "",
     spec: "4C8G",
-    deps: [{ manager: "pip" as PkgManager, spec: "" }],
-    network: "internet",
+    image: "img-default",
+    duMode: "new" as "new" | "existing",
+    du: "",
+    instances: 1,
   };
-  const [form, setForm] = useState<{
-    name: string;
-    description: string;
-    spec: string;
-    deps: DepRow[];
-    network: string;
-  }>(emptyForm);
-
+  const [form, setForm] = useState<typeof emptyForm>(emptyForm);
 
   const filtered = useMemo(() => {
     const k = keyword.trim().toLowerCase();
@@ -71,8 +72,10 @@ const EnvironmentPage = () => {
       name: e.name,
       description: e.description || "",
       spec: specToValue(e.spec),
-      deps: e.depList && e.depList.length ? e.depList.map((d) => ({ ...d })) : [{ manager: "pip", spec: "" }],
-      network: e.network || "internet",
+      image: e.image || "img-default",
+      duMode: e.duMode || "new",
+      du: e.du || "",
+      instances: e.instances || 1,
     });
     setOpen(true);
   };
@@ -82,14 +85,17 @@ const EnvironmentPage = () => {
       toast({ title: "请填写环境名称", variant: "destructive" });
       return;
     }
-    const validDeps = form.deps.filter((d) => d.spec.trim());
+    if (!form.du.trim()) {
+      toast({ title: form.duMode === "new" ? "请填写部署单元 DU 名称" : "请选择已有 DU", variant: "destructive" });
+      return;
+    }
     const specLabel = form.spec === "1C2G" ? "1C 2G" : form.spec === "2C4G" ? "2C 4G" : form.spec === "4C8G" ? "4C 8G" : "8C 32G";
     const updatedAt = new Date().toISOString().slice(0, 16).replace("T", " ");
 
     if (editingId) {
       const next = envs.map((x) =>
         x.id === editingId
-          ? { ...x, name: form.name.trim(), description: form.description, spec: specLabel, deps: validDeps.length, depList: validDeps, network: form.network, updatedAt }
+          ? { ...x, name: form.name.trim(), description: form.description, spec: specLabel, image: form.image, duMode: form.duMode, du: form.du.trim(), instances: form.instances, updatedAt }
           : x,
       );
       persist(next);
@@ -101,12 +107,14 @@ const EnvironmentPage = () => {
           envId: genEnvId(),
           name: form.name.trim(),
           spec: specLabel,
-          deps: validDeps.length,
+          deps: 0,
           agents: 0,
           updatedAt,
           description: form.description,
-          depList: validDeps,
-          network: form.network,
+          image: form.image,
+          duMode: form.duMode,
+          du: form.du.trim(),
+          instances: form.instances,
         },
         ...envs,
       ];
@@ -121,6 +129,8 @@ const EnvironmentPage = () => {
   const editingEnv = editingId ? envs.find((x) => x.id === editingId) : null;
   const readOnly = !!editingEnv?.preset;
 
+  const imageName = (id?: string) => projectImages.find((x) => x.id === id)?.name || "—";
+
   return (
     <div className="flex-1 overflow-auto">
       <div className="max-w-6xl mx-auto p-6">
@@ -131,7 +141,7 @@ const EnvironmentPage = () => {
               环境管理
             </h1>
             <p className="text-xs text-muted-foreground mt-1">
-              Agent 执行任务时使用的一套可复用配置，包含资源规格、基础运行时、依赖包、网络权限、存储和安全配置
+              Agent 执行任务时使用的一套可复用配置，包含资源规格、运行镜像、部署单元 DU 与实例数等
             </p>
           </div>
           <Button size="sm" className="h-8 text-xs gap-1.5" onClick={openCreate}>
@@ -149,7 +159,6 @@ const EnvironmentPage = () => {
               onChange={(e) => setKeyword(e.target.value)}
             />
           </div>
-          
         </div>
 
         <div className="border border-border rounded-lg bg-card">
@@ -159,7 +168,9 @@ const EnvironmentPage = () => {
                 <TableHead className="text-xs">环境名称</TableHead>
                 <TableHead className="text-xs">环境 ID</TableHead>
                 <TableHead className="text-xs">规格</TableHead>
-                <TableHead className="text-xs">依赖包</TableHead>
+                <TableHead className="text-xs">镜像</TableHead>
+                <TableHead className="text-xs">DU</TableHead>
+                <TableHead className="text-xs">实例数</TableHead>
                 <TableHead className="text-xs">关联 Agent</TableHead>
                 <TableHead className="text-xs">最近更新</TableHead>
                 <TableHead className="text-xs text-right">操作</TableHead>
@@ -179,17 +190,14 @@ const EnvironmentPage = () => {
                     <code className="text-[11px] font-mono text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">{e.envId}</code>
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">{e.spec}</TableCell>
-                  <TableCell className="text-xs text-muted-foreground">{e.deps}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground font-mono">{imageName(e.image)}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground font-mono max-w-[180px] truncate" title={e.du}>{e.du || "—"}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{e.instances ?? 1}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">{e.agents}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">{e.updatedAt}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 w-7 p-0"
-                        onClick={() => openEdit(e)}
-                      >
+                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => openEdit(e)}>
                         <Pencil className="w-3.5 h-3.5" />
                       </Button>
                       <Button
@@ -207,7 +215,7 @@ const EnvironmentPage = () => {
               ))}
               {filtered.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-xs text-muted-foreground py-8">
+                  <TableCell colSpan={9} className="text-center text-xs text-muted-foreground py-8">
                     没有匹配的环境
                   </TableCell>
                 </TableRow>
@@ -221,7 +229,7 @@ const EnvironmentPage = () => {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-sm">{readOnly ? "查看环境" : editingId ? "编辑环境" : "新建环境"}</DialogTitle>
-            <DialogDescription className="text-[11px]">{readOnly ? "默认环境为系统预置，仅供查看" : "配置环境的资源、依赖包与网络策略"}</DialogDescription>
+            <DialogDescription className="text-[11px]">{readOnly ? "默认环境为系统预置，仅供查看" : "配置环境的资源、镜像与部署单元"}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-1 max-h-[60vh] overflow-y-auto pr-1">
             <div>
@@ -250,84 +258,98 @@ const EnvironmentPage = () => {
                 </SelectContent>
               </Select>
             </div>
+
             <div>
-              <div className="flex items-center justify-between">
-                <Label className="text-xs flex items-center gap-1.5">
-                  <Package className="w-3 h-3" />依赖包
-                  <span className="text-[11px] text-muted-foreground font-normal">（{form.deps.filter((d) => d.spec.trim()).length}）</span>
-                </Label>
-                {!readOnly && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-6 w-6 p-0"
-                    onClick={() => setForm({ ...form, deps: [...form.deps, { manager: "pip", spec: "" }] })}
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                  </Button>
-                )}
-              </div>
-              {!readOnly && (
-                <p className="text-[11px] text-muted-foreground mt-1">
-                  指定环境中可用的依赖包及版本。
-                </p>
-              )}
-              <div className="mt-2 space-y-2">
-                {form.deps.map((d, i) => (
-                  <div key={i} className="grid grid-cols-[110px_1fr_28px] gap-2 items-center">
-                    <Select
-                      value={d.manager}
-                      onValueChange={(v) => {
-                        const next = [...form.deps];
-                        next[i] = { ...next[i], manager: v as PkgManager };
-                        setForm({ ...form, deps: next });
-                      }}
-                      disabled={readOnly}
-                    >
-                      <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {PKG_MANAGERS.map((m) => (
-                          <SelectItem key={m} value={m} className="text-xs">{m}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Input
-                      className="h-8 text-xs font-mono"
-                      placeholder="package==1.0.0"
-                      value={d.spec}
-                      onChange={(e) => {
-                        const next = [...form.deps];
-                        next[i] = { ...next[i], spec: e.target.value };
-                        setForm({ ...form, deps: next });
-                      }}
-                      disabled={readOnly}
-                    />
-                    {!readOnly ? (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                        onClick={() => setForm({ ...form, deps: form.deps.filter((_, j) => j !== i) })}
-                        disabled={form.deps.length === 1}
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    ) : (
-                      <span />
-                    )}
-                  </div>
-                ))}
-              </div>
+              <Label className="text-xs flex items-center gap-1.5"><ImageIcon className="w-3 h-3" />镜像</Label>
+              <p className="text-[11px] text-muted-foreground mt-1">从项目内已有的镜像中选择，未选择时使用默认镜像</p>
+              <Select value={form.image} onValueChange={(v) => setForm({ ...form, image: v })} disabled={readOnly}>
+                <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {projectImages.map((img) => (
+                    <SelectItem key={img.id} value={img.id} className="text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono">{img.name}</span>
+                        {img.isDefault && <Badge variant="secondary" className="h-4 text-[10px] px-1.5">默认</Badge>}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
-              <Label className="text-xs flex items-center gap-1.5"><Globe className="w-3 h-3" />网络策略</Label>
-              <Select value={form.network} onValueChange={(v) => setForm({ ...form, network: v })} disabled={readOnly}>
+              <Label className="text-xs flex items-center gap-1.5">
+                <Server className="w-3 h-3" />
+                关联 DU <span className="text-destructive">*</span>
+                <HelpCircle className="w-3 h-3 text-muted-foreground" />
+              </Label>
+              <p className="text-[11px] text-amber-600 dark:text-amber-500 mt-1 leading-relaxed">
+                为遵循线上服务运维管理规范，线上生产服务要求关联顺丰云架构 DU，以便能在出现问题时快速追溯与定位。
+              </p>
+              <div className="flex items-center gap-4 mt-2">
+                <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                  <input
+                    type="radio"
+                    name="duMode"
+                    value="new"
+                    checked={form.duMode === "new"}
+                    onChange={() => setForm({ ...form, duMode: "new", du: "" })}
+                    disabled={readOnly}
+                    className="accent-primary"
+                  />
+                  新建 DU
+                </label>
+                <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                  <input
+                    type="radio"
+                    name="duMode"
+                    value="existing"
+                    checked={form.duMode === "existing"}
+                    onChange={() => setForm({ ...form, duMode: "existing", du: "" })}
+                    disabled={readOnly}
+                    className="accent-primary"
+                  />
+                  已有 DU
+                </label>
+              </div>
+              {form.duMode === "new" ? (
+                <Input
+                  className="mt-2 h-8 text-xs font-mono"
+                  placeholder="请输入部署单元 DU 名称"
+                  value={form.du}
+                  onChange={(e) => setForm({ ...form, du: e.target.value })}
+                  disabled={readOnly}
+                />
+              ) : (
+                <Select value={form.du} onValueChange={(v) => setForm({ ...form, du: v })} disabled={readOnly}>
+                  <SelectTrigger className="mt-2 h-8 text-xs">
+                    <SelectValue placeholder="请选择顺丰云 DU" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DU_OPTIONS.map((d) => (
+                      <SelectItem key={d} value={d} className="text-xs font-mono">{d}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+
+            <div>
+              <Label className="text-xs flex items-center gap-1.5">
+                <Layers className="w-3 h-3" />
+                实例数量 <span className="text-destructive">*</span>
+              </Label>
+              <p className="text-[11px] text-muted-foreground mt-1">最高 4 个实例，默认 1 个</p>
+              <Select
+                value={String(form.instances)}
+                onValueChange={(v) => setForm({ ...form, instances: Number(v) })}
+                disabled={readOnly}
+              >
                 <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="internet" className="text-xs">允许公网访问</SelectItem>
-                  <SelectItem value="intranet" className="text-xs">仅内网</SelectItem>
-                  <SelectItem value="isolated" className="text-xs">完全隔离</SelectItem>
+                  {[1, 2, 3, 4].map((n) => (
+                    <SelectItem key={n} value={String(n)} className="text-xs">{n} 个实例</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
