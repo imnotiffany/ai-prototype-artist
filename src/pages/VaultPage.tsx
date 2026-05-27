@@ -138,10 +138,13 @@ const VaultPage = () => {
       setTestResult((r) => ({ ...r, [id]: ok ? "ok" : "fail" }));
       setTestingId(null);
       toast({
-        title: ok ? "连接成功" : "连接失败",
-        description: ok ? `${label} 已与目标服务完成握手` : `${label} 无法连接，请检查端点 URL 或服务可达性`,
+        title: ok ? "✓ 连接成功" : "✗ 连接失败",
+        description: ok
+          ? `${label} 已成功连接`
+          : `${label} 连接失败，请检查服务地址、请求头等配置`,
         variant: ok ? "default" : "destructive",
       });
+
     }, 900);
   };
 
@@ -206,9 +209,10 @@ const VaultPage = () => {
       };
       setCredMcps((arr) => [newEntry, ...arr]);
       setMcpConfigured(name, true);
-      toast({ title: "MCP 已添加", description: `${name} 已加入 MCP 管理，正在测试连通性…` });
+      toast({ title: "正在测试连接…", description: `${name} 已添加，正在验证连通性` });
       // 创建后自动触发一次连通性测试
       setTimeout(() => runTest(id, name), 200);
+
     }
     setCreateOpen(false);
     setMarketFormOpen(false);
@@ -720,7 +724,7 @@ const VaultPage = () => {
             </Button>
             {(createMode === "manual" || editingId) && (
               <Button onClick={handleSave} disabled={!canSave}>
-                {editingId ? "保存" : "添加并授权"}
+                {editingId ? "保存" : "添加并连接"}
               </Button>
             )}
           </DialogFooter>
@@ -744,7 +748,7 @@ const VaultPage = () => {
               取消
             </Button>
             <Button onClick={handleSave} disabled={!canSave}>
-              添加并授权
+              添加并连接
             </Button>
           </DialogFooter>
         </DialogContent>
