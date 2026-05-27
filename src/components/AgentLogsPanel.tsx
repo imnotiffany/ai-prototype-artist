@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Search, Copy, Download, Maximize2 } from "lucide-react";
+import { Copy, Download, Maximize2 } from "lucide-react";
 
 /* deterministic color for instance ids */
 const INSTANCE_COLORS = [
