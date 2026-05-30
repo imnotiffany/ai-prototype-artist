@@ -110,8 +110,8 @@ const CreateAgentManualPage = () => {
   // 环境配置
   const [envSpec, setEnvSpec] = useState<"1C2G" | "2C4G" | "4C8G">("4C8G");
   const [envImage, setEnvImage] = useState("img-default");
-  const [envDuMode, setEnvDuMode] = useState<"new" | "existing">("existing");
-  const [envDu, setEnvDu] = useState(DU_OPTIONS[0]);
+  const [envDuMode, setEnvDuMode] = useState<"new" | "existing">("new");
+  const [envDu, setEnvDu] = useState("");
   const [envInstances, setEnvInstances] = useState(2);
   const [envRedisUrl, setEnvRedisUrl] = useState("");
 
