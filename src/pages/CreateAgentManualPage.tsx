@@ -463,7 +463,8 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
   // ── Dirty 检测：step 1-3 任一字段变了 → 重置 hasSaved/调试状态，重新上锁 4/5 ──
   const currentSig = JSON.stringify({
     name, avatar: uploadedAvatar, category, description,
-    model, apiKey, envId,
+    model, apiKey,
+    envSpec, envImage, envDuMode, envDu, envInstances, envStorageEnabled, envRedisUrl,
     systemPrompt,
     selSkills, selMCPs, selSubagents, mcpCredentialMap,
   });
