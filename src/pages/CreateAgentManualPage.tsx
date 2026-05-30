@@ -463,7 +463,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
   const currentSig = JSON.stringify({
     name, avatar: uploadedAvatar, category, description,
     model, apiKey,
-    envSpec, envImage, envDuMode, envDu, envInstances, envStorageEnabled, envRedisUrl,
+    envSpec, envImage, envDuMode, envDu, envInstances, envRedisUrl,
     systemPrompt,
     selSkills, selMCPs, selSubagents, mcpCredentialMap,
   });
