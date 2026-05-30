@@ -548,7 +548,7 @@ const VaultPage = () => {
 
       <div className="mt-3">
         {mcps.length === 0 ? (
-          <div className="border border-dashed border-border rounded-lg py-12 text-center text-[11px] text-muted-foreground">
+          <div className="border border-dashed border-border rounded-xl py-16 text-center text-[11px] text-muted-foreground">
             未找到匹配的 MCP
           </div>
         ) : (
@@ -556,62 +556,76 @@ const VaultPage = () => {
             {mcps.map((m) => {
               const status = testResult[m.id];
               const testing = testingId === m.id;
+              const statusColor =
+                testing ? "bg-muted-foreground/40"
+                : status === "ok" ? "bg-emerald-500"
+                : status === "fail" ? "bg-destructive"
+                : "bg-muted-foreground/30";
+              const statusLabel =
+                testing ? "测试中" : status === "ok" ? "已连接" : status === "fail" ? "连接失败" : "未测试";
               return (
                 <div
                   key={m.id}
-                  className="group border border-border rounded-lg p-3 bg-card hover:border-primary/40 transition-colors cursor-pointer flex flex-col"
+                  className="group relative overflow-hidden rounded-xl border border-border bg-card hover:border-primary/40 hover:shadow-[0_2px_12px_-4px_hsl(var(--primary)/0.15)] transition-all cursor-pointer"
                   onClick={() => openEdit(m)}
                 >
-                  <div className="flex items-start gap-2">
-                    <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center shrink-0">
-                      <Server className="w-4 h-4 text-primary" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <p className="text-xs font-semibold truncate" title={m.name}>{m.name}</p>
-                        {testing ? (
-                          <Loader2 className="w-3 h-3 animate-spin text-muted-foreground shrink-0" />
-                        ) : status === "ok" ? (
-                          <span className="inline-flex items-center gap-0.5 text-[10px] text-emerald-600 shrink-0">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />已连接
-                          </span>
-                        ) : status === "fail" ? (
-                          <span className="inline-flex items-center gap-0.5 text-[10px] text-destructive shrink-0">
-                            <span className="w-1.5 h-1.5 rounded-full bg-destructive" />失败
-                          </span>
-                        ) : null}
+                  {/* 左侧状态色条 */}
+                  <span className={`absolute left-0 top-0 bottom-0 w-[3px] ${statusColor}`} aria-hidden />
+
+                  <div className="p-3.5 pl-4">
+                    {/* 头部：图标 + 名称 + 状态点 */}
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary/15 to-primary/5 ring-1 ring-primary/10 flex items-center justify-center shrink-0">
+                        <Server className="w-4 h-4 text-primary" />
                       </div>
-                      <p className="text-[10px] text-muted-foreground font-mono truncate mt-0.5" title={m.identifier}>{m.identifier}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[13px] font-semibold leading-tight truncate" title={m.name}>{m.name}</p>
+                        <div className="flex items-center gap-1.5 mt-1 text-[10px] text-muted-foreground">
+                          <span className="font-mono">{m.identifier}</span>
+                          <span className="text-border">·</span>
+                          <span className="font-mono">{typeLabel(m.type)}</span>
+                        </div>
+                      </div>
+                      <span
+                        className="inline-flex items-center gap-1 text-[10px] text-muted-foreground shrink-0"
+                        title={statusLabel}
+                      >
+                        {testing ? (
+                          <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                        ) : (
+                          <span className={`w-1.5 h-1.5 rounded-full ${statusColor}`} />
+                        )}
+                        {statusLabel}
+                      </span>
                     </div>
-                    <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-mono font-normal shrink-0">
-                      {typeLabel(m.type)}
-                    </Badge>
-                  </div>
 
-                  <div className="mt-2 flex items-center gap-1 text-[11px] text-muted-foreground font-mono min-w-0">
-                    <Link2 className="w-3 h-3 shrink-0" />
-                    <span className="truncate" title={m.endpoint}>{m.endpoint}</span>
-                  </div>
+                    {/* 服务端点 */}
+                    <div className="mt-3 flex items-center gap-1.5 rounded-md bg-muted/40 px-2 py-1.5 text-[11px] text-muted-foreground font-mono min-w-0">
+                      <Link2 className="w-3 h-3 shrink-0 opacity-70" />
+                      <span className="truncate" title={m.endpoint}>{m.endpoint}</span>
+                    </div>
 
-                  <div className="mt-2.5 pt-2 border-t border-border/60 flex items-center justify-end gap-0.5">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-7 px-2 gap-1 text-[11px]"
-                      disabled={testing}
-                      onClick={(e) => { e.stopPropagation(); runTest(m.id, m.name); }}
-                    >
-                      {testing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Activity className="w-3.5 h-3.5" />}
-                      测试
-                    </Button>
-                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0" title="编辑"
-                      onClick={(e) => { e.stopPropagation(); openEdit(m); }}>
-                      <Pencil className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10" title="删除"
-                      onClick={(e) => { e.stopPropagation(); setDeleteTarget(m); }}>
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
+                    {/* 操作行 */}
+                    <div className="mt-3 flex items-center justify-between">
+                      <button
+                        className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
+                        disabled={testing}
+                        onClick={(e) => { e.stopPropagation(); runTest(m.id, m.name); }}
+                      >
+                        {testing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Activity className="w-3 h-3" />}
+                        测试连接
+                      </button>
+                      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground" title="编辑"
+                          onClick={(e) => { e.stopPropagation(); openEdit(m); }}>
+                          <Pencil className="w-3 h-3" />
+                        </Button>
+                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10" title="删除"
+                          onClick={(e) => { e.stopPropagation(); setDeleteTarget(m); }}>
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               );
