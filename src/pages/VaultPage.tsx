@@ -546,72 +546,63 @@ const VaultPage = () => {
         />
       </div>
 
-      <div className="border border-border rounded-lg overflow-hidden mt-3">
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="text-xs h-9 whitespace-nowrap">名称</TableHead>
-              <TableHead className="text-xs h-9 whitespace-nowrap">标识符</TableHead>
-              <TableHead className="text-xs h-9 whitespace-nowrap">服务端点</TableHead>
-              <TableHead className="text-xs h-9 whitespace-nowrap w-[130px]">类型</TableHead>
-              
-              <TableHead className="text-xs h-9 whitespace-nowrap w-[180px]">操作</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {mcps.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center text-[11px] text-muted-foreground py-8">
-                  未找到匹配的 MCP
-                </TableCell>
-              </TableRow>
-            )}
-            {mcps.map((m) => (
-              <TableRow
-                key={m.id}
-                className="cursor-pointer"
-                onClick={() => openEdit(m)}
-              >
-                <TableCell className="py-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center shrink-0">
-                      <Server className="w-3 h-3 text-primary" />
+      <div className="mt-3">
+        {mcps.length === 0 ? (
+          <div className="border border-dashed border-border rounded-lg py-12 text-center text-[11px] text-muted-foreground">
+            未找到匹配的 MCP
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-3">
+            {mcps.map((m) => {
+              const status = testResult[m.id];
+              const testing = testingId === m.id;
+              return (
+                <div
+                  key={m.id}
+                  className="group border border-border rounded-lg p-3 bg-card hover:border-primary/40 transition-colors cursor-pointer flex flex-col"
+                  onClick={() => openEdit(m)}
+                >
+                  <div className="flex items-start gap-2">
+                    <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center shrink-0">
+                      <Server className="w-4 h-4 text-primary" />
                     </div>
-                    <span className="text-xs font-medium truncate" title={m.name}>{m.name}</span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <p className="text-xs font-semibold truncate" title={m.name}>{m.name}</p>
+                        {testing ? (
+                          <Loader2 className="w-3 h-3 animate-spin text-muted-foreground shrink-0" />
+                        ) : status === "ok" ? (
+                          <span className="inline-flex items-center gap-0.5 text-[10px] text-emerald-600 shrink-0">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />已连接
+                          </span>
+                        ) : status === "fail" ? (
+                          <span className="inline-flex items-center gap-0.5 text-[10px] text-destructive shrink-0">
+                            <span className="w-1.5 h-1.5 rounded-full bg-destructive" />失败
+                          </span>
+                        ) : null}
+                      </div>
+                      <p className="text-[10px] text-muted-foreground font-mono truncate mt-0.5" title={m.identifier}>{m.identifier}</p>
+                    </div>
+                    <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-mono font-normal shrink-0">
+                      {typeLabel(m.type)}
+                    </Badge>
                   </div>
-                </TableCell>
-                <TableCell className="py-2 text-[11px] text-muted-foreground font-mono whitespace-nowrap">{m.identifier}</TableCell>
-                <TableCell className="py-2 text-[11px] text-muted-foreground font-mono max-w-[240px]">
-                  <div className="flex items-center gap-1 min-w-0">
+
+                  <div className="mt-2 flex items-center gap-1 text-[11px] text-muted-foreground font-mono min-w-0">
                     <Link2 className="w-3 h-3 shrink-0" />
                     <span className="truncate" title={m.endpoint}>{m.endpoint}</span>
                   </div>
-                </TableCell>
-                <TableCell className="py-2 whitespace-nowrap">
-                  <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono font-normal">
-                    {typeLabel(m.type)}
-                  </Badge>
-                </TableCell>
-                <TableCell className="py-2 whitespace-nowrap">
-                  <div className="flex items-center gap-0.5">
+
+                  <div className="mt-2.5 pt-2 border-t border-border/60 flex items-center justify-end gap-0.5">
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="h-7 px-1.5 gap-1 text-[11px]"
-                      title="测试连通性"
-                      disabled={testingId === m.id}
+                      className="h-7 px-2 gap-1 text-[11px]"
+                      disabled={testing}
                       onClick={(e) => { e.stopPropagation(); runTest(m.id, m.name); }}
                     >
-                      {testingId === m.id ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      ) : testResult[m.id] === "ok" ? (
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                      ) : testResult[m.id] === "fail" ? (
-                        <XCircle className="w-3.5 h-3.5 text-destructive" />
-                      ) : (
-                        <Activity className="w-3.5 h-3.5" />
-                      )}
-                      <span className="hidden sm:inline">测试</span>
+                      {testing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Activity className="w-3.5 h-3.5" />}
+                      测试
                     </Button>
                     <Button size="sm" variant="ghost" className="h-7 w-7 p-0" title="编辑"
                       onClick={(e) => { e.stopPropagation(); openEdit(m); }}>
@@ -622,11 +613,11 @@ const VaultPage = () => {
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>
                   </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
 
