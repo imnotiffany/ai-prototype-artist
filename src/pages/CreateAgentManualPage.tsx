@@ -17,8 +17,8 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "@/hooks/use-toast";
 import { categories, getActiveSkills, getActiveMCPs, mockAgents, mockCredentials, mockApiKeys } from "@/data/mockData";
-import { getEnvironments } from "@/data/environments";
-import { Box } from "lucide-react";
+import { projectImages, DU_OPTIONS } from "@/data/environments";
+import { Database, HardDrive } from "lucide-react";
 import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
 import { AIStatusPill } from "@/components/AIStatusPill";
@@ -107,8 +107,14 @@ const CreateAgentManualPage = () => {
   // Model
   const [model, setModel] = useState("aliyun/qwen3.6-plus");
   const [apiKey, setApiKey] = useState("");
-  const envOptions = getEnvironments();
-  const [envId, setEnvId] = useState(envOptions[0]?.envId ?? "env-default");
+  // 环境配置
+  const [envSpec, setEnvSpec] = useState<"1C2G" | "2C4G" | "4C8G">("4C8G");
+  const [envImage, setEnvImage] = useState("img-default");
+  const [envDuMode, setEnvDuMode] = useState<"new" | "existing">("existing");
+  const [envDu, setEnvDu] = useState(DU_OPTIONS[0]);
+  const [envInstances, setEnvInstances] = useState(2);
+  const [envStorageEnabled, setEnvStorageEnabled] = useState(false);
+  const [envRedisUrl, setEnvRedisUrl] = useState("");
 
   // Prompt
   const [systemPrompt, setSystemPrompt] = useState("");
@@ -457,7 +463,8 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
   // ── Dirty 检测：step 1-3 任一字段变了 → 重置 hasSaved/调试状态，重新上锁 4/5 ──
   const currentSig = JSON.stringify({
     name, avatar: uploadedAvatar, category, description,
-    model, apiKey, envId,
+    model, apiKey,
+    envSpec, envImage, envDuMode, envDu, envInstances, envStorageEnabled, envRedisUrl,
     systemPrompt,
     selSkills, selMCPs, selSubagents, mcpCredentialMap,
   });
@@ -567,6 +574,14 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
       credential: mcpCredentialMap[m] || null,
     })),
     subagents: selSubagents,
+    environment: {
+      spec: envSpec,
+      image: envImage,
+      du: envDu,
+      du_mode: envDuMode,
+      instances: envInstances,
+      storage: envStorageEnabled ? { type: "redis", url: envRedisUrl } : null,
+    },
     fengsheng_next: {
       enabled: fsConnected,
       app_key: fsAppKey || null,
@@ -838,21 +853,8 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   </PopoverContent>
                 </Popover>
 
-                {/* 运行环境 */}
-                <Label className="text-xs mt-3">运行环境</Label>
-                <Select value={envId} onValueChange={setEnvId}>
-                  <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {envOptions.map((e) => (
-                      <SelectItem key={e.envId} value={e.envId} className="text-xs">
-                        <span>{e.name}</span>
-                        <span className="ml-2 text-[10px] text-muted-foreground">{e.spec} · {e.envId}</span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-[10px] text-muted-foreground mt-1">Agent 执行任务所使用的运行时环境，可在「环境管理」中创建</p>
               </div>
+
             </div>
 
             {/* 内置工具 */}
@@ -1093,6 +1095,106 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+
+            {/* 环境配置 */}
+            <div className="border border-border rounded-lg p-5 bg-card space-y-4">
+              <div>
+                <Label className="text-xs flex items-center gap-1.5"><Cpu className="w-3.5 h-3.5 text-muted-foreground" />环境配置</Label>
+                <p className="text-[10px] text-muted-foreground mt-0.5">智能体运行时使用的资源、镜像与部署单元</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">资源规格</Label>
+                  <Select value={envSpec} onValueChange={(v) => setEnvSpec(v as typeof envSpec)}>
+                    <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1C2G" className="text-xs">1 核 2G</SelectItem>
+                      <SelectItem value="2C4G" className="text-xs">2 核 4G</SelectItem>
+                      <SelectItem value="4C8G" className="text-xs">4 核 8G</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs">运行镜像</Label>
+                  <Select value={envImage} onValueChange={setEnvImage}>
+                    <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {projectImages.map((img) => (
+                        <SelectItem key={img.id} value={img.id} className="text-xs">
+                          <span className="font-mono">{img.name}</span>
+                          {img.isDefault && <span className="ml-2 text-[10px] text-muted-foreground">默认</span>}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-xs flex items-center gap-1.5">
+                  <Server className="w-3 h-3" />关联 DU <span className="text-destructive">*</span>
+                </Label>
+                <p className="text-[10px] text-amber-600 dark:text-amber-500 mt-1">线上生产服务需关联顺丰云 DU，便于出现问题时追溯定位</p>
+                <div className="flex items-center gap-4 mt-1.5">
+                  <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                    <input type="radio" name="manual-du-mode" value="existing" checked={envDuMode === "existing"} onChange={() => { setEnvDuMode("existing"); setEnvDu(DU_OPTIONS[0]); }} className="accent-primary" />
+                    选择已有
+                  </label>
+                  <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                    <input type="radio" name="manual-du-mode" value="new" checked={envDuMode === "new"} onChange={() => { setEnvDuMode("new"); setEnvDu(""); }} className="accent-primary" />
+                    新建 DU
+                  </label>
+                </div>
+                {envDuMode === "existing" ? (
+                  <Select value={envDu} onValueChange={setEnvDu}>
+                    <SelectTrigger className="mt-2 h-8 text-xs"><SelectValue placeholder="请选择" /></SelectTrigger>
+                    <SelectContent>
+                      {DU_OPTIONS.map((d) => (
+                        <SelectItem key={d} value={d} className="text-xs font-mono">{d}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input className="mt-2 h-8 text-xs font-mono" placeholder="请输入新 DU 名称" value={envDu} onChange={(e) => setEnvDu(e.target.value)} />
+                )}
+              </div>
+
+              <div>
+                <Label className="text-xs">实例数量</Label>
+                <Select value={String(envInstances)} onValueChange={(v) => setEnvInstances(Number(v))}>
+                  <SelectTrigger className="mt-1.5 h-8 text-xs w-40"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {[2, 3, 4].map((n) => (
+                      <SelectItem key={n} value={String(n)} className="text-xs">{n} 个</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="border-t border-border pt-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-xs flex items-center gap-1.5"><HardDrive className="w-3 h-3" />存储</Label>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">为智能体提供持久化存储，目前仅支持 Redis</p>
+                  </div>
+                  <Switch checked={envStorageEnabled} onCheckedChange={setEnvStorageEnabled} />
+                </div>
+                {envStorageEnabled && (
+                  <div className="mt-2.5">
+                    <Label className="text-[11px] text-muted-foreground flex items-center gap-1"><Database className="w-3 h-3" />Redis 连接串</Label>
+                    <Input
+                      className="mt-1 h-8 text-xs font-mono"
+                      placeholder="redis://:password@host:6379/0"
+                      value={envRedisUrl}
+                      onChange={(e) => setEnvRedisUrl(e.target.value)}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+
 
             <div className="flex justify-between">
               <Button size="sm" variant="ghost" className="h-8 text-xs gap-1" onClick={() => setCurrentTab("basic")}>

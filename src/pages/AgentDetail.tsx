@@ -17,7 +17,7 @@ import {
   AlertTriangle, Copy, Pencil, Rocket, Code2, Layout, Users, KeyRound, Filter, Check, ExternalLink, Activity, Plug, FileText,
 } from "lucide-react";
 import { mockAgents, getActiveMCPs, getActiveSkills, mockApiKeys } from "@/data/mockData";
-import { getEnvironments } from "@/data/environments";
+
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Search, Box } from "lucide-react";
 
@@ -115,7 +115,8 @@ const AgentDetail = () => {
   const [description, setDescription] = useState(initialSnapshot.description);
   const [model, setModel] = useState(initialSnapshot.model);
   const [apiKey, setApiKey] = useState<string>("");
-  const [envId, setEnvId] = useState<string>(getEnvironments()[0]?.envId ?? "env-default");
+
+
 
   const [systemPrompt, setSystemPrompt] = useState(initialSnapshot.systemPrompt);
   const [selSkills, setSelSkills] = useState<string[]>(initialSnapshot.skills);
@@ -836,21 +837,7 @@ fengsheng:
                   </PopoverContent>
                 </Popover>
               </div>
-              <div>
-                <Label className="text-xs">运行环境</Label>
-                <Select value={envId} onValueChange={setEnvId}>
-                  <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {getEnvironments().map((e) => (
-                      <SelectItem key={e.envId} value={e.envId} className="text-xs">
-                        <span>{e.name}</span>
-                        <span className="ml-2 text-[10px] text-muted-foreground">{e.spec} · {e.envId}</span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-[10px] text-muted-foreground mt-1">在「环境管理」中可创建自定义运行环境</p>
-              </div>
+
               <div>
                 <Label className="text-xs">系统提示词</Label>
 
