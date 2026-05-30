@@ -774,7 +774,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               <div>
                 <Label className="text-xs">分类</Label>
                 <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger className="mt-1.5 h-9 text-xs"><SelectValue placeholder="选择分类" /></SelectTrigger>
+                  <SelectTrigger className="mt-1 h-8 text-xs"><SelectValue placeholder="选择分类" /></SelectTrigger>
                   <SelectContent>
                     {categories.map((c) => (
                       <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>
