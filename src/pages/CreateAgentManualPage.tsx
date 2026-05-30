@@ -579,7 +579,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
       du: envDu,
       du_mode: envDuMode,
       instances: envInstances,
-      storage: envStorageEnabled ? { type: "redis", url: envRedisUrl } : null,
+      storage: { type: "redis", url: envRedisUrl },
     },
     fengsheng_next: {
       enabled: fsConnected,
