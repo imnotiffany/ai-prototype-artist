@@ -845,21 +845,8 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   </PopoverContent>
                 </Popover>
 
-                {/* 运行环境 */}
-                <Label className="text-xs mt-3">运行环境</Label>
-                <Select value={envId} onValueChange={setEnvId}>
-                  <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {envOptions.map((e) => (
-                      <SelectItem key={e.envId} value={e.envId} className="text-xs">
-                        <span>{e.name}</span>
-                        <span className="ml-2 text-[10px] text-muted-foreground">{e.spec} · {e.envId}</span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-[10px] text-muted-foreground mt-1">Agent 执行任务所使用的运行时环境，可在「环境管理」中创建</p>
               </div>
+
             </div>
 
             {/* 内置工具 */}
