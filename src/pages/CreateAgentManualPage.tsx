@@ -113,7 +113,6 @@ const CreateAgentManualPage = () => {
   const [envDuMode, setEnvDuMode] = useState<"new" | "existing">("existing");
   const [envDu, setEnvDu] = useState(DU_OPTIONS[0]);
   const [envInstances, setEnvInstances] = useState(2);
-  const [envStorageEnabled, setEnvStorageEnabled] = useState(false);
   const [envRedisUrl, setEnvRedisUrl] = useState("");
 
   // Prompt
