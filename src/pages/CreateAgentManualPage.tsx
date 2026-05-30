@@ -17,8 +17,8 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "@/hooks/use-toast";
 import { categories, getActiveSkills, getActiveMCPs, mockAgents, mockCredentials, mockApiKeys } from "@/data/mockData";
-import { getEnvironments } from "@/data/environments";
-import { Box } from "lucide-react";
+import { projectImages, DU_OPTIONS } from "@/data/environments";
+import { Database, HardDrive } from "lucide-react";
 import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
 import { AIStatusPill } from "@/components/AIStatusPill";
@@ -107,8 +107,14 @@ const CreateAgentManualPage = () => {
   // Model
   const [model, setModel] = useState("aliyun/qwen3.6-plus");
   const [apiKey, setApiKey] = useState("");
-  const envOptions = getEnvironments();
-  const [envId, setEnvId] = useState(envOptions[0]?.envId ?? "env-default");
+  // 环境配置
+  const [envSpec, setEnvSpec] = useState<"1C2G" | "2C4G" | "4C8G">("4C8G");
+  const [envImage, setEnvImage] = useState("img-default");
+  const [envDuMode, setEnvDuMode] = useState<"new" | "existing">("existing");
+  const [envDu, setEnvDu] = useState(DU_OPTIONS[0]);
+  const [envInstances, setEnvInstances] = useState(2);
+  const [envStorageEnabled, setEnvStorageEnabled] = useState(false);
+  const [envRedisUrl, setEnvRedisUrl] = useState("");
 
   // Prompt
   const [systemPrompt, setSystemPrompt] = useState("");
