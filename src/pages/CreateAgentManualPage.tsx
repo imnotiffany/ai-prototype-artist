@@ -574,6 +574,14 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
       credential: mcpCredentialMap[m] || null,
     })),
     subagents: selSubagents,
+    environment: {
+      spec: envSpec,
+      image: envImage,
+      du: envDu,
+      du_mode: envDuMode,
+      instances: envInstances,
+      storage: envStorageEnabled ? { type: "redis", url: envRedisUrl } : null,
+    },
     fengsheng_next: {
       enabled: fsConnected,
       app_key: fsAppKey || null,
