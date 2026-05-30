@@ -1103,7 +1103,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 <p className="text-[10px] text-muted-foreground mt-0.5">智能体运行时使用的资源、镜像与部署单元</p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
                   <Label className="text-xs">资源规格</Label>
                   <Select value={envSpec} onValueChange={(v) => setEnvSpec(v as typeof envSpec)}>
@@ -1125,6 +1125,17 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                           <span className="font-mono">{img.name}</span>
                           {img.isDefault && <span className="ml-2 text-[10px] text-muted-foreground">默认</span>}
                         </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs">实例数量</Label>
+                  <Select value={String(envInstances)} onValueChange={(v) => setEnvInstances(Number(v))}>
+                    <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {[2, 3, 4].map((n) => (
+                        <SelectItem key={n} value={String(n)} className="text-xs">{n} 个</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -1161,36 +1172,14 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               </div>
 
               <div>
-                <Label className="text-xs">实例数量</Label>
-                <Select value={String(envInstances)} onValueChange={(v) => setEnvInstances(Number(v))}>
-                  <SelectTrigger className="mt-1.5 h-8 text-xs w-40"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {[2, 3, 4].map((n) => (
-                      <SelectItem key={n} value={String(n)} className="text-xs">{n} 个</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="border-t border-border pt-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-xs flex items-center gap-1.5"><HardDrive className="w-3 h-3" />存储</Label>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">为智能体提供持久化存储，目前仅支持 Redis</p>
-                  </div>
-                  <Switch checked={envStorageEnabled} onCheckedChange={setEnvStorageEnabled} />
-                </div>
-                {envStorageEnabled && (
-                  <div className="mt-2.5">
-                    <Label className="text-[11px] text-muted-foreground flex items-center gap-1"><Database className="w-3 h-3" />Redis 连接串</Label>
-                    <Input
-                      className="mt-1 h-8 text-xs font-mono"
-                      placeholder="redis://:password@host:6379/0"
-                      value={envRedisUrl}
-                      onChange={(e) => setEnvRedisUrl(e.target.value)}
-                    />
-                  </div>
-                )}
+                <Label className="text-xs flex items-center gap-1.5"><HardDrive className="w-3 h-3" />存储 <span className="text-destructive">*</span></Label>
+                <p className="text-[10px] text-muted-foreground mt-0.5">持久化存储，目前仅支持 Redis</p>
+                <Input
+                  className="mt-1.5 h-8 text-xs font-mono"
+                  placeholder="redis://:password@host:6379/0"
+                  value={envRedisUrl}
+                  onChange={(e) => setEnvRedisUrl(e.target.value)}
+                />
               </div>
             </div>
 
