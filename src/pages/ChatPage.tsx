@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, FolderOpen } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { mockAgents, getSessionsByAgent, getChatSession, type ChatMessage } from "@/data/mockData";
 import { AgentInfoPanel } from "@/components/AgentInfoPanel";
@@ -323,9 +322,6 @@ const ChatPage = () => {
             </div>
             <div className="min-w-0 flex items-center gap-2">
               <span className="font-medium text-sm truncate">{agent.name}</span>
-              <Badge variant="outline" className="text-[10px] h-5 px-1.5 text-primary border-primary/30 shrink-0">
-                智能体
-              </Badge>
             </div>
           </div>
           <Button
@@ -333,7 +329,6 @@ const ChatPage = () => {
             variant="outline"
             className="h-7 text-[11px] gap-1.5 px-2.5"
             onClick={() => setArtifactsOpen(true)}
-            title="查看会话内文件（传入 / 产物）"
           >
             <FolderOpen className="w-3.5 h-3.5" />
             文件
