@@ -203,17 +203,19 @@ const CategoryEvents = ({
   </div>
 );
 
-/** 阶段块 —— 无边框，点击 ✓ + 标题展开下方事件胶囊 */
+/** 阶段块 —— 无边框，点击标题展开下方执行细节 */
 const PhaseBlock = ({
   phase,
   detail,
   showRaw,
   defaultExpanded,
+  compact = false,
 }: {
   phase: Extract<TimelineEvent, { kind: "phase" }>;
   detail: Detail;
   showRaw: boolean;
   defaultExpanded?: boolean;
+  compact?: boolean;
 }) => {
   const level = DETAIL_LEVEL[detail];
   const isRunning = phase.status === "running";
@@ -228,12 +230,12 @@ const PhaseBlock = ({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="group flex items-center gap-2 text-left -mx-1 px-1 py-0.5 rounded hover:bg-muted/40 transition-colors w-full"
+        className="group flex items-center gap-2 text-left py-0.5 transition-colors w-full"
       >
-        <StatusDot status={phase.status} size="md" />
         <span
           className={cn(
-            "text-[13px] truncate",
+            compact ? "text-[12px]" : "text-[13px]",
+            "truncate",
             isFailed ? "text-destructive font-medium" : "text-foreground/85",
           )}
         >
@@ -251,10 +253,11 @@ const PhaseBlock = ({
           )}
         />
         {dur && (
-          <span className="ml-auto text-[10px] text-muted-foreground/60 tabular-nums shrink-0">
+          <span className="ml-auto text-[10px] text-muted-foreground/60 tabular-nums shrink-0 pl-2">
             {dur}
           </span>
         )}
+        <StatusDot status={phase.status} size="md" />
       </button>
       <Expand open={open}>
         <div className="ml-5 mt-1.5 space-y-1.5">
