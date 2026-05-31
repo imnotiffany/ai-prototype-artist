@@ -1254,13 +1254,10 @@ const CreateAgentPage = () => {
           setMessages((prev) => [...prev, {
             id: clarifyId,
             role: "assistant",
-            content: "为了更准确地调整，我需要再确认几点：",
+            content: "",
             type: "clarify",
-            clarifyQuestions: [
-              "想要修改的是 MCP、Skill 还是系统提示词？",
-              "希望新增、替换还是删除某项能力？",
-              "有具体的能力名称或场景描述吗？",
-            ],
+            clarifyQuestion: "想修改哪一部分？",
+            clarifyOptions: ["MCP", "Skill", "系统提示词"],
           }]);
           setIsThinking(false);
           setThinkingStartedAt(null);
