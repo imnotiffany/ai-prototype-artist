@@ -356,6 +356,35 @@ const scenario_running_deploy: TimelineScenario = {
             { id: "p2-e2", category: "bash", title: "pnpm test:unit", status: "running" },
           ],
         },
+        {
+          key: "mcp",
+          label: "外部服务",
+          status: "success",
+          events: [
+            {
+              id: "p2-m1",
+              category: "mcp",
+              title: "通过「Sentry」MCP 拉取最近 24h 错误概览",
+              status: "success",
+              durationMs: 820,
+              raw: { tool: "mcp__sentry__list_issues", window: "24h" },
+            },
+          ],
+        },
+        {
+          key: "subagent",
+          label: "子任务",
+          status: "running",
+          events: [
+            {
+              id: "p2-s1",
+              category: "subagent",
+              title: "派发子任务「冒烟用例编排」",
+              status: "running",
+              raw: { sub: "skill_subagent", skill: "smoke_test_planner" },
+            },
+          ],
+        },
       ],
     },
     {
