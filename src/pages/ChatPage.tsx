@@ -12,6 +12,8 @@ import { SessionDrawer, type SessionListItem } from "@/components/SessionDrawer"
 import { ChatComposer, type ChatComposerPayload } from "@/components/ChatComposer";
 import { ArtifactsDrawer } from "@/components/ArtifactsDrawer";
 import { mockArtifacts, guessTypeFromName, type Artifact } from "@/data/artifacts";
+import { RunTimelineView } from "@/components/RunTimelineView";
+import { TIMELINE_SCENARIOS, getTimelineScenario } from "@/data/timelineMock";
 
 type Message = ChatMessage;
 
