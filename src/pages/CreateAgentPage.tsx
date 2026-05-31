@@ -257,9 +257,28 @@ const AttachmentPicker = ({
   </Popover>
 );
 
-/* ── Tool Call Strip (始终展开，不折叠) ── */
+/* ── Tool Call Strip —— 复用 RunTimelineView 的 EventRow 渲染 ── */
+const TOOL_CAT: Record<ToolCall["kind"], CategoryKey> = {
+  search: "search",
+  mcp: "mcp",
+  skill: "skill",
+  bash: "bash",
+  file: "file",
+  subagent: "subagent",
+};
 const ToolCallStrip = ({ calls }: { calls: ToolCall[] }) => (
-  <ToolCallGroup calls={calls} />
+  <div className="flex flex-col">
+    {calls.map((c) => {
+      const sub: TimelineSubEvent = {
+        id: c.id,
+        category: TOOL_CAT[c.kind] ?? "context",
+        title: c.summary ? `${c.name}（${c.summary}）` : c.name,
+        status: c.status,
+        raw: c.input || c.output ? { input: c.input, output: c.output } : undefined,
+      };
+      return <EventRow key={c.id} ev={sub} showRaw={false} />;
+    })}
+  </div>
 );
 
 /* ── Draft Card (初始草稿，紧凑展示) ── */
