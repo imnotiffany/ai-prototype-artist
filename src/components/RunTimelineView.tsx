@@ -170,7 +170,7 @@ const EventRow = ({
       </button>
 
       <Expand open={canExpand && (open || (showRaw && !!(ev.raw || ev.error)))}>
-        <div className="mb-2 ml-5 space-y-1.5 text-[11px]">
+        <div className="mb-2 space-y-1.5 text-[11px]">
           {ev.error && (
             <pre className="w-full rounded-md bg-destructive/5 border border-destructive/20 text-destructive px-3 py-2 whitespace-pre-wrap leading-5 font-mono">
               {ev.error}
