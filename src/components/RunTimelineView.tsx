@@ -129,7 +129,7 @@ const EventRow = ({
   showRaw: boolean;
 }) => {
   const [open, setOpen] = useState(false);
-  const { Icon, tone } = CAT_META[ev.category];
+  
   const canExpand = !!ev.raw || !!ev.error || !!ev.artifacts?.length;
   const isFailed = ev.status === "failed";
   const dur = fmtDuration(ev.durationMs);
@@ -147,7 +147,7 @@ const EventRow = ({
           !canExpand && "cursor-default",
         )}
       >
-        <Icon className={cn("w-3.5 h-3.5 shrink-0", isFailed ? "text-destructive" : tone, "opacity-80")} />
+        {isFailed && <span className="w-1 h-1 rounded-full bg-destructive shrink-0" />}
         <span className="truncate">{ev.title}</span>
         {canExpand && (
           <ChevronDown
@@ -170,7 +170,7 @@ const EventRow = ({
       </button>
 
       <Expand open={canExpand && (open || (showRaw && !!(ev.raw || ev.error)))}>
-        <div className="mb-2 ml-5 space-y-1.5 text-[11px]">
+        <div className="mb-2 space-y-1.5 text-[11px]">
           {ev.error && (
             <pre className="w-full rounded-md bg-destructive/5 border border-destructive/20 text-destructive px-3 py-2 whitespace-pre-wrap leading-5 font-mono">
               {ev.error}

@@ -187,6 +187,44 @@ const scenario_done_doc: TimelineScenario = {
             },
           ],
         },
+        {
+          key: "mcp",
+          label: "外部服务",
+          status: "success",
+          events: [
+            {
+              id: "p2-m1",
+              category: "mcp",
+              title: "通过「Notion」MCP 读取《618 复盘》页面",
+              status: "success",
+              durationMs: 1_240,
+              raw: { tool: "mcp__notion__get_page", page_id: "618-recap-2025" },
+            },
+            {
+              id: "p2-m2",
+              category: "mcp",
+              title: "通过「Linear」MCP 拉取相关 issue 列表",
+              status: "success",
+              durationMs: 980,
+              raw: { tool: "mcp__linear__list_issues", project: "618-2026" },
+            },
+          ],
+        },
+        {
+          key: "subagent",
+          label: "子任务",
+          status: "success",
+          events: [
+            {
+              id: "p2-s1",
+              category: "subagent",
+              title: "派发子任务「核对历年大促优惠券面额」",
+              status: "success",
+              durationMs: 12_400,
+              raw: { sub: "skill_subagent", skill: "promo_coupon_audit", years: ["2023", "2024", "2025"] },
+            },
+          ],
+        },
       ],
     },
     {
@@ -318,6 +356,35 @@ const scenario_running_deploy: TimelineScenario = {
             { id: "p2-e2", category: "bash", title: "pnpm test:unit", status: "running" },
           ],
         },
+        {
+          key: "mcp",
+          label: "外部服务",
+          status: "success",
+          events: [
+            {
+              id: "p2-m1",
+              category: "mcp",
+              title: "通过「Sentry」MCP 拉取最近 24h 错误概览",
+              status: "success",
+              durationMs: 820,
+              raw: { tool: "mcp__sentry__list_issues", window: "24h" },
+            },
+          ],
+        },
+        {
+          key: "subagent",
+          label: "子任务",
+          status: "running",
+          events: [
+            {
+              id: "p2-s1",
+              category: "subagent",
+              title: "派发子任务「冒烟用例编排」",
+              status: "running",
+              raw: { sub: "skill_subagent", skill: "smoke_test_planner" },
+            },
+          ],
+        },
       ],
     },
     {
@@ -366,6 +433,21 @@ const scenario_failed_notify: TimelineScenario = {
           status: "success",
           events: [
             { id: "p1-e2", category: "skill", title: "生成 Markdown 消息正文", status: "success", durationMs: 980 },
+          ],
+        },
+        {
+          key: "subagent",
+          label: "子任务",
+          status: "success",
+          events: [
+            {
+              id: "p1-s1",
+              category: "subagent",
+              title: "派发子任务「按收件人优化措辞」",
+              status: "success",
+              durationMs: 1_120,
+              raw: { sub: "skill_subagent", skill: "tone_localizer", target: "ops_group" },
+            },
           ],
         },
       ],
@@ -455,6 +537,21 @@ const scenario_subagent: TimelineScenario = {
             { id: "sub-1", category: "subagent", title: "启动子任务：调研 顺丰", status: "success", durationMs: 80 },
             { id: "sub-2", category: "subagent", title: "启动子任务：调研 京东", status: "success", durationMs: 80 },
             { id: "sub-3", category: "subagent", title: "启动子任务：调研 菜鸟", status: "success", durationMs: 80 },
+          ],
+        },
+        {
+          key: "mcp",
+          label: "外部服务",
+          status: "success",
+          events: [
+            {
+              id: "p1-m1",
+              category: "mcp",
+              title: "通过「Atlassian」MCP 拉取友商对标 Confluence 模板",
+              status: "success",
+              durationMs: 720,
+              raw: { tool: "mcp__atlassian__get_page", space: "competitive" },
+            },
           ],
         },
       ],
