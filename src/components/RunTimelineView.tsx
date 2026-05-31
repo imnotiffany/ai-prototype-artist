@@ -80,6 +80,19 @@ const StatusDot = ({ status }: { status: RunStatus }) => {
   return <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40" />;
 };
 
+/** 丝滑展开/收起容器：利用 grid-template-rows 0fr↔1fr 过渡，无需测量高度 */
+const Expand = ({ open, children, className }: { open: boolean; children: React.ReactNode; className?: string }) => (
+  <div
+    className={cn(
+      "grid transition-[grid-template-rows,opacity] duration-300 ease-out",
+      open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+      className,
+    )}
+  >
+    <div className="overflow-hidden min-h-0">{children}</div>
+  </div>
+);
+
 /* ────────── 详略控制 ────────── */
 
 type Detail = "summary" | "process" | "all";
