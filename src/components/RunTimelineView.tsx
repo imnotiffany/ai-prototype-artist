@@ -80,6 +80,19 @@ const StatusDot = ({ status }: { status: RunStatus }) => {
   return <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40" />;
 };
 
+/** 丝滑展开/收起容器：利用 grid-template-rows 0fr↔1fr 过渡，无需测量高度 */
+const Expand = ({ open, children, className }: { open: boolean; children: React.ReactNode; className?: string }) => (
+  <div
+    className={cn(
+      "grid transition-[grid-template-rows,opacity] duration-300 ease-out",
+      open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+      className,
+    )}
+  >
+    <div className="overflow-hidden min-h-0">{children}</div>
+  </div>
+);
+
 /* ────────── 详略控制 ────────── */
 
 type Detail = "summary" | "process" | "all";
@@ -155,7 +168,7 @@ const EventRow = ({
         </span>
       </button>
 
-      {(open || (showRaw && (ev.raw || ev.error))) && canExpand && (
+      <Expand open={canExpand && (open || (showRaw && !!(ev.raw || ev.error)))}>
         <div className="ml-5 mt-1 mb-2 space-y-1.5 text-[11px]">
           {ev.error && (
             <pre className="rounded-sm bg-destructive/5 border border-destructive/20 text-destructive px-2 py-1.5 whitespace-pre-wrap leading-5 font-mono">
@@ -169,7 +182,7 @@ const EventRow = ({
             </pre>
           )}
         </div>
-      )}
+      </Expand>
     </div>
   );
 };
@@ -212,13 +225,13 @@ const CategoryBlock = ({
         </span>
         <span className="ml-auto"><StatusDot status={cat.status} /></span>
       </button>
-      {open && (
+      <Expand open={open}>
         <div className="mt-0.5 space-y-0">
           {cat.events.map((e) => (
             <EventRow key={e.id} ev={e} showRaw={showRaw} />
           ))}
         </div>
-      )}
+      </Expand>
     </div>
   );
 };
@@ -266,7 +279,7 @@ const PhaseBlock = ({
           )}
         </span>
       </button>
-      {open && (
+      <Expand open={open}>
         <div className="px-2.5 pb-2 pt-1 space-y-1.5">
           {isRunning && phase.currentAction && (
             <div className="text-[11px] text-muted-foreground md:hidden">
@@ -277,7 +290,7 @@ const PhaseBlock = ({
             <CategoryBlock key={c.key} cat={c} detail={detail} showRaw={showRaw} />
           ))}
         </div>
-      )}
+      </Expand>
     </div>
   );
 };
@@ -287,34 +300,27 @@ const SummaryBlock = ({
 }: {
   ev: Extract<TimelineEvent, { kind: "summary" }>;
 }) => {
-  const tone =
-    ev.status === "success"
-      ? "border-emerald-500/30 bg-emerald-500/5"
-      : ev.status === "failed"
-        ? "border-destructive/40 bg-destructive/5"
-        : "border-border bg-muted/40";
   const Icon = ev.status === "success" ? Check : ev.status === "failed" ? X : AlertTriangle;
   const iconCls =
     ev.status === "success"
-      ? "text-emerald-600 dark:text-emerald-400"
+      ? "text-emerald-500"
       : ev.status === "failed"
         ? "text-destructive"
         : "text-muted-foreground";
 
   return (
-    <div className={cn("rounded-md border px-3 py-2.5", tone)}>
-      <div className="flex items-center gap-2 text-[12px] font-medium text-foreground">
-        <Icon className={cn("w-4 h-4", iconCls)} strokeWidth={2.5} />
-        {ev.status === "success" && `任务已执行完，耗时 ${fmtDuration(ev.durationMs)}`}
-        {ev.status === "failed" && `任务未完成，耗时 ${fmtDuration(ev.durationMs)}`}
-        {ev.status === "cancelled" && `任务已中断，耗时 ${fmtDuration(ev.durationMs)}`}
+    <div className="py-1">
+      <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
+        <Icon className={cn("w-3.5 h-3.5", iconCls)} strokeWidth={2.5} />
+        {ev.status === "success" && `任务已执行完 · 耗时 ${fmtDuration(ev.durationMs)}`}
+        {ev.status === "failed" && `任务未完成 · 耗时 ${fmtDuration(ev.durationMs)}`}
+        {ev.status === "cancelled" && `任务已中断 · 耗时 ${fmtDuration(ev.durationMs)}`}
       </div>
-      <div className="mt-1.5 text-[12px] text-foreground/85 leading-relaxed whitespace-pre-wrap">
+      <div className="mt-2 text-[13px] text-foreground leading-relaxed whitespace-pre-wrap">
         {ev.text}
       </div>
       {ev.artifacts && ev.artifacts.length > 0 && (
         <div className="mt-2">
-          <div className="text-[10px] uppercase tracking-wider text-muted-foreground/70 mb-1">附件</div>
           <ArtifactChips artifacts={ev.artifacts} />
         </div>
       )}
@@ -506,70 +512,53 @@ export const RunTimelineView = ({
         {visible.map((ev) => {
           if (ev.kind === "user") {
             return (
-              <div key={ev.id} className="flex justify-end items-start gap-2">
+              <div key={ev.id} className="flex justify-end animate-fade-in">
                 <div className="max-w-[80%] rounded-2xl px-3 py-2 text-xs bg-primary text-primary-foreground whitespace-pre-wrap leading-relaxed">
                   {ev.text}
                 </div>
-                <UserAvatar />
               </div>
             );
           }
           if (ev.kind === "agent") {
             return (
-              <div key={ev.id} className="flex justify-start items-start gap-2">
-                <AgentAvatar avatar={agentAvatar} />
-                <div className="max-w-[80%] rounded-2xl px-3 py-2 text-xs bg-secondary text-foreground whitespace-pre-wrap leading-relaxed">
-                  {ev.text}
-                </div>
+              <div
+                key={ev.id}
+                className="text-[13px] text-foreground/90 leading-relaxed whitespace-pre-wrap animate-fade-in"
+              >
+                {ev.text}
               </div>
             );
           }
           if (ev.kind === "summary") {
-            return (
-              <div key={ev.id} className="flex justify-start items-start gap-2">
-                <AgentAvatar avatar={agentAvatar} />
-                <div className="flex-1 min-w-0 max-w-[85%]"><SummaryBlock ev={ev} /></div>
-              </div>
-            );
+            return <div key={ev.id} className="animate-fade-in"><SummaryBlock ev={ev} /></div>;
           }
           if (ev.kind === "phase") {
-            // summary 档：完成态阶段塌缩为一行（除非失败/运行中）
             const collapsed =
               detail === "summary" && ev.status !== "running" && ev.status !== "failed";
             return (
-              <div key={ev.id} className="flex justify-start items-start gap-2">
-                <div className="w-8 shrink-0" />
-                <div className="flex-1 min-w-0 max-w-[85%]">
-                  {collapsed ? (
-                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground py-1 px-2 rounded border border-border bg-card/40">
-                      <StatusDot status={ev.status} />
-                      <span className="truncate text-foreground/80">{ev.title}</span>
-                      {ev.durationMs && (
-                        <span className="ml-auto tabular-nums">{fmtDuration(ev.durationMs)}</span>
-                      )}
-                    </div>
-                  ) : (
-                    <PhaseBlock phase={ev} detail={detail} showRaw={showRaw} />
-                  )}
-                </div>
+              <div key={ev.id} className="animate-fade-in">
+                {collapsed ? (
+                  <button
+                    type="button"
+                    className="w-full flex items-center gap-2 text-[11px] text-muted-foreground py-1 px-2 rounded hover:bg-muted/40 transition-colors"
+                  >
+                    <StatusDot status={ev.status} />
+                    <span className="truncate text-foreground/80">{ev.title}</span>
+                    {ev.durationMs && (
+                      <span className="ml-auto tabular-nums">{fmtDuration(ev.durationMs)}</span>
+                    )}
+                  </button>
+                ) : (
+                  <PhaseBlock phase={ev} detail={detail} showRaw={showRaw} />
+                )}
               </div>
             );
           }
           if (ev.kind === "permission") {
-            return (
-              <div key={ev.id} className="flex justify-start items-start gap-2">
-                <div className="w-8 shrink-0" />
-                <div className="flex-1 min-w-0 max-w-[85%]"><PermissionBlock ev={ev} /></div>
-              </div>
-            );
+            return <div key={ev.id} className="animate-fade-in"><PermissionBlock ev={ev} /></div>;
           }
           if (ev.kind === "error") {
-            return (
-              <div key={ev.id} className="flex justify-start items-start gap-2">
-                <div className="w-8 shrink-0" />
-                <div className="flex-1 min-w-0 max-w-[85%]"><ErrorBlock ev={ev} /></div>
-              </div>
-            );
+            return <div key={ev.id} className="animate-fade-in"><ErrorBlock ev={ev} /></div>;
           }
           return <NotificationBlock key={ev.id} text={ev.text} />;
         })}
