@@ -280,56 +280,64 @@ const ToolCallStrip = ({ calls }: { calls: ToolCall[] }) => (
   </div>
 );
 
-/* ── Draft Card (初始草稿，紧凑展示) ── */
+/* ── 统一状态 chip ── */
+const StatusChip = ({ tone = "muted", children }: { tone?: "muted" | "primary" | "success"; children: React.ReactNode }) => (
+  <span className={cn(
+    "px-1.5 py-0.5 text-[10px] rounded font-medium",
+    tone === "muted" && "bg-muted text-muted-foreground",
+    tone === "primary" && "bg-primary/10 text-primary",
+    tone === "success" && "bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-400",
+  )}>{children}</span>
+);
+
+/* ── Draft Card ── */
 const DraftCard = ({ draft }: { draft: NonNullable<Message["draft"]> }) => (
-  <div className="bg-card border border-border rounded-lg shadow-sm">
-    <div className="px-3 py-2.5 flex flex-col gap-2">
-      <div className="flex items-center justify-between">
-        <h3 className="text-xs font-semibold text-foreground">智能体草稿</h3>
-        <span className="px-1.5 py-0.5 bg-primary/10 text-primary text-[9px] font-bold rounded tracking-wider">DRAFT</span>
-      </div>
-
-      <div className="flex items-center gap-1.5 text-[11px]">
-        <span className="text-[10px] text-muted-foreground shrink-0">模型</span>
-        <span className="font-mono text-foreground truncate">{draft.model}</span>
-      </div>
-
-      <div className="flex items-start gap-1.5 text-[11px]">
-        <span className="text-[10px] text-muted-foreground shrink-0 pt-0.5">
-          技能 · {draft.skills.length}
-        </span>
-        <div className="flex flex-wrap gap-1 min-w-0">
-          {draft.skills.length === 0 ? (
-            <span className="text-muted-foreground italic">无</span>
-          ) : draft.skills.map((s) => (
-            <span key={s} className="px-1.5 py-0 bg-muted text-foreground text-[10px] rounded">
-              {s}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex items-start gap-1.5 text-[11px]">
-        <span className="text-[10px] text-muted-foreground shrink-0 pt-0.5">
-          MCP · {draft.mcps.length}
-        </span>
-        <div className="flex flex-wrap gap-1 min-w-0">
-          {draft.mcps.length === 0 ? (
-            <span className="text-muted-foreground italic">无</span>
-          ) : draft.mcps.map((m) => (
-            <span key={m} className="px-1.5 py-0 bg-primary/5 text-primary text-[10px] rounded border border-primary/20">
-              {m}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {draft.note && (
-        <p className="text-[10px] text-muted-foreground leading-snug pt-1.5 mt-0.5 border-t border-border">
-          {draft.note}
-        </p>
-      )}
+  <div className="bg-card border border-border rounded-lg p-3 space-y-2">
+    <div className="flex items-center justify-between">
+      <h3 className="text-xs font-semibold text-foreground">智能体草稿</h3>
+      <StatusChip tone="primary">草稿</StatusChip>
     </div>
+
+    <div className="flex items-center gap-1.5 text-[11px]">
+      <span className="text-[10px] text-muted-foreground shrink-0">模型</span>
+      <span className="font-mono text-foreground truncate">{draft.model}</span>
+    </div>
+
+    <div className="flex items-start gap-1.5 text-[11px]">
+      <span className="text-[10px] text-muted-foreground shrink-0 pt-0.5">
+        技能 · {draft.skills.length}
+      </span>
+      <div className="flex flex-wrap gap-1 min-w-0">
+        {draft.skills.length === 0 ? (
+          <span className="text-muted-foreground italic">无</span>
+        ) : draft.skills.map((s) => (
+          <span key={s} className="px-1.5 py-0 bg-muted text-foreground text-[10px] rounded">
+            {s}
+          </span>
+        ))}
+      </div>
+    </div>
+
+    <div className="flex items-start gap-1.5 text-[11px]">
+      <span className="text-[10px] text-muted-foreground shrink-0 pt-0.5">
+        MCP · {draft.mcps.length}
+      </span>
+      <div className="flex flex-wrap gap-1 min-w-0">
+        {draft.mcps.length === 0 ? (
+          <span className="text-muted-foreground italic">无</span>
+        ) : draft.mcps.map((m) => (
+          <span key={m} className="px-1.5 py-0 bg-primary/5 text-primary text-[10px] rounded border border-primary/20">
+            {m}
+          </span>
+        ))}
+      </div>
+    </div>
+
+    {draft.note && (
+      <p className="text-[11px] text-muted-foreground leading-snug pt-1.5 border-t border-border">
+        {draft.note}
+      </p>
+    )}
   </div>
 );
 
