@@ -12,6 +12,8 @@ import { SessionDrawer, type SessionListItem } from "@/components/SessionDrawer"
 import { ChatComposer, type ChatComposerPayload } from "@/components/ChatComposer";
 import { ArtifactsDrawer } from "@/components/ArtifactsDrawer";
 import { mockArtifacts, guessTypeFromName, type Artifact } from "@/data/artifacts";
+import { RunTimelineView } from "@/components/RunTimelineView";
+import { TIMELINE_SCENARIOS, getTimelineScenario } from "@/data/timelineMock";
 
 type Message = ChatMessage;
 
@@ -25,10 +27,12 @@ const ChatPage = () => {
     content: `你好！我是 ${name ?? "智能体"}，有什么可以帮你的吗？`,
   });
 
-  const initialSessions = useMemo<SessionListItem[]>(
-    () => (agent ? getSessionsByAgent(agent.id).map((s) => ({ id: s.id, title: s.title, lastActiveAt: s.lastActiveAt })) : []),
-    [agent],
-  );
+  const initialSessions = useMemo<SessionListItem[]>(() => {
+    const real = agent ? getSessionsByAgent(agent.id).map((s) => ({ id: s.id, title: s.title, lastActiveAt: s.lastActiveAt })) : [];
+    // 注入"新方案"演示会话，方便预览不同场景
+    const demo = TIMELINE_SCENARIOS.map((s) => ({ id: s.id, title: `[演示] ${s.title}`, lastActiveAt: "刚刚" }));
+    return [...demo, ...real];
+  }, [agent]);
   const [sessions, setSessions] = useState<SessionListItem[]>(initialSessions);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(initialSessions[0]?.id ?? null);
   const [drawerCollapsed, setDrawerCollapsed] = useState(false);
@@ -411,22 +415,36 @@ const ChatPage = () => {
           </Button>
         </div>
 
-        {/* Messages — 同步对话视图与调试视图 */}
+        {/* Messages — 演示会话走新的统一时间线视图，其他会话保持原有双视图 */}
         <div className="flex-1 min-h-0 flex relative">
           <div className="flex-1 min-w-0 relative">
-            <RunDualView
-              showTranscriptSearch={false}
-              showAvatars
-              agentAvatar={agent.avatar}
-              transcriptEvents={messages.map<TranscriptEvent>((m, i) => {
-                if (m.role === "tools") return { id: `t${i}`, type: "tools", calls: m.calls };
-                if (m.role === "user") return { id: `u${i}`, type: "user", content: m.content };
-                return { id: `a${i}`, type: "agent", content: m.content };
-              })}
-              debugEvents={debugEvents}
-              debugMeta={debugMeta}
-              transcriptFooter={isRunning ? <AIStatusPill /> : undefined}
-            />
+            {(() => {
+              const scenario = getTimelineScenario(currentSessionId);
+              if (scenario) {
+                return (
+                  <RunTimelineView
+                    scenario={scenario}
+                    agentAvatar={agent.avatar}
+                    footer={isRunning ? <AIStatusPill /> : undefined}
+                  />
+                );
+              }
+              return (
+                <RunDualView
+                  showTranscriptSearch={false}
+                  showAvatars
+                  agentAvatar={agent.avatar}
+                  transcriptEvents={messages.map<TranscriptEvent>((m, i) => {
+                    if (m.role === "tools") return { id: `t${i}`, type: "tools", calls: m.calls };
+                    if (m.role === "user") return { id: `u${i}`, type: "user", content: m.content };
+                    return { id: `a${i}`, type: "agent", content: m.content };
+                  })}
+                  debugEvents={debugEvents}
+                  debugMeta={debugMeta}
+                  transcriptFooter={isRunning ? <AIStatusPill /> : undefined}
+                />
+              );
+            })()}
           </div>
         </div>
 
