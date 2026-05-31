@@ -185,6 +185,14 @@ const scenario_done_doc: TimelineScenario = {
               durationMs: 38_120,
               raw: { tool: "Skill", name: "doc_structurer", tokens: 4_812 },
             },
+            {
+              id: "p2-e4b",
+              category: "skill",
+              title: "使用「数据对比」技能生成差异表格",
+              status: "success",
+              durationMs: 8_420,
+              raw: { tool: "Skill", name: "data_comparator", columns: ["年份", "总GMV", "折扣率", "补贴力度"] },
+            },
           ],
         },
         {
