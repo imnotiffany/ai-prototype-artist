@@ -7,7 +7,7 @@ import { mockAgents, getSessionsByAgent, getChatSession, type ChatMessage } from
 import { AgentInfoPanel } from "@/components/AgentInfoPanel";
 import { type ToolCall } from "@/components/ToolCallCard";
 import { AIStatusPill } from "@/components/AIStatusPill";
-import { RunDualView, type TranscriptEvent, type DebugEvent } from "@/components/RunViews";
+
 import { SessionDrawer, type SessionListItem } from "@/components/SessionDrawer";
 import { ChatComposer, type ChatComposerPayload } from "@/components/ChatComposer";
 import { ArtifactsDrawer } from "@/components/ArtifactsDrawer";
@@ -297,78 +297,6 @@ const ChatPage = () => {
     `${agent.category}相关的最佳实践`,
   ].filter(Boolean) as string[];
 
-  // 由对话消息派生调试事件（mock）
-  const { debugEvents, debugMeta } = useMemo(() => {
-    const events: DebugEvent[] = [];
-    const baseTs = new Date(2026, 4, 6, 10, 24, 18, 102).getTime();
-    let offset = 0;
-    const fmt = (ms: number) => {
-      const d = new Date(baseTs + ms);
-      const pad = (n: number, w = 2) => String(n).padStart(w, "0");
-      return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}.${pad(d.getMilliseconds(), 3)}`;
-    };
-    const sid = currentSessionId ?? "sess-mock";
-    const model = "claude-sonnet-4-6";
-    let totalTokens = 0;
-    let tokensIn = 0;
-    let tokensOut = 0;
-
-    events.push({ id: `dbg-start`, ts: fmt(offset), type: "session.start", data: { session_id: sid, model } });
-
-    messages.forEach((m, i) => {
-      offset += 140 + i * 30;
-      if (m.role === "user") {
-        const tokens = Math.max(20, Math.round(m.content.length * 1.4));
-        tokensIn += tokens;
-        events.push({ id: `dbg-llm-req-${i}`, ts: fmt(offset), type: "llm.request", data: { messages: 1, tokens_in: tokens } });
-      } else if (m.role === "tools") {
-        m.calls.forEach((c, ci) => {
-          offset += 200;
-          events.push({
-            id: `dbg-tc-${i}-${ci}`,
-            ts: fmt(offset),
-            type: "tool.call",
-            data: { name: c.name, args: Object.fromEntries((c.params ?? []).map((p) => [p.key, p.value])) },
-          });
-          offset += 800;
-          events.push({
-            id: `dbg-tr-${i}-${ci}`,
-            ts: fmt(offset),
-            type: c.status === "failed" ? "tool.error" : "tool.result",
-            data: c.status === "failed"
-              ? { name: c.name, error: c.error ?? "failed" }
-              : { name: c.name, items: c.resultItems?.length ?? 0, summary: c.resultSummary },
-          });
-        });
-      } else if (m.role === "agent") {
-        const tokens = Math.max(40, Math.round(m.content.length * 1.5));
-        tokensOut += tokens;
-        offset += 600;
-        events.push({ id: `dbg-llm-resp-${i}`, ts: fmt(offset), type: "llm.response", data: { tokens_out: tokens, finish_reason: "stop" } });
-      }
-    });
-
-    totalTokens = tokensIn + tokensOut;
-    offset += 110;
-    events.push({
-      id: `dbg-end`,
-      ts: fmt(offset),
-      type: "session.end",
-      data: { status: isRunning ? "running" : "success", total_ms: offset, total_tokens: totalTokens },
-    });
-
-    const sec = Math.floor(offset / 1000);
-    const mm = String(Math.floor(sec / 60)).padStart(2, "0");
-    const ss = String(sec % 60).padStart(2, "0");
-    return {
-      debugEvents: events,
-      debugMeta: [
-        { label: "模型", value: model },
-        { label: "总耗时", value: `00:${mm}:${ss}` },
-        { label: "总 tokens", value: String(totalTokens) },
-      ],
-    };
-  }, [messages, currentSessionId, isRunning]);
 
 
   return (

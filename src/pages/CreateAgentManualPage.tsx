@@ -22,7 +22,9 @@ import { HardDrive } from "lucide-react";
 import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
 import { AIStatusPill } from "@/components/AIStatusPill";
-import { RunDualView, RunningIndicator, type TranscriptEvent } from "@/components/RunViews";
+import { RunningIndicator, type TranscriptEvent } from "@/components/RunViews";
+import { RunTimelineView } from "@/components/RunTimelineView";
+import { transcriptToTimelineScenario } from "@/lib/transcriptToTimeline";
 import { PublishAgentDialog } from "@/components/PublishAgentDialog";
 import { AvatarPicker } from "@/components/AvatarPicker";
 import { FengshengIncompleteDialog, type FsAlertStatus } from "@/components/FengshengIncompleteDialog";
@@ -1402,33 +1404,25 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 {debugRunning && <RunningIndicator />}
               </div>
               <div className="flex-1 min-h-0">
-                <RunDualView
-                  showTranscriptSearch={false}
-                  transcriptEvents={(() => {
-                    const evs: TranscriptEvent[] = [];
-                    runMessages.forEach((m, i) => {
-                      if (m.role === "user") evs.push({ id: `u${i}`, type: "user", content: m.content });
-                      else if (m.status === "error") evs.push({ id: `e${i}`, type: "error", message: m.content });
-                      else {
-                        if (m.tool) evs.push({
-                          id: `t${i}`, type: "tools",
-                          calls: [{ id: `c${i}`, kind: "mcp", name: m.tool, summary: "调用成功", status: "success" }],
-                        });
-                        evs.push({ id: `a${i}`, type: "agent", content: m.content });
-                      }
-                    });
-                    return evs;
-                  })()}
-                  debugEvents={debugLogs.map((l) => ({
-                    id: String(l.id),
-                    ts: l.ts,
-                    type: `log.${l.level}`,
-                    data: { message: l.message, ...(l.meta ? { meta: l.meta } : {}) },
-                  }))}
-                  debugMeta={[
-                    { label: "模型", value: model },
-                    { label: "事件数", value: String(debugLogs.length) },
-                  ]}
+                <RunTimelineView
+                  scenario={transcriptToTimelineScenario(
+                    (() => {
+                      const evs: TranscriptEvent[] = [];
+                      runMessages.forEach((m, i) => {
+                        if (m.role === "user") evs.push({ id: `u${i}`, type: "user", content: m.content });
+                        else if (m.status === "error") evs.push({ id: `e${i}`, type: "error", message: m.content });
+                        else {
+                          if (m.tool) evs.push({
+                            id: `t${i}`, type: "tools",
+                            calls: [{ id: `c${i}`, kind: "mcp", name: m.tool, summary: "调用成功", status: "success" }],
+                          });
+                          evs.push({ id: `a${i}`, type: "agent", content: m.content });
+                        }
+                      });
+                      return evs;
+                    })(),
+                    { id: "manual-debug", title: "调试会话", running: debugRunning },
+                  )}
                 />
               </div>
               <div className="border-t border-border p-2 shrink-0">
