@@ -361,58 +361,67 @@ const ProposalCardInline = ({
     ...diff.removedSkills.map<Row>((x) => ({ kind: "remove", label: "Skill", text: x })),
     ...(diff.promptChanged ? [{ kind: "prompt" as const, label: "提示词", text: diff.promptNote ? `${diff.promptNote.slice(0, 40)}${diff.promptNote.length > 40 ? "…" : ""}` : "更新系统提示词" }] : []),
   ];
+/* ── Proposal Card ── */
+const ProposalCardInline = ({
+  msg,
+  onAccept,
+  onWithdraw,
+}: {
+  msg: Message;
+  onAccept: () => void;
+  onWithdraw: () => void;
+}) => {
+  const p = msg.proposal!;
+  const { diff, status } = p;
+  type Row = { kind: "add" | "remove" | "prompt"; label: string; text: string };
+  const rows: Row[] = [
+    ...diff.addedMcps.map<Row>((x) => ({ kind: "add", label: "MCP", text: x })),
+    ...diff.removedMcps.map<Row>((x) => ({ kind: "remove", label: "MCP", text: x })),
+    ...diff.addedSkills.map<Row>((x) => ({ kind: "add", label: "Skill", text: x })),
+    ...diff.removedSkills.map<Row>((x) => ({ kind: "remove", label: "Skill", text: x })),
+    ...(diff.promptChanged ? [{ kind: "prompt" as const, label: "提示词", text: diff.promptNote ? `${diff.promptNote.slice(0, 40)}${diff.promptNote.length > 40 ? "…" : ""}` : "更新系统提示词" }] : []),
+  ];
   return (
-    <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
-      <div className="p-4 space-y-3">
-        <div className="flex items-center gap-2">
-          <div className={cn(
-            "w-1.5 h-1.5 rounded-full",
-            status === "pending" && "bg-primary",
-            status === "accepted" && "bg-green-500",
-            status === "withdrawn" && "bg-muted-foreground",
-          )} />
-          <h3 className="text-sm font-semibold text-foreground">建议变更</h3>
-          {status === "accepted" && (
-            <span className="ml-auto px-1.5 py-0.5 bg-green-50 text-green-700 text-[10px] font-bold rounded uppercase dark:bg-green-950/40 dark:text-green-400">已采纳</span>
-          )}
-          {status === "withdrawn" && (
-            <span className="ml-auto px-1.5 py-0.5 bg-muted text-muted-foreground text-[10px] font-bold rounded uppercase">已撤销</span>
-          )}
-        </div>
-
-        <div className="space-y-1">
-          {rows.map((r, i) => (
-            <div
-              key={i}
-              className={cn(
-                "flex items-center gap-2 px-2 py-1.5 rounded text-[11px] border",
-                r.kind === "add" && "bg-green-50/60 border-green-200/70 text-green-700 dark:bg-green-950/20 dark:border-green-900/40 dark:text-green-400",
-                r.kind === "remove" && "bg-red-50/60 border-red-200/70 text-red-600 dark:bg-red-950/20 dark:border-red-900/40 dark:text-red-400",
-                r.kind === "prompt" && "bg-primary/5 border-primary/20 text-primary",
-              )}
-            >
-              <span className="font-bold w-3 text-center shrink-0">
-                {r.kind === "add" ? "+" : r.kind === "remove" ? "−" : "✎"}
-              </span>
-              <span className={cn("text-muted-foreground", r.kind === "add" && "text-green-700/80 dark:text-green-400/80", r.kind === "remove" && "text-red-600/80 dark:text-red-400/80", r.kind === "prompt" && "text-primary/80")}>
-                {r.kind === "add" ? "新增" : r.kind === "remove" ? "移除" : "更新"} {r.label}:
-              </span>
-              <span className={cn("font-medium", r.kind === "remove" && "line-through")}>{r.text}</span>
-            </div>
-          ))}
-        </div>
-
-        {status === "pending" && (
-          <div className="flex items-center gap-2 pt-1">
-            <Button size="sm" className="h-7 text-[11px] flex-1" onClick={onAccept}>
-              采纳变更
-            </Button>
-            <Button size="sm" variant="outline" className="h-7 text-[11px] px-3" onClick={onWithdraw}>
-              撤销
-            </Button>
-          </div>
-        )}
+    <div className="bg-card border border-border rounded-lg p-3 space-y-2">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xs font-semibold text-foreground">建议变更</h3>
+        {status === "accepted" && <StatusChip tone="success">已采纳</StatusChip>}
+        {status === "withdrawn" && <StatusChip tone="muted">已撤销</StatusChip>}
+        {status === "pending" && <StatusChip tone="primary">待确认</StatusChip>}
       </div>
+
+      <div className="space-y-1">
+        {rows.map((r, i) => (
+          <div
+            key={i}
+            className={cn(
+              "flex items-center gap-2 px-2 py-1.5 rounded text-[11px] border",
+              r.kind === "add" && "bg-green-50/60 border-green-200/70 text-green-700 dark:bg-green-950/20 dark:border-green-900/40 dark:text-green-400",
+              r.kind === "remove" && "bg-red-50/60 border-red-200/70 text-red-600 dark:bg-red-950/20 dark:border-red-900/40 dark:text-red-400",
+              r.kind === "prompt" && "bg-primary/5 border-primary/20 text-primary",
+            )}
+          >
+            <span className="font-bold w-3 text-center shrink-0">
+              {r.kind === "add" ? "+" : r.kind === "remove" ? "−" : "✎"}
+            </span>
+            <span className="opacity-70">
+              {r.kind === "add" ? "新增" : r.kind === "remove" ? "移除" : "更新"} {r.label}:
+            </span>
+            <span className={cn("font-medium", r.kind === "remove" && "line-through")}>{r.text}</span>
+          </div>
+        ))}
+      </div>
+
+      {status === "pending" && (
+        <div className="flex items-center gap-2 pt-1">
+          <Button size="sm" className="h-7 text-[11px] flex-1" onClick={onAccept}>
+            采纳变更
+          </Button>
+          <Button size="sm" variant="outline" className="h-7 text-[11px] px-3" onClick={onWithdraw}>
+            撤销
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
