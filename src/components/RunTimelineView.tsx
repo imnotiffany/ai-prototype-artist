@@ -525,7 +525,7 @@ export const RunTimelineView = ({
           }
           if (ev.kind === "events") {
             return (
-              <div key={ev.id} className="animate-fade-in flex flex-wrap gap-1.5">
+              <div key={ev.id} className="animate-fade-in flex flex-col">
                 {ev.events.map((e) => (
                   <EventRow key={e.id} ev={e} showRaw={showRaw} />
                 ))}
