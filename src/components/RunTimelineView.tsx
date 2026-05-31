@@ -141,7 +141,7 @@ const EventRow = ({
         disabled={!canExpand}
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "group flex w-full items-center gap-2 py-1 text-[12px] leading-5 text-left",
+          "group flex w-full items-center gap-2 py-0.5 text-xs leading-5 text-left",
           isFailed ? "text-destructive" : "text-foreground/75",
           canExpand && "hover:text-foreground cursor-pointer",
           !canExpand && "cursor-default",
@@ -230,11 +230,10 @@ const PhaseBlock = ({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="group flex items-center gap-2 text-left py-0.5 transition-colors w-full"
+        className="group flex items-center gap-2 text-left py-0.5 text-xs leading-5 transition-colors w-full"
       >
         <span
           className={cn(
-            "text-xs",
             "truncate",
             isFailed ? "text-destructive font-medium" : "text-foreground/85",
           )}
@@ -242,7 +241,7 @@ const PhaseBlock = ({
           {phase.title}
         </span>
         {isRunning && phase.currentAction && (
-          <span className="text-[11px] text-muted-foreground/80 truncate hidden md:inline">
+          <span className="text-muted-foreground/80 truncate hidden md:inline">
             · {phase.currentAction}
           </span>
         )}
@@ -260,9 +259,9 @@ const PhaseBlock = ({
         <StatusDot status={phase.status} size="md" />
       </button>
       <Expand open={open}>
-        <div className="ml-5 mt-1.5 space-y-1.5">
+        <div className="ml-5">
           {isRunning && phase.currentAction && (
-            <div className="text-[11px] text-muted-foreground md:hidden">
+            <div className="py-0.5 text-xs leading-5 text-muted-foreground md:hidden">
               当前：{phase.currentAction}
             </div>
           )}
