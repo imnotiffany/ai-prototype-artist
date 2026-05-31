@@ -616,13 +616,13 @@ const VaultPage = () => {
                         测试连接
                       </button>
                       <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground" title="编辑"
+                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground [&_svg]:size-3" title="编辑"
                           onClick={(e) => { e.stopPropagation(); openEdit(m); }}>
-                          <Pencil className="w-3 h-3" />
+                          <Pencil />
                         </Button>
-                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10" title="删除"
+                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 [&_svg]:size-3" title="删除"
                           onClick={(e) => { e.stopPropagation(); setDeleteTarget(m); }}>
-                          <Trash2 className="w-3 h-3" />
+                          <Trash2 />
                         </Button>
                       </div>
                     </div>
