@@ -464,6 +464,14 @@ const scenario_failed_notify: TimelineScenario = {
           status: "success",
           events: [
             { id: "p1-e2", category: "skill", title: "生成 Markdown 消息正文", status: "success", durationMs: 980 },
+            {
+              id: "p1-e2b",
+              category: "skill",
+              title: "使用「发布摘要」技能提炼变更要点",
+              status: "success",
+              durationMs: 1_240,
+              raw: { tool: "Skill", name: "release_summarizer", commits: 8, highlights: 3 },
+            },
           ],
         },
         {
