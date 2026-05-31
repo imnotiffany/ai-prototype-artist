@@ -135,24 +135,20 @@ const EventRow = ({
   const dur = fmtDuration(ev.durationMs);
 
   return (
-    <div>
+    <div className="w-full">
       <button
         type="button"
         disabled={!canExpand}
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "group inline-flex max-w-full items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] leading-5",
-          "bg-muted/50 text-foreground/75 transition-colors",
-          isFailed && "bg-destructive/10 text-destructive",
-          canExpand && "hover:bg-muted cursor-pointer",
+          "group flex w-full items-center gap-2 py-1 text-[12px] leading-5 text-left",
+          isFailed ? "text-destructive" : "text-foreground/75",
+          canExpand && "hover:text-foreground cursor-pointer",
           !canExpand && "cursor-default",
         )}
       >
         <Icon className={cn("w-3.5 h-3.5 shrink-0", isFailed ? "text-destructive" : tone, "opacity-80")} />
         <span className="truncate">{ev.title}</span>
-        {dur && <span className="text-[10px] text-muted-foreground/70 tabular-nums shrink-0">{dur}</span>}
-        {isFailed && <X className="w-3 h-3 text-destructive shrink-0" strokeWidth={2.5} />}
-        {ev.status === "running" && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground shrink-0" />}
         {canExpand && (
           <ChevronDown
             className={cn(
@@ -161,18 +157,28 @@ const EventRow = ({
             )}
           />
         )}
+        <span className="ml-auto flex items-center gap-2 shrink-0">
+          {dur && <span className="text-[10px] text-muted-foreground/70 tabular-nums">{dur}</span>}
+          {ev.status === "running" ? (
+            <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
+          ) : isFailed ? (
+            <X className="w-3.5 h-3.5 text-destructive" strokeWidth={2.5} />
+          ) : ev.status === "success" ? (
+            <Check className="w-3.5 h-3.5 text-muted-foreground" strokeWidth={2.5} />
+          ) : null}
+        </span>
       </button>
 
       <Expand open={canExpand && (open || (showRaw && !!(ev.raw || ev.error)))}>
-        <div className="mt-1 mb-1 ml-2 space-y-1.5 text-[11px]">
+        <div className="mb-2 ml-5 space-y-1.5 text-[11px]">
           {ev.error && (
-            <pre className="rounded-sm bg-destructive/5 border border-destructive/20 text-destructive px-2 py-1.5 whitespace-pre-wrap leading-5 font-mono">
+            <pre className="w-full rounded-md bg-destructive/5 border border-destructive/20 text-destructive px-3 py-2 whitespace-pre-wrap leading-5 font-mono">
               {ev.error}
             </pre>
           )}
           {ev.artifacts && <ArtifactChips artifacts={ev.artifacts} />}
           {ev.raw && (
-            <pre className="rounded-sm bg-muted/40 border border-border/40 px-2 py-1.5 whitespace-pre-wrap leading-5 font-mono text-foreground/70 max-h-48 overflow-auto">
+            <pre className="w-full rounded-md bg-muted/50 px-3 py-2 whitespace-pre-wrap leading-5 font-mono text-foreground/70 max-h-64 overflow-auto">
               {JSON.stringify(ev.raw, null, 2)}
             </pre>
           )}
@@ -182,7 +188,7 @@ const EventRow = ({
   );
 };
 
-/** 类别块 —— 不再单独画一行类别标签，直接把事件平铺为胶囊 */
+/** 类别块 —— 事件竖向堆叠，每行独占一行 */
 const CategoryEvents = ({
   cat,
   showRaw,
@@ -190,7 +196,7 @@ const CategoryEvents = ({
   cat: TimelineCategory;
   showRaw: boolean;
 }) => (
-  <div className="flex flex-wrap items-start gap-1.5">
+  <div className="flex flex-col">
     {cat.events.map((e) => (
       <EventRow key={e.id} ev={e} showRaw={showRaw} />
     ))}
