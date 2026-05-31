@@ -59,9 +59,10 @@ interface Message {
   attachments?: { type: "skill" | "mcp"; name: string }[];
   toolCalls?: ToolCall[];
   isStreaming?: boolean;
-  /** clarify 类型：单一澄清问题 + 选项 */
-  clarifyQuestion?: string;
-  clarifyOptions?: string[];
+  /** clarify 类型：分步澄清问题 + 选项 */
+  clarifySteps?: { question: string; options?: string[]; placeholder?: string }[];
+  clarifyAnswers?: string[];
+  clarifyDone?: boolean;
   /** proposal 类型：AI 建议的配置变更 */
   proposal?: Proposal;
   /** draft 类型：初始草稿快照 */
@@ -1256,8 +1257,11 @@ const CreateAgentPage = () => {
             role: "assistant",
             content: "",
             type: "clarify",
-            clarifyQuestion: "想修改哪一部分？",
-            clarifyOptions: ["MCP", "Skill", "系统提示词"],
+            clarifySteps: [
+              { question: "想修改哪一部分？", options: ["MCP", "Skill", "系统提示词"] },
+              { question: "期望的操作？", options: ["新增", "替换", "删除"] },
+              { question: "具体目标或要求？", placeholder: "例如：加一个网页搜索能力" },
+            ],
           }]);
           setIsThinking(false);
           setThinkingStartedAt(null);
