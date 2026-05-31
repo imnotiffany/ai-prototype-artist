@@ -296,13 +296,6 @@ const SummaryBlock = ({
 
   return (
     <div className="py-1">
-      <Expand open={canExpand && open}>
-        <div className="mb-1.5 space-y-1.5">
-          {phases.map((phase) => (
-            <PhaseBlock key={phase.id} phase={phase} detail="summary" showRaw={showRaw} defaultExpanded={false} compact />
-          ))}
-        </div>
-      </Expand>
       <button
         type="button"
         disabled={!canExpand}
@@ -327,6 +320,13 @@ const SummaryBlock = ({
         )}
         <Icon className={cn("ml-auto w-3.5 h-3.5 shrink-0", iconCls)} strokeWidth={2.5} />
       </button>
+      <Expand open={canExpand && open}>
+        <div className="mb-1.5 space-y-1.5">
+          {phases.map((phase) => (
+            <PhaseBlock key={phase.id} phase={phase} detail="summary" showRaw={showRaw} defaultExpanded={false} compact />
+          ))}
+        </div>
+      </Expand>
       <div className="mt-2 text-[13px] text-foreground leading-relaxed whitespace-pre-wrap">
         {ev.text}
       </div>
