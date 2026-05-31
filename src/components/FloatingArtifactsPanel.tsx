@@ -322,13 +322,13 @@ const ArtifactPreview = ({ a }: { a: Artifact | null }) => {
             <FileIcon className="w-10 h-10 opacity-30" />
             <div className="text-xs">该类型暂不支持预览</div>
             <Button
-              size="sm"
-              variant="outline"
-              className="text-xs gap-1.5"
+              size="icon"
+              variant="ghost"
+              className="h-6 w-6"
               onClick={() => toast({ title: "已开始下载", description: a.name })}
+              title="下载"
             >
-              <Download className="w-3 h-3" />
-              下载查看
+              <Download className="w-3.5 h-3.5" />
             </Button>
           </div>
         )}
