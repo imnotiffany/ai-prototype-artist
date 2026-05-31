@@ -432,54 +432,7 @@ export const RunTimelineView = ({
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      {/* 顶部控件 */}
-      <div className="h-10 shrink-0 border-b border-border px-3 flex items-center justify-between gap-2 flex-wrap">
-        <div className="inline-flex items-center bg-muted rounded-md p-0.5">
-          {(["summary", "process", "all"] as Detail[]).map((d) => (
-            <button
-              key={d}
-              onClick={() => setDetail(d)}
-              className={cn(
-                "px-2.5 py-1 text-[11px] rounded transition-colors",
-                detail === d
-                  ? "bg-background text-foreground shadow-sm font-medium"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {d === "summary" ? "摘要" : d === "process" ? "过程" : "全部"}
-            </button>
-          ))}
-        </div>
 
-        <div className="flex items-center gap-1 flex-wrap">
-          {FILTERS.map((f) => (
-            <button
-              key={f.key}
-              onClick={() => setFilter(f.key)}
-              className={cn(
-                "px-2 h-6 text-[11px] rounded-full border transition-colors",
-                filter === f.key
-                  ? "bg-foreground text-background border-foreground"
-                  : "bg-transparent text-muted-foreground border-border hover:text-foreground",
-              )}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-
-        <button
-          onClick={() => setShowRaw((v) => !v)}
-          className={cn(
-            "inline-flex items-center gap-1 text-[11px] px-2 h-6 rounded border transition-colors",
-            showRaw ? "bg-foreground text-background border-foreground" : "border-border text-muted-foreground hover:text-foreground",
-          )}
-          title="同时显示原始事件 payload"
-        >
-          {showRaw ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-          原始事件
-        </button>
-      </div>
 
       {/* 时间线 */}
       <div className="flex-1 overflow-auto p-4 space-y-3 min-h-0">
