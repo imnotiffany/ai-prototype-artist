@@ -625,6 +625,21 @@ const scenario_subagent: TimelineScenario = {
             },
           ],
         },
+        {
+          key: "skill",
+          label: "数据整合",
+          status: "success",
+          events: [
+            {
+              id: "p2-sk1",
+              category: "skill",
+              title: "使用「竞品对标」技能提取关键指标",
+              status: "success",
+              durationMs: 5_680,
+              raw: { tool: "Skill", name: "competitor_benchmark", metrics: ["运力增速", "覆盖率", "时效"] },
+            },
+          ],
+        },
       ],
     },
     {
