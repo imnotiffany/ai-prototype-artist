@@ -491,10 +491,14 @@ export const RunTimelineView = ({
             );
           }
           if (ev.kind === "agent") {
+            // 最终回答（final=true）用纯前景色（黑），中间叙述用深灰，跟工具日志区分
             return (
               <div
                 key={ev.id}
-                className="text-[13px] text-foreground/90 leading-relaxed whitespace-pre-wrap animate-fade-in"
+                className={cn(
+                  "text-[13px] leading-relaxed whitespace-pre-wrap animate-fade-in",
+                  ev.final ? "text-foreground" : "text-foreground/55",
+                )}
               >
                 {ev.text}
               </div>
@@ -504,24 +508,21 @@ export const RunTimelineView = ({
             return <div key={ev.id} className="animate-fade-in"><SummaryBlock ev={ev} /></div>;
           }
           if (ev.kind === "phase") {
-            const collapsed =
-              detail === "summary" && ev.status !== "running" && ev.status !== "failed";
+            // summary 档：完成态默认折叠，但点击可展开
+            const defaultExpanded =
+              detail !== "summary" || ev.status === "running" || ev.status === "failed";
             return (
               <div key={ev.id} className="animate-fade-in">
-                {collapsed ? (
-                  <button
-                    type="button"
-                    className="w-full flex items-center gap-2 text-[11px] text-muted-foreground py-1 px-2 rounded hover:bg-muted/40 transition-colors"
-                  >
-                    <StatusDot status={ev.status} />
-                    <span className="truncate text-foreground/80">{ev.title}</span>
-                    {ev.durationMs && (
-                      <span className="ml-auto tabular-nums">{fmtDuration(ev.durationMs)}</span>
-                    )}
-                  </button>
-                ) : (
-                  <PhaseBlock phase={ev} detail={detail} showRaw={showRaw} />
-                )}
+                <PhaseBlock phase={ev} detail={detail} showRaw={showRaw} defaultExpanded={defaultExpanded} />
+              </div>
+            );
+          }
+          if (ev.kind === "events") {
+            return (
+              <div key={ev.id} className="animate-fade-in flex flex-wrap gap-1.5">
+                {ev.events.map((e) => (
+                  <EventRow key={e.id} ev={e} showRaw={showRaw} />
+                ))}
               </div>
             );
           }
@@ -531,7 +532,10 @@ export const RunTimelineView = ({
           if (ev.kind === "error") {
             return <div key={ev.id} className="animate-fade-in"><ErrorBlock ev={ev} /></div>;
           }
-          return <NotificationBlock key={ev.id} text={ev.text} />;
+          if (ev.kind === "notification") {
+            return <NotificationBlock key={ev.id} text={ev.text} />;
+          }
+          return null;
         })}
         {footer && <div className="pt-1">{footer}</div>}
       </div>
