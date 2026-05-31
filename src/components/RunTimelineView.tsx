@@ -72,12 +72,14 @@ const artifactIcon = (kind: TimelineArtifact["kind"]) => {
   }
 };
 
-const StatusDot = ({ status }: { status: RunStatus }) => {
-  if (status === "running") return <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />;
-  if (status === "success") return <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={2.5} />;
-  if (status === "failed") return <X className="w-3.5 h-3.5 text-destructive" strokeWidth={2.5} />;
-  if (status === "pending") return <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />;
-  return <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40" />;
+const StatusDot = ({ status, size = "sm" }: { status: RunStatus; size?: "sm" | "md" }) => {
+  const cls = size === "md" ? "w-3.5 h-3.5" : "w-3 h-3";
+  // 成功 / 完成态统一深灰，只让"失败"用红色突出
+  if (status === "running") return <Loader2 className={cn(cls, "animate-spin text-muted-foreground")} />;
+  if (status === "success") return <Check className={cn(cls, "text-muted-foreground")} strokeWidth={2.5} />;
+  if (status === "failed") return <X className={cn(cls, "text-destructive")} strokeWidth={2.5} />;
+  if (status === "pending") return <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" />;
+  return <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 inline-block" />;
 };
 
 /** 丝滑展开/收起容器：利用 grid-template-rows 0fr↔1fr 过渡，无需测量高度 */
@@ -118,6 +120,7 @@ const ArtifactChips = ({ artifacts }: { artifacts: TimelineArtifact[] }) => (
   </div>
 );
 
+/** 单个事件 —— 浅灰胶囊样式，点击展开 raw / error / artifacts */
 const EventRow = ({
   ev,
   showRaw,
@@ -132,44 +135,36 @@ const EventRow = ({
   const dur = fmtDuration(ev.durationMs);
 
   return (
-    <div className={cn("pl-6 pr-1", ev.sideEffect && "relative")}>
-      {ev.sideEffect && (
-        <span
-          className={cn(
-            "absolute left-3 top-1 bottom-1 w-[2px] rounded-full",
-            isFailed ? "bg-destructive/60" : "bg-emerald-500/60",
-          )}
-        />
-      )}
+    <div>
       <button
         type="button"
         disabled={!canExpand}
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "group w-full flex items-center gap-2 py-1 px-1 -mx-1 rounded text-left text-[12px] leading-5",
-          canExpand && "hover:bg-muted/50 cursor-pointer",
+          "group inline-flex max-w-full items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] leading-5",
+          "bg-muted/50 text-foreground/75 transition-colors",
+          isFailed && "bg-destructive/10 text-destructive",
+          canExpand && "hover:bg-muted cursor-pointer",
           !canExpand && "cursor-default",
         )}
       >
-        <ChevronRight
-          className={cn(
-            "w-3 h-3 text-muted-foreground/60 transition-transform shrink-0",
-            open && "rotate-90",
-            !canExpand && "invisible",
-          )}
-        />
-        <Icon className={cn("w-3.5 h-3.5 shrink-0", isFailed ? "text-destructive" : tone)} />
-        <span className={cn("truncate", isFailed ? "text-destructive" : "text-foreground/90")}>
-          {ev.title}
-        </span>
-        <span className="ml-auto shrink-0 flex items-center gap-1.5 pl-2">
-          {dur && <span className="text-[10px] text-muted-foreground/70 tabular-nums">{dur}</span>}
-          <StatusDot status={ev.status} />
-        </span>
+        <Icon className={cn("w-3.5 h-3.5 shrink-0", isFailed ? "text-destructive" : tone, "opacity-80")} />
+        <span className="truncate">{ev.title}</span>
+        {dur && <span className="text-[10px] text-muted-foreground/70 tabular-nums shrink-0">{dur}</span>}
+        {isFailed && <X className="w-3 h-3 text-destructive shrink-0" strokeWidth={2.5} />}
+        {ev.status === "running" && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground shrink-0" />}
+        {canExpand && (
+          <ChevronDown
+            className={cn(
+              "w-3 h-3 text-muted-foreground/60 transition-transform shrink-0",
+              open ? "rotate-0" : "-rotate-90",
+            )}
+          />
+        )}
       </button>
 
       <Expand open={canExpand && (open || (showRaw && !!(ev.raw || ev.error)))}>
-        <div className="ml-5 mt-1 mb-2 space-y-1.5 text-[11px]">
+        <div className="mt-1 mb-1 ml-2 space-y-1.5 text-[11px]">
           {ev.error && (
             <pre className="rounded-sm bg-destructive/5 border border-destructive/20 text-destructive px-2 py-1.5 whitespace-pre-wrap leading-5 font-mono">
               {ev.error}
@@ -177,7 +172,7 @@ const EventRow = ({
           )}
           {ev.artifacts && <ArtifactChips artifacts={ev.artifacts} />}
           {ev.raw && (
-            <pre className="rounded-sm bg-muted/40 border border-border/40 px-2 py-1.5 whitespace-pre-wrap leading-5 font-mono text-foreground/80 max-h-48 overflow-auto">
+            <pre className="rounded-sm bg-muted/40 border border-border/40 px-2 py-1.5 whitespace-pre-wrap leading-5 font-mono text-foreground/70 max-h-48 overflow-auto">
               {JSON.stringify(ev.raw, null, 2)}
             </pre>
           )}
@@ -187,107 +182,83 @@ const EventRow = ({
   );
 };
 
-const CategoryBlock = ({
+/** 类别块 —— 不再单独画一行类别标签，直接把事件平铺为胶囊 */
+const CategoryEvents = ({
   cat,
-  detail,
   showRaw,
-  forceOpen,
 }: {
   cat: TimelineCategory;
+  showRaw: boolean;
+}) => (
+  <div className="flex flex-wrap items-start gap-1.5">
+    {cat.events.map((e) => (
+      <EventRow key={e.id} ev={e} showRaw={showRaw} />
+    ))}
+  </div>
+);
+
+/** 阶段块 —— 无边框，点击 ✓ + 标题展开下方事件胶囊 */
+const PhaseBlock = ({
+  phase,
+  detail,
+  showRaw,
+  defaultExpanded,
+}: {
+  phase: Extract<TimelineEvent, { kind: "phase" }>;
   detail: Detail;
   showRaw: boolean;
-  forceOpen?: boolean;
+  defaultExpanded?: boolean;
 }) => {
   const level = DETAIL_LEVEL[detail];
-  // L2 = 类别可见但默认收起；L3 = 默认展开事件
-  const [open, setOpen] = useState(level >= 3 || forceOpen || cat.status === "failed" || cat.status === "running");
-  const meta = CAT_META[cat.key];
-  const Icon = meta.Icon;
-  const counts = cat.events.length;
-  const failed = cat.events.filter((e) => e.status === "failed").length;
+  const isRunning = phase.status === "running";
+  const isFailed = phase.status === "failed";
+  // 默认：执行中/失败常开；其余看详略档位与 defaultExpanded
+  const defaultOpen = defaultExpanded ?? (level >= 2 || isRunning || isFailed);
+  const [open, setOpen] = useState(defaultOpen);
+  const dur = fmtDuration(phase.durationMs);
 
   return (
     <div>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center gap-1.5 py-1 px-1 -mx-1 rounded text-left text-[12px] hover:bg-muted/40"
+        className="group flex items-center gap-2 text-left -mx-1 px-1 py-0.5 rounded hover:bg-muted/40 transition-colors w-full"
       >
-        {open ? (
-          <ChevronDown className="w-3 h-3 text-muted-foreground/60 shrink-0" />
-        ) : (
-          <ChevronRight className="w-3 h-3 text-muted-foreground/60 shrink-0" />
-        )}
-        <Icon className={cn("w-3.5 h-3.5 shrink-0", meta.tone)} />
-        <span className="font-medium text-foreground/90">{cat.label}</span>
-        <span className="text-muted-foreground/70 text-[11px]">
-          {failed > 0 ? `· ${counts} 项 / ${failed} 失败` : `· ${counts} 项`}
+        <StatusDot status={phase.status} size="md" />
+        <span
+          className={cn(
+            "text-[13px] truncate",
+            isFailed ? "text-destructive font-medium" : "text-foreground/85",
+          )}
+        >
+          {phase.title}
         </span>
-        <span className="ml-auto"><StatusDot status={cat.status} /></span>
-      </button>
-      <Expand open={open}>
-        <div className="mt-0.5 space-y-0">
-          {cat.events.map((e) => (
-            <EventRow key={e.id} ev={e} showRaw={showRaw} />
-          ))}
-        </div>
-      </Expand>
-    </div>
-  );
-};
-
-const PhaseBlock = ({
-  phase,
-  detail,
-  showRaw,
-}: {
-  phase: Extract<TimelineEvent, { kind: "phase" }>;
-  detail: Detail;
-  showRaw: boolean;
-}) => {
-  const level = DETAIL_LEVEL[detail];
-  const isRunning = phase.status === "running";
-  // summary 档：完成后折叠为一行；执行中始终展开
-  const defaultOpen = level >= 2 || isRunning || phase.status === "failed";
-  const [open, setOpen] = useState(defaultOpen);
-  const dur = fmtDuration(phase.durationMs);
-
-  return (
-    <div className="rounded-md border border-border bg-card/40">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center gap-2 px-2.5 py-1.5 text-left hover:bg-muted/40 rounded-md"
-      >
-        {open ? (
-          <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-        ) : (
-          <ChevronRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-        )}
-        <StatusDot status={phase.status} />
-        <span className="text-[12px] font-medium text-foreground/90 truncate">{phase.title}</span>
-        {phase.currentAction && isRunning && (
-          <span className="text-[11px] text-muted-foreground truncate hidden md:inline">
+        {isRunning && phase.currentAction && (
+          <span className="text-[11px] text-muted-foreground/80 truncate hidden md:inline">
             · {phase.currentAction}
           </span>
         )}
-        <span className="ml-auto flex items-center gap-1.5 text-[11px] text-muted-foreground shrink-0">
-          {dur && (
-            <span className="inline-flex items-center gap-1 tabular-nums">
-              <Clock className="w-3 h-3" /> {dur}
-            </span>
+        <ChevronDown
+          className={cn(
+            "w-3 h-3 text-muted-foreground/50 transition-transform shrink-0",
+            open ? "rotate-0" : "-rotate-90",
           )}
-        </span>
+        />
+        {dur && (
+          <span className="ml-auto text-[10px] text-muted-foreground/60 tabular-nums shrink-0">
+            {dur}
+          </span>
+        )}
       </button>
       <Expand open={open}>
-        <div className="px-2.5 pb-2 pt-1 space-y-1.5">
+        <div className="ml-5 mt-1.5 space-y-1.5">
           {isRunning && phase.currentAction && (
             <div className="text-[11px] text-muted-foreground md:hidden">
               当前：{phase.currentAction}
             </div>
           )}
           {phase.categories.map((c) => (
-            <CategoryBlock key={c.key} cat={c} detail={detail} showRaw={showRaw} />
+            <CategoryEvents key={c.key} cat={c} showRaw={showRaw} />
           ))}
         </div>
       </Expand>
@@ -449,7 +420,7 @@ export const RunTimelineView = ({
   const [filter, setFilter] = useState<FilterKey>("all");
 
   const visible = useMemo(
-    () => scenario.events.filter((e) => e.kind === "user" || e.kind === "agent" || matchFilter(e, filter)),
+    () => scenario.events.filter((e) => e.kind === "user" || e.kind === "agent" || e.kind === "events" || matchFilter(e, filter)),
     [scenario.events, filter],
   );
 
@@ -520,10 +491,14 @@ export const RunTimelineView = ({
             );
           }
           if (ev.kind === "agent") {
+            // 最终回答（final=true）用纯前景色（黑），中间叙述用深灰，跟工具日志区分
             return (
               <div
                 key={ev.id}
-                className="text-[13px] text-foreground/90 leading-relaxed whitespace-pre-wrap animate-fade-in"
+                className={cn(
+                  "text-[13px] leading-relaxed whitespace-pre-wrap animate-fade-in",
+                  ev.final ? "text-foreground" : "text-foreground/55",
+                )}
               >
                 {ev.text}
               </div>
@@ -533,24 +508,21 @@ export const RunTimelineView = ({
             return <div key={ev.id} className="animate-fade-in"><SummaryBlock ev={ev} /></div>;
           }
           if (ev.kind === "phase") {
-            const collapsed =
-              detail === "summary" && ev.status !== "running" && ev.status !== "failed";
+            // summary 档：完成态默认折叠，但点击可展开
+            const defaultExpanded =
+              detail !== "summary" || ev.status === "running" || ev.status === "failed";
             return (
               <div key={ev.id} className="animate-fade-in">
-                {collapsed ? (
-                  <button
-                    type="button"
-                    className="w-full flex items-center gap-2 text-[11px] text-muted-foreground py-1 px-2 rounded hover:bg-muted/40 transition-colors"
-                  >
-                    <StatusDot status={ev.status} />
-                    <span className="truncate text-foreground/80">{ev.title}</span>
-                    {ev.durationMs && (
-                      <span className="ml-auto tabular-nums">{fmtDuration(ev.durationMs)}</span>
-                    )}
-                  </button>
-                ) : (
-                  <PhaseBlock phase={ev} detail={detail} showRaw={showRaw} />
-                )}
+                <PhaseBlock phase={ev} detail={detail} showRaw={showRaw} defaultExpanded={defaultExpanded} />
+              </div>
+            );
+          }
+          if (ev.kind === "events") {
+            return (
+              <div key={ev.id} className="animate-fade-in flex flex-wrap gap-1.5">
+                {ev.events.map((e) => (
+                  <EventRow key={e.id} ev={e} showRaw={showRaw} />
+                ))}
               </div>
             );
           }
@@ -560,7 +532,10 @@ export const RunTimelineView = ({
           if (ev.kind === "error") {
             return <div key={ev.id} className="animate-fade-in"><ErrorBlock ev={ev} /></div>;
           }
-          return <NotificationBlock key={ev.id} text={ev.text} />;
+          if (ev.kind === "notification") {
+            return <NotificationBlock key={ev.id} text={ev.text} />;
+          }
+          return null;
         })}
         {footer && <div className="pt-1">{footer}</div>}
       </div>

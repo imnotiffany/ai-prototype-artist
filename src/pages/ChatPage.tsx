@@ -415,33 +415,77 @@ const ChatPage = () => {
           </Button>
         </div>
 
-        {/* Messages — 演示会话走新的统一时间线视图，其他会话保持原有双视图 */}
+        {/* Messages — 统一走新时间线视图 */}
         <div className="flex-1 min-h-0 flex relative">
           <div className="flex-1 min-w-0 relative">
             {(() => {
-              const scenario = getTimelineScenario(currentSessionId);
-              if (scenario) {
+              const preset = getTimelineScenario(currentSessionId);
+              if (preset) {
                 return (
                   <RunTimelineView
-                    scenario={scenario}
+                    scenario={preset}
                     agentAvatar={agent.avatar}
                     footer={isRunning ? <AIStatusPill /> : undefined}
                   />
                 );
               }
+
+              // 实时会话：把 Message[] 转成 TimelineScenario
+              const lastAgentIdx = (() => {
+                for (let i = messages.length - 1; i >= 0; i--) {
+                  if (messages[i].role === "agent") return i;
+                }
+                return -1;
+              })();
+              const events = messages.map((m, i) => {
+                if (m.role === "user") {
+                  return { id: `u${i}`, kind: "user" as const, text: m.content };
+                }
+                if (m.role === "agent") {
+                  return {
+                    id: `a${i}`,
+                    kind: "agent" as const,
+                    text: m.content,
+                    final: i === lastAgentIdx && !isRunning,
+                  };
+                }
+                // tools
+                const subs = m.calls.map((c) => {
+                  const dur = c.steps?.reduce((a, s) => a + (s.ms ?? 0), 0);
+                  const params = Object.fromEntries((c.params ?? []).map((p) => [p.key, p.value]));
+                  return {
+                    id: c.id,
+                    category: c.kind as "mcp" | "skill" | "subagent" | "search",
+                    title: c.summary ? `${c.name} · ${c.summary}` : c.name,
+                    status: c.status as "running" | "success" | "failed",
+                    durationMs: dur && dur > 0 ? dur : undefined,
+                    error: c.error,
+                    raw:
+                      c.params?.length || c.resultItems?.length
+                        ? {
+                            args: params,
+                            steps: c.steps,
+                            result: c.resultItems,
+                            summary: c.resultSummary,
+                          }
+                        : undefined,
+                  };
+                });
+                return { id: `t${i}`, kind: "events" as const, events: subs };
+              });
+
+              const scenario = {
+                id: currentSessionId ?? "live",
+                title: "实时会话",
+                status: isRunning ? ("running" as const) : ("done" as const),
+                events,
+              };
+
               return (
-                <RunDualView
-                  showTranscriptSearch={false}
-                  showAvatars
+                <RunTimelineView
+                  scenario={scenario}
                   agentAvatar={agent.avatar}
-                  transcriptEvents={messages.map<TranscriptEvent>((m, i) => {
-                    if (m.role === "tools") return { id: `t${i}`, type: "tools", calls: m.calls };
-                    if (m.role === "user") return { id: `u${i}`, type: "user", content: m.content };
-                    return { id: `a${i}`, type: "agent", content: m.content };
-                  })}
-                  debugEvents={debugEvents}
-                  debugMeta={debugMeta}
-                  transcriptFooter={isRunning ? <AIStatusPill /> : undefined}
+                  footer={isRunning ? <AIStatusPill /> : undefined}
                 />
               );
             })()}

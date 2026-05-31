@@ -80,7 +80,9 @@ export type TimelineEvent =
       status: "pending" | "approved" | "denied";
     }
   | { id: string; kind: "notification"; text: string }
-  | { id: string; kind: "error"; title: string; detail?: string };
+  | { id: string; kind: "error"; title: string; detail?: string }
+  /** 直接渲染一组事件胶囊（用于无明确阶段的实时对话流） */
+  | { id: string; kind: "events"; events: TimelineSubEvent[] };
 
 export interface TimelineScenario {
   id: string;
