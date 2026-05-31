@@ -59,9 +59,10 @@ interface Message {
   attachments?: { type: "skill" | "mcp"; name: string }[];
   toolCalls?: ToolCall[];
   isStreaming?: boolean;
-  /** clarify 类型：单一澄清问题 + 选项 */
-  clarifyQuestion?: string;
-  clarifyOptions?: string[];
+  /** clarify 类型：分步澄清问题 + 选项 */
+  clarifySteps?: { question: string; options?: string[]; placeholder?: string }[];
+  clarifyAnswers?: string[];
+  clarifyDone?: boolean;
   /** proposal 类型：AI 建议的配置变更 */
   proposal?: Proposal;
   /** draft 类型：初始草稿快照 */
@@ -340,6 +341,136 @@ const DraftCard = ({ draft }: { draft: NonNullable<Message["draft"]> }) => (
     )}
   </div>
 );
+
+/* ── Clarify Card：分步问答 ── */
+const ClarifyCard = ({
+  msg,
+  onSubmit,
+}: {
+  msg: Message;
+  onSubmit: (answers: string[]) => void;
+}) => {
+  const steps = msg.clarifySteps ?? [];
+  const [step, setStep] = useState(0);
+  const [answers, setAnswers] = useState<string[]>(() =>
+    msg.clarifyAnswers ?? Array(steps.length).fill(""),
+  );
+
+  // 已完成态：只读摘要
+  if (msg.clarifyDone) {
+    return (
+      <div className="bg-card border border-border rounded-lg p-3 space-y-1.5">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-semibold text-foreground">需要确认</h3>
+          <StatusChip tone="success">已确认</StatusChip>
+        </div>
+        {steps.map((s, i) => (
+          <div key={i} className="flex items-start gap-2 text-[11px]">
+            <span className="text-muted-foreground shrink-0">{s.question}</span>
+            <span className="text-foreground font-medium truncate">{msg.clarifyAnswers?.[i] || "—"}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  const current = steps[step];
+  if (!current) return null;
+  const value = answers[step] ?? "";
+  const isLast = step === steps.length - 1;
+  const canNext = value.trim().length > 0;
+
+  const setValue = (v: string) => {
+    setAnswers((prev) => {
+      const next = [...prev];
+      next[step] = v;
+      return next;
+    });
+  };
+
+  const handleNext = () => {
+    if (!canNext) return;
+    if (isLast) {
+      onSubmit(answers.map((a) => a.trim()));
+    } else {
+      setStep((s) => s + 1);
+    }
+  };
+
+  return (
+    <div className="bg-card border border-border rounded-lg p-3 space-y-2.5">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xs font-semibold text-foreground">需要确认</h3>
+        <span className="text-[10px] text-muted-foreground">{step + 1} / {steps.length}</span>
+      </div>
+
+      {/* 已答步骤摘要 */}
+      {step > 0 && (
+        <div className="space-y-1 pb-1.5 border-b border-border">
+          {steps.slice(0, step).map((s, i) => (
+            <div key={i} className="flex items-start gap-2 text-[10px]">
+              <span className="text-muted-foreground shrink-0">{s.question}</span>
+              <span className="text-foreground truncate">{answers[i]}</span>
+              <button
+                onClick={() => setStep(i)}
+                className="ml-auto text-primary hover:underline shrink-0"
+              >
+                修改
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <p className="text-[11px] text-foreground">{current.question}</p>
+
+      {current.options && current.options.length > 0 && (
+        <div className="flex flex-col gap-1">
+          {current.options.map((opt) => {
+            const selected = value === opt;
+            return (
+              <button
+                key={opt}
+                onClick={() => setValue(opt)}
+                className={cn(
+                  "w-full text-left px-2.5 py-1.5 text-[11px] rounded-md border transition-colors",
+                  selected
+                    ? "border-primary bg-primary/5 text-foreground"
+                    : "border-border bg-card hover:bg-muted hover:border-primary/40",
+                )}
+              >
+                {opt}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="flex items-center gap-1.5 pt-0.5">
+        <input
+          type="text"
+          value={current.options?.includes(value) ? "" : value}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleNext(); } }}
+          placeholder={current.placeholder ?? "或自行输入…"}
+          className="flex-1 px-2 py-1 text-[11px] rounded-md border border-border bg-background focus:outline-none focus:border-primary"
+        />
+        <button
+          onClick={handleNext}
+          disabled={!canNext}
+          className={cn(
+            "px-2.5 py-1 text-[11px] rounded-md font-medium transition-colors shrink-0",
+            canNext
+              ? "bg-primary text-primary-foreground hover:bg-primary/90"
+              : "bg-muted text-muted-foreground cursor-not-allowed",
+          )}
+        >
+          {isLast ? "完成" : "下一个"}
+        </button>
+      </div>
+    </div>
+  );
+};
 
 /* ── Proposal Card ── */
 const ProposalCardInline = ({
@@ -1256,8 +1387,11 @@ const CreateAgentPage = () => {
             role: "assistant",
             content: "",
             type: "clarify",
-            clarifyQuestion: "想修改哪一部分？",
-            clarifyOptions: ["MCP", "Skill", "系统提示词"],
+            clarifySteps: [
+              { question: "想修改哪一部分？", options: ["MCP", "Skill", "系统提示词"] },
+              { question: "期望的操作？", options: ["新增", "替换", "删除"] },
+              { question: "具体目标或要求？", placeholder: "例如：加一个网页搜索能力" },
+            ],
           }]);
           setIsThinking(false);
           setThinkingStartedAt(null);
@@ -1461,25 +1595,22 @@ const CreateAgentPage = () => {
                 ) : msg.type === "draft" && msg.draft ? (
                   <DraftCard draft={msg.draft} />
                 ) : msg.type === "clarify" ? (
-                  <div className="bg-card border border-border rounded-lg p-3 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-xs font-semibold text-foreground">需要确认</h3>
-                    </div>
-                    <p className="text-[11px] text-foreground">{msg.clarifyQuestion}</p>
-                    {msg.clarifyOptions && msg.clarifyOptions.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 pt-0.5">
-                        {msg.clarifyOptions.map((opt) => (
-                          <button
-                            key={opt}
-                            onClick={() => { setInput(opt); setTimeout(() => handleSendRef.current?.(), 0); }}
-                            className="px-2.5 py-1 text-[11px] rounded-md border border-border bg-card hover:bg-muted hover:border-primary/40 transition-colors"
-                          >
-                            {opt}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  <ClarifyCard
+                    msg={msg}
+                    onSubmit={(answers) => {
+                      // 标记此 clarify 卡为已完成
+                      setMessages((prev) => prev.map((m) =>
+                        m.id === msg.id ? { ...m, clarifyAnswers: answers, clarifyDone: true } : m
+                      ));
+                      // 拼接答案为一条用户消息发给模型
+                      const steps = msg.clarifySteps ?? [];
+                      const combined = steps
+                        .map((s, i) => `${s.question.replace(/[？?]$/, "")}：${answers[i] || "—"}`)
+                        .join("；");
+                      setInput(combined);
+                      setTimeout(() => handleSendRef.current?.(), 0);
+                    }}
+                  />
                 ) : msg.type === "proposal" && msg.proposal ? (
                   <ProposalCardInline
                     msg={msg}
