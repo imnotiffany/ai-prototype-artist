@@ -225,13 +225,13 @@ const CategoryBlock = ({
         </span>
         <span className="ml-auto"><StatusDot status={cat.status} /></span>
       </button>
-      {open && (
+      <Expand open={open}>
         <div className="mt-0.5 space-y-0">
           {cat.events.map((e) => (
             <EventRow key={e.id} ev={e} showRaw={showRaw} />
           ))}
         </div>
-      )}
+      </Expand>
     </div>
   );
 };
