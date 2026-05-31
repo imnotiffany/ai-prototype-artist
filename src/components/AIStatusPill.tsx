@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Sparkles } from "lucide-react";
+import { Wand2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -52,7 +52,7 @@ export const AIStatusPill = ({ stageIndex, stages = defaultStages, startedAt, co
         )}
         aria-hidden
       >
-        <Sparkles className={cn("animate-pulse", compact ? "w-2.5 h-2.5" : "w-3 h-3")} />
+        <Wand2 className={cn("animate-pulse", compact ? "w-2.5 h-2.5" : "w-3 h-3")} />
       </div>
       <div
         className={cn(

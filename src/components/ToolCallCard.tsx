@@ -5,7 +5,7 @@ import {
   X,
   Loader2,
   Plug,
-  Sparkles,
+  Wand2,
   Bot,
   Search,
 } from "lucide-react";
@@ -51,7 +51,7 @@ export interface ToolCall {
 const iconFor = (kind: ToolCallKind) => {
   switch (kind) {
     case "mcp": return Plug;
-    case "skill": return Sparkles;
+    case "skill": return Wand2;
     case "subagent": return Bot;
     case "search": return Search;
   }
