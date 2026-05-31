@@ -277,25 +277,56 @@ const PhaseBlock = ({
 
 const SummaryBlock = ({
   ev,
+  phases = [],
+  showRaw,
 }: {
   ev: Extract<TimelineEvent, { kind: "summary" }>;
+  phases?: Extract<TimelineEvent, { kind: "phase" }>[];
+  showRaw: boolean;
 }) => {
   const Icon = ev.status === "success" ? Check : ev.status === "failed" ? X : AlertTriangle;
   const iconCls =
     ev.status === "success"
-      ? "text-emerald-500"
+      ? "text-muted-foreground"
       : ev.status === "failed"
         ? "text-destructive"
         : "text-muted-foreground";
+  const [open, setOpen] = useState(false);
+  const canExpand = phases.length > 0;
 
   return (
     <div className="py-1">
-      <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
-        <Icon className={cn("w-3.5 h-3.5", iconCls)} strokeWidth={2.5} />
-        {ev.status === "success" && `任务已执行完 · 耗时 ${fmtDuration(ev.durationMs)}`}
-        {ev.status === "failed" && `任务未完成 · 耗时 ${fmtDuration(ev.durationMs)}`}
-        {ev.status === "cancelled" && `任务已中断 · 耗时 ${fmtDuration(ev.durationMs)}`}
-      </div>
+      <button
+        type="button"
+        disabled={!canExpand}
+        onClick={() => setOpen((v) => !v)}
+        className={cn(
+          "group flex w-full items-center gap-2 py-0.5 text-left text-[12px] text-muted-foreground",
+          canExpand ? "cursor-pointer hover:text-foreground" : "cursor-default",
+        )}
+      >
+        <span className="truncate">
+          {ev.status === "success" && `任务已执行完 · 耗时 ${fmtDuration(ev.durationMs)}`}
+          {ev.status === "failed" && `任务未完成 · 耗时 ${fmtDuration(ev.durationMs)}`}
+          {ev.status === "cancelled" && `任务已中断 · 耗时 ${fmtDuration(ev.durationMs)}`}
+        </span>
+        {canExpand && (
+          <ChevronDown
+            className={cn(
+              "w-3 h-3 text-muted-foreground/50 transition-transform shrink-0",
+              open ? "rotate-0" : "-rotate-90",
+            )}
+          />
+        )}
+        <Icon className={cn("ml-auto w-3.5 h-3.5 shrink-0", iconCls)} strokeWidth={2.5} />
+      </button>
+      <Expand open={canExpand && open}>
+        <div className="mt-1.5 space-y-1.5">
+          {phases.map((phase) => (
+            <PhaseBlock key={phase.id} phase={phase} detail="summary" showRaw={showRaw} defaultExpanded={false} compact />
+          ))}
+        </div>
+      </Expand>
       <div className="mt-2 text-[13px] text-foreground leading-relaxed whitespace-pre-wrap">
         {ev.text}
       </div>
