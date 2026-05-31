@@ -330,25 +330,21 @@ export const ArtifactsDrawer = ({ open, onOpenChange, artifacts, title = "文件
         <div className="flex-1 min-h-0 flex">
           {/* 左侧：文件树 */}
           <div className="w-[260px] border-r border-border flex flex-col shrink-0">
-            <div className="px-3 pt-3 pb-2 flex items-center gap-1.5">
-              <div className="relative flex-1">
-                <Search className="w-3 h-3 text-muted-foreground absolute left-2 top-1/2 -translate-y-1/2" />
-                <Input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="搜索文件…"
-                  className="h-7 text-xs pl-7 bg-muted/40 border-transparent focus-visible:border-border focus-visible:bg-background"
-                />
-              </div>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-7 w-7 shrink-0"
+            <div className="px-3 pt-3 pb-2 relative">
+              <Search className="w-3 h-3 text-muted-foreground absolute left-5 top-1/2 -translate-y-1/2" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="搜索文件…"
+                className="h-7 text-xs pl-7 pr-8 bg-muted/40 border-transparent focus-visible:border-border focus-visible:bg-background"
+              />
+              <button
                 title="打包下载全部"
                 onClick={() => toast({ title: "开始打包下载", description: `共 ${data.length} 个文件` })}
+                className="absolute right-5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               >
                 <Download className="w-3.5 h-3.5" />
-              </Button>
+              </button>
             </div>
             <div className="flex-1 overflow-auto px-1.5 pb-2">
               {tree.length === 0 ? (
@@ -366,6 +362,7 @@ export const ArtifactsDrawer = ({ open, onOpenChange, artifacts, title = "文件
             <ArtifactPreview a={selected} />
           </div>
         </div>
+
       </SheetContent>
     </Sheet>
   );
