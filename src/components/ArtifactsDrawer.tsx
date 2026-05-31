@@ -13,7 +13,7 @@ import {
   Music,
   Video,
   File as FileIcon,
-  Sparkles,
+  Wand2,
   Upload,
 } from "lucide-react";
 import {

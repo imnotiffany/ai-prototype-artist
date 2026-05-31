@@ -15,7 +15,7 @@ import {
   Video,
   File as FileIcon,
   Upload,
-  Sparkles,
+  Wand2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

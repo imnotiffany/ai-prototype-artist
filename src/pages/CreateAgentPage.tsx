@@ -3,7 +3,7 @@ import { useNavigate, useLocation, Link } from "react-router-dom";
 import {
   Send, ChevronRight, CheckCircle2, Copy, Loader2, ChevronDown, Code2, Settings2,
   Zap, Server, Plus, X, Rocket, Package, Bot, ScrollText, MessageSquare, Bug,
-  History, FormInput, KeyRound, Link2, Eye, EyeOff, AlertCircle, ExternalLink, Save, Sparkles, RefreshCw,
+  History, FormInput, KeyRound, Link2, Eye, EyeOff, AlertCircle, ExternalLink, Save, Wand2, RefreshCw,
   Search, Terminal,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
@@ -842,7 +842,7 @@ const AssemblySummaryCard = ({
       {/* Downscale 提示条 */}
       {downscale && (
         <div className="flex items-start gap-2 rounded-md border border-amber-300/60 bg-amber-50 px-3 py-2 text-[11px] text-amber-900 dark:bg-amber-950/30 dark:text-amber-200 dark:border-amber-800/60">
-          <Sparkles className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+          <Wand2 className="w-3.5 h-3.5 shrink-0 mt-0.5" />
           <div className="flex-1">
             为保证响应速度，已为你精简到核心能力（{total} 项）。
             <button className="ml-1 underline hover:no-underline" onClick={() => toast({ title: "查看被精简的能力", description: "（mock）将展示剔除项与原因" })}>
