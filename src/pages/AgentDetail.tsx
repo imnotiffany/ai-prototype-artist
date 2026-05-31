@@ -1204,51 +1204,51 @@ fengsheng:
               {activeRun ? (
                 <>
                   <header className="px-4 py-2.5 border-b border-border space-y-1 shrink-0">
-                    <div className="flex items-center gap-2 text-xs">
-                      <span className="font-semibold">会话详情</span>
-                      <span className="text-[10px] text-muted-foreground">
-                        会话 ID：<span className="font-mono text-foreground">{activeRun.id}</span>
-                      </span>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className="font-semibold">会话详情</span>
+                        <span className="text-[10px] text-muted-foreground">
+                          会话 ID：<span className="font-mono text-foreground">{activeRun.id}</span>
+                        </span>
+                      </div>
+                      <Button size="sm" variant="outline" className="h-7 text-xs gap-1.5" onClick={() => setArtifactsOpen(true)}>
+                        <FolderOpen className="w-3.5 h-3.5" />
+                        文件
+                      </Button>
                     </div>
                     <div className="flex items-center gap-3 text-[10px] text-muted-foreground flex-wrap">
                       <span>来源：<span className="text-foreground">{activeRun.source}</span></span>
                       <span>触发人：<span className="text-foreground">{activeRun.trigger}</span></span>
                       <span>时间：<span className="font-mono text-foreground">{activeRun.startedAt}</span></span>
                       <span>时长：<span className="font-mono text-foreground">{activeRun.duration}</span></span>
+                      <span>模型：<span className="text-foreground">claude-sonnet-4-6</span></span>
+                      <span>总 tokens：<span className="font-mono text-foreground">1552</span></span>
                     </div>
                   </header>
-                  <div className="flex-1 min-h-0">
-                    <RunDualView
-                      transcriptEvents={activeRun.prompt ? buildMockTranscript(activeRun.prompt) : []}
-                      debugEvents={mockDebugEvents}
-                      debugMeta={[
-                        { label: "模型", value: "claude-sonnet-4-6" },
-                        { label: "总耗时", value: activeRun.duration },
-                        { label: "总 tokens", value: "1552" },
-                      ]}
-                      toolbarRight={
-                        <Button size="sm" variant="outline" className="h-7 text-xs gap-1.5" onClick={() => setArtifactsOpen(true)}>
-                          <FolderOpen className="w-3.5 h-3.5" />
-                          文件
-                        </Button>
-                      }
-                      transcriptInput={
-                        <div className="p-2.5">
-                          <ChatComposer
-                            value={runReplyInput}
-                            onChange={setRunReplyInput}
-                            onSend={({ text }) => {
-                              setRunReplyInput(text);
-                              handleRunReplySend();
-                            }}
-                            placeholder="继续这个会话…"
-                            compact
-                            onOpenFiles={() => setArtifactsOpen(true)}
-                            mentionableFiles={mockArtifacts}
-                          />
-                        </div>
-                      }
-                    />
+                  <div className="flex-1 min-h-0 flex flex-col">
+                    <div className="flex-1 min-h-0">
+                      <RunTimelineView
+                        scenario={transcriptToTimelineScenario(
+                          activeRun.prompt ? buildMockTranscript(activeRun.prompt) : [],
+                          { id: activeRun.id, title: "会话详情", running: false },
+                        )}
+                        agentAvatar={agent?.avatar}
+                      />
+                    </div>
+                    <div className="border-t border-border p-2.5 shrink-0">
+                      <ChatComposer
+                        value={runReplyInput}
+                        onChange={setRunReplyInput}
+                        onSend={({ text }) => {
+                          setRunReplyInput(text);
+                          handleRunReplySend();
+                        }}
+                        placeholder="继续这个会话…"
+                        compact
+                        onOpenFiles={() => setArtifactsOpen(true)}
+                        mentionableFiles={mockArtifacts}
+                      />
+                    </div>
                   </div>
                 </>
               ) : (
