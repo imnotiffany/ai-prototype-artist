@@ -76,14 +76,12 @@ export const AvatarPicker = ({
             </button>
           )}
         </div>
-        <div className="flex flex-wrap items-center gap-1.5">
-          <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={handleUploadClick}>
-            <Upload className="w-3 h-3" />
-            上传头像
+        <div className="flex flex-wrap items-center gap-1">
+          <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={handleUploadClick} title="上传头像">
+            <Upload className="w-3.5 h-3.5" />
           </Button>
-          <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={regenerate} disabled={generating}>
-            <RefreshCw className={`w-3 h-3 ${generating ? "animate-spin" : ""}`} />
-            {generating ? "生成中…" : "AI 重新生成"}
+          <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={regenerate} disabled={generating} title="AI 重新生成">
+            <RefreshCw className={`w-3.5 h-3.5 ${generating ? "animate-spin" : ""}`} />
           </Button>
         </div>
         <input
@@ -94,7 +92,6 @@ export const AvatarPicker = ({
           onChange={handleFileChange}
         />
       </div>
-      <p className="mt-1 text-[10px] text-muted-foreground">支持 JPG/PNG/GIF/WEBP，建议正方形，不超过 2MB</p>
     </div>
   );
 };

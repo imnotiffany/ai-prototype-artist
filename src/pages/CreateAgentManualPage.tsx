@@ -738,10 +738,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
           {/* Basic: 名称 / 头像 / 描述 / 分类 */}
           <TabsContent value="basic" className="mt-3 space-y-3">
             <div className="border border-border rounded-lg p-4 space-y-3 bg-card">
-              <div>
-                <h2 className="text-sm font-semibold">基础信息</h2>
-                <p className="text-[11px] text-muted-foreground mt-0.5">定义智能体的名称、头像和分类，后续步骤将基于此生成配置</p>
-              </div>
+              <h2 className="text-sm font-semibold">基础信息</h2>
 
               <AvatarPicker
                 uploadedAvatar={uploadedAvatar}
