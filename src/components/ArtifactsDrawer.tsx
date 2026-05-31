@@ -327,48 +327,43 @@ export const ArtifactsDrawer = ({ open, onOpenChange, artifacts, title = "文件
           </SheetTitle>
         </SheetHeader>
 
-        <div className="flex-1 min-h-0 p-4">
-          <div className="h-full flex border border-border rounded-lg overflow-hidden bg-background">
-            {/* 左侧：文件树 */}
-            <div className="w-[260px] border-r border-border flex flex-col bg-muted/10 shrink-0">
-              <div className="p-2 flex items-center gap-1.5 border-b border-border">
-                <span className="text-xs font-medium text-foreground flex-1">{title}</span>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-6 w-6"
-                  title="打包下载全部"
-                  onClick={() => toast({ title: "开始打包下载", description: `共 ${data.length} 个文件` })}
-                >
-                  <Download className="w-3 h-3" />
-                </Button>
+        <div className="flex-1 min-h-0 flex">
+          {/* 左侧：文件树 */}
+          <div className="w-[260px] border-r border-border flex flex-col shrink-0">
+            <div className="px-3 pt-3 pb-2 flex items-center gap-1.5">
+              <div className="relative flex-1">
+                <Search className="w-3 h-3 text-muted-foreground absolute left-2 top-1/2 -translate-y-1/2" />
+                <Input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="搜索文件…"
+                  className="h-7 text-xs pl-7 bg-muted/40 border-transparent focus-visible:border-border focus-visible:bg-background"
+                />
               </div>
-              <div className="p-2 border-b border-border">
-                <div className="relative">
-                  <Search className="w-3 h-3 text-muted-foreground absolute left-2 top-1/2 -translate-y-1/2" />
-                  <Input
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="搜索文件…"
-                    className="h-7 text-xs pl-7"
-                  />
-                </div>
-              </div>
-              <div className="flex-1 overflow-auto p-1">
-                {tree.length === 0 ? (
-                  <div className="text-xs text-muted-foreground text-center py-6">暂无文件</div>
-                ) : (
-                  tree.map((n) => (
-                    <TreeNode key={n.path} node={n} depth={0} selectedPath={selected?.path ?? null} onSelect={setSelected} search={search} />
-                  ))
-                )}
-              </div>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-7 w-7 shrink-0"
+                title="打包下载全部"
+                onClick={() => toast({ title: "开始打包下载", description: `共 ${data.length} 个文件` })}
+              >
+                <Download className="w-3.5 h-3.5" />
+              </Button>
             </div>
+            <div className="flex-1 overflow-auto px-1.5 pb-2">
+              {tree.length === 0 ? (
+                <div className="text-xs text-muted-foreground text-center py-6">暂无文件</div>
+              ) : (
+                tree.map((n) => (
+                  <TreeNode key={n.path} node={n} depth={0} selectedPath={selected?.path ?? null} onSelect={setSelected} search={search} />
+                ))
+              )}
+            </div>
+          </div>
 
-            {/* 右侧：预览 */}
-            <div className="flex-1 min-w-0">
-              <ArtifactPreview a={selected} />
-            </div>
+          {/* 右侧：预览 */}
+          <div className="flex-1 min-w-0">
+            <ArtifactPreview a={selected} />
           </div>
         </div>
       </SheetContent>
