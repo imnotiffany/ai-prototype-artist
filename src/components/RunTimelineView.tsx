@@ -512,70 +512,53 @@ export const RunTimelineView = ({
         {visible.map((ev) => {
           if (ev.kind === "user") {
             return (
-              <div key={ev.id} className="flex justify-end items-start gap-2">
+              <div key={ev.id} className="flex justify-end animate-fade-in">
                 <div className="max-w-[80%] rounded-2xl px-3 py-2 text-xs bg-primary text-primary-foreground whitespace-pre-wrap leading-relaxed">
                   {ev.text}
                 </div>
-                <UserAvatar />
               </div>
             );
           }
           if (ev.kind === "agent") {
             return (
-              <div key={ev.id} className="flex justify-start items-start gap-2">
-                <AgentAvatar avatar={agentAvatar} />
-                <div className="max-w-[80%] rounded-2xl px-3 py-2 text-xs bg-secondary text-foreground whitespace-pre-wrap leading-relaxed">
-                  {ev.text}
-                </div>
+              <div
+                key={ev.id}
+                className="text-[13px] text-foreground/90 leading-relaxed whitespace-pre-wrap animate-fade-in"
+              >
+                {ev.text}
               </div>
             );
           }
           if (ev.kind === "summary") {
-            return (
-              <div key={ev.id} className="flex justify-start items-start gap-2">
-                <AgentAvatar avatar={agentAvatar} />
-                <div className="flex-1 min-w-0 max-w-[85%]"><SummaryBlock ev={ev} /></div>
-              </div>
-            );
+            return <div key={ev.id} className="animate-fade-in"><SummaryBlock ev={ev} /></div>;
           }
           if (ev.kind === "phase") {
-            // summary 档：完成态阶段塌缩为一行（除非失败/运行中）
             const collapsed =
               detail === "summary" && ev.status !== "running" && ev.status !== "failed";
             return (
-              <div key={ev.id} className="flex justify-start items-start gap-2">
-                <div className="w-8 shrink-0" />
-                <div className="flex-1 min-w-0 max-w-[85%]">
-                  {collapsed ? (
-                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground py-1 px-2 rounded border border-border bg-card/40">
-                      <StatusDot status={ev.status} />
-                      <span className="truncate text-foreground/80">{ev.title}</span>
-                      {ev.durationMs && (
-                        <span className="ml-auto tabular-nums">{fmtDuration(ev.durationMs)}</span>
-                      )}
-                    </div>
-                  ) : (
-                    <PhaseBlock phase={ev} detail={detail} showRaw={showRaw} />
-                  )}
-                </div>
+              <div key={ev.id} className="animate-fade-in">
+                {collapsed ? (
+                  <button
+                    type="button"
+                    className="w-full flex items-center gap-2 text-[11px] text-muted-foreground py-1 px-2 rounded hover:bg-muted/40 transition-colors"
+                  >
+                    <StatusDot status={ev.status} />
+                    <span className="truncate text-foreground/80">{ev.title}</span>
+                    {ev.durationMs && (
+                      <span className="ml-auto tabular-nums">{fmtDuration(ev.durationMs)}</span>
+                    )}
+                  </button>
+                ) : (
+                  <PhaseBlock phase={ev} detail={detail} showRaw={showRaw} />
+                )}
               </div>
             );
           }
           if (ev.kind === "permission") {
-            return (
-              <div key={ev.id} className="flex justify-start items-start gap-2">
-                <div className="w-8 shrink-0" />
-                <div className="flex-1 min-w-0 max-w-[85%]"><PermissionBlock ev={ev} /></div>
-              </div>
-            );
+            return <div key={ev.id} className="animate-fade-in"><PermissionBlock ev={ev} /></div>;
           }
           if (ev.kind === "error") {
-            return (
-              <div key={ev.id} className="flex justify-start items-start gap-2">
-                <div className="w-8 shrink-0" />
-                <div className="flex-1 min-w-0 max-w-[85%]"><ErrorBlock ev={ev} /></div>
-              </div>
-            );
+            return <div key={ev.id} className="animate-fade-in"><ErrorBlock ev={ev} /></div>;
           }
           return <NotificationBlock key={ev.id} text={ev.text} />;
         })}
