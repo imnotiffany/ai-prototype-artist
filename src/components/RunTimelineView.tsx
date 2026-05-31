@@ -168,7 +168,7 @@ const EventRow = ({
         </span>
       </button>
 
-      {(open || (showRaw && (ev.raw || ev.error))) && canExpand && (
+      <Expand open={canExpand && (open || (showRaw && !!(ev.raw || ev.error)))}>
         <div className="ml-5 mt-1 mb-2 space-y-1.5 text-[11px]">
           {ev.error && (
             <pre className="rounded-sm bg-destructive/5 border border-destructive/20 text-destructive px-2 py-1.5 whitespace-pre-wrap leading-5 font-mono">
@@ -182,7 +182,7 @@ const EventRow = ({
             </pre>
           )}
         </div>
-      )}
+      </Expand>
     </div>
   );
 };
