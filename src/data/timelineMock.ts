@@ -185,6 +185,14 @@ const scenario_done_doc: TimelineScenario = {
               durationMs: 38_120,
               raw: { tool: "Skill", name: "doc_structurer", tokens: 4_812 },
             },
+            {
+              id: "p2-e4b",
+              category: "skill",
+              title: "使用「数据对比」技能生成差异表格",
+              status: "success",
+              durationMs: 8_420,
+              raw: { tool: "Skill", name: "data_comparator", columns: ["年份", "总GMV", "折扣率", "补贴力度"] },
+            },
           ],
         },
         {
@@ -357,6 +365,29 @@ const scenario_running_deploy: TimelineScenario = {
           ],
         },
         {
+          key: "skill",
+          label: "质量检查",
+          status: "success",
+          events: [
+            {
+              id: "p2-sk1",
+              category: "skill",
+              title: "使用「代码审查」技能扫描变更文件",
+              status: "success",
+              durationMs: 2_400,
+              raw: { tool: "Skill", name: "code_review", files: 12, issues: 0 },
+            },
+            {
+              id: "p2-sk2",
+              category: "skill",
+              title: "使用「依赖安全检查」技能扫描漏洞",
+              status: "success",
+              durationMs: 3_680,
+              raw: { tool: "Skill", name: "dependency_audit", severity: "none" },
+            },
+          ],
+        },
+        {
           key: "mcp",
           label: "外部服务",
           status: "success",
@@ -433,6 +464,14 @@ const scenario_failed_notify: TimelineScenario = {
           status: "success",
           events: [
             { id: "p1-e2", category: "skill", title: "生成 Markdown 消息正文", status: "success", durationMs: 980 },
+            {
+              id: "p1-e2b",
+              category: "skill",
+              title: "使用「发布摘要」技能提炼变更要点",
+              status: "success",
+              durationMs: 1_240,
+              raw: { tool: "Skill", name: "release_summarizer", commits: 8, highlights: 3 },
+            },
           ],
         },
         {
@@ -583,6 +622,21 @@ const scenario_subagent: TimelineScenario = {
               id: "sub-3d", category: "subagent",
               title: "子任务「调研 菜鸟」完成 · 4 条信息源 · 1 段摘要",
               status: "success", durationMs: 36_010,
+            },
+          ],
+        },
+        {
+          key: "skill",
+          label: "数据整合",
+          status: "success",
+          events: [
+            {
+              id: "p2-sk1",
+              category: "skill",
+              title: "使用「竞品对标」技能提取关键指标",
+              status: "success",
+              durationMs: 5_680,
+              raw: { tool: "Skill", name: "competitor_benchmark", metrics: ["运力增速", "覆盖率", "时效"] },
             },
           ],
         },
