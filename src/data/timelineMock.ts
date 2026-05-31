@@ -539,6 +539,21 @@ const scenario_subagent: TimelineScenario = {
             { id: "sub-3", category: "subagent", title: "启动子任务：调研 菜鸟", status: "success", durationMs: 80 },
           ],
         },
+        {
+          key: "mcp",
+          label: "外部服务",
+          status: "success",
+          events: [
+            {
+              id: "p1-m1",
+              category: "mcp",
+              title: "通过「Atlassian」MCP 拉取友商对标 Confluence 模板",
+              status: "success",
+              durationMs: 720,
+              raw: { tool: "mcp__atlassian__get_page", space: "competitive" },
+            },
+          ],
+        },
       ],
     },
     {
