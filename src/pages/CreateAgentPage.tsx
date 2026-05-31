@@ -1461,16 +1461,24 @@ const CreateAgentPage = () => {
                 ) : msg.type === "draft" && msg.draft ? (
                   <DraftCard draft={msg.draft} />
                 ) : msg.type === "clarify" ? (
-                  <div className="border border-border rounded-lg p-3 bg-card space-y-2">
-                    <p className="text-xs text-foreground">{msg.content}</p>
-                    <ul className="space-y-1.5">
-                      {msg.clarifyQuestions?.map((q, i) => (
-                        <li key={i} className="flex items-start gap-1.5 text-[11px] text-muted-foreground">
-                          <span className="text-primary mt-0.5">•</span>
-                          <span>{q}</span>
-                        </li>
-                      ))}
-                    </ul>
+                  <div className="bg-card border border-border rounded-lg p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs font-semibold text-foreground">需要确认</h3>
+                    </div>
+                    <p className="text-[11px] text-foreground">{msg.clarifyQuestion}</p>
+                    {msg.clarifyOptions && msg.clarifyOptions.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 pt-0.5">
+                        {msg.clarifyOptions.map((opt) => (
+                          <button
+                            key={opt}
+                            onClick={() => { setInput(opt); setTimeout(() => handleSendRef.current?.(), 0); }}
+                            className="px-2.5 py-1 text-[11px] rounded-md border border-border bg-card hover:bg-muted hover:border-primary/40 transition-colors"
+                          >
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ) : msg.type === "proposal" && msg.proposal ? (
                   <ProposalCardInline
