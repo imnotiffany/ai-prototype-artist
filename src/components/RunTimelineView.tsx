@@ -147,7 +147,7 @@ const EventRow = ({
           !canExpand && "cursor-default",
         )}
       >
-        <Icon className={cn("w-3.5 h-3.5 shrink-0", isFailed ? "text-destructive" : tone, "opacity-80")} />
+        {isFailed && <span className="w-1 h-1 rounded-full bg-destructive shrink-0" />}
         <span className="truncate">{ev.title}</span>
         {canExpand && (
           <ChevronDown
