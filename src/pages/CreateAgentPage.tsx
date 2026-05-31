@@ -59,8 +59,9 @@ interface Message {
   attachments?: { type: "skill" | "mcp"; name: string }[];
   toolCalls?: ToolCall[];
   isStreaming?: boolean;
-  /** clarify 类型：澄清问题列表 */
-  clarifyQuestions?: string[];
+  /** clarify 类型：单一澄清问题 + 选项 */
+  clarifyQuestion?: string;
+  clarifyOptions?: string[];
   /** proposal 类型：AI 建议的配置变更 */
   proposal?: Proposal;
   /** draft 类型：初始草稿快照 */
