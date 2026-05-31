@@ -300,34 +300,27 @@ const SummaryBlock = ({
 }: {
   ev: Extract<TimelineEvent, { kind: "summary" }>;
 }) => {
-  const tone =
-    ev.status === "success"
-      ? "border-emerald-500/30 bg-emerald-500/5"
-      : ev.status === "failed"
-        ? "border-destructive/40 bg-destructive/5"
-        : "border-border bg-muted/40";
   const Icon = ev.status === "success" ? Check : ev.status === "failed" ? X : AlertTriangle;
   const iconCls =
     ev.status === "success"
-      ? "text-emerald-600 dark:text-emerald-400"
+      ? "text-emerald-500"
       : ev.status === "failed"
         ? "text-destructive"
         : "text-muted-foreground";
 
   return (
-    <div className={cn("rounded-md border px-3 py-2.5", tone)}>
-      <div className="flex items-center gap-2 text-[12px] font-medium text-foreground">
-        <Icon className={cn("w-4 h-4", iconCls)} strokeWidth={2.5} />
-        {ev.status === "success" && `任务已执行完，耗时 ${fmtDuration(ev.durationMs)}`}
-        {ev.status === "failed" && `任务未完成，耗时 ${fmtDuration(ev.durationMs)}`}
-        {ev.status === "cancelled" && `任务已中断，耗时 ${fmtDuration(ev.durationMs)}`}
+    <div className="py-1">
+      <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
+        <Icon className={cn("w-3.5 h-3.5", iconCls)} strokeWidth={2.5} />
+        {ev.status === "success" && `任务已执行完 · 耗时 ${fmtDuration(ev.durationMs)}`}
+        {ev.status === "failed" && `任务未完成 · 耗时 ${fmtDuration(ev.durationMs)}`}
+        {ev.status === "cancelled" && `任务已中断 · 耗时 ${fmtDuration(ev.durationMs)}`}
       </div>
-      <div className="mt-1.5 text-[12px] text-foreground/85 leading-relaxed whitespace-pre-wrap">
+      <div className="mt-2 text-[13px] text-foreground leading-relaxed whitespace-pre-wrap">
         {ev.text}
       </div>
       {ev.artifacts && ev.artifacts.length > 0 && (
         <div className="mt-2">
-          <div className="text-[10px] uppercase tracking-wider text-muted-foreground/70 mb-1">附件</div>
           <ArtifactChips artifacts={ev.artifacts} />
         </div>
       )}
