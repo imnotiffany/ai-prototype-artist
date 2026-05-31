@@ -341,26 +341,6 @@ const DraftCard = ({ draft }: { draft: NonNullable<Message["draft"]> }) => (
   </div>
 );
 
-/* ── Proposal Card (AI 建议变更 - 采纳/撤销) ── */
-const ProposalCardInline = ({
-  msg,
-  onAccept,
-  onWithdraw,
-}: {
-  msg: Message;
-  onAccept: () => void;
-  onWithdraw: () => void;
-}) => {
-  const p = msg.proposal!;
-  const { diff, status } = p;
-  type Row = { kind: "add" | "remove" | "prompt"; label: string; text: string };
-  const rows: Row[] = [
-    ...diff.addedMcps.map<Row>((x) => ({ kind: "add", label: "MCP", text: x })),
-    ...diff.removedMcps.map<Row>((x) => ({ kind: "remove", label: "MCP", text: x })),
-    ...diff.addedSkills.map<Row>((x) => ({ kind: "add", label: "Skill", text: x })),
-    ...diff.removedSkills.map<Row>((x) => ({ kind: "remove", label: "Skill", text: x })),
-    ...(diff.promptChanged ? [{ kind: "prompt" as const, label: "提示词", text: diff.promptNote ? `${diff.promptNote.slice(0, 40)}${diff.promptNote.length > 40 ? "…" : ""}` : "更新系统提示词" }] : []),
-  ];
 /* ── Proposal Card ── */
 const ProposalCardInline = ({
   msg,
