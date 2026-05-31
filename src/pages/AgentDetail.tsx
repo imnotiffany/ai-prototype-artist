@@ -617,30 +617,27 @@ const AgentDetail = () => {
                   </Button>
                 </div>
                 <div className="flex-1 min-h-0">
-                  <RunDualView
-                    transcriptEvents={(() => {
-                      const evs: TranscriptEvent[] = [];
-                      runMessages.forEach((m, i) => {
-                        if (m.role === "user") evs.push({ id: `u${i}`, type: "user", content: m.content });
-                        else if (m.status === "error") evs.push({ id: `e${i}`, type: "error", message: m.content });
-                        else {
-                          if (m.tool) evs.push({
-                            id: `t${i}`, type: "tools",
-                            calls: [{ id: `c${i}`, kind: "mcp", name: m.tool, summary: "调用成功", status: "success" }],
-                          });
-                          evs.push({ id: `a${i}`, type: "agent", content: m.content });
-                        }
-                      });
-                      return evs;
-                    })()}
-                    debugEvents={debugLogs.map((l) => ({
-                      id: String(l.id),
-                      ts: l.ts,
-                      type: `log.${l.level}`,
-                      data: { message: l.message, ...(l.meta ? { meta: l.meta } : {}) },
-                    }))}
-                    showTranscriptSearch={false}
-                    transcriptFooter={debugRunning ? <AIStatusPill /> : undefined}
+                  <RunTimelineView
+                    scenario={transcriptToTimelineScenario(
+                      (() => {
+                        const evs: TranscriptEvent[] = [];
+                        runMessages.forEach((m, i) => {
+                          if (m.role === "user") evs.push({ id: `u${i}`, type: "user", content: m.content });
+                          else if (m.status === "error") evs.push({ id: `e${i}`, type: "error", message: m.content });
+                          else {
+                            if (m.tool) evs.push({
+                              id: `t${i}`, type: "tools",
+                              calls: [{ id: `c${i}`, kind: "mcp", name: m.tool, summary: "调用成功", status: "success" }],
+                            });
+                            evs.push({ id: `a${i}`, type: "agent", content: m.content });
+                          }
+                        });
+                        return evs;
+                      })(),
+                      { id: "debug", title: "调试会话", running: debugRunning },
+                    )}
+                    agentAvatar={agent?.avatar}
+                    footer={debugRunning ? <AIStatusPill /> : undefined}
                   />
                 </div>
                 <div className="border-t border-border p-2 shrink-0">
