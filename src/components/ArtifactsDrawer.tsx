@@ -153,16 +153,9 @@ const TreeNode = ({
     >
       <IconForType type={a.type} className="w-3 h-3 shrink-0 text-foreground/50" />
       <span className="truncate flex-1">{node.name}</span>
-      <span
-        className={cn(
-          "shrink-0 inline-flex items-center px-1 h-3.5 rounded-sm text-[9px] font-medium",
-          isUpload
-            ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
-            : "bg-muted text-muted-foreground",
-        )}
-      >
-        {isUpload ? "传入" : "产物"}
-      </span>
+      {isUpload && (
+        <span title="用户传入" className="shrink-0 w-1.5 h-1.5 rounded-full bg-blue-500/70" />
+      )}
     </button>
   );
 };
