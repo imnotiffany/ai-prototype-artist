@@ -121,7 +121,7 @@ const ArtifactChips = ({ artifacts }: { artifacts: TimelineArtifact[] }) => (
 );
 
 /** 单个事件 —— 浅灰胶囊样式，点击展开 raw / error / artifacts */
-const EventRow = ({
+export const EventRow = ({
   ev,
   showRaw,
 }: {
