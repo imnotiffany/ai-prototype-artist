@@ -459,9 +459,17 @@ export const RunTimelineView = ({
   const [showRaw, setShowRaw] = useState(false);
   const [filter, setFilter] = useState<FilterKey>("all");
 
+  const summaryPhases = useMemo(
+    () => scenario.events.filter((e): e is Extract<TimelineEvent, { kind: "phase" }> => e.kind === "phase"),
+    [scenario.events],
+  );
+  const hasSummary = scenario.events.some((e) => e.kind === "summary");
   const visible = useMemo(
-    () => scenario.events.filter((e) => e.kind === "user" || e.kind === "agent" || e.kind === "events" || matchFilter(e, filter)),
-    [scenario.events, filter],
+    () => scenario.events.filter((e) => {
+      if (hasSummary && e.kind === "phase") return false;
+      return e.kind === "user" || e.kind === "agent" || e.kind === "events" || matchFilter(e, filter);
+    }),
+    [scenario.events, filter, hasSummary],
   );
 
   return (
@@ -498,7 +506,11 @@ export const RunTimelineView = ({
             );
           }
           if (ev.kind === "summary") {
-            return <div key={ev.id} className="animate-fade-in"><SummaryBlock ev={ev} /></div>;
+            return (
+              <div key={ev.id} className="animate-fade-in">
+                <SummaryBlock ev={ev} phases={summaryPhases} showRaw={showRaw} />
+              </div>
+            );
           }
           if (ev.kind === "phase") {
             // summary 档：完成态默认折叠，但点击可展开
