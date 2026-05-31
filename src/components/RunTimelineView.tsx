@@ -129,7 +129,7 @@ const EventRow = ({
   showRaw: boolean;
 }) => {
   const [open, setOpen] = useState(false);
-  void CAT_META; // icons removed from timeline rows by design
+  
   const canExpand = !!ev.raw || !!ev.error || !!ev.artifacts?.length;
   const isFailed = ev.status === "failed";
   const dur = fmtDuration(ev.durationMs);
