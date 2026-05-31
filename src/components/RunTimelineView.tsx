@@ -203,17 +203,19 @@ const CategoryEvents = ({
   </div>
 );
 
-/** 阶段块 —— 无边框，点击 ✓ + 标题展开下方事件胶囊 */
+/** 阶段块 —— 无边框，点击标题展开下方执行细节 */
 const PhaseBlock = ({
   phase,
   detail,
   showRaw,
   defaultExpanded,
+  compact = false,
 }: {
   phase: Extract<TimelineEvent, { kind: "phase" }>;
   detail: Detail;
   showRaw: boolean;
   defaultExpanded?: boolean;
+  compact?: boolean;
 }) => {
   const level = DETAIL_LEVEL[detail];
   const isRunning = phase.status === "running";
@@ -228,12 +230,12 @@ const PhaseBlock = ({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="group flex items-center gap-2 text-left -mx-1 px-1 py-0.5 rounded hover:bg-muted/40 transition-colors w-full"
+        className="group flex items-center gap-2 text-left py-0.5 transition-colors w-full"
       >
-        <StatusDot status={phase.status} size="md" />
         <span
           className={cn(
-            "text-[13px] truncate",
+            compact ? "text-[12px]" : "text-[13px]",
+            "truncate",
             isFailed ? "text-destructive font-medium" : "text-foreground/85",
           )}
         >
@@ -251,10 +253,11 @@ const PhaseBlock = ({
           )}
         />
         {dur && (
-          <span className="ml-auto text-[10px] text-muted-foreground/60 tabular-nums shrink-0">
+          <span className="ml-auto text-[10px] text-muted-foreground/60 tabular-nums shrink-0 pl-2">
             {dur}
           </span>
         )}
+        <StatusDot status={phase.status} size="md" />
       </button>
       <Expand open={open}>
         <div className="ml-5 mt-1.5 space-y-1.5">
@@ -274,25 +277,56 @@ const PhaseBlock = ({
 
 const SummaryBlock = ({
   ev,
+  phases = [],
+  showRaw,
 }: {
   ev: Extract<TimelineEvent, { kind: "summary" }>;
+  phases?: Extract<TimelineEvent, { kind: "phase" }>[];
+  showRaw: boolean;
 }) => {
   const Icon = ev.status === "success" ? Check : ev.status === "failed" ? X : AlertTriangle;
   const iconCls =
     ev.status === "success"
-      ? "text-emerald-500"
+      ? "text-muted-foreground"
       : ev.status === "failed"
         ? "text-destructive"
         : "text-muted-foreground";
+  const [open, setOpen] = useState(false);
+  const canExpand = phases.length > 0;
 
   return (
     <div className="py-1">
-      <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
-        <Icon className={cn("w-3.5 h-3.5", iconCls)} strokeWidth={2.5} />
-        {ev.status === "success" && `任务已执行完 · 耗时 ${fmtDuration(ev.durationMs)}`}
-        {ev.status === "failed" && `任务未完成 · 耗时 ${fmtDuration(ev.durationMs)}`}
-        {ev.status === "cancelled" && `任务已中断 · 耗时 ${fmtDuration(ev.durationMs)}`}
-      </div>
+      <Expand open={canExpand && open}>
+        <div className="mb-1.5 space-y-1.5">
+          {phases.map((phase) => (
+            <PhaseBlock key={phase.id} phase={phase} detail="summary" showRaw={showRaw} defaultExpanded={false} compact />
+          ))}
+        </div>
+      </Expand>
+      <button
+        type="button"
+        disabled={!canExpand}
+        onClick={() => setOpen((v) => !v)}
+        className={cn(
+          "group flex w-full items-center gap-2 py-0.5 text-left text-[12px] text-muted-foreground",
+          canExpand ? "cursor-pointer hover:text-foreground" : "cursor-default",
+        )}
+      >
+        <span className="truncate">
+          {ev.status === "success" && `任务已执行完 · 耗时 ${fmtDuration(ev.durationMs)}`}
+          {ev.status === "failed" && `任务未完成 · 耗时 ${fmtDuration(ev.durationMs)}`}
+          {ev.status === "cancelled" && `任务已中断 · 耗时 ${fmtDuration(ev.durationMs)}`}
+        </span>
+        {canExpand && (
+          <ChevronDown
+            className={cn(
+              "w-3 h-3 text-muted-foreground/50 transition-transform shrink-0",
+              open ? "rotate-0" : "-rotate-90",
+            )}
+          />
+        )}
+        <Icon className={cn("ml-auto w-3.5 h-3.5 shrink-0", iconCls)} strokeWidth={2.5} />
+      </button>
       <div className="mt-2 text-[13px] text-foreground leading-relaxed whitespace-pre-wrap">
         {ev.text}
       </div>
@@ -425,9 +459,17 @@ export const RunTimelineView = ({
   const [showRaw, setShowRaw] = useState(false);
   const [filter, setFilter] = useState<FilterKey>("all");
 
+  const summaryPhases = useMemo(
+    () => scenario.events.filter((e): e is Extract<TimelineEvent, { kind: "phase" }> => e.kind === "phase"),
+    [scenario.events],
+  );
+  const hasSummary = scenario.events.some((e) => e.kind === "summary");
   const visible = useMemo(
-    () => scenario.events.filter((e) => e.kind === "user" || e.kind === "agent" || e.kind === "events" || matchFilter(e, filter)),
-    [scenario.events, filter],
+    () => scenario.events.filter((e) => {
+      if (hasSummary && e.kind === "phase") return false;
+      return e.kind === "user" || e.kind === "agent" || e.kind === "events" || matchFilter(e, filter);
+    }),
+    [scenario.events, filter, hasSummary],
   );
 
   return (
@@ -464,7 +506,11 @@ export const RunTimelineView = ({
             );
           }
           if (ev.kind === "summary") {
-            return <div key={ev.id} className="animate-fade-in"><SummaryBlock ev={ev} /></div>;
+            return (
+              <div key={ev.id} className="animate-fade-in">
+                <SummaryBlock ev={ev} phases={summaryPhases} showRaw={showRaw} />
+              </div>
+            );
           }
           if (ev.kind === "phase") {
             // summary 档：完成态默认折叠，但点击可展开
