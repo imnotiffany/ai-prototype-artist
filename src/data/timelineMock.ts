@@ -435,6 +435,21 @@ const scenario_failed_notify: TimelineScenario = {
             { id: "p1-e2", category: "skill", title: "生成 Markdown 消息正文", status: "success", durationMs: 980 },
           ],
         },
+        {
+          key: "subagent",
+          label: "子任务",
+          status: "success",
+          events: [
+            {
+              id: "p1-s1",
+              category: "subagent",
+              title: "派发子任务「按收件人优化措辞」",
+              status: "success",
+              durationMs: 1_120,
+              raw: { sub: "skill_subagent", skill: "tone_localizer", target: "ops_group" },
+            },
+          ],
+        },
       ],
     },
     {
