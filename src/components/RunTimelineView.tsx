@@ -72,12 +72,14 @@ const artifactIcon = (kind: TimelineArtifact["kind"]) => {
   }
 };
 
-const StatusDot = ({ status }: { status: RunStatus }) => {
-  if (status === "running") return <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />;
-  if (status === "success") return <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={2.5} />;
-  if (status === "failed") return <X className="w-3.5 h-3.5 text-destructive" strokeWidth={2.5} />;
-  if (status === "pending") return <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />;
-  return <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40" />;
+const StatusDot = ({ status, size = "sm" }: { status: RunStatus; size?: "sm" | "md" }) => {
+  const cls = size === "md" ? "w-3.5 h-3.5" : "w-3 h-3";
+  // 成功 / 完成态统一深灰，只让"失败"用红色突出
+  if (status === "running") return <Loader2 className={cn(cls, "animate-spin text-muted-foreground")} />;
+  if (status === "success") return <Check className={cn(cls, "text-muted-foreground")} strokeWidth={2.5} />;
+  if (status === "failed") return <X className={cn(cls, "text-destructive")} strokeWidth={2.5} />;
+  if (status === "pending") return <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" />;
+  return <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 inline-block" />;
 };
 
 /** 丝滑展开/收起容器：利用 grid-template-rows 0fr↔1fr 过渡，无需测量高度 */
