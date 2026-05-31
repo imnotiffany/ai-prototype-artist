@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, Rocket, Plus, X, Settings2, Cpu, Server, Zap, Shield, KeyRound, Bot, MessageSquare, Eye, EyeOff, Link2, CheckCircle2, Wand, Loader2, ExternalLink, Play, Send, AlertCircle, Bug, FolderKanban, Store, ArrowRight, Mic, MicOff, HelpCircle, FileEdit, Terminal, ChevronDown, ChevronUp, Copy, Brain, Wrench, Info, AlertTriangle, Trash2, RefreshCw, Code2, FileCode, Search } from "lucide-react";
+import { ArrowLeft, Save, Rocket, Plus, X, Settings2, Cpu, Server, Zap, Shield, KeyRound, Bot, MessageSquare, Eye, EyeOff, Link2, CheckCircle2, Wand, Loader2, ExternalLink, Play, Send, AlertCircle, Bug, FolderKanban, Store, ArrowRight, Mic, MicOff, HelpCircle, FileEdit, Terminal, ChevronDown, ChevronUp, Copy, Brain, Wrench, Info, AlertTriangle, Trash2, RefreshCw, Code2, FileCode, Search, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -1484,8 +1484,8 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={copySpec}>
                 <Copy className="w-3 h-3" />复制
               </Button>
-              <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={downloadSpec}>
-                <ArrowRight className="w-3 h-3 rotate-90" />下载
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={downloadSpec} title="下载">
+                <Download className="w-3.5 h-3.5" />
               </Button>
             </div>
           </div>

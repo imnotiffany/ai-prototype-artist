@@ -189,13 +189,13 @@ const ArtifactPreview = ({ a }: { a: Artifact | null }) => {
           </div>
         </div>
         <Button
-          size="sm"
-          variant="outline"
-          className="h-7 text-xs gap-1.5 shrink-0"
+          size="icon"
+          variant="ghost"
+          className="h-6 w-6 shrink-0"
           onClick={() => toast({ title: "已开始下载", description: a.name })}
+          title="下载"
         >
-          <Download className="w-3 h-3" />
-          下载
+          <Download className="w-3.5 h-3.5" />
         </Button>
       </div>
       <div className="flex-1 overflow-auto p-4">
@@ -207,9 +207,8 @@ const ArtifactPreview = ({ a }: { a: Artifact | null }) => {
           <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground gap-3">
             <FileText className="w-12 h-12 opacity-30" />
             <div className="text-xs">PDF 预览需要下载后在本地查看</div>
-            <Button size="sm" variant="outline" className="text-xs gap-1.5" onClick={() => toast({ title: "已开始下载", description: a.name })}>
-              <Download className="w-3 h-3" />
-              下载查看
+            <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => toast({ title: "已开始下载", description: a.name })} title="下载">
+              <Download className="w-3.5 h-3.5" />
             </Button>
           </div>
         ) : a.type === "table" && a.preview ? (
@@ -224,9 +223,8 @@ const ArtifactPreview = ({ a }: { a: Artifact | null }) => {
           <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground gap-3">
             <FileIcon className="w-12 h-12 opacity-30" />
             <div className="text-xs">该类型暂不支持预览</div>
-            <Button size="sm" variant="outline" className="text-xs gap-1.5" onClick={() => toast({ title: "已开始下载", description: a.name })}>
-              <Download className="w-3 h-3" />
-              下载查看
+            <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => toast({ title: "已开始下载", description: a.name })} title="下载">
+              <Download className="w-3.5 h-3.5" />
             </Button>
           </div>
         )}

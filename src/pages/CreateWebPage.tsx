@@ -138,9 +138,8 @@ const CreateWebPage = () => {
               </Tabs>
 
               <div className="flex items-center gap-1.5">
-                <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={handleDownload}>
+                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={handleDownload} title="下载源码">
                   <Download className="w-3.5 h-3.5" />
-                  下载源码
                 </Button>
                 <Button size="sm" className="h-8 text-xs gap-1.5" onClick={handlePublish}>
                   <Upload className="w-3.5 h-3.5" />
