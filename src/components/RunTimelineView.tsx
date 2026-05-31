@@ -279,7 +279,7 @@ const PhaseBlock = ({
           )}
         </span>
       </button>
-      {open && (
+      <Expand open={open}>
         <div className="px-2.5 pb-2 pt-1 space-y-1.5">
           {isRunning && phase.currentAction && (
             <div className="text-[11px] text-muted-foreground md:hidden">
@@ -290,7 +290,7 @@ const PhaseBlock = ({
             <CategoryBlock key={c.key} cat={c} detail={detail} showRaw={showRaw} />
           ))}
         </div>
-      )}
+      </Expand>
     </div>
   );
 };
