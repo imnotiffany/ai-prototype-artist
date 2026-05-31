@@ -262,8 +262,6 @@ const TOOL_CAT: Record<ToolCall["kind"], CategoryKey> = {
   search: "search",
   mcp: "mcp",
   skill: "skill",
-  bash: "bash",
-  file: "file",
   subagent: "subagent",
 };
 const ToolCallStrip = ({ calls }: { calls: ToolCall[] }) => (
