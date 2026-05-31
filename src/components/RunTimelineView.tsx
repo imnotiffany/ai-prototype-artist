@@ -420,7 +420,7 @@ export const RunTimelineView = ({
   const [filter, setFilter] = useState<FilterKey>("all");
 
   const visible = useMemo(
-    () => scenario.events.filter((e) => e.kind === "user" || e.kind === "agent" || matchFilter(e, filter)),
+    () => scenario.events.filter((e) => e.kind === "user" || e.kind === "agent" || e.kind === "events" || matchFilter(e, filter)),
     [scenario.events, filter],
   );
 
