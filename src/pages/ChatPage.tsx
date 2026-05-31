@@ -27,10 +27,12 @@ const ChatPage = () => {
     content: `你好！我是 ${name ?? "智能体"}，有什么可以帮你的吗？`,
   });
 
-  const initialSessions = useMemo<SessionListItem[]>(
-    () => (agent ? getSessionsByAgent(agent.id).map((s) => ({ id: s.id, title: s.title, lastActiveAt: s.lastActiveAt })) : []),
-    [agent],
-  );
+  const initialSessions = useMemo<SessionListItem[]>(() => {
+    const real = agent ? getSessionsByAgent(agent.id).map((s) => ({ id: s.id, title: s.title, lastActiveAt: s.lastActiveAt })) : [];
+    // 注入"新方案"演示会话，方便预览不同场景
+    const demo = TIMELINE_SCENARIOS.map((s) => ({ id: s.id, title: `[演示] ${s.title}`, lastActiveAt: "刚刚" }));
+    return [...demo, ...real];
+  }, [agent]);
   const [sessions, setSessions] = useState<SessionListItem[]>(initialSessions);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(initialSessions[0]?.id ?? null);
   const [drawerCollapsed, setDrawerCollapsed] = useState(false);
