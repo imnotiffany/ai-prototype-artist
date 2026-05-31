@@ -154,7 +154,7 @@ const Row = ({ call, isLast }: { call: ToolCall; isLast: boolean }) => {
                     {ms}ms
                   </span>
                 )}
-                <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={2.5} />
+                <Check className="w-3.5 h-3.5 text-muted-foreground" strokeWidth={2.5} />
               </>
             )}
             {isError && (
