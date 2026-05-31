@@ -59,8 +59,9 @@ interface Message {
   attachments?: { type: "skill" | "mcp"; name: string }[];
   toolCalls?: ToolCall[];
   isStreaming?: boolean;
-  /** clarify 类型：澄清问题列表 */
-  clarifyQuestions?: string[];
+  /** clarify 类型：单一澄清问题 + 选项 */
+  clarifyQuestion?: string;
+  clarifyOptions?: string[];
   /** proposal 类型：AI 建议的配置变更 */
   proposal?: Proposal;
   /** draft 类型：初始草稿快照 */
@@ -279,60 +280,68 @@ const ToolCallStrip = ({ calls }: { calls: ToolCall[] }) => (
   </div>
 );
 
-/* ── Draft Card (初始草稿，紧凑展示) ── */
+/* ── 统一状态 chip ── */
+const StatusChip = ({ tone = "muted", children }: { tone?: "muted" | "primary" | "success"; children: React.ReactNode }) => (
+  <span className={cn(
+    "px-1.5 py-0.5 text-[10px] rounded font-medium",
+    tone === "muted" && "bg-muted text-muted-foreground",
+    tone === "primary" && "bg-primary/10 text-primary",
+    tone === "success" && "bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-400",
+  )}>{children}</span>
+);
+
+/* ── Draft Card ── */
 const DraftCard = ({ draft }: { draft: NonNullable<Message["draft"]> }) => (
-  <div className="bg-card border border-border rounded-lg shadow-sm">
-    <div className="px-3 py-2.5 flex flex-col gap-2">
-      <div className="flex items-center justify-between">
-        <h3 className="text-xs font-semibold text-foreground">智能体草稿</h3>
-        <span className="px-1.5 py-0.5 bg-primary/10 text-primary text-[9px] font-bold rounded tracking-wider">DRAFT</span>
-      </div>
-
-      <div className="flex items-center gap-1.5 text-[11px]">
-        <span className="text-[10px] text-muted-foreground shrink-0">模型</span>
-        <span className="font-mono text-foreground truncate">{draft.model}</span>
-      </div>
-
-      <div className="flex items-start gap-1.5 text-[11px]">
-        <span className="text-[10px] text-muted-foreground shrink-0 pt-0.5">
-          技能 · {draft.skills.length}
-        </span>
-        <div className="flex flex-wrap gap-1 min-w-0">
-          {draft.skills.length === 0 ? (
-            <span className="text-muted-foreground italic">无</span>
-          ) : draft.skills.map((s) => (
-            <span key={s} className="px-1.5 py-0 bg-muted text-foreground text-[10px] rounded">
-              {s}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex items-start gap-1.5 text-[11px]">
-        <span className="text-[10px] text-muted-foreground shrink-0 pt-0.5">
-          MCP · {draft.mcps.length}
-        </span>
-        <div className="flex flex-wrap gap-1 min-w-0">
-          {draft.mcps.length === 0 ? (
-            <span className="text-muted-foreground italic">无</span>
-          ) : draft.mcps.map((m) => (
-            <span key={m} className="px-1.5 py-0 bg-primary/5 text-primary text-[10px] rounded border border-primary/20">
-              {m}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {draft.note && (
-        <p className="text-[10px] text-muted-foreground leading-snug pt-1.5 mt-0.5 border-t border-border">
-          {draft.note}
-        </p>
-      )}
+  <div className="bg-card border border-border rounded-lg p-3 space-y-2">
+    <div className="flex items-center justify-between">
+      <h3 className="text-xs font-semibold text-foreground">智能体草稿</h3>
+      <StatusChip tone="primary">草稿</StatusChip>
     </div>
+
+    <div className="flex items-center gap-1.5 text-[11px]">
+      <span className="text-[10px] text-muted-foreground shrink-0">模型</span>
+      <span className="font-mono text-foreground truncate">{draft.model}</span>
+    </div>
+
+    <div className="flex items-start gap-1.5 text-[11px]">
+      <span className="text-[10px] text-muted-foreground shrink-0 pt-0.5">
+        技能 · {draft.skills.length}
+      </span>
+      <div className="flex flex-wrap gap-1 min-w-0">
+        {draft.skills.length === 0 ? (
+          <span className="text-muted-foreground italic">无</span>
+        ) : draft.skills.map((s) => (
+          <span key={s} className="px-1.5 py-0 bg-muted text-foreground text-[10px] rounded">
+            {s}
+          </span>
+        ))}
+      </div>
+    </div>
+
+    <div className="flex items-start gap-1.5 text-[11px]">
+      <span className="text-[10px] text-muted-foreground shrink-0 pt-0.5">
+        MCP · {draft.mcps.length}
+      </span>
+      <div className="flex flex-wrap gap-1 min-w-0">
+        {draft.mcps.length === 0 ? (
+          <span className="text-muted-foreground italic">无</span>
+        ) : draft.mcps.map((m) => (
+          <span key={m} className="px-1.5 py-0 bg-primary/5 text-primary text-[10px] rounded border border-primary/20">
+            {m}
+          </span>
+        ))}
+      </div>
+    </div>
+
+    {draft.note && (
+      <p className="text-[11px] text-muted-foreground leading-snug pt-1.5 border-t border-border">
+        {draft.note}
+      </p>
+    )}
   </div>
 );
 
-/* ── Proposal Card (AI 建议变更 - 采纳/撤销) ── */
+/* ── Proposal Card ── */
 const ProposalCardInline = ({
   msg,
   onAccept,
@@ -353,57 +362,46 @@ const ProposalCardInline = ({
     ...(diff.promptChanged ? [{ kind: "prompt" as const, label: "提示词", text: diff.promptNote ? `${diff.promptNote.slice(0, 40)}${diff.promptNote.length > 40 ? "…" : ""}` : "更新系统提示词" }] : []),
   ];
   return (
-    <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
-      <div className="p-4 space-y-3">
-        <div className="flex items-center gap-2">
-          <div className={cn(
-            "w-1.5 h-1.5 rounded-full",
-            status === "pending" && "bg-primary",
-            status === "accepted" && "bg-green-500",
-            status === "withdrawn" && "bg-muted-foreground",
-          )} />
-          <h3 className="text-sm font-semibold text-foreground">建议变更</h3>
-          {status === "accepted" && (
-            <span className="ml-auto px-1.5 py-0.5 bg-green-50 text-green-700 text-[10px] font-bold rounded uppercase dark:bg-green-950/40 dark:text-green-400">已采纳</span>
-          )}
-          {status === "withdrawn" && (
-            <span className="ml-auto px-1.5 py-0.5 bg-muted text-muted-foreground text-[10px] font-bold rounded uppercase">已撤销</span>
-          )}
-        </div>
-
-        <div className="space-y-1">
-          {rows.map((r, i) => (
-            <div
-              key={i}
-              className={cn(
-                "flex items-center gap-2 px-2 py-1.5 rounded text-[11px] border",
-                r.kind === "add" && "bg-green-50/60 border-green-200/70 text-green-700 dark:bg-green-950/20 dark:border-green-900/40 dark:text-green-400",
-                r.kind === "remove" && "bg-red-50/60 border-red-200/70 text-red-600 dark:bg-red-950/20 dark:border-red-900/40 dark:text-red-400",
-                r.kind === "prompt" && "bg-primary/5 border-primary/20 text-primary",
-              )}
-            >
-              <span className="font-bold w-3 text-center shrink-0">
-                {r.kind === "add" ? "+" : r.kind === "remove" ? "−" : "✎"}
-              </span>
-              <span className={cn("text-muted-foreground", r.kind === "add" && "text-green-700/80 dark:text-green-400/80", r.kind === "remove" && "text-red-600/80 dark:text-red-400/80", r.kind === "prompt" && "text-primary/80")}>
-                {r.kind === "add" ? "新增" : r.kind === "remove" ? "移除" : "更新"} {r.label}:
-              </span>
-              <span className={cn("font-medium", r.kind === "remove" && "line-through")}>{r.text}</span>
-            </div>
-          ))}
-        </div>
-
-        {status === "pending" && (
-          <div className="flex items-center gap-2 pt-1">
-            <Button size="sm" className="h-7 text-[11px] flex-1" onClick={onAccept}>
-              采纳变更
-            </Button>
-            <Button size="sm" variant="outline" className="h-7 text-[11px] px-3" onClick={onWithdraw}>
-              撤销
-            </Button>
-          </div>
-        )}
+    <div className="bg-card border border-border rounded-lg p-3 space-y-2">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xs font-semibold text-foreground">建议变更</h3>
+        {status === "accepted" && <StatusChip tone="success">已采纳</StatusChip>}
+        {status === "withdrawn" && <StatusChip tone="muted">已撤销</StatusChip>}
+        {status === "pending" && <StatusChip tone="primary">待确认</StatusChip>}
       </div>
+
+      <div className="space-y-1">
+        {rows.map((r, i) => (
+          <div
+            key={i}
+            className={cn(
+              "flex items-center gap-2 px-2 py-1.5 rounded text-[11px] border",
+              r.kind === "add" && "bg-green-50/60 border-green-200/70 text-green-700 dark:bg-green-950/20 dark:border-green-900/40 dark:text-green-400",
+              r.kind === "remove" && "bg-red-50/60 border-red-200/70 text-red-600 dark:bg-red-950/20 dark:border-red-900/40 dark:text-red-400",
+              r.kind === "prompt" && "bg-primary/5 border-primary/20 text-primary",
+            )}
+          >
+            <span className="font-bold w-3 text-center shrink-0">
+              {r.kind === "add" ? "+" : r.kind === "remove" ? "−" : "✎"}
+            </span>
+            <span className="opacity-70">
+              {r.kind === "add" ? "新增" : r.kind === "remove" ? "移除" : "更新"} {r.label}:
+            </span>
+            <span className={cn("font-medium", r.kind === "remove" && "line-through")}>{r.text}</span>
+          </div>
+        ))}
+      </div>
+
+      {status === "pending" && (
+        <div className="flex items-center gap-2 pt-1">
+          <Button size="sm" className="h-7 text-[11px] flex-1" onClick={onAccept}>
+            采纳变更
+          </Button>
+          <Button size="sm" variant="outline" className="h-7 text-[11px] px-3" onClick={onWithdraw}>
+            撤销
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
@@ -1256,13 +1254,10 @@ const CreateAgentPage = () => {
           setMessages((prev) => [...prev, {
             id: clarifyId,
             role: "assistant",
-            content: "为了更准确地调整，我需要再确认几点：",
+            content: "",
             type: "clarify",
-            clarifyQuestions: [
-              "想要修改的是 MCP、Skill 还是系统提示词？",
-              "希望新增、替换还是删除某项能力？",
-              "有具体的能力名称或场景描述吗？",
-            ],
+            clarifyQuestion: "想修改哪一部分？",
+            clarifyOptions: ["MCP", "Skill", "系统提示词"],
           }]);
           setIsThinking(false);
           setThinkingStartedAt(null);
@@ -1466,16 +1461,24 @@ const CreateAgentPage = () => {
                 ) : msg.type === "draft" && msg.draft ? (
                   <DraftCard draft={msg.draft} />
                 ) : msg.type === "clarify" ? (
-                  <div className="border border-border rounded-lg p-3 bg-card space-y-2">
-                    <p className="text-xs text-foreground">{msg.content}</p>
-                    <ul className="space-y-1.5">
-                      {msg.clarifyQuestions?.map((q, i) => (
-                        <li key={i} className="flex items-start gap-1.5 text-[11px] text-muted-foreground">
-                          <span className="text-primary mt-0.5">•</span>
-                          <span>{q}</span>
-                        </li>
-                      ))}
-                    </ul>
+                  <div className="bg-card border border-border rounded-lg p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs font-semibold text-foreground">需要确认</h3>
+                    </div>
+                    <p className="text-[11px] text-foreground">{msg.clarifyQuestion}</p>
+                    {msg.clarifyOptions && msg.clarifyOptions.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 pt-0.5">
+                        {msg.clarifyOptions.map((opt) => (
+                          <button
+                            key={opt}
+                            onClick={() => { setInput(opt); setTimeout(() => handleSendRef.current?.(), 0); }}
+                            className="px-2.5 py-1 text-[11px] rounded-md border border-border bg-card hover:bg-muted hover:border-primary/40 transition-colors"
+                          >
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ) : msg.type === "proposal" && msg.proposal ? (
                   <ProposalCardInline
