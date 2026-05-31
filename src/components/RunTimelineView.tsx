@@ -234,7 +234,7 @@ const PhaseBlock = ({
       >
         <span
           className={cn(
-            compact ? "text-[12px]" : "text-[13px]",
+            "text-xs",
             "truncate",
             isFailed ? "text-destructive font-medium" : "text-foreground/85",
           )}
