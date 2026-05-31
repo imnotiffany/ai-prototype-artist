@@ -141,7 +141,7 @@ const EventRow = ({
         disabled={!canExpand}
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "group flex w-full items-center gap-2 py-1 text-[12px] leading-5 text-left",
+          "group flex w-full items-center gap-2 py-0.5 text-xs leading-5 text-left",
           isFailed ? "text-destructive" : "text-foreground/75",
           canExpand && "hover:text-foreground cursor-pointer",
           !canExpand && "cursor-default",
