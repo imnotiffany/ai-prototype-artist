@@ -1595,25 +1595,22 @@ const CreateAgentPage = () => {
                 ) : msg.type === "draft" && msg.draft ? (
                   <DraftCard draft={msg.draft} />
                 ) : msg.type === "clarify" ? (
-                  <div className="bg-card border border-border rounded-lg p-3 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-xs font-semibold text-foreground">需要确认</h3>
-                    </div>
-                    <p className="text-[11px] text-foreground">{msg.clarifyQuestion}</p>
-                    {msg.clarifyOptions && msg.clarifyOptions.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 pt-0.5">
-                        {msg.clarifyOptions.map((opt) => (
-                          <button
-                            key={opt}
-                            onClick={() => { setInput(opt); setTimeout(() => handleSendRef.current?.(), 0); }}
-                            className="px-2.5 py-1 text-[11px] rounded-md border border-border bg-card hover:bg-muted hover:border-primary/40 transition-colors"
-                          >
-                            {opt}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  <ClarifyCard
+                    msg={msg}
+                    onSubmit={(answers) => {
+                      // 标记此 clarify 卡为已完成
+                      setMessages((prev) => prev.map((m) =>
+                        m.id === msg.id ? { ...m, clarifyAnswers: answers, clarifyDone: true } : m
+                      ));
+                      // 拼接答案为一条用户消息发给模型
+                      const steps = msg.clarifySteps ?? [];
+                      const combined = steps
+                        .map((s, i) => `${s.question.replace(/[？?]$/, "")}：${answers[i] || "—"}`)
+                        .join("；");
+                      setInput(combined);
+                      setTimeout(() => handleSendRef.current?.(), 0);
+                    }}
+                  />
                 ) : msg.type === "proposal" && msg.proposal ? (
                   <ProposalCardInline
                     msg={msg}
