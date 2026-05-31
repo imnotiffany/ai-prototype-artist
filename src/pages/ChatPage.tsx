@@ -7,7 +7,7 @@ import { mockAgents, getSessionsByAgent, getChatSession, type ChatMessage } from
 import { AgentInfoPanel } from "@/components/AgentInfoPanel";
 import { type ToolCall } from "@/components/ToolCallCard";
 import { AIStatusPill } from "@/components/AIStatusPill";
-import { RunDualView, type TranscriptEvent, type DebugEvent } from "@/components/RunViews";
+
 import { SessionDrawer, type SessionListItem } from "@/components/SessionDrawer";
 import { ChatComposer, type ChatComposerPayload } from "@/components/ChatComposer";
 import { ArtifactsDrawer } from "@/components/ArtifactsDrawer";
