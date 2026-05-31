@@ -365,6 +365,29 @@ const scenario_running_deploy: TimelineScenario = {
           ],
         },
         {
+          key: "skill",
+          label: "质量检查",
+          status: "success",
+          events: [
+            {
+              id: "p2-sk1",
+              category: "skill",
+              title: "使用「代码审查」技能扫描变更文件",
+              status: "success",
+              durationMs: 2_400,
+              raw: { tool: "Skill", name: "code_review", files: 12, issues: 0 },
+            },
+            {
+              id: "p2-sk2",
+              category: "skill",
+              title: "使用「依赖安全检查」技能扫描漏洞",
+              status: "success",
+              durationMs: 3_680,
+              raw: { tool: "Skill", name: "dependency_audit", severity: "none" },
+            },
+          ],
+        },
+        {
           key: "mcp",
           label: "外部服务",
           status: "success",
