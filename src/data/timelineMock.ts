@@ -187,6 +187,44 @@ const scenario_done_doc: TimelineScenario = {
             },
           ],
         },
+        {
+          key: "mcp",
+          label: "外部服务",
+          status: "success",
+          events: [
+            {
+              id: "p2-m1",
+              category: "mcp",
+              title: "通过「Notion」MCP 读取《618 复盘》页面",
+              status: "success",
+              durationMs: 1_240,
+              raw: { tool: "mcp__notion__get_page", page_id: "618-recap-2025" },
+            },
+            {
+              id: "p2-m2",
+              category: "mcp",
+              title: "通过「Linear」MCP 拉取相关 issue 列表",
+              status: "success",
+              durationMs: 980,
+              raw: { tool: "mcp__linear__list_issues", project: "618-2026" },
+            },
+          ],
+        },
+        {
+          key: "subagent",
+          label: "子任务",
+          status: "success",
+          events: [
+            {
+              id: "p2-s1",
+              category: "subagent",
+              title: "派发子任务「核对历年大促优惠券面额」",
+              status: "success",
+              durationMs: 12_400,
+              raw: { sub: "skill_subagent", skill: "promo_coupon_audit", years: ["2023", "2024", "2025"] },
+            },
+          ],
+        },
       ],
     },
     {
