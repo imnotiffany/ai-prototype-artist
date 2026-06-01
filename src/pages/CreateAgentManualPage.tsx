@@ -1221,16 +1221,17 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
 
           {/* Prompt */}
           <TabsContent value="prompt" className="mt-4">
-            <div className="rounded-xl bg-muted/30 p-5">
-              <div className="flex items-start justify-between gap-3 mb-2">
-                <div>
-                  <Label className="text-xs">系统提示词</Label>
+            <div className="rounded-xl border border-border/60 bg-card overflow-hidden shadow-sm">
+              {/* Header */}
+              <div className="px-5 py-3.5 bg-muted/40 border-b border-border/50 flex items-start justify-between gap-3">
+                <div className="space-y-0.5">
+                  <Label className="text-xs font-semibold">系统提示词</Label>
                   <p className="text-[10px] text-muted-foreground">定义智能体身份、行为约束和输出格式</p>
                 </div>
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-7 text-xs gap-1.5 border-primary/40 text-primary hover:bg-primary/10 hover:text-primary"
+                  className="h-7 text-xs gap-1.5 border-primary/40 text-primary hover:bg-primary/10 hover:text-primary shadow-sm"
                   onClick={handleAutoGeneratePrompt}
                   disabled={generatingPrompt}
                 >
@@ -1238,15 +1239,24 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   AI 自动生成
                 </Button>
               </div>
-              <Textarea className="font-mono text-xs leading-relaxed" rows={18} value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)} />
-              <div className="flex items-center justify-between mt-2">
+              {/* Editor */}
+              <div className="p-3">
+                <Textarea
+                  className="font-mono text-xs leading-relaxed border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-none px-2 py-1 bg-transparent"
+                  rows={18}
+                  value={systemPrompt}
+                  onChange={(e) => setSystemPrompt(e.target.value)}
+                />
+              </div>
+              {/* Footer */}
+              <div className="px-5 py-2.5 border-t border-border/50 flex items-center justify-between gap-3">
                 <p className="text-[10px] text-muted-foreground">
                   {systemPrompt.length} 字符 · 将根据已绑定的 {selSkills.length} 个 Skill 与 {selMCPs.length} 个 MCP 生成
                 </p>
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="h-7 text-xs gap-1"
+                  className="h-6 text-[11px] gap-1 px-2 text-muted-foreground hover:text-primary"
                   onClick={() => {
                     if (systemPrompt.trim() && !window.confirm("将用提示词脚手架覆盖当前内容，是否继续？")) return;
                     setSystemPrompt(promptScaffold);
