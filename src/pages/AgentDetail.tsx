@@ -1130,7 +1130,7 @@ fengsheng:
                 </div>
 
                 <div>
-                  <Label className="text-xs flex items-center gap-1.5"><HardDrive className="w-3 h-3" />存储 <span className="text-destructive">*</span></Label>
+                  <Label className="text-xs flex items-center gap-1.5"><HardDrive className="w-3 h-3" />存储</Label>
                   <p className="text-[10px] text-muted-foreground mt-0.5">持久化存储，目前仅支持 Redis</p>
                   <Input
                     className="mt-1.5 h-8 text-xs font-mono"
