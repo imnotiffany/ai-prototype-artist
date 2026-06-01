@@ -31,6 +31,7 @@ import { FengshengIncompleteDialog, type FsAlertStatus } from "@/components/Feng
 import { FengshengHowToCard } from "@/components/FengshengHowToCard";
 import { ChatComposer } from "@/components/ChatComposer";
 import { mockArtifacts } from "@/data/artifacts";
+import { PodStartupProgress } from "@/components/PodStartupProgress";
 
 // 基于 Anthropic 对 Claude 的 prompting 最佳实践，提供一份"脚手架"模板，
 // 帮助用户按结构补全自己的提示词，而不是套用某个具体行业的成品。
