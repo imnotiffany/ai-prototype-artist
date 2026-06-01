@@ -14,7 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import {
   ArrowLeft, MessageSquare, Send, Save, Bot, CheckCircle2, Server, Bug, Mic, MicOff, Zap, Plus, X, RotateCcw, EyeOff, Eye, Settings2,
-  AlertTriangle, Copy, Pencil, Rocket, Code2, Layout, Users, KeyRound, Filter, Check, ExternalLink, Activity, Plug, FileText,
+  AlertTriangle, Copy, Pencil, Rocket, Code2, Layout, Users, KeyRound, Filter, Check, ExternalLink, Activity, Plug, FileText, Cpu, HardDrive,
 } from "lucide-react";
 import { mockAgents, getActiveMCPs, getActiveSkills, mockApiKeys } from "@/data/mockData";
 
@@ -1066,6 +1066,25 @@ fengsheng:
                     );
                   })
                 )}
+              </div>
+            </section>
+
+            {/* 环境配置（只读展示） */}
+            <section className="border border-border rounded-lg bg-card">
+              <header className="px-4 py-2.5 border-b border-border">
+                <h3 className="text-sm font-semibold flex items-center gap-1.5">
+                  <Cpu className="w-3.5 h-3.5 text-primary" />环境配置
+                </h3>
+                <p className="text-[11px] text-muted-foreground mt-0.5">智能体运行时使用的资源、镜像与部署单元</p>
+              </header>
+              <div className="p-4 space-y-3">
+                <div className="grid grid-cols-3 gap-3">
+                  <EnvField label="资源规格" value="4 核 8G" />
+                  <EnvField label="运行镜像" value="默认镜像" />
+                  <EnvField label="实例数量" value="2 个" />
+                </div>
+                <EnvField label="关联 DU" icon={<Server className="w-3 h-3 text-muted-foreground" />} value="AOP-EXPECT-INFO-AI-MODELSERVICE" />
+                <EnvField label="存储" icon={<HardDrive className="w-3 h-3 text-muted-foreground" />} value="redis://:password@host:6379/0" mono />
               </div>
             </section>
 
