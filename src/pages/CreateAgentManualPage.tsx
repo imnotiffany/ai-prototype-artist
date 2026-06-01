@@ -1402,7 +1402,10 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 size="sm"
                 className="h-8 text-xs gap-1.5"
                 disabled={!channelsValid}
-                onClick={() => setCurrentTab("debug")}
+                onClick={() => {
+                  setCurrentTab("debug");
+                  startPodSequence();
+                }}
                 title={channelsValid ? "下一步：调试" : "已启用的接入项尚未完成连接"}
               >
                 下一步：调试 <ArrowRight className="w-3 h-3" />
