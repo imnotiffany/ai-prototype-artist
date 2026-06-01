@@ -122,6 +122,7 @@ const AgentDetail = () => {
 
   const [systemPrompt, setSystemPrompt] = useState(initialSnapshot.systemPrompt);
   const [selSkills, setSelSkills] = useState<string[]>(initialSnapshot.skills);
+  const [selBuiltinTools, setSelBuiltinTools] = useState<string[]>(["Bash", "Read", "Write", "Edit", "Glob", "Grep", "WebFetch", "WebSearch"]);
   const [mcpBindings, setMcpBindings] = useState<{ name: string; credential: string }[]>(initialSnapshot.mcpBindings);
   const [fsAppKey, setFsAppKey] = useState(initialSnapshot.fsAppKey);
   const [fsAppSecret, setFsAppSecret] = useState(initialSnapshot.fsAppSecret);
@@ -1003,6 +1004,44 @@ fengsheng:
                     );
                   })
                 )}
+              </div>
+            </section>
+
+            {/* 内置工具 */}
+            <section className="border border-border rounded-lg bg-card">
+              <header className="px-4 py-2.5 border-b border-border">
+                <h3 className="text-sm font-semibold flex items-center gap-1.5">
+                  <Box className="w-3.5 h-3.5 text-primary" />内置工具
+                </h3>
+                <p className="text-[11px] text-muted-foreground mt-0.5">智能体可直接调用的基础工具，运行在 Agent 沙箱环境中（根据上方 Skill / MCP / 子智能体自动推荐，可手动调整）</p>
+              </header>
+              <div className="p-4">
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { name: "Bash", desc: "运行系统命令" },
+                    { name: "Read", desc: "查看文件内容" },
+                    { name: "Write", desc: "创建或覆盖文件" },
+                    { name: "Edit", desc: "修改文件部分内容" },
+                    { name: "Glob", desc: "按规则批量查找文件" },
+                    { name: "Grep", desc: "在文件中搜索文字" },
+                    { name: "WebFetch", desc: "读取网页内容" },
+                    { name: "WebSearch", desc: "上网搜索资料" },
+                  ].map((t) => {
+                    const sel = selBuiltinTools.includes(t.name);
+                    return (
+                      <button
+                        key={t.name}
+                        type="button"
+                        title={t.desc}
+                        onClick={() => setSelBuiltinTools((prev) => prev.includes(t.name) ? prev.filter((x) => x !== t.name) : [...prev, t.name])}
+                        className={`inline-flex items-center gap-1 rounded-full border px-2.5 h-7 text-xs transition-colors cursor-pointer ${sel ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"}`}
+                      >
+                        <span className="font-medium">{t.name}</span>
+                        {sel && <CheckCircle2 className="w-3 h-3" />}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </section>
 
