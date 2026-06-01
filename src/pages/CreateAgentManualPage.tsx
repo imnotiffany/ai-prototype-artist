@@ -856,48 +856,6 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
 
             </div>
 
-            {/* 内置工具 */}
-            <div className="border border-border rounded-lg p-5 bg-card">
-              <div className="mb-3">
-                <Label className="text-xs flex items-center gap-1.5"><Wrench className="w-3.5 h-3.5 text-muted-foreground" />内置工具</Label>
-                <p className="text-[10px] text-muted-foreground mt-0.5">智能体可直接调用的基础工具，运行在 Agent 沙箱环境中</p>
-              </div>
-              <TooltipProvider delayDuration={200}>
-                <div className="flex flex-wrap gap-1.5">
-                  {[
-                    { name: "Bash", desc: "运行系统命令，如启动程序、安装组件", icon: Terminal },
-                    { name: "Read", desc: "查看某个文件里的内容", icon: FileCode },
-                    { name: "Write", desc: "创建新文件或覆盖已有文件", icon: FileEdit },
-                    { name: "Edit", desc: "修改文件中的部分内容", icon: FileEdit },
-                    { name: "Glob", desc: "按名称规则批量查找文件", icon: Search },
-                    { name: "Grep", desc: "在文件里搜索指定文字", icon: Search },
-                    { name: "WebFetch", desc: "读取指定网页的内容", icon: ExternalLink },
-                    { name: "WebSearch", desc: "上网搜索相关资料", icon: Search },
-                  ].map((t) => {
-                    const sel = selBuiltinTools.includes(t.name);
-                    const Icon = t.icon;
-                    return (
-                      <Tooltip key={t.name}>
-                        <TooltipTrigger asChild>
-                          <button
-                            type="button"
-                            onClick={() => toggle(selBuiltinTools, setSelBuiltinTools, t.name)}
-                            className={`inline-flex items-center gap-1 rounded-full border px-2.5 h-7 text-xs transition-colors cursor-pointer ${sel ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"}`}
-                          >
-                            <Icon className="w-3 h-3" />
-                            <span className="font-medium">{t.name}</span>
-                            {sel && <CheckCircle2 className="w-3 h-3" />}
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="max-w-[200px]">
-                          <p className="text-xs">{t.desc}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    );
-                  })}
-                </div>
-              </TooltipProvider>
-            </div>
 
             {/* MCP 绑定 */}
             <div className="border border-border rounded-lg p-5 bg-card">
@@ -1094,6 +1052,49 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+
+            {/* 内置工具 */}
+            <div className="border border-border rounded-lg p-5 bg-card">
+              <div className="mb-3">
+                <Label className="text-xs flex items-center gap-1.5"><Wrench className="w-3.5 h-3.5 text-muted-foreground" />内置工具</Label>
+                <p className="text-[10px] text-muted-foreground mt-0.5">系统会根据已选 Skill、MCP、子智能体自动推荐；你也可以手动勾选基础工具</p>
+              </div>
+              <TooltipProvider delayDuration={200}>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { name: "Bash", desc: "运行系统命令，如启动程序、安装组件", icon: Terminal },
+                    { name: "Read", desc: "查看某个文件里的内容", icon: FileCode },
+                    { name: "Write", desc: "创建新文件或覆盖已有文件", icon: FileEdit },
+                    { name: "Edit", desc: "修改文件中的部分内容", icon: FileEdit },
+                    { name: "Glob", desc: "按名称规则批量查找文件", icon: Search },
+                    { name: "Grep", desc: "在文件里搜索指定文字", icon: Search },
+                    { name: "WebFetch", desc: "读取指定网页的内容", icon: ExternalLink },
+                    { name: "WebSearch", desc: "上网搜索相关资料", icon: Search },
+                  ].map((t) => {
+                    const sel = selBuiltinTools.includes(t.name);
+                    const Icon = t.icon;
+                    return (
+                      <Tooltip key={t.name}>
+                        <TooltipTrigger asChild>
+                          <button
+                            type="button"
+                            onClick={() => toggle(selBuiltinTools, setSelBuiltinTools, t.name)}
+                            className={`inline-flex items-center gap-1 rounded-full border px-2.5 h-7 text-xs transition-colors cursor-pointer ${sel ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"}`}
+                          >
+                            <Icon className="w-3 h-3" />
+                            <span className="font-medium">{t.name}</span>
+                            {sel && <CheckCircle2 className="w-3 h-3" />}
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-[200px]">
+                          <p className="text-xs">{t.desc}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    );
+                  })}
+                </div>
+              </TooltipProvider>
+            </div>
 
             {/* 环境配置 */}
             <div className="border border-border rounded-lg p-5 bg-card space-y-4">
