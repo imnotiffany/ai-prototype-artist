@@ -123,6 +123,12 @@ const AgentDetail = () => {
   const [systemPrompt, setSystemPrompt] = useState(initialSnapshot.systemPrompt);
   const [selSkills, setSelSkills] = useState<string[]>(initialSnapshot.skills);
   const [selBuiltinTools, setSelBuiltinTools] = useState<string[]>(["Bash", "Read", "Write", "Edit", "Glob", "Grep", "WebFetch", "WebSearch"]);
+  const [envSpec, setEnvSpec] = useState<"1C2G" | "2C4G" | "4C8G">("4C8G");
+  const [envImage, setEnvImage] = useState<string>("img-default");
+  const [envInstances, setEnvInstances] = useState<number>(2);
+  const [envDuMode, setEnvDuMode] = useState<"existing" | "new">("existing");
+  const [envDu, setEnvDu] = useState<string>("AOP-EXPECT-INFO-AI-MODELSERVICE");
+  const [envRedisUrl, setEnvRedisUrl] = useState<string>("redis://:password@host:6379/0");
   const [mcpBindings, setMcpBindings] = useState<{ name: string; credential: string }[]>(initialSnapshot.mcpBindings);
   const [fsAppKey, setFsAppKey] = useState(initialSnapshot.fsAppKey);
   const [fsAppSecret, setFsAppSecret] = useState(initialSnapshot.fsAppSecret);
@@ -1045,7 +1051,7 @@ fengsheng:
               </div>
             </section>
 
-            {/* 环境配置（只读展示） */}
+            {/* 环境配置 */}
             <section className="border border-border rounded-lg bg-card">
               <header className="px-4 py-2.5 border-b border-border">
                 <h3 className="text-sm font-semibold flex items-center gap-1.5">
@@ -1053,14 +1059,85 @@ fengsheng:
                 </h3>
                 <p className="text-[11px] text-muted-foreground mt-0.5">智能体运行时使用的资源、镜像与部署单元</p>
               </header>
-              <div className="p-4 space-y-3">
+              <div className="p-4 space-y-4">
                 <div className="grid grid-cols-3 gap-3">
-                  <EnvField label="资源规格" value="4 核 8G" />
-                  <EnvField label="运行镜像" value="默认镜像" />
-                  <EnvField label="实例数量" value="2 个" />
+                  <div>
+                    <Label className="text-xs">资源规格</Label>
+                    <Select value={envSpec} onValueChange={(v) => setEnvSpec(v as typeof envSpec)}>
+                      <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1C2G" className="text-xs">1 核 2G</SelectItem>
+                        <SelectItem value="2C4G" className="text-xs">2 核 4G</SelectItem>
+                        <SelectItem value="4C8G" className="text-xs">4 核 8G</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs">运行镜像</Label>
+                    <Select value={envImage} onValueChange={setEnvImage}>
+                      <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {projectImages.map((img) => (
+                          <SelectItem key={img.id} value={img.id} className="text-xs">
+                            <span className="font-mono">{img.name}</span>
+                            {img.isDefault && <span className="ml-2 text-[10px] text-muted-foreground">默认</span>}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs">实例数量</Label>
+                    <Select value={String(envInstances)} onValueChange={(v) => setEnvInstances(Number(v))}>
+                      <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {[2, 3, 4].map((n) => (
+                          <SelectItem key={n} value={String(n)} className="text-xs">{n} 个</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <EnvField label="关联 DU" icon={<Server className="w-3 h-3 text-muted-foreground" />} value="AOP-EXPECT-INFO-AI-MODELSERVICE" />
-                <EnvField label="存储" icon={<HardDrive className="w-3 h-3 text-muted-foreground" />} value="redis://:password@host:6379/0" mono />
+
+                <div>
+                  <Label className="text-xs flex items-center gap-1.5">
+                    <Server className="w-3 h-3" />关联 DU <span className="text-destructive">*</span>
+                  </Label>
+                  <p className="text-[10px] text-amber-600 dark:text-amber-500 mt-1">线上生产服务需关联顺丰云 DU，便于出现问题时追溯定位</p>
+                  <div className="flex items-center gap-4 mt-1.5">
+                    <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                      <input type="radio" name="detail-du-mode" value="existing" checked={envDuMode === "existing"} onChange={() => { setEnvDuMode("existing"); setEnvDu(DU_OPTIONS[0]); }} className="accent-primary" />
+                      选择已有
+                    </label>
+                    <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                      <input type="radio" name="detail-du-mode" value="new" checked={envDuMode === "new"} onChange={() => { setEnvDuMode("new"); setEnvDu(""); }} className="accent-primary" />
+                      新建 DU
+                    </label>
+                  </div>
+                  {envDuMode === "existing" ? (
+                    <Select value={envDu} onValueChange={setEnvDu}>
+                      <SelectTrigger className="mt-2 h-8 text-xs"><SelectValue placeholder="请选择" /></SelectTrigger>
+                      <SelectContent>
+                        {DU_OPTIONS.map((d) => (
+                          <SelectItem key={d} value={d} className="text-xs font-mono">{d}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input className="mt-2 h-8 text-xs font-mono" placeholder="请输入新 DU 名称" value={envDu} onChange={(e) => setEnvDu(e.target.value)} />
+                  )}
+                </div>
+
+                <div>
+                  <Label className="text-xs flex items-center gap-1.5"><HardDrive className="w-3 h-3" />存储 <span className="text-destructive">*</span></Label>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">持久化存储，目前仅支持 Redis</p>
+                  <Input
+                    className="mt-1.5 h-8 text-xs font-mono"
+                    placeholder="redis://:password@host:6379/0"
+                    value={envRedisUrl}
+                    onChange={(e) => setEnvRedisUrl(e.target.value)}
+                  />
+                </div>
               </div>
             </section>
 
