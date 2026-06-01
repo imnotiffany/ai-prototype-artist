@@ -1105,7 +1105,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <Label className="text-xs">资源规格</Label>
+                  <Label className="text-xs">资源规格 <span className="text-destructive">*</span></Label>
                   <Select value={envSpec} onValueChange={(v) => setEnvSpec(v as typeof envSpec)}>
                     <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -1116,7 +1116,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   </Select>
                 </div>
                 <div>
-                  <Label className="text-xs">运行镜像</Label>
+                  <Label className="text-xs">运行镜像 <span className="text-destructive">*</span></Label>
                   <Select value={envImage} onValueChange={setEnvImage}>
                     <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -1130,7 +1130,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   </Select>
                 </div>
                 <div>
-                  <Label className="text-xs">实例数量</Label>
+                  <Label className="text-xs">实例数量 <span className="text-destructive">*</span></Label>
                   <Select value={String(envInstances)} onValueChange={(v) => setEnvInstances(Number(v))}>
                     <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
