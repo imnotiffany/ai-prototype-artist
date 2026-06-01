@@ -31,6 +31,7 @@ import { FengshengIncompleteDialog, type FsAlertStatus } from "@/components/Feng
 import { FengshengHowToCard } from "@/components/FengshengHowToCard";
 import { ChatComposer } from "@/components/ChatComposer";
 import { mockArtifacts } from "@/data/artifacts";
+import { PodStartupProgress } from "@/components/PodStartupProgress";
 
 // 基于 Anthropic 对 Claude 的 prompting 最佳实践，提供一份"脚手架"模板，
 // 帮助用户按结构补全自己的提示词，而不是套用某个具体行业的成品。
@@ -184,6 +185,23 @@ const CreateAgentManualPage = () => {
   const [runMessages, setRunMessages] = useState<RunMsg[]>([]);
   const [debugRunning, setDebugRunning] = useState(false);
   const [voiceRecording, setVoiceRecording] = useState(false);
+
+  // Pod 启动流程（进入调试前的预热）
+  const [podPhase, setPodPhase] = useState<"idle" | "starting" | "ready">("idle");
+  const [podStepIdx, setPodStepIdx] = useState(0);
+  const startPodSequence = () => {
+    if (podPhase === "ready") return;
+    setPodPhase("starting");
+    setPodStepIdx(0);
+    // 模拟 5 步逐步推进
+    const stepDurations = [900, 1400, 1100, 900, 700];
+    let cum = 0;
+    stepDurations.forEach((d, i) => {
+      cum += d;
+      setTimeout(() => setPodStepIdx(i + 1), cum);
+    });
+    setTimeout(() => setPodPhase("ready"), cum + 500);
+  };
 
   // Mandatory debug gating
   const [debugPassed, setDebugPassed] = useState(false);
@@ -1385,7 +1403,10 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 size="sm"
                 className="h-8 text-xs gap-1.5"
                 disabled={!channelsValid}
-                onClick={() => setCurrentTab("debug")}
+                onClick={() => {
+                  setCurrentTab("debug");
+                  startPodSequence();
+                }}
                 title={channelsValid ? "下一步：调试" : "已启用的接入项尚未完成连接"}
               >
                 下一步：调试 <ArrowRight className="w-3 h-3" />
@@ -1395,6 +1416,9 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
 
           {/* Debug */}
           <TabsContent value="debug" className="mt-4 space-y-4">
+            {podPhase !== "ready" ? (
+              <PodStartupProgress stepIdx={podStepIdx} />
+            ) : (
             <div className="border border-border rounded-lg bg-card flex flex-col h-[clamp(380px,calc(100vh-260px),560px)]">
               <div className="px-3 h-10 shrink-0 border-b border-border flex items-center gap-1.5">
                 <Bot className="w-3.5 h-3.5 text-primary shrink-0" />
@@ -1435,6 +1459,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 />
               </div>
             </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>
