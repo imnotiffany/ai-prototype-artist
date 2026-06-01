@@ -80,18 +80,18 @@ export const PublishAgentDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-md">
+        <DialogHeader className="space-y-1">
           <DialogTitle className="text-sm flex items-center gap-1.5">
-            <Rocket className="w-4 h-4 text-primary" />
+            <Rocket className="w-3.5 h-3.5 text-primary" />
             发布{noun}
           </DialogTitle>
-          <DialogDescription className="text-[11px]">
+          <DialogDescription className="text-[11px] leading-snug">
             基础信息可在保存时已填写，这里可再次确认；选择发布范围后即可发布。
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-3 py-1">
+        <div className="space-y-2.5">
 
           <AvatarPicker
             uploadedAvatar={uploadedAvatar}
@@ -102,10 +102,10 @@ export const PublishAgentDialog = ({
           />
 
           {/* 名称 */}
-          <div>
-            <Label className="text-xs">名称 <span className="text-destructive">*</span></Label>
+          <div className="space-y-1">
+            <Label className="text-[11px]">名称 <span className="text-destructive">*</span></Label>
             <Input
-              className="mt-1.5 h-8 text-xs"
+              className="h-7 text-xs"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={`请输入${noun}名称`}
@@ -113,11 +113,11 @@ export const PublishAgentDialog = ({
           </div>
 
           {/* 简介 */}
-          <div>
-            <Label className="text-xs">简介</Label>
+          <div className="space-y-1">
+            <Label className="text-[11px]">简介</Label>
             <Textarea
-              className="mt-1.5 text-xs"
-              rows={3}
+              className="text-xs min-h-0 leading-snug"
+              rows={2}
               value={desc}
               onChange={(e) => setDesc(e.target.value.slice(0, 100))}
               placeholder={`简要描述${noun}用途`}
@@ -125,10 +125,10 @@ export const PublishAgentDialog = ({
           </div>
 
           {/* 分类 */}
-          <div>
-            <Label className="text-xs">分类</Label>
+          <div className="space-y-1">
+            <Label className="text-[11px]">分类</Label>
             <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue placeholder="选择分类" /></SelectTrigger>
+              <SelectTrigger className="h-7 text-xs"><SelectValue placeholder="选择分类" /></SelectTrigger>
               <SelectContent>
                 {categories.map((c) => (
                   <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>
@@ -138,8 +138,8 @@ export const PublishAgentDialog = ({
           </div>
 
           {/* 支持复制 */}
-          <div className="flex items-center justify-between border border-border rounded-lg px-3 py-2">
-            <div>
+          <div className="flex items-center justify-between border border-border rounded-lg px-3 py-1.5">
+            <div className="leading-tight">
               <p className="text-xs text-foreground">支持复制</p>
               <p className="text-[10px] text-muted-foreground mt-0.5">允许其他成员复制本{noun}作为模板</p>
             </div>
@@ -148,12 +148,12 @@ export const PublishAgentDialog = ({
 
           {/* 发布范围 — 入口未锁定时可选 */}
           {!lockScope && (
-            <div>
-              <Label className="text-xs">发布范围 <span className="text-destructive">*</span></Label>
+            <div className="space-y-1">
+              <Label className="text-[11px]">发布范围 <span className="text-destructive">*</span></Label>
               <RadioGroup
                 value={scope}
                 onValueChange={(v) => setScope(v as "marketplace" | "project")}
-                className="mt-1.5 flex items-center gap-6"
+                className="flex items-center gap-5"
               >
                 <label className="flex items-center gap-2 cursor-pointer">
                   <RadioGroupItem value="marketplace" id="scope-public" />
