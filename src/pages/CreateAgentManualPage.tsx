@@ -185,6 +185,23 @@ const CreateAgentManualPage = () => {
   const [debugRunning, setDebugRunning] = useState(false);
   const [voiceRecording, setVoiceRecording] = useState(false);
 
+  // Pod 启动流程（进入调试前的预热）
+  const [podPhase, setPodPhase] = useState<"idle" | "starting" | "ready">("idle");
+  const [podStepIdx, setPodStepIdx] = useState(0);
+  const startPodSequence = () => {
+    if (podPhase === "ready") return;
+    setPodPhase("starting");
+    setPodStepIdx(0);
+    // 模拟 5 步逐步推进
+    const stepDurations = [900, 1400, 1100, 900, 700];
+    let cum = 0;
+    stepDurations.forEach((d, i) => {
+      cum += d;
+      setTimeout(() => setPodStepIdx(i + 1), cum);
+    });
+    setTimeout(() => setPodPhase("ready"), cum + 500);
+  };
+
   // Mandatory debug gating
   const [debugPassed, setDebugPassed] = useState(false);
   const [debugAttempted, setDebugAttempted] = useState(false);
