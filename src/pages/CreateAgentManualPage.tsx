@@ -1415,6 +1415,9 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
 
           {/* Debug */}
           <TabsContent value="debug" className="mt-4 space-y-4">
+            {podPhase !== "ready" ? (
+              <PodStartupProgress stepIdx={podStepIdx} />
+            ) : (
             <div className="border border-border rounded-lg bg-card flex flex-col h-[clamp(380px,calc(100vh-260px),560px)]">
               <div className="px-3 h-10 shrink-0 border-b border-border flex items-center gap-1.5">
                 <Bot className="w-3.5 h-3.5 text-primary shrink-0" />
@@ -1455,6 +1458,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 />
               </div>
             </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>
