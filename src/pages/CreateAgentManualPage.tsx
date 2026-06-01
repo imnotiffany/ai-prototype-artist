@@ -755,7 +755,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
 
           {/* Basic: 名称 / 头像 / 描述 / 分类 */}
           <TabsContent value="basic" className="mt-3 space-y-3">
-            <div className="border border-border rounded-lg p-4 space-y-3 bg-card">
+            <div className="rounded-xl bg-muted/30 p-4 space-y-3">
               <h2 className="text-sm font-semibold">基础信息</h2>
 
               <AvatarPicker
@@ -1281,7 +1281,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
           <TabsContent value="channels" className="mt-4 space-y-4">
 
             {/* 丰声 NEXT 群聊机器人 */}
-            <div className="rounded-xl border border-border/50 bg-card/60">
+            <div className="rounded-xl bg-muted/30">
               <div className="px-5 py-3 border-b border-border/50 flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <div className="text-xs font-semibold flex items-center gap-1.5">
@@ -1366,7 +1366,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
 
 
             {/* Agent Hub 发布 */}
-            <div className="rounded-xl border border-border/50 bg-card/60">
+            <div className="rounded-xl bg-muted/30">
               <div className="px-5 py-3 flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <div className="text-xs font-semibold flex items-center gap-1.5">
@@ -1419,7 +1419,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
             {podPhase !== "ready" ? (
               <PodStartupProgress stepIdx={podStepIdx} />
             ) : (
-            <div className="rounded-xl border border-border/50 bg-card/60 flex flex-col h-[clamp(380px,calc(100vh-260px),560px)]">
+            <div className="rounded-xl bg-muted/30 flex flex-col h-[clamp(380px,calc(100vh-260px),560px)]">
               <div className="px-3 h-10 shrink-0 border-b border-border/50 flex items-center gap-1.5">
                 <Bot className="w-3.5 h-3.5 text-primary shrink-0" />
                 <span className="text-xs font-semibold shrink-0">智能体运行</span>
