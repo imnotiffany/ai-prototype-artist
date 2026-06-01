@@ -1185,7 +1185,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                     </SelectContent>
                   </Select>
                 ) : (
-                  <Input className="mt-2 h-8 text-xs font-mono" placeholder="请输入新 DU 名称" value={envDu} onChange={(e) => setEnvDu(e.target.value)} />
+                  <Input className="mt-2 h-8 text-xs md:text-xs font-mono placeholder:text-xs" placeholder="请输入新 DU 名称" value={envDu} onChange={(e) => setEnvDu(e.target.value)} />
                 )}
               </div>
 
@@ -1193,7 +1193,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 <Label className="text-xs flex items-center gap-1.5"><HardDrive className="w-3 h-3" />存储</Label>
                 <p className="text-[10px] text-muted-foreground mt-0.5">持久化存储，目前仅支持 Redis</p>
                 <Input
-                  className="mt-1.5 h-8 text-xs font-mono"
+                  className="mt-1.5 h-8 text-xs md:text-xs font-mono placeholder:text-xs"
                   placeholder="redis://:password@host:6379/0"
                   value={envRedisUrl}
                   onChange={(e) => setEnvRedisUrl(e.target.value)}
