@@ -17,6 +17,7 @@ import {
   AlertTriangle, Copy, Pencil, Rocket, Code2, Layout, Users, KeyRound, Filter, Check, ExternalLink, Activity, Plug, FileText, Cpu, HardDrive,
 } from "lucide-react";
 import { mockAgents, getActiveMCPs, getActiveSkills, mockApiKeys } from "@/data/mockData";
+import { projectImages, DU_OPTIONS } from "@/data/environments";
 
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Search, Box } from "lucide-react";
