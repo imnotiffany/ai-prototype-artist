@@ -1595,3 +1595,13 @@ fengsheng:
 };
 
 export default AgentDetail;
+
+const EnvField = ({ label, value, icon, mono }: { label: string; value: string; icon?: React.ReactNode; mono?: boolean }) => (
+  <div>
+    <div className="flex items-center gap-1 mb-1">
+      {icon}
+      <span className="text-[11px] text-muted-foreground">{label}</span>
+    </div>
+    <div className={`text-xs px-2.5 py-1.5 rounded border border-border bg-muted/30 text-foreground truncate ${mono ? "font-mono" : ""}`}>{value}</div>
+  </div>
+);
