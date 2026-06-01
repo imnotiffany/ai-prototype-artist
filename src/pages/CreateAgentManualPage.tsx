@@ -1282,7 +1282,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
 
             {/* 丰声 NEXT 群聊机器人 */}
             <div className="rounded-xl border border-border/50 bg-card/60">
-              <div className="px-5 py-3 border-b border-border flex items-center justify-between gap-3">
+              <div className="px-5 py-3 border-b border-border/50 flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <div className="text-xs font-semibold flex items-center gap-1.5">
                     <MessageSquare className="w-3.5 h-3.5 text-primary" />
@@ -1420,7 +1420,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               <PodStartupProgress stepIdx={podStepIdx} />
             ) : (
             <div className="rounded-xl border border-border/50 bg-card/60 flex flex-col h-[clamp(380px,calc(100vh-260px),560px)]">
-              <div className="px-3 h-10 shrink-0 border-b border-border flex items-center gap-1.5">
+              <div className="px-3 h-10 shrink-0 border-b border-border/50 flex items-center gap-1.5">
                 <Bot className="w-3.5 h-3.5 text-primary shrink-0" />
                 <span className="text-xs font-semibold shrink-0">智能体运行</span>
                 {debugRunning && <RunningIndicator />}
@@ -1447,7 +1447,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   )}
                 />
               </div>
-              <div className="border-t border-border p-2 shrink-0">
+              <div className="border-t border-border/50 p-2 shrink-0">
                 <ChatComposer
                   value={debugInput}
                   onChange={setDebugInput}
