@@ -817,7 +817,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
           {/* Capability: 基座模型 + MCP + Skill + Subagent */}
           <TabsContent value="capability" className="mt-4 space-y-4">
             {/* 模型配置 */}
-            <div className="border border-border rounded-lg p-5 space-y-5 bg-card">
+            <div className="rounded-xl bg-muted/30 p-5 space-y-5">
               <div>
                 <Label className="text-xs">模型配置</Label>
                 <Select value={model} onValueChange={setModel}>
@@ -876,7 +876,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
 
 
             {/* MCP 绑定 */}
-            <div className="border border-border rounded-lg p-5 bg-card">
+            <div className="rounded-xl bg-muted/30 p-5">
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <Label className="text-xs flex items-center gap-1.5"><Server className="w-3.5 h-3.5 text-muted-foreground" />MCP 绑定</Label>
@@ -937,7 +937,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
             </div>
 
             {/* Skill 绑定 */}
-            <div className="border border-border rounded-lg p-5 bg-card">
+            <div className="rounded-xl bg-muted/30 p-5">
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <Label className="text-xs flex items-center gap-1.5"><Zap className="w-3.5 h-3.5 text-muted-foreground" />Skill 绑定</Label>
@@ -967,7 +967,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
             </div>
 
             {/* 子智能体绑定 */}
-            <div className="border border-border rounded-lg p-5 bg-card">
+            <div className="rounded-xl bg-muted/30 p-5">
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <Label className="text-xs flex items-center gap-1.5"><Bot className="w-3.5 h-3.5 text-muted-foreground" />子智能体绑定</Label>
@@ -1072,7 +1072,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
             </Dialog>
 
             {/* 内置工具 */}
-            <div className="border border-border rounded-lg p-5 bg-card">
+            <div className="rounded-xl bg-muted/30 p-5">
               <div className="mb-3">
                 <Label className="text-xs flex items-center gap-1.5"><Wrench className="w-3.5 h-3.5 text-muted-foreground" />内置工具</Label>
                 <p className="text-[10px] text-muted-foreground mt-0.5">系统会根据已选 Skill、MCP、子智能体自动推荐；你也可以手动勾选基础工具</p>
@@ -1115,7 +1115,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
             </div>
 
             {/* 环境配置 */}
-            <div className="border border-border rounded-lg p-5 bg-card space-y-4">
+            <div className="rounded-xl bg-muted/30 p-5 space-y-4">
               <div>
                 <Label className="text-xs flex items-center gap-1.5"><Cpu className="w-3.5 h-3.5 text-muted-foreground" />环境配置</Label>
                 <p className="text-[10px] text-muted-foreground mt-0.5">智能体运行时使用的资源、镜像与部署单元</p>
@@ -1221,7 +1221,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
 
           {/* Prompt */}
           <TabsContent value="prompt" className="mt-4">
-            <div className="border border-border rounded-lg p-5 bg-card">
+            <div className="rounded-xl bg-muted/30 p-5">
               <div className="flex items-start justify-between gap-3 mb-2">
                 <div>
                   <Label className="text-xs">系统提示词</Label>
@@ -1281,8 +1281,8 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
           <TabsContent value="channels" className="mt-4 space-y-4">
 
             {/* 丰声 NEXT 群聊机器人 */}
-            <div className="border border-border rounded-lg bg-card">
-              <div className="px-5 py-3 border-b border-border flex items-center justify-between gap-3">
+            <div className="rounded-xl border border-border/50 bg-card/60">
+              <div className="px-5 py-3 border-b border-border/50 flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <div className="text-xs font-semibold flex items-center gap-1.5">
                     <MessageSquare className="w-3.5 h-3.5 text-primary" />
@@ -1366,7 +1366,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
 
 
             {/* Agent Hub 发布 */}
-            <div className="border border-border rounded-lg bg-card">
+            <div className="rounded-xl border border-border/50 bg-card/60">
               <div className="px-5 py-3 flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <div className="text-xs font-semibold flex items-center gap-1.5">
@@ -1419,8 +1419,8 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
             {podPhase !== "ready" ? (
               <PodStartupProgress stepIdx={podStepIdx} />
             ) : (
-            <div className="border border-border rounded-lg bg-card flex flex-col h-[clamp(380px,calc(100vh-260px),560px)]">
-              <div className="px-3 h-10 shrink-0 border-b border-border flex items-center gap-1.5">
+            <div className="rounded-xl border border-border/50 bg-card/60 flex flex-col h-[clamp(380px,calc(100vh-260px),560px)]">
+              <div className="px-3 h-10 shrink-0 border-b border-border/50 flex items-center gap-1.5">
                 <Bot className="w-3.5 h-3.5 text-primary shrink-0" />
                 <span className="text-xs font-semibold shrink-0">智能体运行</span>
                 {debugRunning && <RunningIndicator />}
@@ -1447,7 +1447,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   )}
                 />
               </div>
-              <div className="border-t border-border p-2 shrink-0">
+              <div className="border-t border-border/50 p-2 shrink-0">
                 <ChatComposer
                   value={debugInput}
                   onChange={setDebugInput}
