@@ -372,7 +372,7 @@ const CreateAgentManualPage = () => {
       // Mock transcription
       const mockText = "帮我查询昨天的快递订单状态";
       setDebugInput((prev) => (prev ? `${prev} ${mockText}` : mockText));
-      toast({ title: "语音已转写", description: mockText });
+      
     } else {
       setVoiceRecording(true);
       
