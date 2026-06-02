@@ -73,7 +73,7 @@ const ProjectAgents = () => {
   const handleConfirmUnpublish = () => {
     if (!unpublishTarget) return;
     setAgents((prev) => prev.map((a) => (a.id === unpublishTarget.id ? { ...a, status: "project" as const, publishScope: undefined } : a)));
-    toast({ title: "已下架", description: `「${unpublishTarget.name}」已下架` });
+    
     setUnpublishTarget(null);
   };
 
