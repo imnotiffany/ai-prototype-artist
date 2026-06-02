@@ -80,7 +80,7 @@ const ProjectAgents = () => {
   const handleConfirmDelete = () => {
     if (!deleteTarget) return;
     setAgents((prev) => prev.filter((a) => a.id !== deleteTarget.id));
-    toast({ title: "已删除", description: `「${deleteTarget.name}」已删除` });
+    
     setDeleteTarget(null);
   };
 
