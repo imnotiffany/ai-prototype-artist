@@ -511,7 +511,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
     if (!promptComplete) { toast({ title: "请完善系统提示词（不少于 20 字）", variant: "destructive" }); return; }
     setSavedSnapshot(currentSig);
     setHasSaved(true);
-    toast({ title: "已保存", description: "现在可以配置对外接入或开始调试了" });
+    
     setCurrentTab("channels");
   };
 
