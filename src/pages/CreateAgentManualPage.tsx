@@ -1277,16 +1277,15 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   <Label className="text-xs font-semibold">系统提示词</Label>
                   <p className="text-[10px] text-muted-foreground">定义智能体身份、行为约束和输出格式</p>
                 </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-7 text-xs gap-1.5 border-primary/40 text-primary hover:bg-primary/10 hover:text-primary shadow-sm"
+                <button
+                  type="button"
                   onClick={handleAutoGeneratePrompt}
                   disabled={generatingPrompt}
+                  className="group inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md text-[11px] text-muted-foreground hover:text-primary hover:bg-primary/5 transition-colors disabled:opacity-50"
                 >
-                  {generatingPrompt ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand className="w-3 h-3" />}
+                  {generatingPrompt ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand className="w-3 h-3 transition-transform group-hover:-rotate-12" />}
                   AI 自动生成
-                </Button>
+                </button>
               </div>
               {/* Editor */}
               <div className="p-3">
