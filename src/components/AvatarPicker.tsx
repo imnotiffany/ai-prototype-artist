@@ -25,8 +25,10 @@ export const AvatarPicker = ({
 }: Props) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [generating, setGenerating] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const generatedAvatarUrl = `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${encodeURIComponent(seed)}&backgroundColor=dbeafe,fde68a,bbf7d0,fecaca,e9d5ff`;
   const avatarUrl = uploadedAvatar || generatedAvatarUrl;
+  useEffect(() => { setImgError(false); }, [avatarUrl]);
 
   const regenerate = () => {
     onUploadedAvatarChange(null);
