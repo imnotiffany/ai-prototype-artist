@@ -571,7 +571,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
       return;
     }
     if (!guardFengsheng()) return;
-    toast({ title: "已保存到项目管理", description: `${name} · ${category}（如需发布，请前往项目管理或详情页发布）` });
+    
     setPublishOpen(false);
     navigate("/project-agents");
   };
