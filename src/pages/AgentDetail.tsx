@@ -441,7 +441,7 @@ const AgentDetail = () => {
     setDescription(draftDesc);
     setSavedSnapshot((s) => ({ ...s, name: draftName, description: draftDesc }));
     setEditInfoOpen(false);
-    toast({ title: "基本信息已更新", description: "名称与描述的修改不会产生新版本" });
+    
   };
 
   return (
