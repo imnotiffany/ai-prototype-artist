@@ -205,7 +205,7 @@ const AgentDetail = () => {
     if (s.status !== "pending") return;
     setSystemPrompt((p) => p.trim() + s.addition);
     updateSuggestionStatus(s.id, "adopted");
-    toast({ title: "已采纳建议", description: "系统提示词已更新" });
+    
   };
 
   const rejectSuggestion = (s: PromptSuggestion) => {
