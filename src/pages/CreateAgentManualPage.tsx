@@ -1173,7 +1173,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               {envScenario === "personal" ? (
                 /* 个人场景：紧凑展示预置项 */
                 <div className="flex items-center gap-4 text-[11px] text-muted-foreground px-1">
-                  <span>资源 <span className="text-foreground/80">2C4G</span></span>
+                  <span>资源 <span className="text-foreground/80">4C8G</span></span>
                   <span className="text-border">·</span>
                   <span>实例 <span className="text-foreground/80">1</span></span>
                   <span className="text-border">·</span>
