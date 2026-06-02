@@ -249,7 +249,7 @@ const VaultPage = () => {
     if (!deleteTarget) return;
     setCredMcps((arr) => arr.filter((m) => m.id !== deleteTarget.id));
     setMcpConfigured(deleteTarget.name, false);
-    toast({ title: "MCP 已删除", description: `${deleteTarget.name} 已从 MCP 管理中移除` });
+    
     setDeleteTarget(null);
   };
 
