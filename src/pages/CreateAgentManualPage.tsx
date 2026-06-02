@@ -1171,20 +1171,13 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               </div>
 
               {envScenario === "personal" ? (
-                /* 个人场景：展示平台已为用户预置的内容 */
-                <div className="rounded-lg border border-dashed border-border/60 bg-background/60 px-3 py-2.5">
-                  <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mb-1.5">
-                    <Info className="w-3 h-3" />
-                    以下配置已由平台自动托管，无需手动设置
-                  </div>
-                  <div className="grid grid-cols-3 gap-x-3 gap-y-1 text-[11px]">
-                    <div className="flex items-center gap-1.5"><Cpu className="w-3 h-3 text-muted-foreground" /><span className="text-muted-foreground">资源</span><span className="text-foreground/80">2C4G</span></div>
-                    <div className="flex items-center gap-1.5"><Server className="w-3 h-3 text-muted-foreground" /><span className="text-muted-foreground">实例</span><span className="text-foreground/80">1 个</span></div>
-                    <div className="flex items-center gap-1.5"><Cpu className="w-3 h-3 text-muted-foreground" /><span className="text-muted-foreground">存储</span><span className="text-foreground/80">共享 Redis</span></div>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground mt-2 leading-relaxed">
-                    需上线给团队/客户使用时，切换到「线上生产」获取独立 DU、多实例与自定义存储
-                  </p>
+                /* 个人场景：紧凑展示预置项 */
+                <div className="flex items-center gap-4 text-[11px] text-muted-foreground px-1">
+                  <span>资源 <span className="text-foreground/80">2C4G</span></span>
+                  <span className="text-border">·</span>
+                  <span>实例 <span className="text-foreground/80">1</span></span>
+                  <span className="text-border">·</span>
+                  <span>存储 <span className="text-foreground/80">共享 Redis</span></span>
                 </div>
               ) : (
                 /* 生产场景：完整配置 */
