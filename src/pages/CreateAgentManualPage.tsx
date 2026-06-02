@@ -1129,7 +1129,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 {/* 场景切换 segmented */}
                 <div className="inline-flex p-0.5 rounded-md bg-background border border-border/60 shrink-0">
                   {([
-                    { v: "personal", label: "个人体验", icon: Sparkles, desc: "快速调试" },
+                    { v: "personal", label: "个人体验", icon: User, desc: "快速调试" },
                     { v: "production", label: "线上生产", icon: Rocket, desc: "正式部署" },
                   ] as const).map((opt) => {
                     const active = envScenario === opt.v;
