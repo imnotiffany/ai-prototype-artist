@@ -1099,7 +1099,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                           >
                             <Icon className="w-3 h-3" />
                             <span className="font-medium">{t.name}</span>
-                            {sel && <CheckCircle2 className="w-3 h-3" />}
+                            
                           </button>
                         </TooltipTrigger>
                         <TooltipContent side="top" className="max-w-[200px]">
