@@ -64,8 +64,15 @@ export const AvatarPicker = ({
         <div className="relative w-14 h-14 rounded-lg border border-border bg-muted/40 overflow-hidden flex items-center justify-center shrink-0">
           {generating ? (
             <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+          ) : imgError ? (
+            <Bot className="w-6 h-6 text-muted-foreground" />
           ) : (
-            <img src={avatarUrl} alt={`${noun}头像`} className="w-full h-full object-cover" />
+            <img
+              src={avatarUrl}
+              alt=""
+              className="w-full h-full object-cover"
+              onError={() => setImgError(true)}
+            />
           )}
           {uploadedAvatar && !generating && (
             <button
