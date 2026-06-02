@@ -67,7 +67,7 @@ const ProjectAgents = () => {
       next.splice(idx + 1, 0, copy);
       return next;
     });
-    toast({ title: "复制成功", description: `已复制${app.kind === "app" ? "应用" : "智能体"}「${app.name}」` });
+    
   };
 
   const handleConfirmUnpublish = () => {
