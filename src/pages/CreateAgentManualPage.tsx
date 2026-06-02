@@ -1122,7 +1122,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   <Label className="text-xs flex items-center gap-1.5"><Cpu className="w-3.5 h-3.5 text-muted-foreground" />环境配置</Label>
                   <p className="text-[10px] text-muted-foreground mt-0.5">
                     {envScenario === "personal"
-                      ? "选择运行镜像即可，其余由平台托管。共享资源无 SLA 保障，禁止用于生产"
+                      ? "完整配置资源、镜像、DU 与存储"
                       : "完整配置资源、镜像、DU 与存储"}
                   </p>
                 </div>
