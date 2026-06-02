@@ -205,7 +205,7 @@ const AgentDetail = () => {
     if (s.status !== "pending") return;
     setSystemPrompt((p) => p.trim() + s.addition);
     updateSuggestionStatus(s.id, "adopted");
-    toast({ title: "已采纳建议", description: "系统提示词已更新" });
+    
   };
 
   const rejectSuggestion = (s: PromptSuggestion) => {
@@ -381,7 +381,7 @@ const AgentDetail = () => {
     setSavedSnapshot({ name, description, model, systemPrompt, skills: selSkills, mcpBindings, fsAppKey, fsAppSecret, fsRobotCode });
     setJustSaved(true);
     window.setTimeout(() => setJustSaved(false), 2800);
-    toast({ title: "已保存", description: "配置已更新，可点击发布上线" });
+    
   };
 
   const handlePublishClick = () => {
@@ -398,7 +398,7 @@ const AgentDetail = () => {
     setFsAppKey(savedSnapshot.fsAppKey);
     setFsAppSecret(savedSnapshot.fsAppSecret);
     setFsRobotCode(savedSnapshot.fsRobotCode);
-    toast({ title: "已撤销修改" });
+    
   };
 
   const updateMcpCred = (i: number, cred: string) =>
@@ -441,7 +441,7 @@ const AgentDetail = () => {
     setDescription(draftDesc);
     setSavedSnapshot((s) => ({ ...s, name: draftName, description: draftDesc }));
     setEditInfoOpen(false);
-    toast({ title: "基本信息已更新", description: "名称与描述的修改不会产生新版本" });
+    
   };
 
   return (
@@ -725,7 +725,7 @@ fengsheng:
                         className="h-7 text-xs gap-1"
                         onClick={() => {
                           navigator.clipboard.writeText(text);
-                          toast({ title: "已复制配置到剪贴板" });
+                          
                         }}
                       >
                         <Copy className="w-3 h-3" />复制
@@ -1510,7 +1510,7 @@ fengsheng:
                           const ok = !fsRobotCode.endsWith("_fail") && fsAppKey.length >= 4 && fsAppSecret.length >= 4 && fsRobotCode.length >= 4;
                           if (ok) {
                             setFsStatus("connected");
-                            toast({ title: "已连接丰声 NEXT 机器人", description: `Robot Code：${fsRobotCode}` });
+                            
                           } else {
                             setFsStatus("failed");
                             setFsFailMsg("凭证校验未通过：请检查 Client ID / Client Secret / Robot Code 是否正确");
@@ -1621,7 +1621,7 @@ fengsheng:
                     className="h-9 w-9 shrink-0"
                     onClick={() => {
                       navigator.clipboard.writeText(generatedKey);
-                      toast({ title: "已复制到剪贴板" });
+                      
                     }}
                   >
                     <Copy className="w-3.5 h-3.5" />

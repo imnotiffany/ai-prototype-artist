@@ -149,13 +149,13 @@ const VaultPage = () => {
       const ok = forceFail ? false : Math.random() > 0.3;
       setTestResult((r) => ({ ...r, [id]: ok ? "ok" : "fail" }));
       setTestingId(null);
-      toast({
-        title: ok ? "✓ 连接成功" : "✗ 连接失败",
-        description: ok
-          ? `${label} 已成功连接`
-          : `${label} 无法连接：请检查服务地址是否可达、请求头/凭据是否正确`,
-        variant: ok ? "default" : "destructive",
-      });
+      if (!ok) {
+        toast({
+          title: "✗ 连接失败",
+          description: `${label} 无法连接：请检查服务地址是否可达、请求头/凭据是否正确`,
+          variant: "destructive",
+        });
+      }
     }, 900);
   };
 
@@ -210,7 +210,7 @@ const VaultPage = () => {
         stdioArgs,
         envVars,
       } : m));
-      toast({ title: "MCP 已更新", description: `${name} 已保存` });
+      
     } else {
       const id = `m_${Date.now()}`;
       const newEntry: McpEntry = {
@@ -221,7 +221,7 @@ const VaultPage = () => {
       };
       setCredMcps((arr) => [newEntry, ...arr]);
       setMcpConfigured(name, true);
-      toast({ title: "正在测试连接…", description: `${name} 已添加，正在验证连通性` });
+      
       // 创建后自动触发一次连通性测试
       setTimeout(() => runTest(id, name), 200);
 
@@ -249,7 +249,7 @@ const VaultPage = () => {
     if (!deleteTarget) return;
     setCredMcps((arr) => arr.filter((m) => m.id !== deleteTarget.id));
     setMcpConfigured(deleteTarget.name, false);
-    toast({ title: "MCP 已删除", description: `${deleteTarget.name} 已从 MCP 管理中移除` });
+    
     setDeleteTarget(null);
   };
 

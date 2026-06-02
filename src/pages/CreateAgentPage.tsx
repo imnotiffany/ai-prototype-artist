@@ -1861,7 +1861,7 @@ const CreateAgentPage = () => {
                   const newPrompt = `你是一个专业的AI助手。\n\n## 核心能力\n${agentConfig.name || "根据用户描述提供帮助"}\n\n## 工具使用\n${allSkills.length > 0 ? `你可以使用以下技能：${allSkills.join("、")}` : "暂无外部技能"}\n${allMCPs.length > 0 ? `你可以连接以下服务：${allMCPs.join("、")}` : ""}\n${allSubs.length > 0 ? `你可以调用以下子智能体：${allSubs.join("、")}` : ""}\n\n## 行为准则\n- 始终准确、有帮助地回答问题\n- 在需要时主动使用可用工具与子智能体\n- 输出结构化、易读的结果`;
                   setAgentConfig({ ...agentConfig, systemPrompt: newPrompt });
                   setPromptSnapshot({ skills: allSkills, mcpServers: allMCPs, subagents: allSubs });
-                  toast({ title: "系统提示词已更新", description: "已根据最新的 MCP / Skill / 子智能体重新生成。" });
+                  
                 }}
               />
             ) : (
@@ -1945,7 +1945,7 @@ const CreateAgentPage = () => {
                         disabled={!agentConfig.fengsheng.appKey.trim() || !agentConfig.fengsheng.appSecret.trim() || !agentConfig.fengsheng.robotCode.trim() || agentConfig.fengsheng.connected}
                         onClick={() => {
                           setAgentConfig({ ...agentConfig, fengsheng: { ...agentConfig.fengsheng, connected: true } });
-                          toast({ title: "丰声 NEXT 机器人已连接", description: `Robot ${agentConfig.fengsheng.robotCode}` });
+                          
                         }}
                         className="h-7 px-3 text-[11px] rounded-md bg-primary text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1.5"
                       >

@@ -372,7 +372,7 @@ const CreateAgentManualPage = () => {
       // Mock transcription
       const mockText = "帮我查询昨天的快递订单状态";
       setDebugInput((prev) => (prev ? `${prev} ${mockText}` : mockText));
-      toast({ title: "语音已转写", description: mockText });
+      
     } else {
       setVoiceRecording(true);
       
@@ -511,7 +511,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
     if (!promptComplete) { toast({ title: "请完善系统提示词（不少于 20 字）", variant: "destructive" }); return; }
     setSavedSnapshot(currentSig);
     setHasSaved(true);
-    toast({ title: "已保存", description: "现在可以配置对外接入或开始调试了" });
+    
     setCurrentTab("channels");
   };
 
@@ -571,7 +571,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
       return;
     }
     if (!guardFengsheng()) return;
-    toast({ title: "已保存到项目管理", description: `${name} · ${category}（如需发布，请前往项目管理或详情页发布）` });
+    
     setPublishOpen(false);
     navigate("/project-agents");
   };
@@ -643,7 +643,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
 
   const copySpec = async () => {
     await navigator.clipboard.writeText(specContent);
-    toast({ title: "已复制到剪贴板" });
+    
   };
   const downloadSpec = () => {
     const blob = new Blob([specContent], { type: specFormat === "yaml" ? "text/yaml" : "application/json" });
@@ -1260,10 +1260,6 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   onClick={() => {
                     if (systemPrompt.trim() && !window.confirm("将用提示词脚手架覆盖当前内容，是否继续？")) return;
                     setSystemPrompt(promptScaffold);
-                    toast({
-                      title: "已导入提示词脚手架",
-                      description: "按段落把 < > 占位符替换为你 Agent 的实际信息",
-                    });
                   }}
                 >
                   <FileEdit className="w-3 h-3" />
@@ -1358,7 +1354,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                         const ok = !fsRobotCode.endsWith("_fail") && fsAppKey.length >= 4 && fsAppSecret.length >= 4 && fsRobotCode.length >= 4;
                         if (ok) {
                           setFsStatus("connected");
-                          toast({ title: "丰声 NEXT 机器人已连接", description: `Robot ${fsRobotCode}` });
+                          
                         } else {
                           setFsStatus("failed");
                           setFsFailMsg("凭证校验未通过：请检查 Client ID / Client Secret / Robot Code 是否正确");
