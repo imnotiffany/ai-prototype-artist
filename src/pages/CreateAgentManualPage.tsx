@@ -1354,7 +1354,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                         const ok = !fsRobotCode.endsWith("_fail") && fsAppKey.length >= 4 && fsAppSecret.length >= 4 && fsRobotCode.length >= 4;
                         if (ok) {
                           setFsStatus("connected");
-                          toast({ title: "丰声 NEXT 机器人已连接", description: `Robot ${fsRobotCode}` });
+                          
                         } else {
                           setFsStatus("failed");
                           setFsFailMsg("凭证校验未通过：请检查 Client ID / Client Secret / Robot Code 是否正确");
