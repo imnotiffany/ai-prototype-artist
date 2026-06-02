@@ -1127,7 +1127,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   </p>
                 </div>
                 {/* 场景切换 segmented */}
-                <div className="inline-flex p-0.5 rounded-lg bg-background border border-border/60 shadow-sm shrink-0">
+                <div className="inline-flex p-0.5 rounded-md bg-background border border-border/60 shrink-0">
                   {([
                     { v: "personal", label: "个人体验", icon: Sparkles, desc: "快速调试" },
                     { v: "production", label: "线上生产", icon: Rocket, desc: "正式部署" },
@@ -1139,14 +1139,14 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                         key={opt.v}
                         type="button"
                         onClick={() => setEnvScenario(opt.v)}
-                        className={`flex items-center gap-1.5 px-3 h-7 rounded-md text-[11px] font-medium transition-all ${
+                        className={`flex items-center gap-1 px-2 h-6 rounded text-[10px] font-medium transition-all ${
                           active
-                            ? "bg-primary text-primary-foreground shadow-sm"
+                            ? "bg-primary text-primary-foreground"
                             : "text-muted-foreground hover:text-foreground"
                         }`}
                         title={opt.desc}
                       >
-                        <Icon className="w-3 h-3" />
+                        <Icon className="w-2.5 h-2.5" />
                         {opt.label}
                       </button>
                     );
