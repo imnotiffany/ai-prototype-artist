@@ -1260,10 +1260,6 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   onClick={() => {
                     if (systemPrompt.trim() && !window.confirm("将用提示词脚手架覆盖当前内容，是否继续？")) return;
                     setSystemPrompt(promptScaffold);
-                    toast({
-                      title: "已导入提示词脚手架",
-                      description: "按段落把 < > 占位符替换为你 Agent 的实际信息",
-                    });
                   }}
                 >
                   <FileEdit className="w-3 h-3" />
