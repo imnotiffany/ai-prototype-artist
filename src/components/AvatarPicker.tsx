@@ -1,7 +1,7 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { RefreshCw, Loader2, Upload, X } from "lucide-react";
+import { RefreshCw, Loader2, Upload, X, Bot } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface Props {
@@ -25,8 +25,10 @@ export const AvatarPicker = ({
 }: Props) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [generating, setGenerating] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const generatedAvatarUrl = `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${encodeURIComponent(seed)}&backgroundColor=dbeafe,fde68a,bbf7d0,fecaca,e9d5ff`;
   const avatarUrl = uploadedAvatar || generatedAvatarUrl;
+  useEffect(() => { setImgError(false); }, [avatarUrl]);
 
   const regenerate = () => {
     onUploadedAvatarChange(null);
@@ -62,8 +64,15 @@ export const AvatarPicker = ({
         <div className="relative w-14 h-14 rounded-lg border border-border bg-muted/40 overflow-hidden flex items-center justify-center shrink-0">
           {generating ? (
             <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+          ) : imgError ? (
+            <Bot className="w-6 h-6 text-muted-foreground" />
           ) : (
-            <img src={avatarUrl} alt={`${noun}头像`} className="w-full h-full object-cover" />
+            <img
+              src={avatarUrl}
+              alt=""
+              className="w-full h-full object-cover"
+              onError={() => setImgError(true)}
+            />
           )}
           {uploadedAvatar && !generating && (
             <button
