@@ -1,7 +1,7 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { RefreshCw, Loader2, Upload, X } from "lucide-react";
+import { RefreshCw, Loader2, Upload, X, Bot } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface Props {
