@@ -881,7 +881,6 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <Label className="text-xs flex items-center gap-1.5"><Server className="w-3.5 h-3.5 text-muted-foreground" />MCP 绑定</Label>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">连接外部系统；部分 MCP 需要绑定凭据后才能调用</p>
                 </div>
                 <CapabilityPickerDialog items={mcps} selected={selMCPs} onToggle={(n) => toggle(selMCPs, setSelMCPs, n)} icon={<Server className="w-3.5 h-3.5" />} label="MCP" marketLink="/" deployBadge={(n) => mcps.find((m) => m.name === n)?.deployment ?? "云端"} trigger={<Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0"><Plus className="w-3 h-3" />添加 MCP</Button>} />
               </div>
@@ -942,7 +941,6 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <Label className="text-xs flex items-center gap-1.5"><Zap className="w-3.5 h-3.5 text-muted-foreground" />Skill 绑定</Label>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">预制能力包，让智能体掌握特定领域的工作流</p>
                 </div>
                 <CapabilityPickerDialog items={skills} selected={selSkills} onToggle={(n) => toggle(selSkills, setSelSkills, n)} icon={<Zap className="w-3.5 h-3.5" />} label="Skill" marketLink="/" trigger={<Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0"><Plus className="w-3 h-3" />添加 Skill</Button>} />
               </div>
@@ -972,7 +970,6 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <Label className="text-xs flex items-center gap-1.5"><Bot className="w-3.5 h-3.5 text-muted-foreground" />子智能体绑定</Label>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">从智能体广场挑选已发布的智能体作为子智能体，主智能体可调度它们协同完成任务（可选）</p>
                 </div>
                 <CapabilityPickerDialog
                   items={subagents.map((a) => ({ name: a.name, description: a.description, scope: a.scope }))}
@@ -1102,7 +1099,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                           >
                             <Icon className="w-3 h-3" />
                             <span className="font-medium">{t.name}</span>
-                            {sel && <CheckCircle2 className="w-3 h-3" />}
+                            
                           </button>
                         </TooltipTrigger>
                         <TooltipContent side="top" className="max-w-[200px]">
