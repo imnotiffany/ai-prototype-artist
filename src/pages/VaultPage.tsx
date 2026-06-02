@@ -575,10 +575,10 @@ const VaultPage = () => {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-[13px] font-semibold leading-tight truncate" title={m.name}>{m.name}</p>
-                      <div className="flex items-center gap-1.5 mt-1 text-[10px] text-muted-foreground">
-                        <span className="font-mono">{m.identifier}</span>
-                        <span className="text-border">·</span>
-                        <span className="font-mono">{typeLabel(m.type)}</span>
+                      <div className="flex items-center gap-1.5 mt-1 text-[10px] text-muted-foreground min-w-0">
+                        <span className="font-mono truncate">{m.identifier}</span>
+                        <span className="text-border shrink-0">·</span>
+                        <span className="font-mono whitespace-nowrap shrink-0">{typeLabel(m.type)}</span>
                       </div>
                     </div>
                     <button
