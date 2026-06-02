@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Pencil, Trash2, Server, AlertTriangle, Bot, Plug, Loader2, CheckCircle2, XCircle, Link2, X, Search, KeyRound, ShieldCheck, Lock, Tag, ExternalLink, Activity } from "lucide-react";
+import { Plus, Pencil, Trash2, Server, AlertTriangle, Bot, Plug, Loader2, CheckCircle2, XCircle, Link2, X, Search, KeyRound, ShieldCheck, Lock, Tag, ExternalLink, Activity, RefreshCw } from "lucide-react";
 
 type McpType = "studio" | "sse" | "http";
 import { sharedResources, mockAgents, getCredentialFreeMcps, getCredentialRequiredMcps } from "@/data/mockData";
@@ -581,17 +581,23 @@ const VaultPage = () => {
                         <span className="font-mono">{typeLabel(m.type)}</span>
                       </div>
                     </div>
-                    <span
-                      className="inline-flex items-center gap-1 text-[10px] text-muted-foreground shrink-0"
-                      title={statusLabel}
+                    <button
+                      type="button"
+                      disabled={testing}
+                      onClick={(e) => { e.stopPropagation(); runTest(m.id, m.name); }}
+                      title={testing ? "测试中…" : `${statusLabel}（点击重新测试）`}
+                      className="group/status inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors shrink-0 disabled:opacity-60"
                     >
                       {testing ? (
                         <Loader2 className="w-2.5 h-2.5 animate-spin" />
                       ) : (
-                        <span className={`w-1.5 h-1.5 rounded-full ${statusColor}`} />
+                        <>
+                          <span className={`w-1.5 h-1.5 rounded-full ${statusColor} group-hover/status:hidden`} />
+                          <RefreshCw className="w-2.5 h-2.5 hidden group-hover/status:block" />
+                        </>
                       )}
                       {statusLabel}
-                    </span>
+                    </button>
                     <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                       <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground [&_svg]:size-3" title="编辑"
                         onClick={(e) => { e.stopPropagation(); openEdit(m); }}>
