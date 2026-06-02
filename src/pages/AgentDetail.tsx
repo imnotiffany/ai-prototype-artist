@@ -381,7 +381,7 @@ const AgentDetail = () => {
     setSavedSnapshot({ name, description, model, systemPrompt, skills: selSkills, mcpBindings, fsAppKey, fsAppSecret, fsRobotCode });
     setJustSaved(true);
     window.setTimeout(() => setJustSaved(false), 2800);
-    toast({ title: "已保存", description: "配置已更新，可点击发布上线" });
+    
   };
 
   const handlePublishClick = () => {
