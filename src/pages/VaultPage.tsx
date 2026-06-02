@@ -210,7 +210,7 @@ const VaultPage = () => {
         stdioArgs,
         envVars,
       } : m));
-      toast({ title: "MCP 已更新", description: `${name} 已保存` });
+      
     } else {
       const id = `m_${Date.now()}`;
       const newEntry: McpEntry = {
