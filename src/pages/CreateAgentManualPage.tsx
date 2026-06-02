@@ -643,7 +643,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
 
   const copySpec = async () => {
     await navigator.clipboard.writeText(specContent);
-    toast({ title: "已复制到剪贴板" });
+    
   };
   const downloadSpec = () => {
     const blob = new Blob([specContent], { type: specFormat === "yaml" ? "text/yaml" : "application/json" });
