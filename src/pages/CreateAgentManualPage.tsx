@@ -941,7 +941,6 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <Label className="text-xs flex items-center gap-1.5"><Zap className="w-3.5 h-3.5 text-muted-foreground" />Skill 绑定</Label>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">预制能力包，让智能体掌握特定领域的工作流</p>
                 </div>
                 <CapabilityPickerDialog items={skills} selected={selSkills} onToggle={(n) => toggle(selSkills, setSelSkills, n)} icon={<Zap className="w-3.5 h-3.5" />} label="Skill" marketLink="/" trigger={<Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0"><Plus className="w-3 h-3" />添加 Skill</Button>} />
               </div>
