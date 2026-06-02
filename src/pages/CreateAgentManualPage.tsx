@@ -111,6 +111,7 @@ const CreateAgentManualPage = () => {
   const [model, setModel] = useState("aliyun/qwen3.6-plus");
   const [apiKey, setApiKey] = useState("");
   // 环境配置
+  const [envScenario, setEnvScenario] = useState<"personal" | "production">("personal");
   const [envSpec, setEnvSpec] = useState<"1C2G" | "2C4G" | "4C8G">("4C8G");
   const [envImage, setEnvImage] = useState("img-default");
   const [envDuMode, setEnvDuMode] = useState<"new" | "existing">("new");
