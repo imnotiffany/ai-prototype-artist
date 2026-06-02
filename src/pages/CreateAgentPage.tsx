@@ -1945,7 +1945,7 @@ const CreateAgentPage = () => {
                         disabled={!agentConfig.fengsheng.appKey.trim() || !agentConfig.fengsheng.appSecret.trim() || !agentConfig.fengsheng.robotCode.trim() || agentConfig.fengsheng.connected}
                         onClick={() => {
                           setAgentConfig({ ...agentConfig, fengsheng: { ...agentConfig.fengsheng, connected: true } });
-                          toast({ title: "丰声 NEXT 机器人已连接", description: `Robot ${agentConfig.fengsheng.robotCode}` });
+                          
                         }}
                         className="h-7 px-3 text-[11px] rounded-md bg-primary text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1.5"
                       >
