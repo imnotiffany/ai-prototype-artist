@@ -221,7 +221,7 @@ const VaultPage = () => {
       };
       setCredMcps((arr) => [newEntry, ...arr]);
       setMcpConfigured(name, true);
-      toast({ title: "正在测试连接…", description: `${name} 已添加，正在验证连通性` });
+      
       // 创建后自动触发一次连通性测试
       setTimeout(() => runTest(id, name), 200);
 
