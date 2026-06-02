@@ -725,7 +725,7 @@ fengsheng:
                         className="h-7 text-xs gap-1"
                         onClick={() => {
                           navigator.clipboard.writeText(text);
-                          toast({ title: "已复制配置到剪贴板" });
+                          
                         }}
                       >
                         <Copy className="w-3 h-3" />复制
