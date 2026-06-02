@@ -398,7 +398,7 @@ const AgentDetail = () => {
     setFsAppKey(savedSnapshot.fsAppKey);
     setFsAppSecret(savedSnapshot.fsAppSecret);
     setFsRobotCode(savedSnapshot.fsRobotCode);
-    toast({ title: "已撤销修改" });
+    
   };
 
   const updateMcpCred = (i: number, cred: string) =>
