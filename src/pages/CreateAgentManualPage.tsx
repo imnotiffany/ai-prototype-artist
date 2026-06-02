@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Save, Rocket, Plus, X, Settings2, Cpu, Server, Zap, Shield, KeyRound, Bot, MessageSquare, Eye, EyeOff, Link2, CheckCircle2, Wand, Loader2, ExternalLink, Play, Send, AlertCircle, Bug, FolderKanban, Store, ArrowRight, Mic, MicOff, HelpCircle, FileEdit, Terminal, ChevronDown, ChevronUp, Copy, Brain, Wrench, Info, AlertTriangle, Trash2, RefreshCw, Code2, FileCode, Search, Download, User, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -118,6 +118,23 @@ const CreateAgentManualPage = () => {
   const [envDu, setEnvDu] = useState("");
   const [envInstances, setEnvInstances] = useState(2);
   const [envRedisUrl, setEnvRedisUrl] = useState("");
+  // 环境变量（注入到智能体运行时的 KV）
+  const [envVars, setEnvVars] = useState<{ id: string; key: string; value: string }[]>([]);
+  const [envVarVisibility, setEnvVarVisibility] = useState<Record<string, boolean>>({});
+  const addEnvVar = () => setEnvVars((arr) => [...arr, { id: `ev-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, key: "", value: "" }]);
+  const updateEnvVar = (id: string, patch: Partial<{ key: string; value: string }>) =>
+    setEnvVars((arr) => arr.map((v) => (v.id === id ? { ...v, ...patch } : v)));
+  const removeEnvVar = (id: string) => {
+    setEnvVars((arr) => arr.filter((v) => v.id !== id));
+    setEnvVarVisibility(({ [id]: _, ...rest }) => rest);
+  };
+  const toggleEnvVarVisible = (id: string) =>
+    setEnvVarVisibility((m) => ({ ...m, [id]: !m[id] }));
+  const envVarKeyCounts = useMemo(() => {
+    const m: Record<string, number> = {};
+    envVars.forEach((v) => { const k = v.key.trim(); if (k) m[k] = (m[k] ?? 0) + 1; });
+    return m;
+  }, [envVars]);
 
   // Prompt
   const [systemPrompt, setSystemPrompt] = useState("");
@@ -1249,6 +1266,97 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 </>
               )}
             </div>
+
+            {/* 环境变量 */}
+            <div className="rounded-xl bg-muted/30 p-5 space-y-3">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <Label className="text-xs flex items-center gap-1.5">
+                    <KeyRound className="w-3.5 h-3.5 text-muted-foreground" />环境变量
+                  </Label>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                    注入到智能体运行时的 KV 配置，例如数据库 AK/SK、第三方 API 地址等
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs gap-1 shrink-0"
+                  onClick={addEnvVar}
+                >
+                  <Plus className="w-3 h-3" />添加变量
+                </Button>
+              </div>
+
+              {envVars.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-border bg-background/40 py-6 text-center text-[11px] text-muted-foreground">
+                  暂未配置环境变量
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  {/* 表头 */}
+                  <div className="grid grid-cols-[1fr_1.4fr_auto] gap-2 px-1 text-[10px] text-muted-foreground">
+                    <span>KEY</span>
+                    <span>VALUE</span>
+                    <span className="w-7" />
+                  </div>
+                  {envVars.map((v) => {
+                    const trimmedKey = v.key.trim();
+                    const dup = trimmedKey.length > 0 && (envVarKeyCounts[trimmedKey] ?? 0) > 1;
+                    const invalid = trimmedKey.length > 0 && !/^[A-Za-z_][A-Za-z0-9_]*$/.test(trimmedKey);
+                    const keyError = dup ? "KEY 重复" : invalid ? "命名非法（仅字母/数字/下划线，且不能以数字开头）" : "";
+                    const visible = !!envVarVisibility[v.id];
+                    return (
+                      <div key={v.id} className="grid grid-cols-[1fr_1.4fr_auto] gap-2 items-start">
+                        <div>
+                          <Input
+                            className={`h-8 text-xs font-mono ${keyError ? "border-destructive focus-visible:ring-destructive/40" : ""}`}
+                            placeholder="DB_ACCESS_KEY"
+                            value={v.key}
+                            onChange={(e) => updateEnvVar(v.id, { key: e.target.value })}
+                          />
+                          {keyError && (
+                            <p className="text-[10px] text-destructive mt-1 leading-tight">{keyError}</p>
+                          )}
+                        </div>
+                        <div className="relative">
+                          <Input
+                            className="h-8 text-xs font-mono pr-8"
+                            type={visible ? "text" : "password"}
+                            placeholder="值"
+                            value={v.value}
+                            onChange={(e) => updateEnvVar(v.id, { value: e.target.value })}
+                            autoComplete="off"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => toggleEnvVarVisible(v.id)}
+                            tabIndex={-1}
+                            className="absolute right-1.5 top-1/2 -translate-y-1/2 h-6 w-6 inline-flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+                            title={visible ? "隐藏" : "显示"}
+                          >
+                            {visible ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                          </button>
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 [&_svg]:size-3"
+                          onClick={() => removeEnvVar(v.id)}
+                          title="删除"
+                        >
+                          <Trash2 />
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+
 
 
 
