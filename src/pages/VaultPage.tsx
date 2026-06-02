@@ -566,65 +566,41 @@ const VaultPage = () => {
               return (
                 <div
                   key={m.id}
-                  className="group relative overflow-hidden rounded-xl border border-border bg-card hover:border-primary/40 hover:shadow-[0_2px_12px_-4px_hsl(var(--primary)/0.15)] transition-all cursor-pointer"
+                  className="group relative rounded-xl border border-border bg-card hover:border-primary/40 hover:shadow-[0_2px_12px_-4px_hsl(var(--primary)/0.15)] transition-all cursor-pointer"
                   onClick={() => openEdit(m)}
                 >
-                  {/* 左侧状态色条 */}
-                  <span className={`absolute left-0 top-0 bottom-0 w-[3px] ${statusColor}`} aria-hidden />
-
-                  <div className="p-3.5 pl-4">
-                    {/* 头部：图标 + 名称 + 状态点 */}
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary/15 to-primary/5 ring-1 ring-primary/10 flex items-center justify-center shrink-0">
-                        <Server className="w-4 h-4 text-primary" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[13px] font-semibold leading-tight truncate" title={m.name}>{m.name}</p>
-                        <div className="flex items-center gap-1.5 mt-1 text-[10px] text-muted-foreground">
-                          <span className="font-mono">{m.identifier}</span>
-                          <span className="text-border">·</span>
-                          <span className="font-mono">{typeLabel(m.type)}</span>
-                        </div>
-                      </div>
-                      <span
-                        className="inline-flex items-center gap-1 text-[10px] text-muted-foreground shrink-0"
-                        title={statusLabel}
-                      >
-                        {testing ? (
-                          <Loader2 className="w-2.5 h-2.5 animate-spin" />
-                        ) : (
-                          <span className={`w-1.5 h-1.5 rounded-full ${statusColor}`} />
-                        )}
-                        {statusLabel}
-                      </span>
+                  <div className="p-3.5 flex items-center gap-2.5 min-w-0">
+                    <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary/15 to-primary/5 ring-1 ring-primary/10 flex items-center justify-center shrink-0">
+                      <Server className="w-4 h-4 text-primary" />
                     </div>
-
-                    {/* 服务端点 */}
-                    <div className="mt-3 flex items-center gap-1.5 rounded-md bg-muted/40 px-2 py-1.5 text-[11px] text-muted-foreground font-mono min-w-0">
-                      <Link2 className="w-3 h-3 shrink-0 opacity-70" />
-                      <span className="truncate" title={m.endpoint}>{m.endpoint}</span>
-                    </div>
-
-                    {/* 操作行 */}
-                    <div className="mt-3 flex items-center justify-between">
-                      <button
-                        className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
-                        disabled={testing}
-                        onClick={(e) => { e.stopPropagation(); runTest(m.id, m.name); }}
-                      >
-                        {testing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Activity className="w-3 h-3" />}
-                        测试连接
-                      </button>
-                      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground [&_svg]:size-3" title="编辑"
-                          onClick={(e) => { e.stopPropagation(); openEdit(m); }}>
-                          <Pencil />
-                        </Button>
-                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 [&_svg]:size-3" title="删除"
-                          onClick={(e) => { e.stopPropagation(); setDeleteTarget(m); }}>
-                          <Trash2 />
-                        </Button>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[13px] font-semibold leading-tight truncate" title={m.name}>{m.name}</p>
+                      <div className="flex items-center gap-1.5 mt-1 text-[10px] text-muted-foreground">
+                        <span className="font-mono">{m.identifier}</span>
+                        <span className="text-border">·</span>
+                        <span className="font-mono">{typeLabel(m.type)}</span>
                       </div>
+                    </div>
+                    <span
+                      className="inline-flex items-center gap-1 text-[10px] text-muted-foreground shrink-0"
+                      title={statusLabel}
+                    >
+                      {testing ? (
+                        <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                      ) : (
+                        <span className={`w-1.5 h-1.5 rounded-full ${statusColor}`} />
+                      )}
+                      {statusLabel}
+                    </span>
+                    <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground [&_svg]:size-3" title="编辑"
+                        onClick={(e) => { e.stopPropagation(); openEdit(m); }}>
+                        <Pencil />
+                      </Button>
+                      <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 [&_svg]:size-3" title="删除"
+                        onClick={(e) => { e.stopPropagation(); setDeleteTarget(m); }}>
+                        <Trash2 />
+                      </Button>
                     </div>
                   </div>
                 </div>
