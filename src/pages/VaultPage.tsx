@@ -149,13 +149,13 @@ const VaultPage = () => {
       const ok = forceFail ? false : Math.random() > 0.3;
       setTestResult((r) => ({ ...r, [id]: ok ? "ok" : "fail" }));
       setTestingId(null);
-      toast({
-        title: ok ? "✓ 连接成功" : "✗ 连接失败",
-        description: ok
-          ? `${label} 已成功连接`
-          : `${label} 无法连接：请检查服务地址是否可达、请求头/凭据是否正确`,
-        variant: ok ? "default" : "destructive",
-      });
+      if (!ok) {
+        toast({
+          title: "✗ 连接失败",
+          description: `${label} 无法连接：请检查服务地址是否可达、请求头/凭据是否正确`,
+          variant: "destructive",
+        });
+      }
     }, 900);
   };
 
