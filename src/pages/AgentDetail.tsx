@@ -1510,7 +1510,7 @@ fengsheng:
                           const ok = !fsRobotCode.endsWith("_fail") && fsAppKey.length >= 4 && fsAppSecret.length >= 4 && fsRobotCode.length >= 4;
                           if (ok) {
                             setFsStatus("connected");
-                            toast({ title: "已连接丰声 NEXT 机器人", description: `Robot Code：${fsRobotCode}` });
+                            
                           } else {
                             setFsStatus("failed");
                             setFsFailMsg("凭证校验未通过：请检查 Client ID / Client Secret / Robot Code 是否正确");
