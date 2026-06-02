@@ -118,6 +118,23 @@ const CreateAgentManualPage = () => {
   const [envDu, setEnvDu] = useState("");
   const [envInstances, setEnvInstances] = useState(2);
   const [envRedisUrl, setEnvRedisUrl] = useState("");
+  // 环境变量（注入到智能体运行时的 KV）
+  const [envVars, setEnvVars] = useState<{ id: string; key: string; value: string }[]>([]);
+  const [envVarVisibility, setEnvVarVisibility] = useState<Record<string, boolean>>({});
+  const addEnvVar = () => setEnvVars((arr) => [...arr, { id: `ev-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, key: "", value: "" }]);
+  const updateEnvVar = (id: string, patch: Partial<{ key: string; value: string }>) =>
+    setEnvVars((arr) => arr.map((v) => (v.id === id ? { ...v, ...patch } : v)));
+  const removeEnvVar = (id: string) => {
+    setEnvVars((arr) => arr.filter((v) => v.id !== id));
+    setEnvVarVisibility(({ [id]: _, ...rest }) => rest);
+  };
+  const toggleEnvVarVisible = (id: string) =>
+    setEnvVarVisibility((m) => ({ ...m, [id]: !m[id] }));
+  const envVarKeyCounts = useMemo(() => {
+    const m: Record<string, number> = {};
+    envVars.forEach((v) => { const k = v.key.trim(); if (k) m[k] = (m[k] ?? 0) + 1; });
+    return m;
+  }, [envVars]);
 
   // Prompt
   const [systemPrompt, setSystemPrompt] = useState("");
