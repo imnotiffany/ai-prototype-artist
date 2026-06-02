@@ -2101,7 +2101,23 @@ const CreateAgentPage = () => {
                   {generatingAvatar ? (
                     <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
                   ) : (
-                    <img src={avatarUrl} alt="智能体头像" className="w-full h-full object-cover" />
+                    <img
+                      src={avatarUrl}
+                      alt=""
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const el = e.currentTarget;
+                        el.style.display = "none";
+                        const parent = el.parentElement;
+                        if (parent && !parent.querySelector("[data-avatar-fallback]")) {
+                          const span = document.createElement("span");
+                          span.dataset.avatarFallback = "1";
+                          span.className = "text-muted-foreground text-xl";
+                          span.textContent = "🤖";
+                          parent.appendChild(span);
+                        }
+                      }}
+                    />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
