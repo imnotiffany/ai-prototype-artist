@@ -1621,7 +1621,7 @@ fengsheng:
                     className="h-9 w-9 shrink-0"
                     onClick={() => {
                       navigator.clipboard.writeText(generatedKey);
-                      toast({ title: "已复制到剪贴板" });
+                      
                     }}
                   >
                     <Copy className="w-3.5 h-3.5" />
