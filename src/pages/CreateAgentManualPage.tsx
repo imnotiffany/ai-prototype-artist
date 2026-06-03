@@ -118,6 +118,8 @@ const CreateAgentManualPage = () => {
   const [envDu, setEnvDu] = useState("");
   const [envInstances, setEnvInstances] = useState(2);
   const [envRedisUrl, setEnvRedisUrl] = useState("");
+  // 高级设置（环境配置 + 环境变量）默认收起
+  const [showAdvanced, setShowAdvanced] = useState(false);
   // 环境变量（注入到智能体运行时的 KV）
   const [envVars, setEnvVars] = useState<{ id: string; key: string; value: string }[]>([]);
   const [envVarVisibility, setEnvVarVisibility] = useState<Record<string, boolean>>({});
@@ -1132,6 +1134,9 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               </TooltipProvider>
             </div>
 
+            {/* 高级设置：环境配置 + 环境变量 */}
+            {showAdvanced && (
+              <>
             {/* 环境配置 */}
             <div className="rounded-xl bg-muted/30 p-5 space-y-4">
               <div className="flex items-start justify-between gap-4">
@@ -1355,6 +1360,22 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 </div>
               )}
             </div>
+              </>
+            )}
+
+            {/* 高级设置切换 */}
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={() => setShowAdvanced((v) => !v)}
+                className="inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors py-1"
+              >
+                {showAdvanced ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                高级设置（环境配置、环境变量）
+              </button>
+            </div>
+
+
 
 
 
