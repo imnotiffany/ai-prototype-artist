@@ -1,7 +1,7 @@
 /** 平台镜像（含版本） */
 export interface ImageVersion {
   version: string;
-  tag?: "标准" | "推荐" | "Beta";
+  tag?: "标准";
   isDefault?: boolean;
 }
 export interface PlatformImage {
@@ -31,7 +31,7 @@ export const platformImages: PlatformImage[] = [
     id: "img-tf-py38",
     name: "tensorflow2.11.0-pytorch1.12-py3.8-vscode",
     versions: [
-      { version: "v2", tag: "推荐" },
+      { version: "v2", tag: "标准" },
       { version: "v1" },
     ],
   },
@@ -53,7 +53,7 @@ export const customImages: PlatformImage[] = [
     id: "img-custom-llm",
     name: "team-llm-serving",
     description: "团队自建 LLM 服务镜像",
-    versions: [{ version: "v3", tag: "推荐" }, { version: "v2" }, { version: "v1" }],
+    versions: [{ version: "v3", tag: "标准" }, { version: "v2" }, { version: "v1" }],
   },
 ];
 

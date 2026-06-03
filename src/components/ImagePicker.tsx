@@ -27,12 +27,8 @@ const SOURCES: { key: ImageSource; label: string }[] = [
   { key: "custom", label: "自定义镜像" },
 ];
 
-const tagClass = (tag?: string) =>
-  tag === "标准"
-    ? "border-emerald-500/30 text-emerald-600 bg-emerald-500/10"
-    : tag === "推荐"
-      ? "border-primary/30 text-primary bg-primary/10"
-      : "border-amber-500/30 text-amber-600 bg-amber-500/10";
+const tagClass = (_tag?: string) =>
+  "border-emerald-500/30 text-emerald-600 bg-emerald-500/10";
 
 export const ImagePicker = ({ value, onChange, className }: Props) => {
   const [open, setOpen] = useState(false);
