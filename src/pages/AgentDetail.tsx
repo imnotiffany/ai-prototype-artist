@@ -125,12 +125,32 @@ const AgentDetail = () => {
   const [systemPrompt, setSystemPrompt] = useState(initialSnapshot.systemPrompt);
   const [selSkills, setSelSkills] = useState<string[]>(initialSnapshot.skills);
   const [selBuiltinTools, setSelBuiltinTools] = useState<string[]>(["Bash", "Read", "Write", "Edit", "Glob", "Grep", "WebFetch", "WebSearch"]);
+  const [envScenario, setEnvScenario] = useState<"personal" | "production">("production");
   const [envSpec, setEnvSpec] = useState<"1C2G" | "2C4G" | "4C8G">("4C8G");
   const [envImage, setEnvImage] = useState<string>("img-default");
   const [envInstances, setEnvInstances] = useState<number>(2);
   const [envDuMode, setEnvDuMode] = useState<"existing" | "new">("existing");
   const [envDu, setEnvDu] = useState<string>("AOP-EXPECT-INFO-AI-MODELSERVICE");
   const [envRedisUrl, setEnvRedisUrl] = useState<string>("redis://:password@host:6379/0");
+  // 高级设置（环境配置 + 环境变量）默认收起
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  // 环境变量（注入到智能体运行时的 KV）
+  const [envVars, setEnvVars] = useState<{ id: string; key: string; value: string }[]>([]);
+  const [envVarVisibility, setEnvVarVisibility] = useState<Record<string, boolean>>({});
+  const addEnvVar = () => setEnvVars((arr) => [...arr, { id: `ev-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, key: "", value: "" }]);
+  const updateEnvVar = (id: string, patch: Partial<{ key: string; value: string }>) =>
+    setEnvVars((arr) => arr.map((v) => (v.id === id ? { ...v, ...patch } : v)));
+  const removeEnvVar = (id: string) => {
+    setEnvVars((arr) => arr.filter((v) => v.id !== id));
+    setEnvVarVisibility(({ [id]: _, ...rest }) => rest);
+  };
+  const toggleEnvVarVisible = (id: string) =>
+    setEnvVarVisibility((m) => ({ ...m, [id]: !m[id] }));
+  const envVarKeyCounts = useMemo(() => {
+    const m: Record<string, number> = {};
+    envVars.forEach((v) => { const k = v.key.trim(); if (k) m[k] = (m[k] ?? 0) + 1; });
+    return m;
+  }, [envVars]);
   const [mcpBindings, setMcpBindings] = useState<{ name: string; credential: string }[]>(initialSnapshot.mcpBindings);
   const [fsAppKey, setFsAppKey] = useState(initialSnapshot.fsAppKey);
   const [fsAppSecret, setFsAppSecret] = useState(initialSnapshot.fsAppSecret);
