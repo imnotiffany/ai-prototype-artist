@@ -1134,6 +1134,18 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               </TooltipProvider>
             </div>
 
+            {/* 高级设置切换 */}
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={() => setShowAdvanced((v) => !v)}
+                className="inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors py-1"
+              >
+                {showAdvanced ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                高级设置（环境配置、环境变量）
+              </button>
+            </div>
+
             {/* 高级设置：环境配置 + 环境变量 */}
             {showAdvanced && (
               <>
