@@ -1191,17 +1191,9 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               {/* 运行镜像（两种场景都需要） */}
               <div>
                 <Label className="text-xs">运行镜像 <span className="text-destructive">*</span></Label>
-                <Select value={envImage} onValueChange={setEnvImage}>
-                  <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {projectImages.map((img) => (
-                      <SelectItem key={img.id} value={img.id} className="text-xs">
-                        <span className="font-mono">{img.name}</span>
-                        {img.isDefault && <span className="ml-2 text-[10px] text-muted-foreground">默认</span>}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="mt-1.5">
+                  <ImagePicker value={envImage} onChange={setEnvImage} />
+                </div>
               </div>
 
               {envScenario === "personal" ? (
