@@ -1280,7 +1280,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                     <KeyRound className="w-3.5 h-3.5 text-muted-foreground" />环境变量
                   </Label>
                   <p className="text-[10px] text-muted-foreground mt-0.5">
-                    注入到智能体运行时的 KV 配置，例如数据库 AK/SK、第三方 API 地址等
+                    注入到智能体运行时的 KV 配置
                   </p>
                 </div>
                 <Button
