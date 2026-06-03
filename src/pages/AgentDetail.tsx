@@ -1217,7 +1217,7 @@ fengsheng:
 
             {/* 环境变量 */}
             <section className="border border-border rounded-lg bg-card">
-              <header className="px-4 py-2.5 border-b border-border flex items-start justify-between gap-4">
+              <header className={`px-4 py-2.5 flex items-start justify-between gap-4 ${envVars.length > 0 ? "border-b border-border" : ""}`}>
                 <div>
                   <h3 className="text-sm font-semibold flex items-center gap-1.5">
                     <KeyRound className="w-3.5 h-3.5 text-primary" />环境变量
