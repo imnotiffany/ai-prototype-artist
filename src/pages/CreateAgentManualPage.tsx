@@ -118,6 +118,8 @@ const CreateAgentManualPage = () => {
   const [envDu, setEnvDu] = useState("");
   const [envInstances, setEnvInstances] = useState(2);
   const [envRedisUrl, setEnvRedisUrl] = useState("");
+  // 高级设置（环境配置 + 环境变量）默认收起
+  const [showAdvanced, setShowAdvanced] = useState(false);
   // 环境变量（注入到智能体运行时的 KV）
   const [envVars, setEnvVars] = useState<{ id: string; key: string; value: string }[]>([]);
   const [envVarVisibility, setEnvVarVisibility] = useState<Record<string, boolean>>({});
