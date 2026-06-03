@@ -1339,7 +1339,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                         </div>
                         <div className="relative">
                           <Input
-                            className="h-8 text-xs font-mono pr-8"
+                            className="h-8 text-xs font-mono pr-8 placeholder:text-xs placeholder:font-mono"
                             type={visible ? "text" : "password"}
                             placeholder="值"
                             value={v.value}
