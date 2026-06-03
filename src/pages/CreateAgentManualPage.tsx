@@ -1328,7 +1328,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                       <div key={v.id} className="grid grid-cols-[1fr_1.4fr_auto] gap-2 items-start">
                         <div>
                           <Input
-                            className={`h-8 text-xs font-mono ${keyError ? "border-destructive focus-visible:ring-destructive/40" : ""}`}
+                            className={`h-8 text-xs font-mono placeholder:text-xs placeholder:font-mono ${keyError ? "border-destructive focus-visible:ring-destructive/40" : ""}`}
                             placeholder="DB_ACCESS_KEY"
                             value={v.key}
                             onChange={(e) => updateEnvVar(v.id, { key: e.target.value })}
