@@ -17,7 +17,8 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "@/hooks/use-toast";
 import { categories, getActiveSkills, getActiveMCPs, mockAgents, mockCredentials, mockApiKeys } from "@/data/mockData";
-import { projectImages, DU_OPTIONS } from "@/data/environments";
+import { projectImages, DU_OPTIONS, DEFAULT_IMAGE } from "@/data/environments";
+import { ImagePicker, type ImageSelection } from "@/components/ImagePicker";
 import { HardDrive } from "lucide-react";
 import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
@@ -113,7 +114,7 @@ const CreateAgentManualPage = () => {
   // 环境配置
   const [envScenario, setEnvScenario] = useState<"personal" | "production">("personal");
   const [envSpec, setEnvSpec] = useState<"1C2G" | "2C4G" | "4C8G">("4C8G");
-  const [envImage, setEnvImage] = useState("img-default");
+  const [envImage, setEnvImage] = useState<ImageSelection>(DEFAULT_IMAGE);
   const [envDuMode, setEnvDuMode] = useState<"new" | "existing">("new");
   const [envDu, setEnvDu] = useState("");
   const [envInstances, setEnvInstances] = useState(2);
