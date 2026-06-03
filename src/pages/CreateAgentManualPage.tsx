@@ -1134,6 +1134,9 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               </TooltipProvider>
             </div>
 
+            {/* 高级设置：环境配置 + 环境变量 */}
+            {showAdvanced && (
+              <>
             {/* 环境配置 */}
             <div className="rounded-xl bg-muted/30 p-5 space-y-4">
               <div className="flex items-start justify-between gap-4">
