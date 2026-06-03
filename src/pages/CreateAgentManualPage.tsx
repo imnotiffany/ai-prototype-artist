@@ -1117,9 +1117,9 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                           <button
                             type="button"
                             onClick={() => toggle(selBuiltinTools, setSelBuiltinTools, t.name)}
-                            className={`inline-flex items-center gap-1 rounded-full border px-2.5 h-7 text-xs transition-colors cursor-pointer ${sel ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"}`}
+                            className={`inline-flex items-center gap-1 rounded-full border px-2 h-6 text-[11px] transition-colors cursor-pointer ${sel ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"}`}
                           >
-                            <Icon className="w-3 h-3" />
+                            <Icon className="w-2.5 h-2.5" />
                             <span className="font-medium">{t.name}</span>
                             
                           </button>
