@@ -18,7 +18,8 @@ import {
   ChevronDown, ChevronUp, User,
 } from "lucide-react";
 import { mockAgents, getActiveMCPs, getActiveSkills, mockApiKeys } from "@/data/mockData";
-import { projectImages, DU_OPTIONS } from "@/data/environments";
+import { projectImages, DU_OPTIONS, DEFAULT_IMAGE } from "@/data/environments";
+import { ImagePicker, type ImageSelection } from "@/components/ImagePicker";
 
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Search, Box } from "lucide-react";
@@ -127,7 +128,7 @@ const AgentDetail = () => {
   const [selBuiltinTools, setSelBuiltinTools] = useState<string[]>(["Bash", "Read", "Write", "Edit", "Glob", "Grep", "WebFetch", "WebSearch"]);
   const [envScenario, setEnvScenario] = useState<"personal" | "production">("production");
   const [envSpec, setEnvSpec] = useState<"1C2G" | "2C4G" | "4C8G">("4C8G");
-  const [envImage, setEnvImage] = useState<string>("img-default");
+  const [envImage, setEnvImage] = useState<ImageSelection>(DEFAULT_IMAGE);
   const [envInstances, setEnvInstances] = useState<number>(2);
   const [envDuMode, setEnvDuMode] = useState<"existing" | "new">("existing");
   const [envDu, setEnvDu] = useState<string>("AOP-EXPECT-INFO-AI-MODELSERVICE");
@@ -1123,17 +1124,9 @@ fengsheng:
               <div className="p-4 space-y-4">
                 <div>
                   <Label className="text-xs">运行镜像 <span className="text-destructive">*</span></Label>
-                  <Select value={envImage} onValueChange={setEnvImage}>
-                    <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {projectImages.map((img) => (
-                        <SelectItem key={img.id} value={img.id} className="text-xs">
-                          <span className="font-mono">{img.name}</span>
-                          {img.isDefault && <span className="ml-2 text-[10px] text-muted-foreground">默认</span>}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="mt-1.5">
+                    <ImagePicker value={envImage} onChange={setEnvImage} />
+                  </div>
                 </div>
 
                 {envScenario === "personal" ? (

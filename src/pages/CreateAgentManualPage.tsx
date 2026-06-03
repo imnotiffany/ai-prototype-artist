@@ -17,7 +17,8 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "@/hooks/use-toast";
 import { categories, getActiveSkills, getActiveMCPs, mockAgents, mockCredentials, mockApiKeys } from "@/data/mockData";
-import { projectImages, DU_OPTIONS } from "@/data/environments";
+import { projectImages, DU_OPTIONS, DEFAULT_IMAGE } from "@/data/environments";
+import { ImagePicker, type ImageSelection } from "@/components/ImagePicker";
 import { HardDrive } from "lucide-react";
 import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { CapabilityPickerDialog } from "@/components/CapabilityPickerDialog";
@@ -113,7 +114,7 @@ const CreateAgentManualPage = () => {
   // 环境配置
   const [envScenario, setEnvScenario] = useState<"personal" | "production">("personal");
   const [envSpec, setEnvSpec] = useState<"1C2G" | "2C4G" | "4C8G">("4C8G");
-  const [envImage, setEnvImage] = useState("img-default");
+  const [envImage, setEnvImage] = useState<ImageSelection>(DEFAULT_IMAGE);
   const [envDuMode, setEnvDuMode] = useState<"new" | "existing">("new");
   const [envDu, setEnvDu] = useState("");
   const [envInstances, setEnvInstances] = useState(2);
@@ -1191,17 +1192,9 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               {/* 运行镜像（两种场景都需要） */}
               <div>
                 <Label className="text-xs">运行镜像 <span className="text-destructive">*</span></Label>
-                <Select value={envImage} onValueChange={setEnvImage}>
-                  <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {projectImages.map((img) => (
-                      <SelectItem key={img.id} value={img.id} className="text-xs">
-                        <span className="font-mono">{img.name}</span>
-                        {img.isDefault && <span className="ml-2 text-[10px] text-muted-foreground">默认</span>}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="mt-1.5">
+                  <ImagePicker value={envImage} onChange={setEnvImage} />
+                </div>
               </div>
 
               {envScenario === "personal" ? (
