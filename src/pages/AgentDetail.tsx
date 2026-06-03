@@ -1073,95 +1073,229 @@ fengsheng:
               </div>
             </section>
 
+            {/* 高级设置切换 */}
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={() => setShowAdvanced((v) => !v)}
+                className="inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors py-1"
+              >
+                {showAdvanced ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                高级设置（环境配置、环境变量）
+              </button>
+            </div>
+
+            {showAdvanced && (
+            <>
             {/* 环境配置 */}
             <section className="border border-border rounded-lg bg-card">
-              <header className="px-4 py-2.5 border-b border-border">
-                <h3 className="text-sm font-semibold flex items-center gap-1.5">
-                  <Cpu className="w-3.5 h-3.5 text-primary" />环境配置
-                </h3>
-                <p className="text-[11px] text-muted-foreground mt-0.5">智能体运行时使用的资源、镜像与部署单元</p>
+              <header className="px-4 py-2.5 border-b border-border flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="text-sm font-semibold flex items-center gap-1.5">
+                    <Cpu className="w-3.5 h-3.5 text-primary" />环境配置
+                  </h3>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">完整配置资源、镜像、DU 与存储</p>
+                </div>
+                <div className="inline-flex p-0.5 rounded-md bg-background border border-border/60 shrink-0">
+                  {([
+                    { v: "personal", label: "个人体验", icon: User, desc: "快速调试" },
+                    { v: "production", label: "线上生产", icon: Rocket, desc: "正式部署" },
+                  ] as const).map((opt) => {
+                    const active = envScenario === opt.v;
+                    const Icon = opt.icon;
+                    return (
+                      <button
+                        key={opt.v}
+                        type="button"
+                        onClick={() => setEnvScenario(opt.v)}
+                        className={`flex items-center gap-1 px-2 h-6 rounded text-[10px] font-medium transition-all ${
+                          active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                        }`}
+                        title={opt.desc}
+                      >
+                        <Icon className="w-2.5 h-2.5" />
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </header>
               <div className="p-4 space-y-4">
-                <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <Label className="text-xs">资源规格 <span className="text-destructive">*</span></Label>
-                    <Select value={envSpec} onValueChange={(v) => setEnvSpec(v as typeof envSpec)}>
-                      <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1C2G" className="text-xs">1 核 2G</SelectItem>
-                        <SelectItem value="2C4G" className="text-xs">2 核 4G</SelectItem>
-                        <SelectItem value="4C8G" className="text-xs">4 核 8G</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label className="text-xs">运行镜像 <span className="text-destructive">*</span></Label>
-                    <Select value={envImage} onValueChange={setEnvImage}>
-                      <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {projectImages.map((img) => (
-                          <SelectItem key={img.id} value={img.id} className="text-xs">
-                            <span className="font-mono">{img.name}</span>
-                            {img.isDefault && <span className="ml-2 text-[10px] text-muted-foreground">默认</span>}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label className="text-xs">实例数量 <span className="text-destructive">*</span></Label>
-                    <Select value={String(envInstances)} onValueChange={(v) => setEnvInstances(Number(v))}>
-                      <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {[2, 3, 4].map((n) => (
-                          <SelectItem key={n} value={String(n)} className="text-xs">{n} 个</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div>
+                  <Label className="text-xs">运行镜像 <span className="text-destructive">*</span></Label>
+                  <Select value={envImage} onValueChange={setEnvImage}>
+                    <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {projectImages.map((img) => (
+                        <SelectItem key={img.id} value={img.id} className="text-xs">
+                          <span className="font-mono">{img.name}</span>
+                          {img.isDefault && <span className="ml-2 text-[10px] text-muted-foreground">默认</span>}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                <div>
-                  <Label className="text-xs flex items-center gap-1.5">
-                    <Server className="w-3 h-3" />关联 DU <span className="text-destructive">*</span>
-                  </Label>
-                  <p className="text-[10px] text-amber-600 dark:text-amber-500 mt-1">线上生产服务需关联顺丰云 DU，便于出现问题时追溯定位</p>
-                  <div className="flex items-center gap-4 mt-1.5">
-                    <label className="flex items-center gap-1.5 text-xs cursor-pointer">
-                      <input type="radio" name="detail-du-mode" value="existing" checked={envDuMode === "existing"} onChange={() => { setEnvDuMode("existing"); setEnvDu(DU_OPTIONS[0]); }} className="accent-primary" />
-                      选择已有
-                    </label>
-                    <label className="flex items-center gap-1.5 text-xs cursor-pointer">
-                      <input type="radio" name="detail-du-mode" value="new" checked={envDuMode === "new"} onChange={() => { setEnvDuMode("new"); setEnvDu(""); }} className="accent-primary" />
-                      新建 DU
-                    </label>
+                {envScenario === "personal" ? (
+                  <div className="flex items-center gap-4 text-[11px] text-muted-foreground px-1">
+                    <span>资源 <span className="text-foreground/80">4C8G</span></span>
+                    <span className="text-border">·</span>
+                    <span>实例 <span className="text-foreground/80">1</span></span>
+                    <span className="text-border">·</span>
+                    <span>存储 <span className="text-foreground/80">共享 Redis</span></span>
                   </div>
-                  {envDuMode === "existing" ? (
-                    <Select value={envDu} onValueChange={setEnvDu}>
-                      <SelectTrigger className="mt-2 h-8 text-xs"><SelectValue placeholder="请选择" /></SelectTrigger>
-                      <SelectContent>
-                        {DU_OPTIONS.map((d) => (
-                          <SelectItem key={d} value={d} className="text-xs font-mono">{d}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <Input className="mt-2 h-8 text-xs font-mono" placeholder="请输入新 DU 名称" value={envDu} onChange={(e) => setEnvDu(e.target.value)} />
-                  )}
-                </div>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-xs">资源规格 <span className="text-destructive">*</span></Label>
+                        <Select value={envSpec} onValueChange={(v) => setEnvSpec(v as typeof envSpec)}>
+                          <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1C2G" className="text-xs">1 核 2G</SelectItem>
+                            <SelectItem value="2C4G" className="text-xs">2 核 4G</SelectItem>
+                            <SelectItem value="4C8G" className="text-xs">4 核 8G</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label className="text-xs">实例数量 <span className="text-destructive">*</span></Label>
+                        <Select value={String(envInstances)} onValueChange={(v) => setEnvInstances(Number(v))}>
+                          <SelectTrigger className="mt-1.5 h-8 text-xs"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {[2, 3, 4].map((n) => (
+                              <SelectItem key={n} value={String(n)} className="text-xs">{n} 个</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
 
-                <div>
-                  <Label className="text-xs flex items-center gap-1.5"><HardDrive className="w-3 h-3" />存储</Label>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">持久化存储，目前仅支持 Redis</p>
-                  <Input
-                    className="mt-1.5 h-8 text-xs font-mono"
-                    placeholder="redis://:password@host:6379/0"
-                    value={envRedisUrl}
-                    onChange={(e) => setEnvRedisUrl(e.target.value)}
-                  />
-                </div>
+                    <div>
+                      <Label className="text-xs flex items-center gap-1.5">
+                        <Server className="w-3 h-3" />关联 DU <span className="text-destructive">*</span>
+                      </Label>
+                      <p className="text-[10px] text-amber-600 dark:text-amber-500 mt-1">线上生产服务需关联顺丰云 DU，便于出现问题时追溯定位</p>
+                      <div className="flex items-center gap-4 mt-1.5">
+                        <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                          <input type="radio" name="detail-du-mode" value="existing" checked={envDuMode === "existing"} onChange={() => { setEnvDuMode("existing"); setEnvDu(DU_OPTIONS[0]); }} className="accent-primary" />
+                          选择已有
+                        </label>
+                        <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                          <input type="radio" name="detail-du-mode" value="new" checked={envDuMode === "new"} onChange={() => { setEnvDuMode("new"); setEnvDu(""); }} className="accent-primary" />
+                          新建 DU
+                        </label>
+                      </div>
+                      {envDuMode === "existing" ? (
+                        <Select value={envDu} onValueChange={setEnvDu}>
+                          <SelectTrigger className="mt-2 h-8 text-xs"><SelectValue placeholder="请选择" /></SelectTrigger>
+                          <SelectContent>
+                            {DU_OPTIONS.map((d) => (
+                              <SelectItem key={d} value={d} className="text-xs font-mono">{d}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Input className="mt-2 h-8 text-xs font-mono placeholder:text-xs" placeholder="请输入新 DU 名称" value={envDu} onChange={(e) => setEnvDu(e.target.value)} />
+                      )}
+                    </div>
+
+                    <div>
+                      <Label className="text-xs flex items-center gap-1.5"><HardDrive className="w-3 h-3" />存储</Label>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">持久化存储，目前仅支持 Redis</p>
+                      <Input
+                        className="mt-1.5 h-8 text-xs font-mono placeholder:text-xs"
+                        placeholder="redis://:password@host:6379/0"
+                        value={envRedisUrl}
+                        onChange={(e) => setEnvRedisUrl(e.target.value)}
+                      />
+                    </div>
+                  </>
+                )}
               </div>
             </section>
+
+            {/* 环境变量 */}
+            <section className="border border-border rounded-lg bg-card">
+              <header className="px-4 py-2.5 border-b border-border flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="text-sm font-semibold flex items-center gap-1.5">
+                    <KeyRound className="w-3.5 h-3.5 text-primary" />环境变量
+                  </h3>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">注入到智能体运行时的 KV 配置</p>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs gap-1 shrink-0"
+                  onClick={addEnvVar}
+                >
+                  <Plus className="w-3 h-3" />添加变量
+                </Button>
+              </header>
+              {envVars.length > 0 && (
+                <div className="p-4 space-y-1.5">
+                  <div className="grid grid-cols-[1fr_1.4fr_auto] gap-2 px-1 text-[10px] text-muted-foreground">
+                    <span>KEY</span>
+                    <span>VALUE</span>
+                    <span className="w-7" />
+                  </div>
+                  {envVars.map((v) => {
+                    const trimmedKey = v.key.trim();
+                    const dup = trimmedKey.length > 0 && (envVarKeyCounts[trimmedKey] ?? 0) > 1;
+                    const invalid = trimmedKey.length > 0 && !/^[A-Za-z_][A-Za-z0-9_]*$/.test(trimmedKey);
+                    const keyError = dup ? "KEY 重复" : invalid ? "命名非法（仅字母/数字/下划线，且不能以数字开头）" : "";
+                    const visible = !!envVarVisibility[v.id];
+                    return (
+                      <div key={v.id} className="grid grid-cols-[1fr_1.4fr_auto] gap-2 items-start">
+                        <div>
+                          <Input
+                            className={`h-8 text-xs font-mono placeholder:text-xs placeholder:font-mono ${keyError ? "border-destructive focus-visible:ring-destructive/40" : ""}`}
+                            placeholder="DB_ACCESS_KEY"
+                            value={v.key}
+                            onChange={(e) => updateEnvVar(v.id, { key: e.target.value })}
+                          />
+                          {keyError && (
+                            <p className="text-[10px] text-destructive mt-1 leading-tight">{keyError}</p>
+                          )}
+                        </div>
+                        <div className="relative">
+                          <Input
+                            className="h-8 text-xs font-mono pr-8 placeholder:text-xs placeholder:font-mono"
+                            type={visible ? "text" : "password"}
+                            placeholder="值"
+                            value={v.value}
+                            onChange={(e) => updateEnvVar(v.id, { value: e.target.value })}
+                            autoComplete="off"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => toggleEnvVarVisible(v.id)}
+                            tabIndex={-1}
+                            className="absolute right-1.5 top-1/2 -translate-y-1/2 h-6 w-6 inline-flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+                            title={visible ? "隐藏" : "显示"}
+                          >
+                            {visible ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                          </button>
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 [&_svg]:size-3"
+                          onClick={() => removeEnvVar(v.id)}
+                        >
+                          <X />
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+            </>
+            )}
 
             {/* 丰声 NEXT 机器人配置已移至「集成方式」标签页 */}
 
