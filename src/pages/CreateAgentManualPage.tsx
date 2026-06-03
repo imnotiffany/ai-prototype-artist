@@ -1306,11 +1306,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 </Button>
               </div>
 
-              {envVars.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-border bg-background/40 py-6 text-center text-[11px] text-muted-foreground">
-                  暂未配置环境变量
-                </div>
-              ) : (
+              {envVars.length > 0 && (
                 <div className="space-y-1.5">
                   {/* 表头 */}
                   <div className="grid grid-cols-[1fr_1.4fr_auto] gap-2 px-1 text-[10px] text-muted-foreground">
