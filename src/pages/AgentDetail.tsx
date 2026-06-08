@@ -205,15 +205,15 @@ const AgentDetail = () => {
   const logIdRef = useRef(0);
 
   /* ── 版本管理 ── */
-  type AgentVersion = { version: string; publishedAt: string; author: string; note: string };
-  const [versions, setVersions] = useState<AgentVersion[]>([
-    { version: "v1.3.0", publishedAt: "2026-06-02 15:42", author: "李明", note: "优化系统提示词，新增汇率工具" },
-    { version: "v1.2.1", publishedAt: "2026-05-21 10:18", author: "李明", note: "修复多轮上下文丢失问题" },
-    { version: "v1.2.0", publishedAt: "2026-05-10 09:30", author: "王芳", note: "接入 CRM MCP，支持订单查询" },
-    { version: "v1.1.0", publishedAt: "2026-04-28 16:05", author: "王芳", note: "调整模型为 Claude Sonnet 4.6" },
-    { version: "v1.0.0", publishedAt: "2026-04-15 11:20", author: "张三", note: "首次发布" },
+  type PublishStatus = "project" | "marketplace" | "none";
+  type AgentVersion = { version: string; publishedAt: string; author: string; status: PublishStatus };
+  const [versions] = useState<AgentVersion[]>([
+    { version: "v1.3.0", publishedAt: "2026-06-02 15:42", author: "李明", status: "marketplace" },
+    { version: "v1.2.1", publishedAt: "2026-05-21 10:18", author: "李明", status: "project" },
+    { version: "v1.2.0", publishedAt: "2026-05-10 09:30", author: "王芳", status: "none" },
+    { version: "v1.1.0", publishedAt: "2026-04-28 16:05", author: "王芳", status: "none" },
+    { version: "v1.0.0", publishedAt: "2026-04-15 11:20", author: "张三", status: "none" },
   ]);
-  const [currentVersion, setCurrentVersion] = useState("v1.3.0");
 
   /* 配置变 dirty 时把用户从「调试」子标签踢回「配置」 */
   useEffect(() => {
@@ -1692,41 +1692,23 @@ fengsheng:
         {/* ───────── 版本管理 ───────── */}
         <TabsContent value="versions" className="mt-4">
           <section className="border border-border rounded-lg bg-card overflow-hidden">
-            <header className="px-4 py-3 border-b border-border flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-semibold leading-tight">版本管理</h3>
-                <p className="text-[11px] text-muted-foreground mt-0.5">每次发布生成一个新版本，可切换至任一历史版本</p>
-              </div>
-              <span className="text-[11px] text-muted-foreground">共 {versions.length} 个版本</span>
-            </header>
             <ul className="divide-y divide-border">
               {versions.map((v) => {
-                const isCurrent = v.version === currentVersion;
+                const statusStyle =
+                  v.status === "marketplace"
+                    ? "text-primary border-primary/30 bg-primary/5"
+                    : v.status === "project"
+                    ? "text-emerald-600 border-emerald-500/30 bg-emerald-500/5"
+                    : "text-muted-foreground border-border bg-muted/40";
+                const statusText =
+                  v.status === "marketplace" ? "发布到市场" : v.status === "project" ? "发布到项目" : "未发布";
                 return (
-                  <li key={v.version} className="px-4 py-3 flex items-center gap-4 hover:bg-muted/30 transition-colors">
-                    <span className="text-xs font-mono font-medium w-20 shrink-0">{v.version}</span>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs text-foreground truncate">{v.note}</p>
-                      <div className="mt-1 flex items-center gap-3 text-[11px] text-muted-foreground">
-                        <span>{v.author}</span>
-                        <span className="font-mono">{v.publishedAt}</span>
-                      </div>
-                    </div>
-                    {isCurrent ? (
-                      <span className="text-[11px] text-primary border border-primary/30 bg-primary/5 px-2 py-0.5 rounded shrink-0">当前版本</span>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-7 text-xs shrink-0"
-                        onClick={() => {
-                          setCurrentVersion(v.version);
-                          toast({ title: "已切换版本", description: `当前版本：${v.version}` });
-                        }}
-                      >
-                        切换到此版本
-                      </Button>
-                    )}
+                  <li key={v.version} className="px-4 h-11 flex items-center gap-4 text-xs hover:bg-muted/30 transition-colors">
+                    <span className="font-mono font-medium w-20 shrink-0">{v.version}</span>
+                    <span className="w-16 shrink-0 text-foreground/80 truncate">{v.author}</span>
+                    <span className="font-mono text-muted-foreground shrink-0">{v.publishedAt}</span>
+                    <span className="flex-1" />
+                    <span className={`text-[11px] px-2 py-0.5 rounded border shrink-0 ${statusStyle}`}>{statusText}</span>
                   </li>
                 );
               })}
