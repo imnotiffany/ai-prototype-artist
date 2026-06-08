@@ -458,6 +458,7 @@ const AgentDetail = () => {
 
   /* ── Header actions: edit basic info & publish ── */
   const [publishOpen, setPublishOpen] = useState(false);
+  const [publishVersion, setPublishVersion] = useState<string | undefined>(undefined);
   const [editInfoOpen, setEditInfoOpen] = useState(false);
   const [draftName, setDraftName] = useState(name);
   const [draftDesc, setDraftDesc] = useState(description);
