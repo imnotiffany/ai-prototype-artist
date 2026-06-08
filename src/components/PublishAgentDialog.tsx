@@ -117,6 +117,28 @@ export const PublishAgentDialog = ({
             noun={noun}
           />
 
+          {/* 版本选择 — 仅显示未发布的版本 */}
+          {publishableVersions && (
+            <div className="space-y-1">
+              <Label className="text-[11px]">发布版本 <span className="text-destructive">*</span></Label>
+              {publishableVersions.length === 0 ? (
+                <p className="text-[11px] text-muted-foreground border border-border rounded-md px-2 py-1.5">
+                  暂无可发布的版本（所有版本均已发布）
+                </p>
+              ) : (
+                <Select value={selectedVersion} onValueChange={setSelectedVersion}>
+                  <SelectTrigger className="h-7 text-xs"><SelectValue placeholder="选择要发布的版本" /></SelectTrigger>
+                  <SelectContent>
+                    {publishableVersions.map((v) => (
+                      <SelectItem key={v} value={v} className="text-xs font-mono">{v}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+          )}
+
+
           {/* 名称 */}
           <div className="space-y-1">
             <Label className="text-[11px]">名称 <span className="text-destructive">*</span></Label>
