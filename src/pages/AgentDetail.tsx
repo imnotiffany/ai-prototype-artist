@@ -418,6 +418,7 @@ const AgentDetail = () => {
   };
 
   const handlePublishClick = () => {
+    setPublishVersion(undefined);
     setPublishOpen(true);
   };
 
