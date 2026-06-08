@@ -204,6 +204,17 @@ const AgentDetail = () => {
   const [debugLogs, setDebugLogs] = useState<LogEntry[]>([]);
   const logIdRef = useRef(0);
 
+  /* ── 版本管理 ── */
+  type AgentVersion = { version: string; publishedAt: string; author: string; note: string };
+  const [versions, setVersions] = useState<AgentVersion[]>([
+    { version: "v1.3.0", publishedAt: "2026-06-02 15:42", author: "李明", note: "优化系统提示词，新增汇率工具" },
+    { version: "v1.2.1", publishedAt: "2026-05-21 10:18", author: "李明", note: "修复多轮上下文丢失问题" },
+    { version: "v1.2.0", publishedAt: "2026-05-10 09:30", author: "王芳", note: "接入 CRM MCP，支持订单查询" },
+    { version: "v1.1.0", publishedAt: "2026-04-28 16:05", author: "王芳", note: "调整模型为 Claude Sonnet 4.6" },
+    { version: "v1.0.0", publishedAt: "2026-04-15 11:20", author: "张三", note: "首次发布" },
+  ]);
+  const [currentVersion, setCurrentVersion] = useState("v1.3.0");
+
   /* 配置变 dirty 时把用户从「调试」子标签踢回「配置」 */
   useEffect(() => {
     if (isDirty && configSubTab === "debug") {
