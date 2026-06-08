@@ -1689,6 +1689,51 @@ fengsheng:
           </Tabs>
         </TabsContent>
 
+        {/* ───────── 版本管理 ───────── */}
+        <TabsContent value="versions" className="mt-4">
+          <section className="border border-border rounded-lg bg-card overflow-hidden">
+            <header className="px-4 py-3 border-b border-border flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold leading-tight">版本管理</h3>
+                <p className="text-[11px] text-muted-foreground mt-0.5">每次发布生成一个新版本，可切换至任一历史版本</p>
+              </div>
+              <span className="text-[11px] text-muted-foreground">共 {versions.length} 个版本</span>
+            </header>
+            <ul className="divide-y divide-border">
+              {versions.map((v) => {
+                const isCurrent = v.version === currentVersion;
+                return (
+                  <li key={v.version} className="px-4 py-3 flex items-center gap-4 hover:bg-muted/30 transition-colors">
+                    <span className="text-xs font-mono font-medium w-20 shrink-0">{v.version}</span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-foreground truncate">{v.note}</p>
+                      <div className="mt-1 flex items-center gap-3 text-[11px] text-muted-foreground">
+                        <span>{v.author}</span>
+                        <span className="font-mono">{v.publishedAt}</span>
+                      </div>
+                    </div>
+                    {isCurrent ? (
+                      <span className="text-[11px] text-primary border border-primary/30 bg-primary/5 px-2 py-0.5 rounded shrink-0">当前版本</span>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-xs shrink-0"
+                        onClick={() => {
+                          setCurrentVersion(v.version);
+                          toast({ title: "已切换版本", description: `当前版本：${v.version}` });
+                        }}
+                      >
+                        切换到此版本
+                      </Button>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        </TabsContent>
+
       </Tabs>
 
       {/* Edit basic info dialog */}
