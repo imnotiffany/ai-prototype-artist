@@ -207,9 +207,9 @@ const AgentDetail = () => {
   /* ── 版本管理 ── */
   type PublishStatus = "project" | "marketplace" | "none";
   type AgentVersion = { version: string; publishedAt: string; author: string; status: PublishStatus };
-  const [versions] = useState<AgentVersion[]>([
+  const [versions, setVersions] = useState<AgentVersion[]>([
     { version: "v1.3.0", publishedAt: "2026-06-02 15:42", author: "李明", status: "marketplace" },
-    { version: "v1.2.1", publishedAt: "2026-05-21 10:18", author: "李明", status: "project" },
+    { version: "v1.2.1", publishedAt: "2026-05-21 10:18", author: "李明", status: "none" },
     { version: "v1.2.0", publishedAt: "2026-05-10 09:30", author: "王芳", status: "none" },
     { version: "v1.1.0", publishedAt: "2026-04-28 16:05", author: "王芳", status: "none" },
     { version: "v1.0.0", publishedAt: "2026-04-15 11:20", author: "张三", status: "none" },
