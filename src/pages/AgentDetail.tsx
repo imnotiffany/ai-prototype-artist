@@ -15,7 +15,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import {
   ArrowLeft, MessageSquare, Send, Save, Bot, CheckCircle2, Server, Bug, Mic, MicOff, Zap, Plus, X, RotateCcw, EyeOff, Eye, Settings2,
   AlertTriangle, Copy, Pencil, Rocket, Code2, Layout, Users, KeyRound, Filter, Check, ExternalLink, Activity, Plug, FileText, Cpu, HardDrive,
-  ChevronDown, ChevronUp, User,
+  ChevronDown, ChevronUp, User, History,
 } from "lucide-react";
 import { mockAgents, getActiveMCPs, getActiveSkills, mockApiKeys } from "@/data/mockData";
 import { projectImages, DU_OPTIONS, DEFAULT_IMAGE } from "@/data/environments";
@@ -203,6 +203,17 @@ const AgentDetail = () => {
   const [voiceRecording, setVoiceRecording] = useState(false);
   const [debugLogs, setDebugLogs] = useState<LogEntry[]>([]);
   const logIdRef = useRef(0);
+
+  /* ── 版本管理 ── */
+  type AgentVersion = { version: string; publishedAt: string; author: string; note: string };
+  const [versions, setVersions] = useState<AgentVersion[]>([
+    { version: "v1.3.0", publishedAt: "2026-06-02 15:42", author: "李明", note: "优化系统提示词，新增汇率工具" },
+    { version: "v1.2.1", publishedAt: "2026-05-21 10:18", author: "李明", note: "修复多轮上下文丢失问题" },
+    { version: "v1.2.0", publishedAt: "2026-05-10 09:30", author: "王芳", note: "接入 CRM MCP，支持订单查询" },
+    { version: "v1.1.0", publishedAt: "2026-04-28 16:05", author: "王芳", note: "调整模型为 Claude Sonnet 4.6" },
+    { version: "v1.0.0", publishedAt: "2026-04-15 11:20", author: "张三", note: "首次发布" },
+  ]);
+  const [currentVersion, setCurrentVersion] = useState("v1.3.0");
 
   /* 配置变 dirty 时把用户从「调试」子标签踢回「配置」 */
   useEffect(() => {
@@ -529,6 +540,7 @@ const AgentDetail = () => {
           <TabsTrigger value="logs" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><FileText className="w-3.5 h-3.5" />日志记录</TabsTrigger>
           <TabsTrigger value="monitor" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><Activity className="w-3.5 h-3.5" />基础监控</TabsTrigger>
           <TabsTrigger value="apikey" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><Plug className="w-3.5 h-3.5" />集成方式</TabsTrigger>
+          <TabsTrigger value="versions" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><History className="w-3.5 h-3.5" />版本管理</TabsTrigger>
 
         </TabsList>
 
@@ -1675,6 +1687,51 @@ fengsheng:
               </section>
             </TabsContent>
           </Tabs>
+        </TabsContent>
+
+        {/* ───────── 版本管理 ───────── */}
+        <TabsContent value="versions" className="mt-4">
+          <section className="border border-border rounded-lg bg-card overflow-hidden">
+            <header className="px-4 py-3 border-b border-border flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold leading-tight">版本管理</h3>
+                <p className="text-[11px] text-muted-foreground mt-0.5">每次发布生成一个新版本，可切换至任一历史版本</p>
+              </div>
+              <span className="text-[11px] text-muted-foreground">共 {versions.length} 个版本</span>
+            </header>
+            <ul className="divide-y divide-border">
+              {versions.map((v) => {
+                const isCurrent = v.version === currentVersion;
+                return (
+                  <li key={v.version} className="px-4 py-3 flex items-center gap-4 hover:bg-muted/30 transition-colors">
+                    <span className="text-xs font-mono font-medium w-20 shrink-0">{v.version}</span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-foreground truncate">{v.note}</p>
+                      <div className="mt-1 flex items-center gap-3 text-[11px] text-muted-foreground">
+                        <span>{v.author}</span>
+                        <span className="font-mono">{v.publishedAt}</span>
+                      </div>
+                    </div>
+                    {isCurrent ? (
+                      <span className="text-[11px] text-primary border border-primary/30 bg-primary/5 px-2 py-0.5 rounded shrink-0">当前版本</span>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-xs shrink-0"
+                        onClick={() => {
+                          setCurrentVersion(v.version);
+                          toast({ title: "已切换版本", description: `当前版本：${v.version}` });
+                        }}
+                      >
+                        切换到此版本
+                      </Button>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
         </TabsContent>
 
       </Tabs>
