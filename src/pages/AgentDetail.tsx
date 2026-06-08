@@ -1691,29 +1691,65 @@ fengsheng:
 
         {/* ───────── 版本管理 ───────── */}
         <TabsContent value="versions" className="mt-4">
-          <section className="border border-border rounded-lg bg-card overflow-hidden">
-            <ul className="divide-y divide-border">
+          <div className="text-xs">
+            {/* 表头 */}
+            <div className="h-9 px-2 flex items-center gap-4 text-[11px] text-muted-foreground border-b border-border">
+              <span className="font-mono w-24 shrink-0">版本</span>
+              <span className="w-20 shrink-0">发布者</span>
+              <span className="w-40 shrink-0">时间</span>
+              <span className="flex-1" />
+              <span className="w-24 shrink-0 text-center">状态</span>
+              <span className="w-16 shrink-0 text-right">操作</span>
+            </div>
+            <ul>
               {versions.map((v) => {
+                const published = v.status !== "none";
                 const statusStyle =
                   v.status === "marketplace"
-                    ? "text-primary border-primary/30 bg-primary/5"
+                    ? "text-primary"
                     : v.status === "project"
-                    ? "text-emerald-600 border-emerald-500/30 bg-emerald-500/5"
-                    : "text-muted-foreground border-border bg-muted/40";
+                    ? "text-emerald-600"
+                    : "text-muted-foreground";
                 const statusText =
-                  v.status === "marketplace" ? "发布到市场" : v.status === "project" ? "发布到项目" : "未发布";
+                  v.status === "marketplace" ? "已发布到市场" : v.status === "project" ? "已发布到项目" : "未发布";
                 return (
-                  <li key={v.version} className="px-4 h-11 flex items-center gap-4 text-xs hover:bg-muted/30 transition-colors">
-                    <span className="font-mono font-medium w-20 shrink-0">{v.version}</span>
-                    <span className="w-16 shrink-0 text-foreground/80 truncate">{v.author}</span>
-                    <span className="font-mono text-muted-foreground shrink-0">{v.publishedAt}</span>
+                  <li
+                    key={v.version}
+                    className="px-2 h-10 flex items-center gap-4 border-b border-border hover:bg-muted/30 transition-colors"
+                  >
+                    <span className="font-mono font-medium w-24 shrink-0">{v.version}</span>
+                    <span className="w-20 shrink-0 text-foreground/80 truncate">{v.author}</span>
+                    <span className="w-40 shrink-0 font-mono text-muted-foreground">{v.publishedAt}</span>
                     <span className="flex-1" />
-                    <span className={`text-[11px] px-2 py-0.5 rounded border shrink-0 ${statusStyle}`}>{statusText}</span>
+                    <span className={`w-24 shrink-0 text-center text-[11px] ${statusStyle}`}>{statusText}</span>
+                    <div className="w-16 shrink-0 flex justify-end">
+                      {published ? (
+                        <button
+                          className="text-[11px] text-destructive hover:underline"
+                          onClick={() => {
+                            setVersions((prev) => prev.map((x) => x.version === v.version ? { ...x, status: "none" } : x));
+                            toast({ title: "已下线", description: `${v.version} 已下线` });
+                          }}
+                        >
+                          下线
+                        </button>
+                      ) : (
+                        <button
+                          className="text-[11px] text-primary hover:underline"
+                          onClick={() => {
+                            setPublishVersion(v.version);
+                            setPublishOpen(true);
+                          }}
+                        >
+                          发布
+                        </button>
+                      )}
+                    </div>
                   </li>
                 );
               })}
             </ul>
-          </section>
+          </div>
         </TabsContent>
 
       </Tabs>
