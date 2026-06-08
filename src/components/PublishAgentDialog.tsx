@@ -34,6 +34,12 @@ interface Props {
   /** 锁定发布范围（隐藏单选），用于入口已经明确意图的场景 */
   lockScope?: boolean;
   kind?: "app" | "agent";
+  /** 可发布的版本列表（仅未发布的版本） */
+  publishableVersions?: string[];
+  /** 预选版本号 */
+  defaultVersion?: string;
+  /** 发布成功回调 */
+  onPublished?: (version: string, scope: "marketplace" | "project") => void;
 }
 
 export const PublishAgentDialog = ({
@@ -46,6 +52,9 @@ export const PublishAgentDialog = ({
   defaultScope = "marketplace",
   lockScope = false,
   kind = "agent",
+  publishableVersions,
+  defaultVersion,
+  onPublished,
 }: Props) => {
   const noun = kind === "app" ? "应用" : "智能体";
   const [name, setName] = useState(agentName);
@@ -55,6 +64,7 @@ export const PublishAgentDialog = ({
   const [allowCopy, setAllowCopy] = useState(agentAllowCopy);
   const [avatarSeed, setAvatarSeed] = useState(() => agentName || Math.random().toString(36).slice(2, 10));
   const [uploadedAvatar, setUploadedAvatar] = useState<string | null>(null);
+  const [selectedVersion, setSelectedVersion] = useState<string | undefined>(defaultVersion ?? publishableVersions?.[0]);
 
   useEffect(() => {
     if (open) {
@@ -63,18 +73,24 @@ export const PublishAgentDialog = ({
       setCategory(agentCategory || categories[0]);
       setScope(defaultScope);
       setAllowCopy(agentAllowCopy);
+      setSelectedVersion(defaultVersion ?? publishableVersions?.[0]);
     }
-  }, [open, agentName, agentDescription, agentCategory, agentAllowCopy, defaultScope]);
+  }, [open, agentName, agentDescription, agentCategory, agentAllowCopy, defaultScope, defaultVersion, publishableVersions]);
 
   const submit = () => {
     if (!name.trim()) {
       toast({ title: `请填写${noun}名称`, variant: "destructive" });
       return;
     }
+    if (publishableVersions && publishableVersions.length > 0 && !selectedVersion) {
+      toast({ title: "请选择要发布的版本", variant: "destructive" });
+      return;
+    }
     toast({
       title: "已提交发布",
-      description: `${noun}「${name}」将发布到「${scope === "marketplace" ? "应用广场" : "项目内"}」`,
+      description: `${noun}「${name}」${selectedVersion ? selectedVersion + " " : ""}将发布到「${scope === "marketplace" ? "应用广场" : "项目内"}」`,
     });
+    if (selectedVersion) onPublished?.(selectedVersion, scope);
     onOpenChange(false);
   };
 
@@ -100,6 +116,28 @@ export const PublishAgentDialog = ({
             onSeedChange={setAvatarSeed}
             noun={noun}
           />
+
+          {/* 版本选择 — 仅显示未发布的版本 */}
+          {publishableVersions && (
+            <div className="space-y-1">
+              <Label className="text-[11px]">发布版本 <span className="text-destructive">*</span></Label>
+              {publishableVersions.length === 0 ? (
+                <p className="text-[11px] text-muted-foreground border border-border rounded-md px-2 py-1.5">
+                  暂无可发布的版本（所有版本均已发布）
+                </p>
+              ) : (
+                <Select value={selectedVersion} onValueChange={setSelectedVersion}>
+                  <SelectTrigger className="h-7 text-xs"><SelectValue placeholder="选择要发布的版本" /></SelectTrigger>
+                  <SelectContent>
+                    {publishableVersions.map((v) => (
+                      <SelectItem key={v} value={v} className="text-xs font-mono">{v}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+          )}
+
 
           {/* 名称 */}
           <div className="space-y-1">

@@ -207,9 +207,9 @@ const AgentDetail = () => {
   /* ── 版本管理 ── */
   type PublishStatus = "project" | "marketplace" | "none";
   type AgentVersion = { version: string; publishedAt: string; author: string; status: PublishStatus };
-  const [versions] = useState<AgentVersion[]>([
+  const [versions, setVersions] = useState<AgentVersion[]>([
     { version: "v1.3.0", publishedAt: "2026-06-02 15:42", author: "李明", status: "marketplace" },
-    { version: "v1.2.1", publishedAt: "2026-05-21 10:18", author: "李明", status: "project" },
+    { version: "v1.2.1", publishedAt: "2026-05-21 10:18", author: "李明", status: "none" },
     { version: "v1.2.0", publishedAt: "2026-05-10 09:30", author: "王芳", status: "none" },
     { version: "v1.1.0", publishedAt: "2026-04-28 16:05", author: "王芳", status: "none" },
     { version: "v1.0.0", publishedAt: "2026-04-15 11:20", author: "张三", status: "none" },
@@ -418,6 +418,7 @@ const AgentDetail = () => {
   };
 
   const handlePublishClick = () => {
+    setPublishVersion(undefined);
     setPublishOpen(true);
   };
 
@@ -458,6 +459,7 @@ const AgentDetail = () => {
 
   /* ── Header actions: edit basic info & publish ── */
   const [publishOpen, setPublishOpen] = useState(false);
+  const [publishVersion, setPublishVersion] = useState<string | undefined>(undefined);
   const [editInfoOpen, setEditInfoOpen] = useState(false);
   const [draftName, setDraftName] = useState(name);
   const [draftDesc, setDraftDesc] = useState(description);
@@ -1691,29 +1693,65 @@ fengsheng:
 
         {/* ───────── 版本管理 ───────── */}
         <TabsContent value="versions" className="mt-4">
-          <section className="border border-border rounded-lg bg-card overflow-hidden">
-            <ul className="divide-y divide-border">
+          <div className="text-xs">
+            {/* 表头 */}
+            <div className="h-9 px-2 flex items-center gap-4 text-[11px] text-muted-foreground border-b border-border">
+              <span className="font-mono w-24 shrink-0">版本</span>
+              <span className="w-20 shrink-0">发布者</span>
+              <span className="w-40 shrink-0">时间</span>
+              <span className="flex-1" />
+              <span className="w-24 shrink-0 text-center">状态</span>
+              <span className="w-16 shrink-0 text-right">操作</span>
+            </div>
+            <ul>
               {versions.map((v) => {
+                const published = v.status !== "none";
                 const statusStyle =
                   v.status === "marketplace"
-                    ? "text-primary border-primary/30 bg-primary/5"
+                    ? "text-primary"
                     : v.status === "project"
-                    ? "text-emerald-600 border-emerald-500/30 bg-emerald-500/5"
-                    : "text-muted-foreground border-border bg-muted/40";
+                    ? "text-emerald-600"
+                    : "text-muted-foreground";
                 const statusText =
-                  v.status === "marketplace" ? "发布到市场" : v.status === "project" ? "发布到项目" : "未发布";
+                  v.status === "marketplace" ? "已发布到市场" : v.status === "project" ? "已发布到项目" : "未发布";
                 return (
-                  <li key={v.version} className="px-4 h-11 flex items-center gap-4 text-xs hover:bg-muted/30 transition-colors">
-                    <span className="font-mono font-medium w-20 shrink-0">{v.version}</span>
-                    <span className="w-16 shrink-0 text-foreground/80 truncate">{v.author}</span>
-                    <span className="font-mono text-muted-foreground shrink-0">{v.publishedAt}</span>
+                  <li
+                    key={v.version}
+                    className="px-2 h-10 flex items-center gap-4 border-b border-border hover:bg-muted/30 transition-colors"
+                  >
+                    <span className="font-mono font-medium w-24 shrink-0">{v.version}</span>
+                    <span className="w-20 shrink-0 text-foreground/80 truncate">{v.author}</span>
+                    <span className="w-40 shrink-0 font-mono text-muted-foreground">{v.publishedAt}</span>
                     <span className="flex-1" />
-                    <span className={`text-[11px] px-2 py-0.5 rounded border shrink-0 ${statusStyle}`}>{statusText}</span>
+                    <span className={`w-24 shrink-0 text-center text-[11px] ${statusStyle}`}>{statusText}</span>
+                    <div className="w-16 shrink-0 flex justify-end">
+                      {published ? (
+                        <button
+                          className="text-[11px] text-destructive hover:underline"
+                          onClick={() => {
+                            setVersions((prev) => prev.map((x) => x.version === v.version ? { ...x, status: "none" } : x));
+                            toast({ title: "已下线", description: `${v.version} 已下线` });
+                          }}
+                        >
+                          下线
+                        </button>
+                      ) : (
+                        <button
+                          className="text-[11px] text-primary hover:underline"
+                          onClick={() => {
+                            setPublishVersion(v.version);
+                            setPublishOpen(true);
+                          }}
+                        >
+                          发布
+                        </button>
+                      )}
+                    </div>
                   </li>
                 );
               })}
             </ul>
-          </section>
+          </div>
         </TabsContent>
 
       </Tabs>
@@ -1758,6 +1796,15 @@ fengsheng:
         onOpenChange={setPublishOpen}
         agentName={name}
         kind={agent.kind}
+        publishableVersions={versions.filter((v) => v.status === "none").map((v) => v.version)}
+        defaultVersion={publishVersion}
+        onPublished={(ver, scope) => {
+          setVersions((prev) =>
+            prev.map((x) =>
+              x.version === ver ? { ...x, status: scope } : x.status === scope ? { ...x, status: "none" } : x,
+            ),
+          );
+        }}
       />
 
 
