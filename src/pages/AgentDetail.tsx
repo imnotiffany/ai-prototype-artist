@@ -1796,6 +1796,15 @@ fengsheng:
         onOpenChange={setPublishOpen}
         agentName={name}
         kind={agent.kind}
+        publishableVersions={versions.filter((v) => v.status === "none").map((v) => v.version)}
+        defaultVersion={publishVersion}
+        onPublished={(ver, scope) => {
+          setVersions((prev) =>
+            prev.map((x) =>
+              x.version === ver ? { ...x, status: scope } : x.status === scope ? { ...x, status: "none" } : x,
+            ),
+          );
+        }}
       />
 
 
