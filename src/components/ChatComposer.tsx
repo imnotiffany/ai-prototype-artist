@@ -35,7 +35,22 @@ interface ChatComposerProps {
   mentionableFiles?: Artifact[];
 }
 
-const DEFAULT_ACCEPT = "image/*,application/pdf,.md,.txt,.docx,.xlsx,.csv,.json,.zip";
+const DEFAULT_ACCEPT = [
+  // 图片
+  "image/*",
+  // 文档
+  ".pdf", ".doc", ".docx", ".txt", ".md",
+  // 表格
+  ".xls", ".xlsx", ".csv",
+  // 演示
+  ".ppt", ".pptx",
+  // 数据 / 配置
+  ".json", ".xml", ".yaml", ".yml", ".log",
+  // 压缩包
+  ".zip",
+  // 音视频
+  "audio/*", "video/mp4", "video/webm", "video/quicktime",
+].join(",");
 
 let uid = 0;
 const genId = () => `att-${++uid}-${Date.now()}`;
