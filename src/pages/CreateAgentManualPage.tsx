@@ -1600,6 +1600,19 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 <Bot className="w-3.5 h-3.5 text-primary shrink-0" />
                 <span className="text-xs font-semibold shrink-0">智能体运行</span>
                 {debugRunning && <RunningIndicator />}
+                <div className="flex-1" />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-[11px] gap-1.5 px-2.5"
+                  onClick={() => setArtifactsOpen(true)}
+                >
+                  <FolderOpen className="w-3.5 h-3.5" />
+                  文件
+                  {mockArtifacts.length > 0 && (
+                    <span className="ml-0.5 text-[10px] text-muted-foreground">{mockArtifacts.length}</span>
+                  )}
+                </Button>
               </div>
               <div className="flex-1 min-h-0">
                 <RunTimelineView
