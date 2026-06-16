@@ -32,6 +32,8 @@ import { FengshengIncompleteDialog, type FsAlertStatus } from "@/components/Feng
 import { FengshengHowToCard } from "@/components/FengshengHowToCard";
 import { ChatComposer } from "@/components/ChatComposer";
 import { mockArtifacts } from "@/data/artifacts";
+import { ArtifactsDrawer } from "@/components/ArtifactsDrawer";
+import { FolderOpen } from "lucide-react";
 import { PodStartupProgress } from "@/components/PodStartupProgress";
 
 // 基于 Anthropic 对 Claude 的 prompting 最佳实践，提供一份"脚手架"模板，
