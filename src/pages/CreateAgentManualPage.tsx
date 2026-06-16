@@ -96,6 +96,7 @@ const CreateAgentManualPage = () => {
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState(categories[0]);
   const [publishOpen, setPublishOpen] = useState(false);
+  const [artifactsOpen, setArtifactsOpen] = useState(false);
   const [specOpen, setSpecOpen] = useState(false);
   const [specFormat, setSpecFormat] = useState<"yaml" | "json">("yaml");
   const [generatingMeta, setGeneratingMeta] = useState(false);
