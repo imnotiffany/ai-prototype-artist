@@ -556,13 +556,17 @@ const VaultPage = () => {
             {mcps.map((m) => {
               const status = testResult[m.id];
               const testing = testingId === m.id;
-              const statusColor =
-                testing ? "bg-muted-foreground/40"
-                : status === "ok" ? "bg-emerald-500"
-                : status === "fail" ? "bg-destructive"
-                : "bg-muted-foreground/30";
+              const statusStyle =
+                testing
+                  ? "bg-muted text-muted-foreground ring-border"
+                  : status === "ok"
+                  ? "bg-emerald-500/10 text-emerald-600 ring-emerald-500/20"
+                  : status === "fail"
+                  ? "bg-destructive/10 text-destructive ring-destructive/20"
+                  : "bg-muted/60 text-muted-foreground ring-border";
               const statusLabel =
-                testing ? "测试中" : status === "ok" ? "已连接" : status === "fail" ? "连接失败" : "未测试";
+                testing ? "测试中" : status === "ok" ? "连接成功" : status === "fail" ? "连接失败" : "未测试";
+              const StatusIcon = testing ? Loader2 : status === "ok" ? CheckCircle2 : status === "fail" ? XCircle : Activity;
               return (
                 <div
                   key={m.id}
@@ -581,32 +585,34 @@ const VaultPage = () => {
                         <span className="font-mono whitespace-nowrap shrink-0">{typeLabel(m.type)}</span>
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      disabled={testing}
-                      onClick={(e) => { e.stopPropagation(); runTest(m.id, m.name); }}
-                      title={testing ? "测试中…" : `${statusLabel}（点击重新测试）`}
-                      className="group/status inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors shrink-0 disabled:opacity-60"
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium ring-1 ring-inset shrink-0 ${statusStyle}`}
+                      title={statusLabel}
                     >
-                      {testing ? (
-                        <Loader2 className="w-2.5 h-2.5 animate-spin" />
-                      ) : (
-                        <>
-                          <span className={`w-1.5 h-1.5 rounded-full ${statusColor} group-hover/status:hidden`} />
-                          <RefreshCw className="w-2.5 h-2.5 hidden group-hover/status:block" />
-                        </>
-                      )}
+                      <StatusIcon className={`w-2.5 h-2.5 ${testing ? "animate-spin" : ""}`} />
                       {statusLabel}
-                    </button>
-                    <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground [&_svg]:size-3" title="编辑"
-                        onClick={(e) => { e.stopPropagation(); openEdit(m); }}>
-                        <Pencil />
+                    </span>
+                    <div className="flex items-center gap-0.5 shrink-0">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        disabled={testing}
+                        className="h-6 w-6 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10 [&_svg]:size-3"
+                        title={testing ? "测试中…" : "测试连通性"}
+                        onClick={(e) => { e.stopPropagation(); runTest(m.id, m.name); }}
+                      >
+                        {testing ? <Loader2 className="animate-spin" /> : <Plug />}
                       </Button>
-                      <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 [&_svg]:size-3" title="删除"
-                        onClick={(e) => { e.stopPropagation(); setDeleteTarget(m); }}>
-                        <Trash2 />
-                      </Button>
+                      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground [&_svg]:size-3" title="编辑"
+                          onClick={(e) => { e.stopPropagation(); openEdit(m); }}>
+                          <Pencil />
+                        </Button>
+                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 [&_svg]:size-3" title="删除"
+                          onClick={(e) => { e.stopPropagation(); setDeleteTarget(m); }}>
+                          <Trash2 />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
