@@ -448,11 +448,13 @@ export const RunTimelineView = ({
   agentAvatar,
   footer,
   inputSlot,
+  emptyState,
 }: {
   scenario: TimelineScenario;
   agentAvatar?: string;
   footer?: React.ReactNode;
   inputSlot?: React.ReactNode;
+  emptyState?: React.ReactNode;
 }) => {
   const [detail, setDetail] = useState<Detail>(scenario.status === "done" || scenario.status === "failed" ? "summary" : "process");
   const [showRaw, setShowRaw] = useState(false);
@@ -478,7 +480,7 @@ export const RunTimelineView = ({
       {/* 时间线 */}
       <div className="flex-1 overflow-auto p-4 space-y-3 min-h-0">
         {visible.length === 0 && (
-          <p className="text-xs text-muted-foreground text-center py-6">没有匹配的事件</p>
+          emptyState ?? <p className="text-xs text-muted-foreground text-center py-6">没有匹配的事件</p>
         )}
         {visible.map((ev) => {
           if (ev.kind === "user") {
