@@ -32,6 +32,8 @@ import { FengshengIncompleteDialog, type FsAlertStatus } from "@/components/Feng
 import { FengshengHowToCard } from "@/components/FengshengHowToCard";
 import { ChatComposer } from "@/components/ChatComposer";
 import { mockArtifacts } from "@/data/artifacts";
+import { ArtifactsDrawer } from "@/components/ArtifactsDrawer";
+import { FolderOpen } from "lucide-react";
 import { PodStartupProgress } from "@/components/PodStartupProgress";
 
 // 基于 Anthropic 对 Claude 的 prompting 最佳实践，提供一份"脚手架"模板，
@@ -94,6 +96,7 @@ const CreateAgentManualPage = () => {
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState(categories[0]);
   const [publishOpen, setPublishOpen] = useState(false);
+  const [artifactsOpen, setArtifactsOpen] = useState(false);
   const [specOpen, setSpecOpen] = useState(false);
   const [specFormat, setSpecFormat] = useState<"yaml" | "json">("yaml");
   const [generatingMeta, setGeneratingMeta] = useState(false);
@@ -1597,6 +1600,19 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 <Bot className="w-3.5 h-3.5 text-primary shrink-0" />
                 <span className="text-xs font-semibold shrink-0">智能体运行</span>
                 {debugRunning && <RunningIndicator />}
+                <div className="flex-1" />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-[11px] gap-1.5 px-2.5"
+                  onClick={() => setArtifactsOpen(true)}
+                >
+                  <FolderOpen className="w-3.5 h-3.5" />
+                  文件
+                  {mockArtifacts.length > 0 && (
+                    <span className="ml-0.5 text-[10px] text-muted-foreground">{mockArtifacts.length}</span>
+                  )}
+                </Button>
               </div>
               <div className="flex-1 min-h-0">
                 <RunTimelineView
@@ -1636,6 +1652,13 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
           </TabsContent>
         </Tabs>
       </div>
+
+      <ArtifactsDrawer
+        open={artifactsOpen}
+        onOpenChange={setArtifactsOpen}
+        title="文件"
+        artifacts={mockArtifacts}
+      />
 
       <PublishAgentDialog
         open={publishOpen}
