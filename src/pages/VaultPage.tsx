@@ -552,7 +552,7 @@ const VaultPage = () => {
             未找到匹配的 MCP
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             {mcps.map((m) => {
               const status = testResult[m.id];
               const testing = testingId === m.id;
@@ -565,19 +565,20 @@ const VaultPage = () => {
                   ? "bg-destructive/10 text-destructive ring-destructive/20"
                   : "bg-muted/60 text-muted-foreground ring-border";
               const statusLabel =
-                testing ? "测试中" : status === "ok" ? "连接成功" : status === "fail" ? "连接失败" : "未测试";
+                testing ? "测试中…" : status === "ok" ? "连接成功" : status === "fail" ? "连接失败" : "未测试";
               const StatusIcon = testing ? Loader2 : status === "ok" ? CheckCircle2 : status === "fail" ? XCircle : Activity;
               return (
                 <div
                   key={m.id}
-                  className="group relative rounded-xl border border-border bg-card hover:border-primary/40 hover:shadow-[0_2px_12px_-4px_hsl(var(--primary)/0.15)] transition-all cursor-pointer"
+                  className="group relative rounded-xl border border-border bg-card hover:border-primary/40 hover:shadow-[0_4px_16px_-6px_hsl(var(--primary)/0.18)] transition-all cursor-pointer overflow-hidden"
                   onClick={() => openEdit(m)}
                 >
-                  <div className="p-3.5 flex items-center gap-2.5 min-w-0">
-                    <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary/15 to-primary/5 ring-1 ring-primary/10 flex items-center justify-center shrink-0">
-                      <Server className="w-4 h-4 text-primary" />
+                  {/* Header */}
+                  <div className="p-3.5 flex items-start gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/15 to-primary/5 ring-1 ring-primary/10 flex items-center justify-center shrink-0">
+                      <Server className="w-[18px] h-[18px] text-primary" />
                     </div>
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-0 flex-1 pt-0.5">
                       <p className="text-[13px] font-semibold leading-tight truncate" title={m.name}>{m.name}</p>
                       <div className="flex items-center gap-1.5 mt-1 text-[10px] text-muted-foreground min-w-0">
                         <span className="font-mono truncate">{m.identifier}</span>
@@ -585,35 +586,36 @@ const VaultPage = () => {
                         <span className="font-mono whitespace-nowrap shrink-0">{typeLabel(m.type)}</span>
                       </div>
                     </div>
+                    <div className="flex items-center gap-0.5 shrink-0 -mr-1 -mt-1">
+                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground [&_svg]:size-3.5" title="编辑"
+                        onClick={(e) => { e.stopPropagation(); openEdit(m); }}>
+                        <Pencil />
+                      </Button>
+                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 [&_svg]:size-3.5" title="删除"
+                        onClick={(e) => { e.stopPropagation(); setDeleteTarget(m); }}>
+                        <Trash2 />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Footer: status + test action */}
+                  <div className="px-3.5 py-2 border-t border-border/60 bg-muted/20 flex items-center justify-between gap-2">
                     <span
-                      className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium ring-1 ring-inset shrink-0 ${statusStyle}`}
-                      title={statusLabel}
+                      className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium ring-1 ring-inset ${statusStyle}`}
                     >
                       <StatusIcon className={`w-2.5 h-2.5 ${testing ? "animate-spin" : ""}`} />
                       {statusLabel}
                     </span>
-                    <div className="flex items-center gap-0.5 shrink-0">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        disabled={testing}
-                        className="h-6 w-6 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10 [&_svg]:size-3"
-                        title={testing ? "测试中…" : "测试连通性"}
-                        onClick={(e) => { e.stopPropagation(); runTest(m.id, m.name); }}
-                      >
-                        {testing ? <Loader2 className="animate-spin" /> : <Plug />}
-                      </Button>
-                      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground [&_svg]:size-3" title="编辑"
-                          onClick={(e) => { e.stopPropagation(); openEdit(m); }}>
-                          <Pencil />
-                        </Button>
-                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 [&_svg]:size-3" title="删除"
-                          onClick={(e) => { e.stopPropagation(); setDeleteTarget(m); }}>
-                          <Trash2 />
-                        </Button>
-                      </div>
-                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={testing}
+                      className="h-6 px-2 text-[11px] gap-1 text-primary hover:text-primary hover:bg-primary/10 [&_svg]:size-3"
+                      onClick={(e) => { e.stopPropagation(); runTest(m.id, m.name); }}
+                    >
+                      {testing ? <Loader2 className="animate-spin" /> : <Plug />}
+                      {testing ? "测试中" : "测试连通性"}
+                    </Button>
                   </div>
                 </div>
               );
