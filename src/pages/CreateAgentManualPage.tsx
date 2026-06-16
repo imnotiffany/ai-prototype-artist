@@ -1653,6 +1653,13 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
         </Tabs>
       </div>
 
+      <ArtifactsDrawer
+        open={artifactsOpen}
+        onOpenChange={setArtifactsOpen}
+        title="文件"
+        artifacts={mockArtifacts}
+      />
+
       <PublishAgentDialog
         open={publishOpen}
         onOpenChange={setPublishOpen}
