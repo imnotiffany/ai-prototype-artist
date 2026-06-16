@@ -1635,28 +1635,8 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                     { id: "manual-debug", title: "调试会话", running: debugRunning },
                   )}
                   emptyState={
-                    <div className="h-full flex flex-col items-center justify-center text-center px-6 py-10 gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Bot className="w-5 h-5 text-primary" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold text-foreground">调试环境已就绪</div>
-                        <p className="text-xs text-muted-foreground mt-1 max-w-md">
-                          在下方输入测试任务，验证智能体的回答、工具调用与产物生成是否符合预期
-                        </p>
-                      </div>
-                      <div className="flex flex-wrap gap-1.5 justify-center pt-1">
-                        {["你能做什么？", "帮我总结一下今天的工作", "调用工具试试"].map((s) => (
-                          <button
-                            key={s}
-                            type="button"
-                            onClick={() => runDebug(s)}
-                            className="text-[11px] px-2.5 py-1 rounded-full border border-border bg-card hover:bg-muted/50 text-foreground/80 hover:text-foreground transition-colors"
-                          >
-                            {s}
-                          </button>
-                        ))}
-                      </div>
+                    <div className="h-full flex items-center justify-center px-6 py-10">
+                      <p className="text-xs text-muted-foreground">请在此调试智能体效果后再发布</p>
                     </div>
                   }
                 />
