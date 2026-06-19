@@ -192,7 +192,7 @@ export const CapabilityPickerDialog = ({
               {isSkill && (() => {
                 const versions = getSkillVersions(it.name);
                 const current = selectedVersions[it.name] ?? versions[0];
-                const isLatest = current === versions[0];
+                
                 return (
                   <>
                     <Select
