@@ -199,25 +199,22 @@ export const CapabilityPickerDialog = ({
                       value={current}
                       onValueChange={(v) => setSelectedVersions((s) => ({ ...s, [it.name]: v }))}
                     >
-                      <SelectTrigger className="h-6 w-[82px] text-[10px] px-1.5 py-0 gap-1">
+                      <SelectTrigger className="h-6 w-[88px] text-[10px] px-1.5 py-0 gap-1 whitespace-nowrap">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         {versions.map((v, i) => (
                           <SelectItem key={v} value={v} className="text-[11px]">
-                            <span className="flex items-center gap-1.5">
+                            <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
                               {v}
                               {i === 0 && (
-                                <span className="text-[9px] px-1 rounded bg-emerald-500/15 text-emerald-600 font-medium">最新</span>
+                                <span className="text-[9px] leading-none px-1 py-0.5 rounded bg-emerald-500/15 text-emerald-600 font-medium whitespace-nowrap">最新</span>
                               )}
                             </span>
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    {isLatest && (
-                      <span className="text-[9px] px-1 h-4 inline-flex items-center rounded bg-emerald-500/15 text-emerald-600 font-medium">最新</span>
-                    )}
                   </>
                 );
               })()}
