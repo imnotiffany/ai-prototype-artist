@@ -176,14 +176,48 @@ export const CapabilityPickerDialog = ({
               <Settings2 className="w-2.5 h-2.5" />去配置
             </Link>
           ) : (
-            <Button
-              size="sm"
-              variant={sel ? "outline" : "default"}
-              className="h-6 text-[10px] px-2"
-              onClick={() => onToggle(it.name)}
-            >
-              {sel ? "移除" : "添加"}
-            </Button>
+            <div className="flex items-center gap-1.5">
+              {isSkill && (() => {
+                const versions = getSkillVersions(it.name);
+                const current = selectedVersions[it.name] ?? versions[0];
+                const isLatest = current === versions[0];
+                return (
+                  <>
+                    <Select
+                      value={current}
+                      onValueChange={(v) => setSelectedVersions((s) => ({ ...s, [it.name]: v }))}
+                    >
+                      <SelectTrigger className="h-6 w-[82px] text-[10px] px-1.5 py-0 gap-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {versions.map((v, i) => (
+                          <SelectItem key={v} value={v} className="text-[11px]">
+                            <span className="flex items-center gap-1.5">
+                              {v}
+                              {i === 0 && (
+                                <span className="text-[9px] px-1 rounded bg-emerald-500/15 text-emerald-600 font-medium">最新</span>
+                              )}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {isLatest && (
+                      <span className="text-[9px] px-1 h-4 inline-flex items-center rounded bg-emerald-500/15 text-emerald-600 font-medium">最新</span>
+                    )}
+                  </>
+                );
+              })()}
+              <Button
+                size="sm"
+                variant={sel ? "outline" : "default"}
+                className="h-6 text-[10px] px-2"
+                onClick={() => onToggle(it.name)}
+              >
+                {sel ? "移除" : "添加"}
+              </Button>
+            </div>
           )}
         </div>
       </div>
