@@ -61,9 +61,9 @@ export const CapabilityPickerDialog = ({
     let h = 0;
     for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
     const minor = (h % 5) + 1;
-    const patch = ((h >> 3) % 6);
+    const patch = (h >>> 3) % 6;
     const latest = `v1.${minor}.${patch}`;
-    const prevMinor = minor > 0 ? `v1.${minor - 1}.${(h >> 5) % 5}` : null;
+    const prevMinor = minor > 0 ? `v1.${minor - 1}.${(h >>> 5) % 5}` : null;
     const old = `v1.0.0`;
     return [latest, prevMinor, old].filter((v, i, a) => v && a.indexOf(v) === i) as string[];
   };
@@ -192,32 +192,29 @@ export const CapabilityPickerDialog = ({
               {isSkill && (() => {
                 const versions = getSkillVersions(it.name);
                 const current = selectedVersions[it.name] ?? versions[0];
-                const isLatest = current === versions[0];
+                
                 return (
                   <>
                     <Select
                       value={current}
                       onValueChange={(v) => setSelectedVersions((s) => ({ ...s, [it.name]: v }))}
                     >
-                      <SelectTrigger className="h-6 w-[82px] text-[10px] px-1.5 py-0 gap-1">
+                      <SelectTrigger className="h-6 w-[88px] text-[10px] px-1.5 py-0 gap-1 whitespace-nowrap">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         {versions.map((v, i) => (
                           <SelectItem key={v} value={v} className="text-[11px]">
-                            <span className="flex items-center gap-1.5">
+                            <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
                               {v}
                               {i === 0 && (
-                                <span className="text-[9px] px-1 rounded bg-emerald-500/15 text-emerald-600 font-medium">最新</span>
+                                <span className="text-[9px] leading-none px-1 py-0.5 rounded bg-emerald-500/15 text-emerald-600 font-medium whitespace-nowrap">最新</span>
                               )}
                             </span>
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    {isLatest && (
-                      <span className="text-[9px] px-1 h-4 inline-flex items-center rounded bg-emerald-500/15 text-emerald-600 font-medium">最新</span>
-                    )}
                   </>
                 );
               })()}
