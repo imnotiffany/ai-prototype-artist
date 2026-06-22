@@ -104,23 +104,38 @@ const DETAIL_LEVEL: Record<Detail, number> = { summary: 1, process: 2, all: 3 };
 
 /* ────────── 子组件 ────────── */
 
-const ArtifactChips = ({ artifacts }: { artifacts: TimelineArtifact[] }) => (
-  <div className="flex flex-wrap gap-1.5 mt-1.5">
-    {artifacts.map((a) => {
-      const Icon = artifactIcon(a.kind);
-      return (
-        <span
-          key={a.id}
-          className="inline-flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded border border-border bg-muted/40 text-foreground/80"
-        >
-          <Icon className="w-3 h-3 text-muted-foreground" />
-          <span className="truncate max-w-[200px]">{a.name}</span>
-          {a.size && <span className="text-muted-foreground/70">· {a.size}</span>}
-        </span>
-      );
-    })}
-  </div>
-);
+const ArtifactChips = ({ artifacts }: { artifacts: TimelineArtifact[] }) => {
+  const { toast } = require("@/hooks/use-toast") as typeof import("@/hooks/use-toast");
+  return (
+    <div className="flex flex-wrap gap-1.5 mt-1.5">
+      {artifacts.map((a) => {
+        const Icon = artifactIcon(a.kind);
+        return (
+          <span
+            key={a.id}
+            className="group inline-flex items-center gap-1 text-[11px] pl-1.5 pr-1 py-0.5 rounded border border-border bg-muted/40 text-foreground/80 hover:bg-muted/60 transition-colors"
+          >
+            <Icon className="w-3 h-3 text-muted-foreground" />
+            <span className="truncate max-w-[200px]">{a.name}</span>
+            {a.size && <span className="text-muted-foreground/70">· {a.size}</span>}
+            <button
+              type="button"
+              title="下载"
+              onClick={(e) => {
+                e.stopPropagation();
+                toast({ title: "已开始下载", description: a.name });
+              }}
+              className="ml-0.5 p-0.5 rounded text-muted-foreground hover:text-foreground hover:bg-background/60 transition-colors"
+            >
+              <Download className="w-3 h-3" />
+            </button>
+          </span>
+        );
+      })}
+    </div>
+  );
+};
+
 
 /** 单个事件 —— 浅灰胶囊样式，点击展开 raw / error / artifacts */
 export const EventRow = ({
