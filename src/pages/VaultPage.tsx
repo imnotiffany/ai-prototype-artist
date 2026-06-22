@@ -838,10 +838,10 @@ const VaultPage = () => {
       </Dialog>
 
       {/* 来自 MCP 广场的独立配置弹窗 */}
-      <Dialog open={marketFormOpen} onOpenChange={(o) => { if (!o) { setMarketFormOpen(false); setMarketFormItem(null); reset(); } }}>
+      <Dialog open={marketFormOpen} onOpenChange={(o) => { if (!o) { setMarketFormOpen(false); setMarketFormItem(null); setEditingId(null); reset(); } }}>
         <DialogContent className="max-w-[520px] p-4">
           <DialogHeader className="space-y-1">
-            <DialogTitle className="text-sm">配置 MCP{marketFormItem ? ` · ${marketFormItem.name}` : ""}</DialogTitle>
+            <DialogTitle className="text-sm">{editingId ? "编辑" : "配置"} MCP{marketFormItem ? ` · ${marketFormItem.name}` : ""}</DialogTitle>
             <DialogDescription className="text-[11px]">
               来自 MCP 广场，服务地址、显示名称与英文标识已自动填入；请完成类型、请求头等凭据配置后保存
             </DialogDescription>
@@ -850,15 +850,16 @@ const VaultPage = () => {
           {renderForm()}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setMarketFormOpen(false); setMarketFormItem(null); reset(); }}>
+            <Button variant="outline" onClick={() => { setMarketFormOpen(false); setMarketFormItem(null); setEditingId(null); reset(); }}>
               取消
             </Button>
             <Button onClick={handleSave} disabled={!canSave}>
-              添加并连接
+              {editingId ? "保存并测试" : "添加并连接"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
 
       {/* 钉钉 MCP URL 配置弹窗 */}
       <Dialog
