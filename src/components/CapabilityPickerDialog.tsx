@@ -10,6 +10,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { Tag } from "lucide-react";
 import { CheckCircle2, ExternalLink, Plus, KeyRound, Upload, ShieldCheck, Settings2 } from "lucide-react";
 import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
+import { getSkillVersions } from "@/lib/skillVersion";
 
 export interface PickerItem {
   name: string;
@@ -63,17 +64,7 @@ export const CapabilityPickerDialog = ({
   const [skillTag, setSkillTag] = useState<string>("__all__");
   const [orderSnapshot, setOrderSnapshot] = useState<string[]>([]);
   const [selectedVersions, setSelectedVersions] = useState<Record<string, string>>({});
-  const getSkillVersions = (name: string): string[] => {
-    // 稳定的伪随机版本列表（按名称生成 1-3 个历史版本）
-    let h = 0;
-    for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
-    const minor = (h % 5) + 1;
-    const patch = (h >>> 3) % 6;
-    const latest = `v1.${minor}.${patch}`;
-    const prevMinor = minor > 0 ? `v1.${minor - 1}.${(h >>> 5) % 5}` : null;
-    const old = `v1.0.0`;
-    return [latest, prevMinor, old].filter((v, i, a) => v && a.indexOf(v) === i) as string[];
-  };
+
 
   // 订阅 MCP 凭据 store，使「未配置 → 已配置」状态变更后立即反映
   const [, setTick] = useState(0);
