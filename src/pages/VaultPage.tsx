@@ -739,6 +739,75 @@ const VaultPage = () => {
               </div>
             </TabsContent>
 
+            <TabsContent value="dingtalk" className="mt-0 space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    className="h-8 text-xs pl-8 bg-muted/30"
+                    placeholder="搜索 钉钉 MCP 名称或功能描述"
+                    value={dingtalkSearch}
+                    onChange={(e) => setDingtalkSearch(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 text-xs">
+                <span className="font-medium">可选</span>
+                <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-normal">{dingtalkList.length}</Badge>
+                <span className="text-muted-foreground">需粘贴专属 URL</span>
+              </div>
+
+              <div className="max-h-[400px] overflow-auto -mx-1 px-1">
+                {dingtalkList.length === 0 ? (
+                  <p className="text-center text-[11px] text-muted-foreground py-8">未找到匹配的钉钉 MCP</p>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {dingtalkList.map((it) => {
+                      const done = isMcpConfigured(it.name);
+                      return (
+                        <div
+                          key={it.id}
+                          className={`border rounded-lg p-3 transition-colors flex flex-col ${done ? "border-emerald-300/60 bg-emerald-50/40 dark:bg-emerald-950/10" : "border-border bg-card"}`}
+                        >
+                          <div className="flex items-start gap-2">
+                            <div className={`w-8 h-8 rounded flex items-center justify-center shrink-0 ${done ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground"}`}>
+                              <Server className="w-4 h-4" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-semibold truncate" title={it.name}>{it.name}</p>
+                              <p className="text-[10px] text-muted-foreground truncate font-mono mt-0.5">{it.identifier}</p>
+                            </div>
+                          </div>
+                          <p className="text-[11px] text-muted-foreground line-clamp-2 mt-2 min-h-[32px]">{it.description}</p>
+                          <div className="flex items-center justify-between mt-3 pt-2 border-t border-border/60">
+                            <button className="text-[11px] text-primary hover:underline">查看详情</button>
+                            {done ? (
+                              <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0 text-[10px] gap-1">
+                                <CheckCircle2 className="w-3 h-3" />已配置
+                              </Badge>
+                            ) : (
+                              <Button
+                                size="sm"
+                                className="h-7 text-[11px] px-3"
+                                onClick={() => {
+                                  setDingFormItem(it);
+                                  setDingUrl("");
+                                  setDingFormOpen(true);
+                                }}
+                              >
+                                添加
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+
             <TabsContent value="manual" className="mt-0">
               {headersOnly ? renderHeadersOnly() : renderForm()}
             </TabsContent>
@@ -746,7 +815,7 @@ const VaultPage = () => {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)}>
-              {createMode === "market" && !editingId ? "完成" : "取消"}
+              {(createMode === "market" || createMode === "dingtalk") && !editingId ? "完成" : "取消"}
             </Button>
             {(createMode === "manual" || editingId) && (
               <Button onClick={handleSave} disabled={!canSave}>
