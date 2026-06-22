@@ -104,9 +104,27 @@ const VaultPage = () => {
   const [identifier, setIdentifier] = useState("");
   const [description, setDescription] = useState("");
   const [headers, setHeaders] = useState<{ key: string; value: string }[]>([]);
-  const [createMode, setCreateMode] = useState<"market" | "manual">("market");
+  const [createMode, setCreateMode] = useState<"market" | "dingtalk" | "manual">("market");
   const [marketSearch, setMarketSearch] = useState("");
   const [marketTag, setMarketTag] = useState<string>("__all__");
+  const [dingtalkSearch, setDingtalkSearch] = useState("");
+  // 钉钉 MCP URL 配置弹窗
+  const [dingFormOpen, setDingFormOpen] = useState(false);
+  const [dingFormItem, setDingFormItem] = useState<{ id: string; name: string; identifier: string; getUrlHref: string } | null>(null);
+  const [dingUrl, setDingUrl] = useState("");
+  const dingtalkMcps = useMemo(
+    () => [
+      { id: "dingtalk-doc", name: "钉钉文档MCP", identifier: "dingtalk-doc", description: "读写钉钉文档内容，支持新建、检索、编辑钉钉文档。", getUrlHref: "https://open.dingtalk.com/document/orgapp/dingtalk-doc-mcp" },
+      { id: "dingtalk-sheet", name: "钉钉表格MCP", identifier: "dingtalk-sheet", description: "操作钉钉表格数据，支持单元格读写、批量更新与公式计算。", getUrlHref: "https://open.dingtalk.com/document/orgapp/dingtalk-sheet-mcp" },
+      { id: "dingtalk-ai-sheet", name: "AI表格MCP", identifier: "dingtalk-ai-sheet", description: "调用钉钉 AI 表格能力，支持智能填充、字段分析与自动化生成。", getUrlHref: "https://open.dingtalk.com/document/orgapp/dingtalk-ai-sheet-mcp" },
+    ],
+    [],
+  );
+  const dingtalkList = useMemo(() => {
+    const q = dingtalkSearch.trim().toLowerCase();
+    if (!q) return dingtalkMcps;
+    return dingtalkMcps.filter((m) => m.name.toLowerCase().includes(q) || m.description.toLowerCase().includes(q));
+  }, [dingtalkMcps, dingtalkSearch]);
   // Studio 专用
   const [stdioCommand, setStdioCommand] = useState("npx");
   const [stdioArgs, setStdioArgs] = useState("");
