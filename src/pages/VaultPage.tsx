@@ -245,8 +245,10 @@ const VaultPage = () => {
         stdioArgs,
         envVars,
       } : m));
-      
+      const editedId = editingId;
+      setTimeout(() => runTest(editedId, name), 200);
     } else {
+
       const id = `m_${Date.now()}`;
       const newEntry: McpEntry = {
         id, name, identifier, endpoint, deployment: "Remote",
