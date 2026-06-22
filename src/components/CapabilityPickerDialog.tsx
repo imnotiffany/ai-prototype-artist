@@ -10,6 +10,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { Tag } from "lucide-react";
 import { CheckCircle2, ExternalLink, Plus, KeyRound, Upload, ShieldCheck, Settings2 } from "lucide-react";
 import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
+import { getSkillVersions } from "@/lib/skillVersion";
 
 export interface PickerItem {
   name: string;
