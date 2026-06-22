@@ -189,7 +189,6 @@ const VaultPage = () => {
   const openEdit = (m: McpEntry) => {
     reset();
     setEditingId(m.id);
-    setCreateMode("manual");
     setEndpoint(m.endpoint);
     setName(m.name);
     setIdentifier(m.identifier);
@@ -200,9 +199,27 @@ const VaultPage = () => {
     setStdioArgs(m.stdioArgs ?? "");
     setEnvVars(m.envVars ?? []);
     setLocked(!!m.fromMarket);
-    setHeadersOnly(!!m.fromMarket);
+    setHeadersOnly(false);
+
+    // 钉钉 MCP：复用钉钉添加弹窗（仅 URL 可编辑）
+    const ding = dingtalkMcps.find((d) => d.identifier === m.identifier);
+    if (ding) {
+      setDingFormItem(ding);
+      setDingUrl(m.endpoint);
+      setDingFormOpen(true);
+      return;
+    }
+    // 来自 MCP 广场：复用广场配置弹窗（与添加一致，含锁定字段）
+    if (m.fromMarket) {
+      setMarketFormItem({ id: m.id, name: m.name });
+      setMarketFormOpen(true);
+      return;
+    }
+    // 手动创建：原表单
+    setCreateMode("manual");
     setCreateOpen(true);
   };
+
 
   const canSave =
     name.trim() && identifier.trim() &&
@@ -228,8 +245,10 @@ const VaultPage = () => {
         stdioArgs,
         envVars,
       } : m));
-      
+      const editedId = editingId;
+      setTimeout(() => runTest(editedId, name), 200);
     } else {
+
       const id = `m_${Date.now()}`;
       const newEntry: McpEntry = {
         id, name, identifier, endpoint, deployment: "Remote",
@@ -693,7 +712,7 @@ const VaultPage = () => {
                 {marketList.length === 0 ? (
                   <p className="text-center text-[11px] text-muted-foreground py-8">未找到匹配的 MCP</p>
                 ) : (
-                  <div className="grid grid-cols-3 gap-2.5">
+                  <div className="grid grid-cols-2 gap-2.5">
                     {marketList.map((it) => {
                       const done = isMcpConfigured(it.name);
                       return (
@@ -701,14 +720,20 @@ const VaultPage = () => {
                           key={it.id}
                           className={`border rounded-lg p-3 transition-colors flex flex-col ${done ? "border-emerald-300/60 bg-emerald-50/40 dark:bg-emerald-950/10" : "border-border bg-card"}`}
                         >
-                          <div className="min-w-0">
-                            <p className="text-xs font-semibold truncate" title={it.name}>{it.name}</p>
-                            <div className="flex items-center gap-1 mt-1 flex-wrap">
-                              <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-normal text-muted-foreground">
-                                {it.tag}
-                              </Badge>
+                          <div className="flex items-start gap-2">
+                            <div className={`w-8 h-8 rounded flex items-center justify-center shrink-0 ${done ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground"}`}>
+                              <Server className="w-4 h-4" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-semibold truncate" title={it.name}>{it.name}</p>
+                              <div className="flex items-center gap-1 mt-1 flex-wrap">
+                                <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-normal text-muted-foreground">
+                                  {it.tag}
+                                </Badge>
+                              </div>
                             </div>
                           </div>
+
 
                           <p className="text-[11px] text-muted-foreground line-clamp-2 mt-2 min-h-[32px]">{it.description}</p>
                           <div className="flex items-center justify-between mt-3 pt-2 border-t border-border/60">
@@ -806,18 +831,19 @@ const VaultPage = () => {
             </Button>
             {(createMode === "manual" || editingId) && (
               <Button onClick={handleSave} disabled={!canSave}>
-                {editingId ? "保存" : "添加并连接"}
+                {editingId ? "保存并测试" : "添加并连接"}
               </Button>
             )}
+
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* 来自 MCP 广场的独立配置弹窗 */}
-      <Dialog open={marketFormOpen} onOpenChange={(o) => { if (!o) { setMarketFormOpen(false); setMarketFormItem(null); reset(); } }}>
+      <Dialog open={marketFormOpen} onOpenChange={(o) => { if (!o) { setMarketFormOpen(false); setMarketFormItem(null); setEditingId(null); reset(); } }}>
         <DialogContent className="max-w-[520px] p-4">
           <DialogHeader className="space-y-1">
-            <DialogTitle className="text-sm">配置 MCP{marketFormItem ? ` · ${marketFormItem.name}` : ""}</DialogTitle>
+            <DialogTitle className="text-sm">{editingId ? "编辑" : "配置"} MCP{marketFormItem ? ` · ${marketFormItem.name}` : ""}</DialogTitle>
             <DialogDescription className="text-[11px]">
               来自 MCP 广场，服务地址、显示名称与英文标识已自动填入；请完成类型、请求头等凭据配置后保存
             </DialogDescription>
@@ -826,26 +852,27 @@ const VaultPage = () => {
           {renderForm()}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setMarketFormOpen(false); setMarketFormItem(null); reset(); }}>
+            <Button variant="outline" onClick={() => { setMarketFormOpen(false); setMarketFormItem(null); setEditingId(null); reset(); }}>
               取消
             </Button>
             <Button onClick={handleSave} disabled={!canSave}>
-              添加并连接
+              {editingId ? "保存并测试" : "添加并连接"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
+
       {/* 钉钉 MCP URL 配置弹窗 */}
       <Dialog
         open={dingFormOpen}
         onOpenChange={(o) => {
-          if (!o) { setDingFormOpen(false); setDingFormItem(null); setDingUrl(""); }
+          if (!o) { setDingFormOpen(false); setDingFormItem(null); setDingUrl(""); setEditingId(null); }
         }}
       >
         <DialogContent className="max-w-[480px] p-4">
           <DialogHeader className="space-y-1">
-            <DialogTitle className="text-sm">配置钉钉 MCP</DialogTitle>
+            <DialogTitle className="text-sm">{editingId ? "编辑" : "配置"}钉钉 MCP{dingFormItem ? ` · ${dingFormItem.name}` : ""}</DialogTitle>
           </DialogHeader>
 
           {dingFormItem && (
@@ -877,41 +904,48 @@ const VaultPage = () => {
           )}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setDingFormOpen(false); setDingFormItem(null); setDingUrl(""); }}>
+            <Button variant="outline" onClick={() => { setDingFormOpen(false); setDingFormItem(null); setDingUrl(""); setEditingId(null); }}>
               取消
             </Button>
             <Button
               disabled={!dingUrl.trim() || !dingFormItem}
               onClick={() => {
                 if (!dingFormItem || !dingUrl.trim()) return;
-                const id = `m_${Date.now()}`;
-                const newEntry: McpEntry = {
-                  id,
-                  name: dingFormItem.name,
-                  identifier: dingFormItem.identifier,
-                  endpoint: dingUrl.trim(),
-                  deployment: "Remote",
-                  createdAt: new Date().toISOString().slice(0, 10),
-                  requiresCredential: true,
-                  type: "http",
-                  fromMarket: true,
-                  description: "钉钉 MCP 服务",
-                  headers: [],
-                };
-                setCredMcps((arr) => [newEntry, ...arr]);
-                setMcpConfigured(dingFormItem.name, true);
-                setTimeout(() => runTest(id, dingFormItem.name), 200);
+                if (editingId) {
+                  setCredMcps((arr) => arr.map((m) => m.id === editingId ? { ...m, endpoint: dingUrl.trim() } : m));
+                  setTimeout(() => runTest(editingId, dingFormItem.name), 200);
+                } else {
+                  const id = `m_${Date.now()}`;
+                  const newEntry: McpEntry = {
+                    id,
+                    name: dingFormItem.name,
+                    identifier: dingFormItem.identifier,
+                    endpoint: dingUrl.trim(),
+                    deployment: "Remote",
+                    createdAt: new Date().toISOString().slice(0, 10),
+                    requiresCredential: true,
+                    type: "http",
+                    fromMarket: true,
+                    description: "钉钉 MCP 服务",
+                    headers: [],
+                  };
+                  setCredMcps((arr) => [newEntry, ...arr]);
+                  setMcpConfigured(dingFormItem.name, true);
+                  setTimeout(() => runTest(id, dingFormItem.name), 200);
+                }
                 setDingFormOpen(false);
                 setCreateOpen(false);
                 setDingFormItem(null);
                 setDingUrl("");
+                setEditingId(null);
               }}
             >
-              添加并连接
+              {editingId ? "保存并测试" : "添加并连接"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
 
 
 
