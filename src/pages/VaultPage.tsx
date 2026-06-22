@@ -104,9 +104,27 @@ const VaultPage = () => {
   const [identifier, setIdentifier] = useState("");
   const [description, setDescription] = useState("");
   const [headers, setHeaders] = useState<{ key: string; value: string }[]>([]);
-  const [createMode, setCreateMode] = useState<"market" | "manual">("market");
+  const [createMode, setCreateMode] = useState<"market" | "dingtalk" | "manual">("market");
   const [marketSearch, setMarketSearch] = useState("");
   const [marketTag, setMarketTag] = useState<string>("__all__");
+  const [dingtalkSearch, setDingtalkSearch] = useState("");
+  // 钉钉 MCP URL 配置弹窗
+  const [dingFormOpen, setDingFormOpen] = useState(false);
+  const [dingFormItem, setDingFormItem] = useState<{ id: string; name: string; identifier: string; getUrlHref: string } | null>(null);
+  const [dingUrl, setDingUrl] = useState("");
+  const dingtalkMcps = useMemo(
+    () => [
+      { id: "dingtalk-doc", name: "钉钉文档MCP", identifier: "dingtalk-doc", description: "读写钉钉文档内容，支持新建、检索、编辑钉钉文档。", getUrlHref: "https://open.dingtalk.com/document/orgapp/dingtalk-doc-mcp" },
+      { id: "dingtalk-sheet", name: "钉钉表格MCP", identifier: "dingtalk-sheet", description: "操作钉钉表格数据，支持单元格读写、批量更新与公式计算。", getUrlHref: "https://open.dingtalk.com/document/orgapp/dingtalk-sheet-mcp" },
+      { id: "dingtalk-ai-sheet", name: "AI表格MCP", identifier: "dingtalk-ai-sheet", description: "调用钉钉 AI 表格能力，支持智能填充、字段分析与自动化生成。", getUrlHref: "https://open.dingtalk.com/document/orgapp/dingtalk-ai-sheet-mcp" },
+    ],
+    [],
+  );
+  const dingtalkList = useMemo(() => {
+    const q = dingtalkSearch.trim().toLowerCase();
+    if (!q) return dingtalkMcps;
+    return dingtalkMcps.filter((m) => m.name.toLowerCase().includes(q) || m.description.toLowerCase().includes(q));
+  }, [dingtalkMcps, dingtalkSearch]);
   // Studio 专用
   const [stdioCommand, setStdioCommand] = useState("npx");
   const [stdioArgs, setStdioArgs] = useState("");
@@ -626,15 +644,16 @@ const VaultPage = () => {
 
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className={createMode === "market" && !editingId ? "max-w-[760px] p-4" : "max-w-[520px] p-4"}>
+        <DialogContent className={(createMode === "market" || createMode === "dingtalk") && !editingId ? "max-w-[760px] p-4" : "max-w-[520px] p-4"}>
           <DialogHeader className="space-y-1">
             <DialogTitle className="text-sm">{editingId ? "编辑 MCP 服务" : "新增 MCP"}</DialogTitle>
           </DialogHeader>
 
-          <Tabs value={createMode} onValueChange={(v) => setCreateMode(v as "market" | "manual")} className="w-full">
+          <Tabs value={createMode} onValueChange={(v) => setCreateMode(v as "market" | "dingtalk" | "manual")} className="w-full">
             {!editingId && (
-              <TabsList className="grid grid-cols-2 w-full bg-muted/40 h-8 mb-3">
+              <TabsList className="grid grid-cols-3 w-full bg-muted/40 h-8 mb-3">
                 <TabsTrigger value="market" className="text-xs h-6">从 MCP 广场配置</TabsTrigger>
+                <TabsTrigger value="dingtalk" className="text-xs h-6">钉钉 MCP</TabsTrigger>
                 <TabsTrigger value="manual" className="text-xs h-6">手动创建</TabsTrigger>
               </TabsList>
             )}
@@ -720,6 +739,75 @@ const VaultPage = () => {
               </div>
             </TabsContent>
 
+            <TabsContent value="dingtalk" className="mt-0 space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    className="h-8 text-xs pl-8 bg-muted/30"
+                    placeholder="搜索 钉钉 MCP 名称或功能描述"
+                    value={dingtalkSearch}
+                    onChange={(e) => setDingtalkSearch(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 text-xs">
+                <span className="font-medium">可选</span>
+                <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-normal">{dingtalkList.length}</Badge>
+                <span className="text-muted-foreground">需粘贴专属 URL</span>
+              </div>
+
+              <div className="max-h-[400px] overflow-auto -mx-1 px-1">
+                {dingtalkList.length === 0 ? (
+                  <p className="text-center text-[11px] text-muted-foreground py-8">未找到匹配的钉钉 MCP</p>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {dingtalkList.map((it) => {
+                      const done = isMcpConfigured(it.name);
+                      return (
+                        <div
+                          key={it.id}
+                          className={`border rounded-lg p-3 transition-colors flex flex-col ${done ? "border-emerald-300/60 bg-emerald-50/40 dark:bg-emerald-950/10" : "border-border bg-card"}`}
+                        >
+                          <div className="flex items-start gap-2">
+                            <div className={`w-8 h-8 rounded flex items-center justify-center shrink-0 ${done ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground"}`}>
+                              <Server className="w-4 h-4" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-semibold truncate" title={it.name}>{it.name}</p>
+                              <p className="text-[10px] text-muted-foreground truncate font-mono mt-0.5">{it.identifier}</p>
+                            </div>
+                          </div>
+                          <p className="text-[11px] text-muted-foreground line-clamp-2 mt-2 min-h-[32px]">{it.description}</p>
+                          <div className="flex items-center justify-between mt-3 pt-2 border-t border-border/60">
+                            <button className="text-[11px] text-primary hover:underline">查看详情</button>
+                            {done ? (
+                              <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0 text-[10px] gap-1">
+                                <CheckCircle2 className="w-3 h-3" />已配置
+                              </Badge>
+                            ) : (
+                              <Button
+                                size="sm"
+                                className="h-7 text-[11px] px-3"
+                                onClick={() => {
+                                  setDingFormItem(it);
+                                  setDingUrl("");
+                                  setDingFormOpen(true);
+                                }}
+                              >
+                                添加
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+
             <TabsContent value="manual" className="mt-0">
               {headersOnly ? renderHeadersOnly() : renderForm()}
             </TabsContent>
@@ -727,7 +815,7 @@ const VaultPage = () => {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)}>
-              {createMode === "market" && !editingId ? "完成" : "取消"}
+              {(createMode === "market" || createMode === "dingtalk") && !editingId ? "完成" : "取消"}
             </Button>
             {(createMode === "manual" || editingId) && (
               <Button onClick={handleSave} disabled={!canSave}>
@@ -760,6 +848,96 @@ const VaultPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* 钉钉 MCP URL 配置弹窗 */}
+      <Dialog
+        open={dingFormOpen}
+        onOpenChange={(o) => {
+          if (!o) { setDingFormOpen(false); setDingFormItem(null); setDingUrl(""); }
+        }}
+      >
+        <DialogContent className="max-w-[480px] p-4">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-sm">配置钉钉 MCP</DialogTitle>
+            <DialogDescription className="text-[11px]">
+              粘贴你在钉钉开放平台获取的专属 MCP 服务地址，即可完成接入。
+            </DialogDescription>
+          </DialogHeader>
+
+          {dingFormItem && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2.5 rounded-md border border-border bg-muted/30 px-3 py-2">
+                <div className="w-8 h-8 rounded flex items-center justify-center bg-muted text-muted-foreground shrink-0">
+                  <Server className="w-4 h-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold truncate">{dingFormItem.name}</p>
+                  <p className="text-[10px] text-muted-foreground truncate font-mono mt-0.5">{dingFormItem.identifier}</p>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs">服务 URL <span className="text-destructive">*</span></Label>
+                  <a
+                    href={dingFormItem.getUrlHref}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[11px] text-primary hover:underline inline-flex items-center gap-0.5"
+                  >
+                    获取 URL <ExternalLink className="w-2.5 h-2.5" />
+                  </a>
+                </div>
+                <Input
+                  className="h-8 text-xs font-mono"
+                  placeholder="https://api.dingtalk.com/v1/mcp/..."
+                  value={dingUrl}
+                  onChange={(e) => setDingUrl(e.target.value)}
+                />
+                <p className="text-[10px] text-muted-foreground">
+                  请在钉钉开放平台开通后复制专属 URL 粘贴至此处。
+                </p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setDingFormOpen(false); setDingFormItem(null); setDingUrl(""); }}>
+              取消
+            </Button>
+            <Button
+              disabled={!dingUrl.trim() || !dingFormItem}
+              onClick={() => {
+                if (!dingFormItem || !dingUrl.trim()) return;
+                const id = `m_${Date.now()}`;
+                const newEntry: McpEntry = {
+                  id,
+                  name: dingFormItem.name,
+                  identifier: dingFormItem.identifier,
+                  endpoint: dingUrl.trim(),
+                  deployment: "Remote",
+                  createdAt: new Date().toISOString().slice(0, 10),
+                  requiresCredential: true,
+                  type: "http",
+                  fromMarket: true,
+                  description: "钉钉 MCP 服务",
+                  headers: [],
+                };
+                setCredMcps((arr) => [newEntry, ...arr]);
+                setMcpConfigured(dingFormItem.name, true);
+                setTimeout(() => runTest(id, dingFormItem.name), 200);
+                setDingFormOpen(false);
+                setCreateOpen(false);
+                setDingFormItem(null);
+                setDingUrl("");
+              }}
+            >
+              添加并连接
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
 
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
