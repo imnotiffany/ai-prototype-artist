@@ -1032,6 +1032,7 @@ fengsheng:
                                 {sub.skills.map((s) => (
                                   <Badge key={s} variant="outline" className="text-[10px] h-4 px-1.5 gap-1 border-border">
                                     <Zap className="w-2.5 h-2.5" />{s}
+                                    <span className="font-mono text-muted-foreground">{getLatestSkillVersion(s)}</span>
                                   </Badge>
                                 ))}
                               </div>
