@@ -149,6 +149,8 @@ const CreateAgentManualPage = () => {
 
   // Bindings
   const [selSkills, setSelSkills] = useState<string[]>([]);
+  const [skillVersions, setSkillVersions] = useState<Record<string, string>>({});
+
   const [selMCPs, setSelMCPs] = useState<string[]>([]);
   const [selSubagents, setSelSubagents] = useState<string[]>([]);
   const [selBuiltinTools, setSelBuiltinTools] = useState<string[]>(["Bash", "Read", "Write", "Edit"]);
