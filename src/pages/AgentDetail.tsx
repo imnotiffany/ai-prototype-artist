@@ -1644,16 +1644,6 @@ fengsheng:
                       </button>
                     </div>
                   </div>
-                  <div>
-                    <Label className="text-xs">Robot Code <span className="text-destructive">*</span></Label>
-                    <Input
-                      className="mt-1.5 h-8 text-xs font-mono"
-                      placeholder="机器人编码"
-                      value={fsRobotCode}
-                      onChange={(e) => { setFsRobotCode(e.target.value); onFsFieldChange({ robotCode: e.target.value }); }}
-                    />
-                    <p className="text-[10px] text-muted-foreground mt-1.5">在丰声 NEXT 开发者后台「机器人管理」中获取，凭据将通过「凭据管理」加密存储</p>
-                  </div>
 
                   {fsStatus === "failed" && (
                     <div className="border border-destructive/40 bg-destructive/5 rounded px-2.5 py-2 text-[11px] text-destructive flex items-start gap-1.5">
@@ -1667,12 +1657,12 @@ fengsheng:
                       size="sm"
                       variant={fsStatus === "connected" ? "outline" : "default"}
                       className="h-8 text-xs gap-1.5"
-                      disabled={!fsAppKey.trim() || !fsAppSecret.trim() || !fsRobotCode.trim() || fsStatus === "connecting" || fsStatus === "connected"}
+                      disabled={!fsAppKey.trim() || !fsAppSecret.trim() || fsStatus === "connecting" || fsStatus === "connected"}
                       onClick={() => {
                         setFsStatus("connecting");
                         setFsFailMsg("");
                         setTimeout(() => {
-                          const ok = !fsRobotCode.endsWith("_fail") && fsAppKey.length >= 4 && fsAppSecret.length >= 4 && fsRobotCode.length >= 4;
+                          const ok = fsAppKey.length >= 4 && fsAppSecret.length >= 4 && !fsAppSecret.endsWith("_fail");
                           if (ok) {
                             setFsStatus("connected");
                             
