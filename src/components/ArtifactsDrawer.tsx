@@ -303,7 +303,7 @@ export const ArtifactsDrawer = ({ open, onOpenChange, artifacts, title = "文件
   const [selected, setSelected] = useState<Artifact | null>(null);
 
   const data = artifacts ?? mockArtifacts;
-  const tree = useMemo(() => buildArtifactTree(data), [data]);
+
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
