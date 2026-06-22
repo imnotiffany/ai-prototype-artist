@@ -1849,12 +1849,11 @@ const CreateAgentPage = () => {
                     onConfirm={() => handleMatchConfirm(msg.id)}
                   />
                 ) : msg.type === "draft" && msg.draft ? (
-                  <DraftCard draft={{
-                    model: agentConfig.model,
-                    skills: agentConfig.skills,
-                    mcps: agentConfig.mcpServers,
-                    note: msg.draft.note,
-                  }} />
+                  msg.draft.note ? (
+                    <div className="text-xs text-muted-foreground py-1">{msg.draft.note}</div>
+                  ) : null
+
+
 
                 ) : msg.type === "clarify" ? (
                   <ClarifyCard
