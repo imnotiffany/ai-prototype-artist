@@ -1,14 +1,26 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Clock, Flame, Wand, SlidersHorizontal } from "lucide-react";
+import { ArrowRight, Clock, Flame, Wand, SlidersHorizontal, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getRecentAgents, getMyAgents } from "@/data/mockData";
+import { DingtalkSetupDialog, isDingtalkFullyConfigured } from "@/components/DingtalkSetupDialog";
+
+const FIRST_VISIT_KEY = "dingtalk_mcp_first_visit_seen";
 
 const CreatePage = () => {
   const navigate = useNavigate();
   const [description, setDescription] = useState("");
   const [agentMode, setAgentMode] = useState<"auto" | "manual">("auto");
+  const [dingOpen, setDingOpen] = useState(false);
+  const [dingConfigured, setDingConfigured] = useState(() => isDingtalkFullyConfigured());
+
+  useEffect(() => {
+    if (!localStorage.getItem(FIRST_VISIT_KEY) && !isDingtalkFullyConfigured()) {
+      setDingOpen(true);
+      localStorage.setItem(FIRST_VISIT_KEY, "1");
+    }
+  }, []);
 
   const myAgents = getMyAgents().slice(0, 3);
   const hotAgents = getRecentAgents().slice(0, 3);
