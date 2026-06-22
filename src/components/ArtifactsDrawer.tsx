@@ -303,7 +303,7 @@ export const ArtifactsDrawer = ({ open, onOpenChange, artifacts, title = "文件
   const [selected, setSelected] = useState<Artifact | null>(null);
 
   const data = artifacts ?? mockArtifacts;
-  const tree = useMemo(() => buildArtifactTree(data), [data]);
+
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -319,7 +319,7 @@ export const ArtifactsDrawer = ({ open, onOpenChange, artifacts, title = "文件
         </SheetHeader>
 
         <div className="flex-1 min-h-0 flex">
-          {/* 左侧：文件树 */}
+          {/* 左侧：按来源分组的扁平列表 */}
           <div className="w-[260px] border-r border-border flex flex-col shrink-0">
             <div className="px-3 pt-3 pb-2 relative">
               <Search className="w-3 h-3 text-muted-foreground absolute left-5 top-1/2 -translate-y-1/2" />
@@ -327,25 +327,66 @@ export const ArtifactsDrawer = ({ open, onOpenChange, artifacts, title = "文件
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="搜索文件…"
-                className="h-7 text-xs pl-7 pr-8 bg-muted/40 border-transparent focus-visible:border-border focus-visible:bg-background"
+                className="h-7 text-xs pl-7 bg-muted/40 border-transparent focus-visible:border-border focus-visible:bg-background"
               />
-              <button
-                title="打包下载全部"
-                onClick={() => toast({ title: "开始打包下载", description: `共 ${data.length} 个文件` })}
-                className="absolute right-5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Download className="w-3.5 h-3.5" />
-              </button>
             </div>
-            <div className="flex-1 overflow-auto px-1.5 pb-2">
-              {tree.length === 0 ? (
-                <div className="text-xs text-muted-foreground text-center py-6">暂无文件</div>
-              ) : (
-                tree.map((n) => (
-                  <TreeNode key={n.path} node={n} depth={0} selectedPath={selected?.path ?? null} onSelect={setSelected} search={search} />
-                ))
-              )}
+            <div className="flex-1 overflow-auto px-1.5 pb-2 space-y-3">
+              {(() => {
+                const q = search.trim().toLowerCase();
+                const filtered = data.filter((a) => !q || a.name.toLowerCase().includes(q));
+                const groups: { key: "user_upload" | "agent_tool"; label: string; items: Artifact[] }[] = [
+                  {
+                    key: "user_upload",
+                    label: "传入",
+                    items: filtered
+                      .filter((a) => a.source === "user_upload")
+                      .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+                  },
+                  {
+                    key: "agent_tool",
+                    label: "产物",
+                    items: filtered
+                      .filter((a) => a.source !== "user_upload")
+                      .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+                  },
+                ];
+                if (filtered.length === 0) {
+                  return <div className="text-xs text-muted-foreground text-center py-6">暂无文件</div>;
+                }
+                return groups.map((g) =>
+                  g.items.length === 0 ? null : (
+                    <div key={g.key}>
+                      <div className="px-2 py-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                        <span>{g.label}</span>
+                        <span className="text-muted-foreground/60">· {g.items.length}</span>
+                      </div>
+                      <div>
+                        {g.items.map((a) => {
+                          const selectedItem = selected?.path === a.path;
+                          return (
+                            <button
+                              key={a.id}
+                              onClick={() => setSelected(a)}
+                              className={cn(
+                                "w-full flex items-center gap-1.5 py-1 px-2 text-xs rounded transition-colors text-left",
+                                selectedItem
+                                  ? "bg-primary/10 text-foreground"
+                                  : "hover:bg-muted/50 text-muted-foreground hover:text-foreground",
+                              )}
+                            >
+                              <IconForType type={a.type} className="w-3 h-3 shrink-0 text-foreground/50" />
+                              <span className="truncate flex-1">{a.name}</span>
+                              <span className="text-[10px] text-muted-foreground/70 shrink-0">{a.createdAt.slice(5, 10)}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ),
+                );
+              })()}
             </div>
+
           </div>
 
           {/* 右侧：预览 */}
