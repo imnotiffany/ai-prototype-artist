@@ -35,6 +35,10 @@ interface Props {
   deployBadge?: (name: string) => string;
   /** Override the trigger element (defaults to a small "+" icon button) */
   trigger?: ReactNode;
+  /** Skill 专用：受控版本映射 */
+  versions?: Record<string, string>;
+  /** Skill 专用：版本变化回调（用户切换下拉或添加时触发） */
+  onVersionChange?: (name: string, version: string) => void;
 }
 
 export const CapabilityPickerDialog = ({
@@ -45,7 +49,10 @@ export const CapabilityPickerDialog = ({
   label,
   marketLink,
   trigger,
+  versions,
+  onVersionChange,
 }: Props) => {
+
   const isMcp = label === "MCP";
   const isSkill = label === "Skill";
   const isSubagent = label === "子智能体";
