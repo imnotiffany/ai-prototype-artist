@@ -112,8 +112,6 @@ const CreatePage = () => {
         </div>
       </div>
 
-        </div>
-      </div>
 
       {/* DingTalk MCP reminder */}
       {!dingConfigured && (
