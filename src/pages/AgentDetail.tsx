@@ -922,6 +922,7 @@ fengsheng:
                             <div className="flex items-center gap-1.5">
                               <Zap className="w-3 h-3 text-primary shrink-0" />
                               <span className="text-xs font-medium truncate">{s}</span>
+                              <Badge variant="outline" className="text-[10px] h-4 px-1 border-border font-mono text-muted-foreground">{getLatestSkillVersion(s)}</Badge>
                               {meta?.scope === "project" && (
                                 <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-border">项目</Badge>
                               )}
