@@ -1657,12 +1657,12 @@ fengsheng:
                       size="sm"
                       variant={fsStatus === "connected" ? "outline" : "default"}
                       className="h-8 text-xs gap-1.5"
-                      disabled={!fsAppKey.trim() || !fsAppSecret.trim() || !fsRobotCode.trim() || fsStatus === "connecting" || fsStatus === "connected"}
+                      disabled={!fsAppKey.trim() || !fsAppSecret.trim() || fsStatus === "connecting" || fsStatus === "connected"}
                       onClick={() => {
                         setFsStatus("connecting");
                         setFsFailMsg("");
                         setTimeout(() => {
-                          const ok = !fsRobotCode.endsWith("_fail") && fsAppKey.length >= 4 && fsAppSecret.length >= 4 && fsRobotCode.length >= 4;
+                          const ok = fsAppKey.length >= 4 && fsAppSecret.length >= 4 && !fsAppSecret.endsWith("_fail");
                           if (ok) {
                             setFsStatus("connected");
                             
