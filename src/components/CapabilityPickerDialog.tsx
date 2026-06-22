@@ -35,6 +35,10 @@ interface Props {
   deployBadge?: (name: string) => string;
   /** Override the trigger element (defaults to a small "+" icon button) */
   trigger?: ReactNode;
+  /** Skill 专用：受控版本映射 */
+  versions?: Record<string, string>;
+  /** Skill 专用：版本变化回调（用户切换下拉或添加时触发） */
+  onVersionChange?: (name: string, version: string) => void;
 }
 
 export const CapabilityPickerDialog = ({
@@ -45,7 +49,10 @@ export const CapabilityPickerDialog = ({
   label,
   marketLink,
   trigger,
+  versions,
+  onVersionChange,
 }: Props) => {
+
   const isMcp = label === "MCP";
   const isSkill = label === "Skill";
   const isSubagent = label === "子智能体";
@@ -190,20 +197,23 @@ export const CapabilityPickerDialog = ({
           ) : (
             <div className="flex items-center gap-1.5">
               {isSkill && (() => {
-                const versions = getSkillVersions(it.name);
-                const current = selectedVersions[it.name] ?? versions[0];
+                const versionList = getSkillVersions(it.name);
+                const current = versions?.[it.name] ?? selectedVersions[it.name] ?? versionList[0];
                 
                 return (
                   <>
                     <Select
                       value={current}
-                      onValueChange={(v) => setSelectedVersions((s) => ({ ...s, [it.name]: v }))}
+                      onValueChange={(v) => {
+                        setSelectedVersions((s) => ({ ...s, [it.name]: v }));
+                        onVersionChange?.(it.name, v);
+                      }}
                     >
                       <SelectTrigger className="h-6 w-[88px] text-[10px] px-1.5 py-0 gap-1 whitespace-nowrap">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {versions.map((v, i) => (
+                        {versionList.map((v, i) => (
                           <SelectItem key={v} value={v} className="text-[11px]">
                             <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
                               {v}
@@ -222,11 +232,19 @@ export const CapabilityPickerDialog = ({
                 size="sm"
                 variant={sel ? "outline" : "default"}
                 className="h-6 text-[10px] px-2"
-                onClick={() => onToggle(it.name)}
+                onClick={() => {
+                  if (isSkill && !sel) {
+                    const versionList = getSkillVersions(it.name);
+                    const current = versions?.[it.name] ?? selectedVersions[it.name] ?? versionList[0];
+                    onVersionChange?.(it.name, current);
+                  }
+                  onToggle(it.name);
+                }}
               >
                 {sel ? "移除" : "添加"}
               </Button>
             </div>
+
           )}
         </div>
       </div>

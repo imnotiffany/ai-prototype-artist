@@ -149,6 +149,8 @@ const CreateAgentManualPage = () => {
 
   // Bindings
   const [selSkills, setSelSkills] = useState<string[]>([]);
+  const [skillVersions, setSkillVersions] = useState<Record<string, string>>({});
+
   const [selMCPs, setSelMCPs] = useState<string[]>([]);
   const [selSubagents, setSelSubagents] = useState<string[]>([]);
   const [selBuiltinTools, setSelBuiltinTools] = useState<string[]>(["Bash", "Read", "Write", "Edit"]);
@@ -967,16 +969,30 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   <Label className="text-xs flex items-center gap-1.5"><Zap className="w-3.5 h-3.5 text-muted-foreground" />Skill 绑定</Label>
                   <p className="text-[11px] text-muted-foreground mt-1">让智能体掌握特定领域能力</p>
                 </div>
-                <CapabilityPickerDialog items={skills} selected={selSkills} onToggle={(n) => toggle(selSkills, setSelSkills, n)} icon={<Zap className="w-3.5 h-3.5" />} label="Skill" marketLink="/" trigger={<Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0"><Plus className="w-3 h-3" />添加 Skill</Button>} />
+                <CapabilityPickerDialog
+                  items={skills}
+                  selected={selSkills}
+                  onToggle={(n) => toggle(selSkills, setSelSkills, n)}
+                  icon={<Zap className="w-3.5 h-3.5" />}
+                  label="Skill"
+                  marketLink="/"
+                  versions={skillVersions}
+                  onVersionChange={(name, v) => setSkillVersions((s) => ({ ...s, [name]: v }))}
+                  trigger={<Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0"><Plus className="w-3 h-3" />添加 Skill</Button>}
+                />
               </div>
               {selSkills.length === 0 ? null : (
                 <div className="flex flex-wrap gap-2">
                   {selSkills.map((s) => {
                     const meta = skills.find((x) => x.name === s);
+                    const ver = skillVersions[s];
                     return (
                       <div key={s} className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card pl-2 pr-1 py-1 text-xs" title={meta?.description}>
                         <Zap className="w-3 h-3 text-primary shrink-0" />
                         <span className="font-medium max-w-[160px] truncate">{s}</span>
+                        {ver && (
+                          <Badge variant="outline" className="text-[10px] h-4 px-1 border-border font-mono text-muted-foreground">{ver}</Badge>
+                        )}
                         {meta?.scope === "project" && (
                           <Badge variant="outline" className="text-[10px] h-4 px-1 border-border">项目</Badge>
                         )}
@@ -988,6 +1004,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   })}
                 </div>
               )}
+
             </div>
 
             {/* 子智能体绑定 */}
