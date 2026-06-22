@@ -849,6 +849,96 @@ const VaultPage = () => {
         </DialogContent>
       </Dialog>
 
+      {/* 钉钉 MCP URL 配置弹窗 */}
+      <Dialog
+        open={dingFormOpen}
+        onOpenChange={(o) => {
+          if (!o) { setDingFormOpen(false); setDingFormItem(null); setDingUrl(""); }
+        }}
+      >
+        <DialogContent className="max-w-[480px] p-4">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-sm">配置钉钉 MCP</DialogTitle>
+            <DialogDescription className="text-[11px]">
+              粘贴你在钉钉开放平台获取的专属 MCP 服务地址，即可完成接入。
+            </DialogDescription>
+          </DialogHeader>
+
+          {dingFormItem && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2.5 rounded-md border border-border bg-muted/30 px-3 py-2">
+                <div className="w-8 h-8 rounded flex items-center justify-center bg-muted text-muted-foreground shrink-0">
+                  <Server className="w-4 h-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold truncate">{dingFormItem.name}</p>
+                  <p className="text-[10px] text-muted-foreground truncate font-mono mt-0.5">{dingFormItem.identifier}</p>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs">服务 URL <span className="text-destructive">*</span></Label>
+                  <a
+                    href={dingFormItem.getUrlHref}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[11px] text-primary hover:underline inline-flex items-center gap-0.5"
+                  >
+                    获取 URL <ExternalLink className="w-2.5 h-2.5" />
+                  </a>
+                </div>
+                <Input
+                  className="h-8 text-xs font-mono"
+                  placeholder="https://api.dingtalk.com/v1/mcp/..."
+                  value={dingUrl}
+                  onChange={(e) => setDingUrl(e.target.value)}
+                />
+                <p className="text-[10px] text-muted-foreground">
+                  请在钉钉开放平台开通后复制专属 URL 粘贴至此处。
+                </p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setDingFormOpen(false); setDingFormItem(null); setDingUrl(""); }}>
+              取消
+            </Button>
+            <Button
+              disabled={!dingUrl.trim() || !dingFormItem}
+              onClick={() => {
+                if (!dingFormItem || !dingUrl.trim()) return;
+                const id = `m_${Date.now()}`;
+                const newEntry: McpEntry = {
+                  id,
+                  name: dingFormItem.name,
+                  identifier: dingFormItem.identifier,
+                  endpoint: dingUrl.trim(),
+                  deployment: "Remote",
+                  createdAt: new Date().toISOString().slice(0, 10),
+                  requiresCredential: true,
+                  type: "http",
+                  fromMarket: true,
+                  description: "钉钉 MCP 服务",
+                  headers: [],
+                };
+                setCredMcps((arr) => [newEntry, ...arr]);
+                setMcpConfigured(dingFormItem.name, true);
+                setTimeout(() => runTest(id, dingFormItem.name), 200);
+                setDingFormOpen(false);
+                setCreateOpen(false);
+                setDingFormItem(null);
+                setDingUrl("");
+              }}
+            >
+              添加并连接
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <AlertDialogContent>
