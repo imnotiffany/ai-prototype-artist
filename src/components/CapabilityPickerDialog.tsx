@@ -197,20 +197,23 @@ export const CapabilityPickerDialog = ({
           ) : (
             <div className="flex items-center gap-1.5">
               {isSkill && (() => {
-                const versions = getSkillVersions(it.name);
-                const current = selectedVersions[it.name] ?? versions[0];
+                const versionList = getSkillVersions(it.name);
+                const current = versions?.[it.name] ?? selectedVersions[it.name] ?? versionList[0];
                 
                 return (
                   <>
                     <Select
                       value={current}
-                      onValueChange={(v) => setSelectedVersions((s) => ({ ...s, [it.name]: v }))}
+                      onValueChange={(v) => {
+                        setSelectedVersions((s) => ({ ...s, [it.name]: v }));
+                        onVersionChange?.(it.name, v);
+                      }}
                     >
                       <SelectTrigger className="h-6 w-[88px] text-[10px] px-1.5 py-0 gap-1 whitespace-nowrap">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {versions.map((v, i) => (
+                        {versionList.map((v, i) => (
                           <SelectItem key={v} value={v} className="text-[11px]">
                             <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
                               {v}
@@ -229,11 +232,19 @@ export const CapabilityPickerDialog = ({
                 size="sm"
                 variant={sel ? "outline" : "default"}
                 className="h-6 text-[10px] px-2"
-                onClick={() => onToggle(it.name)}
+                onClick={() => {
+                  if (isSkill && !sel) {
+                    const versionList = getSkillVersions(it.name);
+                    const current = versions?.[it.name] ?? selectedVersions[it.name] ?? versionList[0];
+                    onVersionChange?.(it.name, current);
+                  }
+                  onToggle(it.name);
+                }}
               >
                 {sel ? "移除" : "添加"}
               </Button>
             </div>
+
           )}
         </div>
       </div>
