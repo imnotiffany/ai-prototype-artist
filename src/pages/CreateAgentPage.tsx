@@ -51,11 +51,23 @@ interface Proposal {
   status: "pending" | "accepted" | "withdrawn";
 }
 
+export interface MatchCandidateSkill { name: string; description: string; score: number; }
+export interface MatchCandidateMcp { name: string; description: string; }
+export interface MatchPayload {
+  query: string;
+  skills: MatchCandidateSkill[];
+  mcps: MatchCandidateMcp[];
+  /** 用户已选；用于受控更新 */
+  selectedSkills: string[];
+  selectedMcps: string[];
+  status: "pending" | "confirmed";
+}
+
 interface Message {
   id: string;
   role: "user" | "assistant" | "system";
   content: string;
-  type?: "question" | "confirm" | "api-call" | "text" | "assembly" | "tool-calls" | "clarify" | "assembly-summary" | "proposal" | "draft";
+  type?: "question" | "confirm" | "api-call" | "text" | "assembly" | "tool-calls" | "clarify" | "assembly-summary" | "proposal" | "draft" | "match";
   attachments?: { type: "skill" | "mcp"; name: string }[];
   toolCalls?: ToolCall[];
   isStreaming?: boolean;
@@ -72,6 +84,8 @@ interface Message {
     mcps: string[];
     note: string;
   };
+  /** match 类型：后端返回的 Skill / MCP 候选 */
+  match?: MatchPayload;
 }
 
 interface PreviewMessage {
@@ -168,7 +182,78 @@ const detectFromText = (text: string): { detectedSkills: string[]; detectedMCPs:
   return { detectedSkills, detectedMCPs };
 };
 
-/* ── Simulated Assembly Logic ── */
+/* ── Intent classification (前端启发式) ── */
+const GREETING_PATTERNS = [
+  /^(你好|您好|hi|hello|hey|在吗|在么|早|晚上好|下午好|上午好)[\s\S]{0,10}$/i,
+  /^(谢谢|多谢|thx|thanks|thank you|好的|ok|okay|嗯|哦|收到)[\s\S]{0,6}$/i,
+  /^[\s\S]{0,3}\?[\s\S]{0,3}$/,
+];
+const CREATE_KEYWORDS = ["帮我", "创建", "做一个", "做个", "搭建", "构建", "智能体", "助手", "机器人", "agent", "我想", "需要", "实现", "能否", "能不能", "用来", "用于", "处理", "分析", "管理", "生成", "查询", "汇总", "推送", "提醒", "监控"];
+type Intent = "chat" | "create";
+const classifyIntent = (text: string): Intent => {
+  const t = text.trim();
+  if (!t) return "chat";
+  if (t.length < 6) return "chat";
+  if (GREETING_PATTERNS.some((re) => re.test(t))) return "chat";
+  const lower = t.toLowerCase();
+  if (CREATE_KEYWORDS.some((k) => lower.includes(k.toLowerCase()))) return "create";
+  // 默认：长度 ≥ 10 视为需求
+  return t.length >= 10 ? "create" : "chat";
+};
+
+/* ── Mock backend matching (返回 Skill 评分 + MCP) ── */
+const mockMatchBackend = (query: string): { skills: MatchCandidateSkill[]; mcps: MatchCandidateMcp[] } => {
+  const lower = query.toLowerCase();
+  // Skill：基础分 0.4，命中关键词 +0.3，名称包含 +0.2
+  const scored: MatchCandidateSkill[] = availableSkills.map((s) => {
+    let score = 0.4 + Math.random() * 0.15;
+    if (lower.includes(s.name.toLowerCase())) score += 0.3;
+    (s.tags ?? []).forEach((t) => { if (lower.includes(t.toLowerCase())) score += 0.1; });
+    if (/搜索|search/.test(lower) && /search/i.test(s.name)) score += 0.25;
+    if (/代码|code/.test(lower) && /code/i.test(s.name)) score += 0.25;
+    if (/邮件|email/.test(lower) && /email/i.test(s.name)) score += 0.25;
+    if (/翻译|translat/.test(lower) && /translat/i.test(s.name)) score += 0.25;
+    if (/sql|数据库/.test(lower) && /sql/i.test(s.name)) score += 0.25;
+    return { name: s.name, description: s.description ?? "", score: Math.min(0.99, Number(score.toFixed(2))) };
+  }).sort((a, b) => b.score - a.score).slice(0, 6);
+
+  const mcps: MatchCandidateMcp[] = availableMCPs.filter((m) => {
+    if (lower.includes(m.name.toLowerCase())) return true;
+    if (/api|接口/.test(lower) && /yapi/i.test(m.name)) return true;
+    if (/文档/.test(lower) && /doc/i.test(m.name)) return true;
+    if (/钉钉|消息|机器人/.test(lower) && /机器人|钉钉/.test(m.name)) return true;
+    if (/数据|景台/.test(lower) && /景台/.test(m.name)) return true;
+    if (/测试|缺陷/.test(lower) && /测试|MCP/.test(m.name)) return true;
+    return false;
+  }).map((m) => ({ name: m.name, description: m.description ?? "" })).slice(0, 4);
+
+  // 兜底：至少返回 2 个 MCP
+  if (mcps.length < 2) {
+    availableMCPs.slice(0, 2).forEach((m) => {
+      if (!mcps.find((x) => x.name === m.name)) mcps.push({ name: m.name, description: m.description ?? "" });
+    });
+  }
+  return { skills: scored, mcps };
+};
+
+/* ── 生成系统提示词 ── */
+const buildSystemPrompt = (description: string, skills: string[], mcps: string[], extraInstruction?: string): string => {
+  return `你是一个专业的 AI 助手。
+
+## 核心能力
+${description}
+
+## 工具使用
+${skills.length > 0 ? `你可以使用以下技能：${skills.join("、")}` : "暂无外部技能"}
+${mcps.length > 0 ? `你可以连接以下服务：${mcps.join("、")}` : ""}
+
+## 行为准则
+- 始终准确、有帮助地回答问题
+- 在需要时主动使用可用工具
+- 输出结构化、易读的结果${extraInstruction ? `\n\n## 补充要求\n${extraInstruction}` : ""}`;
+};
+
+
 const assembleAgent = (
   description: string,
   skills: string[],
@@ -341,6 +426,159 @@ const DraftCard = ({ draft }: { draft: NonNullable<Message["draft"]> }) => (
     )}
   </div>
 );
+
+/* ── Match Result Card：双卡（Skill / MCP），带搜索 + 全选 + 复选框 ── */
+const MatchResultCard = ({
+  msg,
+  onToggle,
+  onToggleAll,
+  onConfirm,
+}: {
+  msg: Message;
+  onToggle: (kind: "skill" | "mcp", name: string) => void;
+  onToggleAll: (kind: "skill" | "mcp", selectAll: boolean) => void;
+  onConfirm: () => void;
+}) => {
+  const m = msg.match!;
+  const confirmed = m.status === "confirmed";
+  const [skillQ, setSkillQ] = useState("");
+  const [mcpQ, setMcpQ] = useState("");
+  const filteredSkills = m.skills.filter((s) =>
+    !skillQ || s.name.toLowerCase().includes(skillQ.toLowerCase()) || s.description.toLowerCase().includes(skillQ.toLowerCase())
+  );
+  const filteredMcps = m.mcps.filter((s) =>
+    !mcpQ || s.name.toLowerCase().includes(mcpQ.toLowerCase()) || s.description.toLowerCase().includes(mcpQ.toLowerCase())
+  );
+  const allSkillsOn = m.skills.length > 0 && m.skills.every((s) => m.selectedSkills.includes(s.name));
+  const allMcpsOn = m.mcps.length > 0 && m.mcps.every((s) => m.selectedMcps.includes(s.name));
+
+  const Row = ({
+    name, desc, score, on, onChange,
+  }: { name: string; desc: string; score?: number; on: boolean; onChange: () => void }) => (
+    <label className={cn(
+      "flex items-start gap-2 px-2 py-1.5 rounded-md border cursor-pointer transition-colors",
+      on ? "border-primary/40 bg-primary/5" : "border-border bg-card hover:border-primary/30",
+      confirmed && "cursor-default opacity-90",
+    )}>
+      <input
+        type="checkbox"
+        checked={on}
+        disabled={confirmed}
+        onChange={onChange}
+        className="mt-0.5 w-3.5 h-3.5 accent-primary shrink-0"
+      />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5">
+          <span className="text-[11px] font-medium text-foreground truncate">{name}</span>
+          {typeof score === "number" && (
+            <span className="text-[10px] px-1 py-0 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-mono shrink-0">
+              {score.toFixed(2)}
+            </span>
+          )}
+        </div>
+        {desc && <p className="text-[10px] text-muted-foreground line-clamp-2 leading-snug mt-0.5">{desc}</p>}
+      </div>
+    </label>
+  );
+
+  return (
+    <div className="bg-card border border-border rounded-lg p-3 space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xs font-semibold text-foreground">匹配到的能力</h3>
+        {confirmed
+          ? <StatusChip tone="success">已确认</StatusChip>
+          : <StatusChip tone="primary">请勾选后确认</StatusChip>}
+      </div>
+
+      {/* Skill 卡 */}
+      <div className="rounded-md border border-border/70 p-2 space-y-1.5">
+        <div className="flex items-center gap-2">
+          <Zap className="w-3 h-3 text-primary" />
+          <span className="text-[11px] font-medium text-foreground">Skill</span>
+          <span className="text-[10px] text-muted-foreground">按评分降序 · 共 {m.skills.length}</span>
+          <button
+            disabled={confirmed}
+            onClick={() => onToggleAll("skill", !allSkillsOn)}
+            className="ml-auto text-[10px] text-primary hover:underline disabled:opacity-50 disabled:no-underline"
+          >
+            {allSkillsOn ? "全部取消" : "全选"}
+          </button>
+        </div>
+        <input
+          type="text"
+          value={skillQ}
+          onChange={(e) => setSkillQ(e.target.value)}
+          placeholder="搜索 Skill"
+          disabled={confirmed}
+          className="w-full px-2 py-1 text-[11px] rounded border border-border bg-background focus:outline-none focus:border-primary"
+        />
+        <div className="space-y-1 max-h-48 overflow-auto">
+          {filteredSkills.length === 0
+            ? <p className="text-[10px] text-muted-foreground text-center py-2">无匹配项</p>
+            : filteredSkills.map((s) => (
+                <Row
+                  key={s.name} name={s.name} desc={s.description} score={s.score}
+                  on={m.selectedSkills.includes(s.name)}
+                  onChange={() => onToggle("skill", s.name)}
+                />
+              ))}
+        </div>
+      </div>
+
+      {/* MCP 卡 */}
+      <div className="rounded-md border border-border/70 p-2 space-y-1.5">
+        <div className="flex items-center gap-2">
+          <Server className="w-3 h-3 text-primary" />
+          <span className="text-[11px] font-medium text-foreground">MCP</span>
+          <span className="text-[10px] text-muted-foreground">共 {m.mcps.length}</span>
+          <button
+            disabled={confirmed}
+            onClick={() => onToggleAll("mcp", !allMcpsOn)}
+            className="ml-auto text-[10px] text-primary hover:underline disabled:opacity-50 disabled:no-underline"
+          >
+            {allMcpsOn ? "全部取消" : "全选"}
+          </button>
+        </div>
+        <input
+          type="text"
+          value={mcpQ}
+          onChange={(e) => setMcpQ(e.target.value)}
+          placeholder="搜索 MCP"
+          disabled={confirmed}
+          className="w-full px-2 py-1 text-[11px] rounded border border-border bg-background focus:outline-none focus:border-primary"
+        />
+        <div className="space-y-1 max-h-40 overflow-auto">
+          {filteredMcps.length === 0
+            ? <p className="text-[10px] text-muted-foreground text-center py-2">无匹配项</p>
+            : filteredMcps.map((s) => (
+                <Row
+                  key={s.name} name={s.name} desc={s.description}
+                  on={m.selectedMcps.includes(s.name)}
+                  onChange={() => onToggle("mcp", s.name)}
+                />
+              ))}
+        </div>
+      </div>
+
+      {!confirmed && (
+        <div className="flex items-center gap-2 pt-1">
+          <span className="text-[10px] text-muted-foreground">
+            已选 {m.selectedSkills.length} Skill · {m.selectedMcps.length} MCP
+          </span>
+          <Button
+            size="sm"
+            className="h-7 text-[11px] ml-auto gap-1.5"
+            onClick={onConfirm}
+            disabled={m.selectedSkills.length === 0 && m.selectedMcps.length === 0}
+          >
+            <CheckCircle2 className="w-3 h-3" />
+            确认并生成提示词
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 /* ── Clarify Card：分步问答 ── */
 const ClarifyCard = ({
@@ -566,6 +804,7 @@ const StructuredConfigView = ({
   promptSnapshot,
   onRegeneratePrompt,
   onAcknowledgePrompt,
+  onAiRewritePrompt,
   onSave,
   saveDisabled,
   saveDisabledReason,
@@ -576,6 +815,7 @@ const StructuredConfigView = ({
   promptSnapshot: PromptSnapshot | null;
   onRegeneratePrompt: () => Promise<void> | void;
   onAcknowledgePrompt: () => void;
+  onAiRewritePrompt?: (instruction: string) => void;
   onSave: () => void;
   saveDisabled: boolean;
   saveDisabledReason?: string;
@@ -583,6 +823,9 @@ const StructuredConfigView = ({
 }) => {
   const [toolsOpen, setToolsOpen] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
+  const [aiEditOpen, setAiEditOpen] = useState(false);
+  const [aiEditText, setAiEditText] = useState("");
+  const [aiEditing, setAiEditing] = useState(false);
   const cur: PromptSnapshot = { skills: config.skills, mcpServers: config.mcpServers, subagents: config.subagents };
   const diff = diffSnapshot(cur, promptSnapshot);
 
@@ -682,7 +925,21 @@ const StructuredConfigView = ({
 
         {/* 系统提示词 */}
         <div className="px-5 py-4">
-          <label className="text-xs font-medium text-muted-foreground mb-2 block">系统提示词</label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs font-medium text-muted-foreground">系统提示词</label>
+            {onAiRewritePrompt && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-6 text-[10px] gap-1 px-2"
+                onClick={() => { setAiEditText(""); setAiEditOpen(true); }}
+                title="让 AI 根据描述重写系统提示词"
+              >
+                <Wand2 className="w-3 h-3 text-primary" />
+                AI 修改
+              </Button>
+            )}
+          </div>
           <div className="bg-muted/30 rounded-lg p-3 border border-border">
             <textarea
               value={config.systemPrompt}
@@ -695,6 +952,50 @@ const StructuredConfigView = ({
             />
           </div>
         </div>
+
+        {/* AI 修改 提示词 弹窗 */}
+        <Dialog open={aiEditOpen} onOpenChange={setAiEditOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-sm flex items-center gap-1.5">
+                <Wand2 className="w-3.5 h-3.5 text-primary" />
+                AI 修改系统提示词
+              </DialogTitle>
+              <DialogDescription className="text-xs">
+                描述你希望如何调整提示词，例如：「语气更专业一些」「在回答前先列出步骤」「输出 JSON 格式」。
+              </DialogDescription>
+            </DialogHeader>
+            <Textarea
+              value={aiEditText}
+              onChange={(e) => setAiEditText(e.target.value)}
+              placeholder="告诉 AI 你想如何调整……"
+              rows={4}
+              className="text-xs"
+            />
+            <DialogFooter>
+              <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setAiEditOpen(false)}>
+                取消
+              </Button>
+              <Button
+                size="sm"
+                className="h-7 text-xs gap-1.5"
+                disabled={!aiEditText.trim() || aiEditing}
+                onClick={async () => {
+                  setAiEditing(true);
+                  await new Promise((r) => setTimeout(r, 600));
+                  onAiRewritePrompt?.(aiEditText.trim());
+                  setAiEditing(false);
+                  setAiEditOpen(false);
+                }}
+              >
+                {aiEditing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
+                {aiEditing ? "生成中…" : "生成新提示词"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+
 
 
         {/* Built-in Tools — 紧凑单行 */}
@@ -1266,7 +1567,6 @@ const CreateAgentPage = () => {
 
   /* ── Send: create or refine agent ── */
   const handleSend = () => {
-    // 注意：autoStart 时 input 在上一个 tick 由 setInput 写入
     if (!input.trim() || isThinking) return;
     const userMsg = input.trim();
     const attachments = [
@@ -1280,192 +1580,146 @@ const CreateAgentPage = () => {
     setThinkingStartedAt(Date.now());
     setThinkingStage(0);
 
-    const streamDelay = 800 + Math.random() * 600;
+    const intent = classifyIntent(userMsg);
+    const streamDelay = 500 + Math.random() * 400;
+
     setTimeout(() => {
-      if (!agentCreated) {
-        // First message: assemble the agent
-        const newConfig = assembleAgent(userMsg, selectedSkills, selectedMCPs);
-        setAgentConfig(newConfig);
-        setPromptSnapshot({ skills: newConfig.skills, mcpServers: newConfig.mcpServers, subagents: newConfig.subagents });
-        setAgentCreated(true);
+      // ── 闲聊/问候：不走后端匹配，直接回复 ──
+      if (intent === "chat") {
+        const reply = !agentCreated
+          ? "你好！请用一句话描述你想创建的智能体，例如：「一个能从腾讯文档抓取数据并发钉钉日报的助手」。"
+          : "好的~ 如果想调整能力，可以直接在右侧勾选/移除 Skill 与 MCP；调整后点【AI修改】可以让我帮你重写提示词。";
+        setMessages((prev) => [...prev, { id: uid(), role: "assistant", content: reply }]);
+        setIsThinking(false);
+        setThinkingStartedAt(null);
+        return;
+      }
+
+      // ── 创建/调整需求：模拟"调用后端"匹配 Skill / MCP ──
+      setThinkingStage(1);
+      const parseCall: ToolCall = {
+        id: uid(), kind: "search", name: "需求解析",
+        summary: `提取关键词：${userMsg.slice(0, 28)}${userMsg.length > 28 ? "…" : ""}`,
+        status: "success",
+        input: userMsg,
+        output: `intent: agent_assembly`,
+      };
+      const backendCall: ToolCall = {
+        id: uid(), kind: "skill", name: "调用匹配服务",
+        summary: "POST /api/match",
+        status: "success",
+        input: JSON.stringify({ query: userMsg }, null, 2),
+        output: "matched skills + mcps",
+      };
+      setMessages((prev) => [...prev, {
+        id: uid(), role: "system", content: "", type: "tool-calls",
+        toolCalls: [parseCall, backendCall],
+      }]);
+
+      setTimeout(() => {
+        setThinkingStage(2);
+        const { skills, mcps } = mockMatchBackend(userMsg);
         setSelectedSkills([]);
         setSelectedMCPs([]);
 
-        // Stage 1: 分析需求
-        setThinkingStage(0);
-
-        // Stage 2: 匹配 MCP / Skill — 以工具调用卡片树展示
-        setTimeout(() => {
-          setThinkingStage(1);
-          const toolCalls: ToolCall[] = [
-            {
-              id: uid(),
-              kind: "search",
-              name: "需求解析",
-              summary: `提取关键词：${userMsg.slice(0, 30)}`,
-              status: "success",
-              input: userMsg,
-              output: `intents: [agent_assembly]\nkeywords detected`,
-            },
-            ...newConfig.mcpServers.map<ToolCall>((m) => ({
-              id: uid(),
-              kind: "mcp",
-              name: "匹配 MCP",
-              summary: `命中：${m}`,
-              status: "success",
-              input: `query: ${userMsg.slice(0, 40)}`,
-              output: `matched mcp: ${m}`,
-            })),
-            ...newConfig.skills.map<ToolCall>((s) => ({
-              id: uid(),
-              kind: "skill",
-              name: "匹配 Skill",
-              summary: `命中：${s}`,
-              status: "success",
-              input: `query: ${userMsg.slice(0, 40)}`,
-              output: `matched skill: ${s}`,
-            })),
-          ];
-          setMessages((prev) => [
-            ...prev,
-            { id: uid(), role: "system", content: "", type: "tool-calls", toolCalls },
-          ]);
-        }, 600);
-
-        // Stage 3: 生成配置
-        setTimeout(() => {
-          setThinkingStage(2);
-          const genCall: ToolCall = {
-            id: uid(),
-            kind: "skill",
-            name: "生成配置",
-            summary: `model=${newConfig.model} · ${newConfig.skills.length} skills · ${newConfig.mcpServers.length} mcps`,
-            status: "success",
-            output: `system prompt generated\nmodel: ${newConfig.model}`,
-          };
-          setMessages((prev) => [
-            ...prev,
-            { id: uid(), role: "system", content: "", type: "tool-calls", toolCalls: [genCall] },
-          ]);
-        }, 1300);
-
-        setTimeout(() => {
-          // Draft 卡片（替代原 markdown 流式文本）
-          setMessages((prev) => [...prev, {
-            id: uid(),
-            role: "assistant",
-            content: "",
-            type: "draft",
-            draft: {
-              model: newConfig.model,
-              skills: newConfig.skills,
-              mcps: newConfig.mcpServers,
-              note: "保存后将自动把未添加的 MCP 加入 MCP 管理；如需凭据请前往 MCP 管理配置。",
-            },
-          }]);
-          setIsThinking(false);
-          setThinkingStartedAt(null);
-
-          // Add debug events
-          setDebugEvents((prev) => [
-            ...prev,
-            { id: uid(), type: "init", detail: "智能体初始化完成", timestamp: new Date() },
-            { id: uid(), type: "config", detail: `模型: ${newConfig.model}`, timestamp: new Date() },
-            { id: uid(), type: "config", detail: `技能: [${newConfig.skills.join(", ")}]`, timestamp: new Date() },
-            { id: uid(), type: "config", detail: `MCP: [${newConfig.mcpServers.join(", ")}]`, timestamp: new Date() },
-          ]);
-        }, 2000);
-      } else {
-        // Subsequent messages: 澄清 or 建议变更（采纳/撤销）
-        const trimmed = userMsg.trim();
-
-        // ① 澄清：输入过短或仅是疑问词
-        if (trimmed.length < 5 || /^(怎么|如何|什么|为什么|可以吗|可以么|\?|？)+$/.test(trimmed)) {
-          const clarifyId = uid();
-          setMessages((prev) => [...prev, {
-            id: clarifyId,
-            role: "assistant",
-            content: "",
-            type: "clarify",
-            clarifySteps: [
-              { question: "想修改哪一部分？", options: ["MCP", "Skill", "系统提示词"] },
-              { question: "期望的操作？", options: ["新增", "替换", "删除"] },
-              { question: "具体目标或要求？", placeholder: "例如：加一个网页搜索能力" },
-            ],
-          }]);
-          setIsThinking(false);
-          setThinkingStartedAt(null);
-          return;
-        }
-
-        // ② 生成提案（不直接落到 agentConfig，等用户采纳）
-        const lower = trimmed.toLowerCase();
-        const allSkills = getActiveSkills().map((s) => s.name);
-        const allMcps = getActiveMCPs().map((m) => m.name);
-        const pickUnused = (pool: string[], used: string[]) => pool.find((x) => !used.includes(x));
-
-        const diff: ProposalDiff = {
-          addedMcps: [], removedMcps: [], addedSkills: [], removedSkills: [],
-          promptChanged: false,
-        };
-        let nextSkills = [...agentConfig.skills];
-        let nextMcps = [...agentConfig.mcpServers];
-        let nextPrompt = agentConfig.systemPrompt;
-
-        const isRemove = /删除|去掉|移除|去除/.test(trimmed);
-        if (lower.includes("mcp")) {
-          if (isRemove && nextMcps.length > 0) {
-            const target = nextMcps[nextMcps.length - 1];
-            nextMcps = nextMcps.filter((x) => x !== target);
-            diff.removedMcps.push(target);
-          } else {
-            const target = pickUnused(allMcps, nextMcps);
-            if (target) { nextMcps.push(target); diff.addedMcps.push(target); }
-          }
-        } else if (lower.includes("skill") || trimmed.includes("技能")) {
-          if (isRemove && nextSkills.length > 0) {
-            const target = nextSkills[nextSkills.length - 1];
-            nextSkills = nextSkills.filter((x) => x !== target);
-            diff.removedSkills.push(target);
-          } else {
-            const target = pickUnused(allSkills, nextSkills);
-            if (target) { nextSkills.push(target); diff.addedSkills.push(target); }
-          }
-        } else {
-          // 默认视为提示词调整
-          diff.promptChanged = true;
-          diff.promptNote = trimmed;
-          nextPrompt = `${nextPrompt}\n\n// 用户补充要求：${trimmed}`;
-        }
-
-        const hasChange = diff.addedMcps.length || diff.removedMcps.length ||
-                          diff.addedSkills.length || diff.removedSkills.length || diff.promptChanged;
-
-        if (!hasChange) {
-          setMessages((prev) => [...prev, {
-            id: uid(), role: "assistant",
-            content: "我没能从你的描述中提取出明确的变更项，可以再具体说明一下要修改什么吗？例如：「添加一个搜索 MCP」「去掉数据分析 Skill」「在提示词里强调要严谨」。",
-          }]);
-          setIsThinking(false);
-          setThinkingStartedAt(null);
-          return;
-        }
-
-        const proposal: Proposal = {
-          diff, nextSkills, nextMcps, nextPrompt, status: "pending",
-        };
         setMessages((prev) => [...prev, {
-          id: uid(), role: "assistant",
-          content: "我建议如下变更，确认后将更新右侧配置：",
-          type: "proposal",
-          proposal,
+          id: uid(),
+          role: "assistant",
+          content: agentCreated
+            ? "根据你的新需求，重新匹配到以下能力，确认后会替换当前配置："
+            : "已匹配到下列能力，默认全部选中，你可以按需勾选：",
+          type: "match",
+          match: {
+            query: userMsg,
+            skills,
+            mcps,
+            selectedSkills: skills.map((s) => s.name),
+            selectedMcps: mcps.map((m) => m.name),
+            status: "pending",
+          },
         }]);
         setIsThinking(false);
         setThinkingStartedAt(null);
-      }
+      }, 700);
     }, streamDelay);
   };
   handleSendRef.current = handleSend;
+
+  /* ── Match Card handlers ── */
+  const handleMatchToggle = (msgId: string, kind: "skill" | "mcp", name: string) => {
+    setMessages((prev) => prev.map((m) => {
+      if (m.id !== msgId || !m.match || m.match.status === "confirmed") return m;
+      const list = kind === "skill" ? m.match.selectedSkills : m.match.selectedMcps;
+      const next = list.includes(name) ? list.filter((x) => x !== name) : [...list, name];
+      return {
+        ...m,
+        match: {
+          ...m.match,
+          selectedSkills: kind === "skill" ? next : m.match.selectedSkills,
+          selectedMcps: kind === "mcp" ? next : m.match.selectedMcps,
+        },
+      };
+    }));
+  };
+  const handleMatchToggleAll = (msgId: string, kind: "skill" | "mcp", selectAll: boolean) => {
+    setMessages((prev) => prev.map((m) => {
+      if (m.id !== msgId || !m.match || m.match.status === "confirmed") return m;
+      const all = kind === "skill" ? m.match.skills.map((s) => s.name) : m.match.mcps.map((s) => s.name);
+      return {
+        ...m,
+        match: {
+          ...m.match,
+          selectedSkills: kind === "skill" ? (selectAll ? all : []) : m.match.selectedSkills,
+          selectedMcps: kind === "mcp" ? (selectAll ? all : []) : m.match.selectedMcps,
+        },
+      };
+    }));
+  };
+  const handleMatchConfirm = (msgId: string) => {
+    let confirmed: MatchPayload | null = null;
+    setMessages((prev) => prev.map((m) => {
+      if (m.id !== msgId || !m.match || m.match.status === "confirmed") return m;
+      confirmed = m.match;
+      return { ...m, match: { ...m.match, status: "confirmed" as const } };
+    }));
+    if (!confirmed) return;
+    const c = confirmed as MatchPayload;
+    setAgentConfig((prev) => ({
+      ...prev,
+      name: prev.name || c.query.slice(0, 20).replace(/[，。！？]/g, ""),
+      skills: c.selectedSkills,
+      mcpServers: c.selectedMcps,
+      systemPrompt: buildSystemPrompt(c.query, c.selectedSkills, c.selectedMcps),
+    }));
+    setAgentCreated(true);
+    setDebugEvents((d) => [
+      ...d,
+      { id: uid(), type: "match_confirmed", detail: `已确认 ${c.selectedSkills.length} Skill / ${c.selectedMcps.length} MCP`, timestamp: new Date() },
+    ]);
+    setMessages((prev) => [...prev, {
+      id: uid(),
+      role: "assistant",
+      content: "",
+      type: "draft",
+      draft: {
+        model: "",
+        skills: [],
+        mcps: [],
+        note: "已写入右侧配置；如需调整提示词，请点【AI修改】。",
+      },
+    }]);
+  };
+
+  /* ── AI 修改提示词 ── */
+  const aiRewritePrompt = (instruction: string) => {
+    setAgentConfig((prev) => ({
+      ...prev,
+      systemPrompt: buildSystemPrompt(prev.name || "执行用户描述的任务", prev.skills, prev.mcpServers, instruction || undefined),
+    }));
+    setDebugEvents((d) => [...d, { id: uid(), type: "prompt_rewrite", detail: "AI 已重写系统提示词", timestamp: new Date() }]);
+  };
+
+
 
   const handleAcceptProposal = (msgId: string) => {
     setMessages((prev) => prev.map((m) => {
@@ -1592,8 +1846,21 @@ const CreateAgentPage = () => {
                   </div>
                 ) : msg.type === "tool-calls" && msg.toolCalls ? (
                   <ToolCallStrip calls={msg.toolCalls} />
+                ) : msg.type === "match" && msg.match ? (
+                  <MatchResultCard
+                    msg={msg}
+                    onToggle={(kind, name) => handleMatchToggle(msg.id, kind, name)}
+                    onToggleAll={(kind, selectAll) => handleMatchToggleAll(msg.id, kind, selectAll)}
+                    onConfirm={() => handleMatchConfirm(msg.id)}
+                  />
                 ) : msg.type === "draft" && msg.draft ? (
-                  <DraftCard draft={msg.draft} />
+                  <DraftCard draft={{
+                    model: agentConfig.model,
+                    skills: agentConfig.skills,
+                    mcps: agentConfig.mcpServers,
+                    note: msg.draft.note,
+                  }} />
+
                 ) : msg.type === "clarify" ? (
                   <ClarifyCard
                     msg={msg}
@@ -1827,9 +2094,10 @@ const CreateAgentPage = () => {
                 onConfigChange={setAgentConfig}
                 promptSnapshot={promptSnapshot}
                 onAcknowledgePrompt={() => setPromptSnapshot({ skills: agentConfig.skills, mcpServers: agentConfig.mcpServers, subagents: agentConfig.subagents })}
+                onAiRewritePrompt={aiRewritePrompt}
                 onSave={openSaveDialog}
-                saveDisabled={promptDirty}
-                saveDisabledReason={saveDisabledReason}
+                saveDisabled={false}
+                saveDisabledReason={undefined}
                 viewModeSwitcher={
                   <div className="flex items-center gap-1 bg-muted/50 rounded p-0.5">
                     <button
@@ -1887,7 +2155,7 @@ const CreateAgentPage = () => {
                       <Code2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                  <Button size="sm" className="h-7 text-[11px] gap-1.5 px-3" onClick={openSaveDialog} disabled={promptDirty} title={saveDisabledReason}>
+                  <Button size="sm" className="h-7 text-[11px] gap-1.5 px-3" onClick={openSaveDialog}>
                     <Save className="w-3 h-3" /> 保存并测试
                   </Button>
                 </div>
