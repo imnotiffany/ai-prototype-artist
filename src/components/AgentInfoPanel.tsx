@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ChevronRight, ChevronLeft, Wand2, Wrench, Server, User, Calendar, Tag, Bot } from "lucide-react";
 import type { Agent } from "@/data/mockData";
 import { cn } from "@/lib/utils";
+import { getLatestSkillVersion } from "@/lib/skillVersion";
 
 interface Props {
   agent: Agent;
@@ -107,8 +108,9 @@ export const AgentInfoPanel = ({ agent, suggestions, onSuggestionClick, defaultC
           <Section icon={Wrench} title={`Skill · ${agent.skills.length}`}>
             <div className="space-y-1">
               {agent.skills.map((s) => (
-                <div key={s} className="text-[11px] text-foreground/80 px-2 py-1 rounded bg-secondary/60">
-                  {s}
+                <div key={s} className="text-[11px] text-foreground/80 px-2 py-1 rounded bg-secondary/60 flex items-center justify-between gap-2">
+                  <span className="truncate">{s}</span>
+                  <span className="font-mono text-[10px] text-muted-foreground shrink-0">{getLatestSkillVersion(s)}</span>
                 </div>
               ))}
             </div>
