@@ -43,6 +43,7 @@ import { mockArtifacts } from "@/data/artifacts";
 import { FolderOpen } from "lucide-react";
 import { AgentMonitoringPanel } from "@/components/AgentMonitoringPanel";
 import { AgentLogsPanel } from "@/components/AgentLogsPanel";
+import { getLatestSkillVersion } from "@/lib/skillVersion";
 
 /* ───────── Mock run history ───────── */
 type RunStatus = "success" | "failed" | "running";
