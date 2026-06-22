@@ -107,8 +107,8 @@ const DETAIL_LEVEL: Record<Detail, number> = { summary: 1, process: 2, all: 3 };
 /* ────────── 子组件 ────────── */
 
 const ArtifactChips = ({ artifacts }: { artifacts: TimelineArtifact[] }) => {
-  const { toast } = require("@/hooks/use-toast") as typeof import("@/hooks/use-toast");
   return (
+
     <div className="flex flex-wrap gap-1.5 mt-1.5">
       {artifacts.map((a) => {
         const Icon = artifactIcon(a.kind);
