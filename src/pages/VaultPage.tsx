@@ -652,7 +652,7 @@ const VaultPage = () => {
           <Tabs value={createMode} onValueChange={(v) => setCreateMode(v as "market" | "dingtalk" | "manual")} className="w-full">
             {!editingId && (
               <TabsList className="grid grid-cols-3 w-full bg-muted/40 h-8 mb-3">
-                <TabsTrigger value="market" className="text-xs h-6">从 MCP 广场配置</TabsTrigger>
+                <TabsTrigger value="market" className="text-xs h-6">领慧MCP</TabsTrigger>
                 <TabsTrigger value="dingtalk" className="text-xs h-6">钉钉 MCP</TabsTrigger>
                 <TabsTrigger value="manual" className="text-xs h-6">手动创建</TabsTrigger>
               </TabsList>
@@ -752,11 +752,6 @@ const VaultPage = () => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 text-xs">
-                <span className="font-medium">可选</span>
-                <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-normal">{dingtalkList.length}</Badge>
-                <span className="text-muted-foreground">需粘贴专属 URL</span>
-              </div>
 
               <div className="max-h-[400px] overflow-auto -mx-1 px-1">
                 {dingtalkList.length === 0 ? (
@@ -866,15 +861,6 @@ const VaultPage = () => {
 
           {dingFormItem && (
             <div className="space-y-3">
-              <div className="flex items-center gap-2.5 rounded-md border border-border bg-muted/30 px-3 py-2">
-                <div className="w-8 h-8 rounded flex items-center justify-center bg-muted text-muted-foreground shrink-0">
-                  <Server className="w-4 h-4" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold truncate">{dingFormItem.name}</p>
-                  <p className="text-[10px] text-muted-foreground truncate font-mono mt-0.5">{dingFormItem.identifier}</p>
-                </div>
-              </div>
 
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
