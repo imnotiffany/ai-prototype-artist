@@ -189,7 +189,6 @@ const VaultPage = () => {
   const openEdit = (m: McpEntry) => {
     reset();
     setEditingId(m.id);
-    setCreateMode("manual");
     setEndpoint(m.endpoint);
     setName(m.name);
     setIdentifier(m.identifier);
@@ -200,9 +199,27 @@ const VaultPage = () => {
     setStdioArgs(m.stdioArgs ?? "");
     setEnvVars(m.envVars ?? []);
     setLocked(!!m.fromMarket);
-    setHeadersOnly(!!m.fromMarket);
+    setHeadersOnly(false);
+
+    // 钉钉 MCP：复用钉钉添加弹窗（仅 URL 可编辑）
+    const ding = dingtalkMcps.find((d) => d.identifier === m.identifier);
+    if (ding) {
+      setDingFormItem(ding);
+      setDingUrl(m.endpoint);
+      setDingFormOpen(true);
+      return;
+    }
+    // 来自 MCP 广场：复用广场配置弹窗（与添加一致，含锁定字段）
+    if (m.fromMarket) {
+      setMarketFormItem({ id: m.id, name: m.name });
+      setMarketFormOpen(true);
+      return;
+    }
+    // 手动创建：原表单
+    setCreateMode("manual");
     setCreateOpen(true);
   };
+
 
   const canSave =
     name.trim() && identifier.trim() &&
