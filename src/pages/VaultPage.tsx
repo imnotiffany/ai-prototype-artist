@@ -570,7 +570,7 @@ const VaultPage = () => {
             未找到匹配的 MCP
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             {mcps.map((m) => {
               const status = testResult[m.id];
               const testing = testingId === m.id;
