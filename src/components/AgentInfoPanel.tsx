@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ChevronRight, ChevronLeft, Wand2, Wrench, Server, User, Calendar, Tag, Bot } from "lucide-react";
 import type { Agent } from "@/data/mockData";
 import { cn } from "@/lib/utils";
+import { getLatestSkillVersion } from "@/lib/skillVersion";
 
 interface Props {
   agent: Agent;
