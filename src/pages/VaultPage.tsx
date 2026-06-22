@@ -854,9 +854,6 @@ const VaultPage = () => {
         <DialogContent className="max-w-[480px] p-4">
           <DialogHeader className="space-y-1">
             <DialogTitle className="text-sm">配置钉钉 MCP</DialogTitle>
-            <DialogDescription className="text-[11px]">
-              粘贴你在钉钉开放平台获取的专属 MCP 服务地址，即可完成接入。
-            </DialogDescription>
           </DialogHeader>
 
           {dingFormItem && (
