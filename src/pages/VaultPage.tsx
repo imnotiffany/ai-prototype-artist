@@ -865,12 +865,12 @@ const VaultPage = () => {
       <Dialog
         open={dingFormOpen}
         onOpenChange={(o) => {
-          if (!o) { setDingFormOpen(false); setDingFormItem(null); setDingUrl(""); }
+          if (!o) { setDingFormOpen(false); setDingFormItem(null); setDingUrl(""); setEditingId(null); }
         }}
       >
         <DialogContent className="max-w-[480px] p-4">
           <DialogHeader className="space-y-1">
-            <DialogTitle className="text-sm">配置钉钉 MCP</DialogTitle>
+            <DialogTitle className="text-sm">{editingId ? "编辑" : "配置"}钉钉 MCP{dingFormItem ? ` · ${dingFormItem.name}` : ""}</DialogTitle>
           </DialogHeader>
 
           {dingFormItem && (
@@ -902,41 +902,48 @@ const VaultPage = () => {
           )}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setDingFormOpen(false); setDingFormItem(null); setDingUrl(""); }}>
+            <Button variant="outline" onClick={() => { setDingFormOpen(false); setDingFormItem(null); setDingUrl(""); setEditingId(null); }}>
               取消
             </Button>
             <Button
               disabled={!dingUrl.trim() || !dingFormItem}
               onClick={() => {
                 if (!dingFormItem || !dingUrl.trim()) return;
-                const id = `m_${Date.now()}`;
-                const newEntry: McpEntry = {
-                  id,
-                  name: dingFormItem.name,
-                  identifier: dingFormItem.identifier,
-                  endpoint: dingUrl.trim(),
-                  deployment: "Remote",
-                  createdAt: new Date().toISOString().slice(0, 10),
-                  requiresCredential: true,
-                  type: "http",
-                  fromMarket: true,
-                  description: "钉钉 MCP 服务",
-                  headers: [],
-                };
-                setCredMcps((arr) => [newEntry, ...arr]);
-                setMcpConfigured(dingFormItem.name, true);
-                setTimeout(() => runTest(id, dingFormItem.name), 200);
+                if (editingId) {
+                  setCredMcps((arr) => arr.map((m) => m.id === editingId ? { ...m, endpoint: dingUrl.trim() } : m));
+                  setTimeout(() => runTest(editingId, dingFormItem.name), 200);
+                } else {
+                  const id = `m_${Date.now()}`;
+                  const newEntry: McpEntry = {
+                    id,
+                    name: dingFormItem.name,
+                    identifier: dingFormItem.identifier,
+                    endpoint: dingUrl.trim(),
+                    deployment: "Remote",
+                    createdAt: new Date().toISOString().slice(0, 10),
+                    requiresCredential: true,
+                    type: "http",
+                    fromMarket: true,
+                    description: "钉钉 MCP 服务",
+                    headers: [],
+                  };
+                  setCredMcps((arr) => [newEntry, ...arr]);
+                  setMcpConfigured(dingFormItem.name, true);
+                  setTimeout(() => runTest(id, dingFormItem.name), 200);
+                }
                 setDingFormOpen(false);
                 setCreateOpen(false);
                 setDingFormItem(null);
                 setDingUrl("");
+                setEditingId(null);
               }}
             >
-              添加并连接
+              {editingId ? "保存并测试" : "添加并连接"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
 
 
 
