@@ -427,7 +427,7 @@ const DraftCard = ({ draft }: { draft: NonNullable<Message["draft"]> }) => (
   </div>
 );
 
-/* ── Match Result Card：双卡（Skill / MCP），带搜索 + 全选 + 复选框 ── */
+/* ── Match Result：扁平列表（Skill / MCP），带全选 + 复选框 + 详情跳转 ── */
 const MatchResultCard = ({
   msg,
   onToggle,
@@ -441,83 +441,91 @@ const MatchResultCard = ({
 }) => {
   const m = msg.match!;
   const confirmed = m.status === "confirmed";
-  const [skillQ, setSkillQ] = useState("");
-  const [mcpQ, setMcpQ] = useState("");
-  const filteredSkills = m.skills.filter((s) =>
-    !skillQ || s.name.toLowerCase().includes(skillQ.toLowerCase()) || s.description.toLowerCase().includes(skillQ.toLowerCase())
-  );
-  const filteredMcps = m.mcps.filter((s) =>
-    !mcpQ || s.name.toLowerCase().includes(mcpQ.toLowerCase()) || s.description.toLowerCase().includes(mcpQ.toLowerCase())
-  );
   const allSkillsOn = m.skills.length > 0 && m.skills.every((s) => m.selectedSkills.includes(s.name));
   const allMcpsOn = m.mcps.length > 0 && m.mcps.every((s) => m.selectedMcps.includes(s.name));
 
+  const detailHref = (kind: "skill" | "mcp", name: string) =>
+    `/vault?tab=${kind === "skill" ? "skills" : "mcps"}&q=${encodeURIComponent(name)}`;
+
   const Row = ({
-    name, desc, score, on, onChange,
-  }: { name: string; desc: string; score?: number; on: boolean; onChange: () => void }) => (
-    <label className={cn(
-      "flex items-start gap-2 px-2 py-1.5 rounded-md border cursor-pointer transition-colors",
-      on ? "border-primary/40 bg-primary/5" : "border-border bg-card hover:border-primary/30",
-      confirmed && "cursor-default opacity-90",
+    kind, name, desc, score, on, onChange,
+  }: { kind: "skill" | "mcp"; name: string; desc: string; score?: number; on: boolean; onChange: () => void }) => (
+    <div className={cn(
+      "flex items-start gap-3 py-2.5 border-b border-border/60 last:border-b-0",
+      confirmed && "opacity-90",
     )}>
       <input
         type="checkbox"
         checked={on}
         disabled={confirmed}
         onChange={onChange}
-        className="mt-0.5 w-3.5 h-3.5 accent-primary shrink-0"
+        className="mt-0.5 w-3.5 h-3.5 accent-primary shrink-0 cursor-pointer disabled:cursor-default"
       />
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-1.5">
-          <span className="text-[11px] font-medium text-foreground truncate">{name}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-[12px] font-medium text-foreground truncate">{name}</span>
           {typeof score === "number" && (
-            <span className="text-[10px] px-1 py-0 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-mono shrink-0">
+            <span className="text-[10px] px-1.5 py-0 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-mono shrink-0">
               {score.toFixed(2)}
             </span>
           )}
+          <a
+            href={detailHref(kind, name)}
+            target="_blank"
+            rel="noreferrer"
+            className="ml-auto inline-flex items-center gap-0.5 text-[10.5px] text-primary hover:underline shrink-0"
+            onClick={(e) => e.stopPropagation()}
+          >
+            查看详情
+            <ExternalLink className="w-2.5 h-2.5" />
+          </a>
         </div>
-        {desc && <p className="text-[10px] text-muted-foreground line-clamp-2 leading-snug mt-0.5">{desc}</p>}
+        {desc && <p className="text-[11px] text-muted-foreground line-clamp-1 leading-snug mt-0.5">{desc}</p>}
       </div>
-    </label>
+    </div>
+  );
+
+  const SectionHeader = ({
+    icon, title, meta, allOn, onToggleAllClick,
+  }: { icon: React.ReactNode; title: string; meta: string; allOn: boolean; onToggleAllClick: () => void }) => (
+    <div className="flex items-center gap-2 pt-1 pb-1.5">
+      {icon}
+      <span className="text-[12px] font-semibold text-foreground">{title}</span>
+      <span className="text-[10.5px] text-muted-foreground">{meta}</span>
+      <button
+        disabled={confirmed}
+        onClick={onToggleAllClick}
+        className="ml-auto text-[10.5px] text-primary hover:underline disabled:opacity-50 disabled:no-underline"
+      >
+        {allOn ? "全部取消" : "全选"}
+      </button>
+    </div>
   );
 
   return (
-    <div className="bg-card border border-border rounded-lg p-3 space-y-3">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-semibold text-foreground">匹配到的能力</h3>
+        <h3 className="text-[13px] font-semibold text-foreground">匹配到的能力</h3>
         {confirmed
           ? <StatusChip tone="success">已确认</StatusChip>
           : <StatusChip tone="primary">请勾选后确认</StatusChip>}
       </div>
 
-      {/* Skill 卡 */}
-      <div className="rounded-md border border-border/70 p-2 space-y-1.5">
-        <div className="flex items-center gap-2">
-          <Zap className="w-3 h-3 text-primary" />
-          <span className="text-[11px] font-medium text-foreground">Skill</span>
-          <span className="text-[10px] text-muted-foreground">按评分降序 · 共 {m.skills.length}</span>
-          <button
-            disabled={confirmed}
-            onClick={() => onToggleAll("skill", !allSkillsOn)}
-            className="ml-auto text-[10px] text-primary hover:underline disabled:opacity-50 disabled:no-underline"
-          >
-            {allSkillsOn ? "全部取消" : "全选"}
-          </button>
-        </div>
-        <input
-          type="text"
-          value={skillQ}
-          onChange={(e) => setSkillQ(e.target.value)}
-          placeholder="搜索 Skill"
-          disabled={confirmed}
-          className="w-full px-2 py-1 text-[11px] rounded border border-border bg-background focus:outline-none focus:border-primary"
+      {/* Skill 列表 */}
+      <div>
+        <SectionHeader
+          icon={<Zap className="w-3.5 h-3.5 text-primary" />}
+          title="Skill"
+          meta={`按评分降序 · 共 ${m.skills.length}`}
+          allOn={allSkillsOn}
+          onToggleAllClick={() => onToggleAll("skill", !allSkillsOn)}
         />
-        <div className="space-y-1 max-h-48 overflow-auto">
-          {filteredSkills.length === 0
-            ? <p className="text-[10px] text-muted-foreground text-center py-2">无匹配项</p>
-            : filteredSkills.map((s) => (
+        <div className="border-t border-border/60">
+          {m.skills.length === 0
+            ? <p className="text-[11px] text-muted-foreground py-3">无匹配项</p>
+            : m.skills.map((s) => (
                 <Row
-                  key={s.name} name={s.name} desc={s.description} score={s.score}
+                  key={s.name} kind="skill" name={s.name} desc={s.description} score={s.score}
                   on={m.selectedSkills.includes(s.name)}
                   onChange={() => onToggle("skill", s.name)}
                 />
@@ -525,34 +533,21 @@ const MatchResultCard = ({
         </div>
       </div>
 
-      {/* MCP 卡 */}
-      <div className="rounded-md border border-border/70 p-2 space-y-1.5">
-        <div className="flex items-center gap-2">
-          <Server className="w-3 h-3 text-primary" />
-          <span className="text-[11px] font-medium text-foreground">MCP</span>
-          <span className="text-[10px] text-muted-foreground">共 {m.mcps.length}</span>
-          <button
-            disabled={confirmed}
-            onClick={() => onToggleAll("mcp", !allMcpsOn)}
-            className="ml-auto text-[10px] text-primary hover:underline disabled:opacity-50 disabled:no-underline"
-          >
-            {allMcpsOn ? "全部取消" : "全选"}
-          </button>
-        </div>
-        <input
-          type="text"
-          value={mcpQ}
-          onChange={(e) => setMcpQ(e.target.value)}
-          placeholder="搜索 MCP"
-          disabled={confirmed}
-          className="w-full px-2 py-1 text-[11px] rounded border border-border bg-background focus:outline-none focus:border-primary"
+      {/* MCP 列表 */}
+      <div>
+        <SectionHeader
+          icon={<Server className="w-3.5 h-3.5 text-primary" />}
+          title="MCP"
+          meta={`共 ${m.mcps.length}`}
+          allOn={allMcpsOn}
+          onToggleAllClick={() => onToggleAll("mcp", !allMcpsOn)}
         />
-        <div className="space-y-1 max-h-40 overflow-auto">
-          {filteredMcps.length === 0
-            ? <p className="text-[10px] text-muted-foreground text-center py-2">无匹配项</p>
-            : filteredMcps.map((s) => (
+        <div className="border-t border-border/60">
+          {m.mcps.length === 0
+            ? <p className="text-[11px] text-muted-foreground py-3">无匹配项</p>
+            : m.mcps.map((s) => (
                 <Row
-                  key={s.name} name={s.name} desc={s.description}
+                  key={s.name} kind="mcp" name={s.name} desc={s.description}
                   on={m.selectedMcps.includes(s.name)}
                   onChange={() => onToggle("mcp", s.name)}
                 />
@@ -562,7 +557,7 @@ const MatchResultCard = ({
 
       {!confirmed && (
         <div className="flex items-center gap-2 pt-1">
-          <span className="text-[10px] text-muted-foreground">
+          <span className="text-[11px] text-muted-foreground">
             已选 {m.selectedSkills.length} Skill · {m.selectedMcps.length} MCP
           </span>
           <Button
