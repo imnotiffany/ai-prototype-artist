@@ -60,7 +60,7 @@ export const DingtalkSetupDialog = ({ open, onOpenChange, onSaved }: Props) => {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[560px] p-6">
         <DialogHeader>
-          <DialogTitle className="text-base">前置配置钉钉MCP，让慧应用与钉钉无缝协作</DialogTitle>
+          <DialogTitle className="text-base">前置配置钉钉MCP，让Claude智能体与丰声NEXT无缝协作</DialogTitle>
           <p className="text-xs text-muted-foreground mt-1.5">点击「前往获取」打开钉钉授权页，复制鉴权链接后粘贴回这里即可。</p>
         </DialogHeader>
         <div className="space-y-5 py-2">
