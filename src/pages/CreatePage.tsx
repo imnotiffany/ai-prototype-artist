@@ -124,7 +124,7 @@ const CreatePage = () => {
             <div className="flex items-center gap-2">
               <AlertCircle className="w-4 h-4 text-primary shrink-0" />
               <span className="text-xs text-foreground">
-                请前置配置钉钉MCP，让慧应用与钉钉无缝协作
+                请前置配置钉钉MCP，让Claude智能体与丰声NEXT无缝协作
               </span>
             </div>
             <span className="text-xs text-primary font-medium shrink-0">立即配置 →</span>
