@@ -9,12 +9,14 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Pencil, Trash2, Server, AlertTriangle, Bot, Plug, Loader2, CheckCircle2, XCircle, Link2, X, Search, KeyRound, ShieldCheck, Lock, Tag, ExternalLink, Activity, RefreshCw } from "lucide-react";
+import { Plus, Pencil, Trash2, Server, AlertTriangle, Bot, Plug, Loader2, CheckCircle2, XCircle, Link2, X, Search, KeyRound, ShieldCheck, Lock, Tag, ExternalLink, Activity, RefreshCw, User, Users } from "lucide-react";
 
 type McpType = "studio" | "sse" | "http";
 import { sharedResources, mockAgents, getCredentialFreeMcps, getCredentialRequiredMcps } from "@/data/mockData";
 import { setMcpConfigured, isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { toast } from "@/hooks/use-toast";
+
+type McpScope = "personal" | "project";
 
 interface McpEntry {
   id: string;
@@ -32,6 +34,7 @@ interface McpEntry {
   stdioCommand?: string;
   stdioArgs?: string;
   envVars?: { key: string; value: string }[];
+  scope?: McpScope;
 }
 
 const typeLabel = (t: McpType) => (t === "studio" ? "STDIO" : t === "sse" ? "SSE" : "StreamableHTTP");
@@ -104,6 +107,7 @@ const VaultPage = () => {
   const [identifier, setIdentifier] = useState("");
   const [description, setDescription] = useState("");
   const [headers, setHeaders] = useState<{ key: string; value: string }[]>([]);
+  const [scope, setScope] = useState<McpScope>("personal");
   const [createMode, setCreateMode] = useState<"market" | "dingtalk" | "manual">("market");
   const [marketSearch, setMarketSearch] = useState("");
   const [marketTag, setMarketTag] = useState<string>("__all__");
@@ -153,6 +157,7 @@ const VaultPage = () => {
     setLocked(false);
     setHeadersOnly(false);
     setDocUrl("");
+    setScope("personal");
   };
 
   const linkedAgents = (mcpName: string) =>
@@ -200,6 +205,7 @@ const VaultPage = () => {
     setEnvVars(m.envVars ?? []);
     setLocked(!!m.fromMarket);
     setHeadersOnly(false);
+    setScope(m.scope ?? "personal");
 
     // 钉钉 MCP：复用钉钉添加弹窗（仅 URL 可编辑）
     const ding = dingtalkMcps.find((d) => d.identifier === m.identifier);
@@ -244,6 +250,7 @@ const VaultPage = () => {
         stdioCommand,
         stdioArgs,
         envVars,
+        scope,
       } : m));
       const editedId = editingId;
       setTimeout(() => runTest(editedId, name), 200);
@@ -255,6 +262,7 @@ const VaultPage = () => {
         createdAt: new Date().toISOString().slice(0, 10),
         requiresCredential: true, type: mcpType,
         fromMarket: locked, description, headers, stdioCommand, stdioArgs, envVars,
+        scope,
       };
       setCredMcps((arr) => [newEntry, ...arr]);
       setMcpConfigured(name, true);
@@ -354,6 +362,37 @@ const VaultPage = () => {
           </p>
         </div>
       )}
+
+      {/* 权限范围 */}
+      <div>
+        <Label className="text-[11px] font-medium">权限范围</Label>
+        <p className="text-[10px] text-muted-foreground mt-0.5">控制该 MCP 在工作区内的可见范围</p>
+        <div className="mt-1.5 grid grid-cols-2 gap-2">
+          {([
+            { v: "personal", icon: User, label: "个人使用", desc: "仅自己可见" },
+            { v: "project", icon: Users, label: "项目内共用", desc: "项目成员可见" },
+          ] as { v: McpScope; icon: typeof User; label: string; desc: string }[]).map((opt) => {
+            const active = scope === opt.v;
+            const Icon = opt.icon;
+            return (
+              <button
+                type="button"
+                key={opt.v}
+                onClick={() => setScope(opt.v)}
+                className={`flex items-center gap-2 rounded-md border px-2.5 py-1.5 text-left transition-colors ${
+                  active ? "border-primary bg-primary/5" : "border-border bg-muted/20 hover:border-primary/40"
+                }`}
+              >
+                <Icon className={`w-3.5 h-3.5 shrink-0 ${active ? "text-primary" : "text-muted-foreground"}`} />
+                <div className="min-w-0">
+                  <div className="text-[11px] font-medium leading-tight">{opt.label}</div>
+                  <div className="text-[10px] text-muted-foreground leading-tight mt-0.5">{opt.desc}</div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {/* 1. 显示名称 */}
       <div>
@@ -621,6 +660,11 @@ const VaultPage = () => {
                         <span className="font-mono truncate">{m.identifier}</span>
                         <span className="text-border shrink-0">·</span>
                         <span className="font-mono whitespace-nowrap shrink-0">{typeLabel(m.type)}</span>
+                        <span className="text-border shrink-0">·</span>
+                        <span className="inline-flex items-center gap-0.5 whitespace-nowrap shrink-0">
+                          {(m.scope ?? "personal") === "project" ? <Users className="w-2.5 h-2.5" /> : <User className="w-2.5 h-2.5" />}
+                          {(m.scope ?? "personal") === "project" ? "项目共用" : "个人"}
+                        </span>
                       </div>
                     </div>
                     <div className="flex items-center gap-0.5 shrink-0 -mr-1 -mt-1">
@@ -928,6 +972,7 @@ const VaultPage = () => {
                     fromMarket: true,
                     description: "钉钉 MCP 服务",
                     headers: [],
+                    scope: "personal",
                   };
                   setCredMcps((arr) => [newEntry, ...arr]);
                   setMcpConfigured(dingFormItem.name, true);
