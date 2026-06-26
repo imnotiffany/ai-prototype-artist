@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Plus, Pencil, Trash2, Server, AlertTriangle, Bot, Plug, Loader2, CheckCircle2, XCircle, Link2, X, Search, KeyRound, ShieldCheck, Lock, Tag, ExternalLink, Activity, RefreshCw, User, Users } from "lucide-react";
 
 type McpType = "studio" | "sse" | "http";
-import { sharedResources, mockAgents, getCredentialFreeMcps, getCredentialRequiredMcps } from "@/data/mockData";
+import { sharedResources, mockAgents, getCredentialFreeMcps, getCredentialRequiredMcps, getProjectMcps } from "@/data/mockData";
 import { setMcpConfigured, isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { toast } from "@/hooks/use-toast";
 
@@ -108,9 +108,11 @@ const VaultPage = () => {
   const [description, setDescription] = useState("");
   const [headers, setHeaders] = useState<{ key: string; value: string }[]>([]);
   const [scope, setScope] = useState<McpScope>("personal");
-  const [createMode, setCreateMode] = useState<"market" | "dingtalk" | "manual">("market");
+  const [createMode, setCreateMode] = useState<"market" | "project" | "dingtalk" | "manual">("market");
   const [marketSearch, setMarketSearch] = useState("");
   const [marketTag, setMarketTag] = useState<string>("__all__");
+  const [projectSearch, setProjectSearch] = useState("");
+  const [projectTag, setProjectTag] = useState<string>("__all__");
   const [dingtalkSearch, setDingtalkSearch] = useState("");
   // 钉钉 MCP URL 配置弹窗
   const [dingFormOpen, setDingFormOpen] = useState(false);
@@ -150,6 +152,22 @@ const VaultPage = () => {
     );
   }, [marketSearch, marketTag, allMarketMcps]);
 
+  // 项目 MCP 列表 = 仅发布在领慧 MCP 项目内的 MCP
+  const allProjectMcps = useMemo(() => getProjectMcps(), []);
+  const projectTags = useMemo(() => {
+    const set = new Set<string>();
+    allProjectMcps.forEach((m) => set.add(m.tag));
+    return Array.from(set).sort();
+  }, [allProjectMcps]);
+  const projectList = useMemo(() => {
+    const q = projectSearch.toLowerCase();
+    return allProjectMcps.filter(
+      (r) =>
+        (projectTag === "__all__" || r.tag === projectTag) &&
+        (r.name.toLowerCase().includes(q) || r.description.toLowerCase().includes(q)),
+    );
+  }, [projectSearch, projectTag, allProjectMcps]);
+
   const reset = () => {
     setEndpoint(""); setName(""); setIdentifier(""); setDescription("");
     setHeaders([]);
@@ -188,6 +206,8 @@ const VaultPage = () => {
     setEditingId(null);
     setCreateMode("market");
     setMarketSearch("");
+    setProjectSearch("");
+    setProjectTag("__all__");
     setCreateOpen(true);
   };
 
@@ -707,17 +727,17 @@ const VaultPage = () => {
 
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className={(createMode === "market" || createMode === "dingtalk") && !editingId ? "max-w-[760px] p-4" : "max-w-[520px] p-4"}>
+        <DialogContent className={createMode !== "manual" && !editingId ? "max-w-[760px] p-4" : "max-w-[520px] p-4"}>
           <DialogHeader className="space-y-1">
             <DialogTitle className="text-sm">{editingId ? "编辑 MCP 服务" : "新增 MCP"}</DialogTitle>
           </DialogHeader>
 
-          <Tabs value={createMode} onValueChange={(v) => setCreateMode(v as "market" | "dingtalk" | "manual")} className="w-full">
-            {!editingId && (
+          <Tabs value={createMode} onValueChange={(v) => setCreateMode(v as "market" | "project" | "dingtalk" | "manual")} className="w-full">
+            {!editingId && createMode !== "manual" && (
               <TabsList className="grid grid-cols-3 w-full bg-muted/40 h-8 mb-3">
-                <TabsTrigger value="market" className="text-xs h-6">领慧MCP</TabsTrigger>
+                <TabsTrigger value="market" className="text-xs h-6">MCP 市场</TabsTrigger>
+                <TabsTrigger value="project" className="text-xs h-6">项目 MCP</TabsTrigger>
                 <TabsTrigger value="dingtalk" className="text-xs h-6">钉钉 MCP</TabsTrigger>
-                <TabsTrigger value="manual" className="text-xs h-6">手动创建</TabsTrigger>
               </TabsList>
             )}
 
@@ -804,6 +824,90 @@ const VaultPage = () => {
               </div>
             </TabsContent>
 
+            <TabsContent value="project" className="mt-0 space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    className="h-8 text-xs pl-8 bg-muted/30"
+                    placeholder="搜索项目 MCP 名称或功能描述"
+                    value={projectSearch}
+                    onChange={(e) => setProjectSearch(e.target.value)}
+                  />
+                </div>
+                <Select value={projectTag} onValueChange={setProjectTag}>
+                  <SelectTrigger className="h-8 w-[130px] text-xs shrink-0 gap-1">
+                    <Tag className="w-3 h-3 text-muted-foreground" />
+                    <SelectValue placeholder="标签" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__all__" className="text-xs">全部标签</SelectItem>
+                    {projectTags.map((t) => (
+                      <SelectItem key={t} value={t} className="text-xs">{t}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center gap-2 text-xs">
+                <span className="font-medium">可选</span>
+                <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-normal">{projectList.length}</Badge>
+                <span className="text-muted-foreground">仅项目内发布</span>
+              </div>
+
+              <div className="max-h-[400px] overflow-auto -mx-1 px-1">
+                {projectList.length === 0 ? (
+                  <p className="text-center text-[11px] text-muted-foreground py-8">当前项目暂无已发布的 MCP</p>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {projectList.map((it) => {
+                      const done = isMcpConfigured(it.name);
+                      return (
+                        <div
+                          key={it.id}
+                          className={`border rounded-lg p-3 transition-colors flex flex-col ${done ? "border-emerald-300/60 bg-emerald-50/40 dark:bg-emerald-950/10" : "border-border bg-card"}`}
+                        >
+                          <div className="flex items-start gap-2">
+                            <div className={`w-8 h-8 rounded flex items-center justify-center shrink-0 ${done ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground"}`}>
+                              <Server className="w-4 h-4" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-semibold truncate" title={it.name}>{it.name}</p>
+                              <div className="flex items-center gap-1 mt-1 flex-wrap">
+                                <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-normal text-muted-foreground">
+                                  {it.tag}
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
+
+                          <p className="text-[11px] text-muted-foreground line-clamp-2 mt-2 min-h-[32px]">{it.description}</p>
+                          <div className="flex items-center justify-between mt-3 pt-2 border-t border-border/60">
+                            <button className="text-[11px] text-primary hover:underline">查看详情</button>
+                            {done ? (
+                              <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0 text-[10px] gap-1">
+                                <CheckCircle2 className="w-3 h-3" />已配置
+                              </Badge>
+                            ) : (
+                              <Button
+                                size="sm"
+                                className="h-7 text-[11px] px-3"
+                                onClick={() => startAddFromMarket(it)}
+                              >
+                                添加
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+
+
+
             <TabsContent value="dingtalk" className="mt-0 space-y-3">
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
@@ -871,7 +975,7 @@ const VaultPage = () => {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)}>
-              {(createMode === "market" || createMode === "dingtalk") && !editingId ? "完成" : "取消"}
+              {createMode !== "manual" && !editingId ? "完成" : "取消"}
             </Button>
             {(createMode === "manual" || editingId) && (
               <Button onClick={handleSave} disabled={!canSave}>

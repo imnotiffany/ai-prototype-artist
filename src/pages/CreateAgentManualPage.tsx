@@ -947,7 +947,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                       <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${officeSuiteOpen ? "" : "-rotate-90"}`} />
                       <span className="text-xs font-medium">办公套件</span>
                       <span className="text-[11px] text-muted-foreground">
-                        {anyOn ? `已启用 ${enabledSkus.size} 项` : `让智能体与钉钉无缝协作的常用能力`}
+                        让智能体与钉钉无缝协作的常用能力
                       </span>
                     </div>
                     <div
