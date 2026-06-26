@@ -193,24 +193,9 @@ const CreateAgentManualPage = () => {
     setFsFailMsg("");
   };
 
-  // 办公套件一键启用：分 MCP / Skill 两组
-  const officeMcpSkus: { id: string; name: string; mcp: string }[] = [
-    { id: "dingtalk-doc", name: "钉钉文档", mcp: "钉钉文档" },
-    { id: "dingtalk-ai-sheet", name: "钉钉 AI 表格", mcp: "钉钉 AI 表格" },
-    { id: "dingtalk-sheet", name: "钉钉表格", mcp: "钉钉表格" },
-    { id: "dingtalk-robot", name: "机器人消息", mcp: "机器人消息" },
-  ];
-  const officeSkillSkus: { id: string; name: string; skill: string; code: string }[] = [
-    { id: "skill-xlsx", name: "表格处理", skill: "Excel处理", code: "xlsx" },
-    { id: "skill-docx", name: "文档处理", skill: "Word文档", code: "docx" },
-    { id: "skill-pdf", name: "PDF 处理", skill: "PDF处理", code: "pdf" },
-    { id: "skill-pptx", name: "PPT 处理", skill: "PPT生成", code: "pptx" },
-  ];
-  const [enabledSkus, setEnabledSkus] = useState<Set<string>>(new Set());
-  const [officeSuiteOpen, setOfficeSuiteOpen] = useState(false);
-  const [mcpStoreVer, setMcpStoreVer] = useState(0);
-  useEffect(() => subscribeMcpStore(() => setMcpStoreVer((v) => v + 1)), []);
-  const [unconfiguredMcpAlert, setUnconfiguredMcpAlert] = useState<string | null>(null);
+
+
+
 
 
 
