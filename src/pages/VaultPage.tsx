@@ -661,16 +661,17 @@ const VaultPage = () => {
                       <Server className="w-[18px] h-[18px] text-primary" />
                     </div>
                     <div className="min-w-0 flex-1 pt-0.5">
-                      <p className="text-[13px] font-semibold leading-tight truncate" title={m.name}>{m.name}</p>
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <p className="text-[13px] font-semibold leading-tight truncate" title={m.name}>{m.name}</p>
+                        <span className="inline-flex items-center gap-0.5 px-1.5 h-[18px] rounded bg-muted/70 text-muted-foreground text-[10px] whitespace-nowrap shrink-0">
+                          {(m.scope ?? "personal") === "project" ? <Users className="w-2.5 h-2.5" /> : <User className="w-2.5 h-2.5" />}
+                          {(m.scope ?? "personal") === "project" ? "项目共用" : "个人"}
+                        </span>
+                      </div>
                       <div className="flex items-center gap-1.5 mt-1 text-[10px] text-muted-foreground min-w-0">
                         <span className="font-mono truncate">{m.identifier}</span>
                         <span className="text-border shrink-0">·</span>
                         <span className="font-mono whitespace-nowrap shrink-0">{typeLabel(m.type)}</span>
-                        <span className="text-border shrink-0">·</span>
-                        <span className="inline-flex items-center gap-0.5 whitespace-nowrap shrink-0">
-                          {(m.scope ?? "personal") === "project" ? <Users className="w-2.5 h-2.5" /> : <User className="w-2.5 h-2.5" />}
-                          {(m.scope ?? "personal") === "project" ? "项目共用" : "个人"}
-                        </span>
                       </div>
                     </div>
                     <div className="flex items-center gap-0.5 shrink-0 -mr-1 -mt-1">
