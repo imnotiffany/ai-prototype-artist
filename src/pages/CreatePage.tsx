@@ -102,24 +102,6 @@ const CreatePage = () => {
       </div>
 
 
-      {/* DingTalk MCP reminder */}
-      {!dingConfigured && (
-        <div className="max-w-2xl mx-auto px-6 mt-4">
-          <button
-            type="button"
-            onClick={() => setDingOpen(true)}
-            className="w-full flex items-center justify-between gap-3 rounded-lg border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors px-4 py-3 text-left"
-          >
-            <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-primary shrink-0" />
-              <span className="text-xs text-foreground">
-                请前置配置钉钉MCP，让Claude智能体与丰声NEXT无缝协作
-              </span>
-            </div>
-            <span className="text-xs text-primary font-medium shrink-0">立即配置 →</span>
-          </button>
-        </div>
-      )}
 
       {/* Recent & Hot sections */}
       <div className="max-w-2xl mx-auto px-6 mt-10">
