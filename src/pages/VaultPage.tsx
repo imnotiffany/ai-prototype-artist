@@ -975,7 +975,7 @@ const VaultPage = () => {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)}>
-              {(createMode === "market" || createMode === "dingtalk") && !editingId ? "完成" : "取消"}
+              {createMode !== "manual" && !editingId ? "完成" : "取消"}
             </Button>
             {(createMode === "manual" || editingId) && (
               <Button onClick={handleSave} disabled={!canSave}>
