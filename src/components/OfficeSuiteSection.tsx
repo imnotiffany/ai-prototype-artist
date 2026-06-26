@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { ChevronDown, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import {
   Dialog,
   DialogContent,
