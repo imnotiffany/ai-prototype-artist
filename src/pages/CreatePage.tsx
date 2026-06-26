@@ -1,26 +1,15 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Clock, Flame, Wand, SlidersHorizontal, AlertCircle } from "lucide-react";
+import { ArrowRight, Clock, Flame, Wand, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getRecentAgents, getMyAgents } from "@/data/mockData";
-import { DingtalkSetupDialog, isDingtalkFullyConfigured } from "@/components/DingtalkSetupDialog";
-
-const FIRST_VISIT_KEY = "dingtalk_mcp_first_visit_seen";
 
 const CreatePage = () => {
   const navigate = useNavigate();
   const [description, setDescription] = useState("");
   const [agentMode, setAgentMode] = useState<"auto" | "manual">("auto");
-  const [dingOpen, setDingOpen] = useState(false);
-  const [dingConfigured, setDingConfigured] = useState(() => isDingtalkFullyConfigured());
 
-  useEffect(() => {
-    if (!localStorage.getItem(FIRST_VISIT_KEY) && !isDingtalkFullyConfigured()) {
-      setDingOpen(true);
-      localStorage.setItem(FIRST_VISIT_KEY, "1");
-    }
-  }, []);
 
   const myAgents = getMyAgents().slice(0, 3);
   const hotAgents = getRecentAgents().slice(0, 3);
@@ -113,24 +102,6 @@ const CreatePage = () => {
       </div>
 
 
-      {/* DingTalk MCP reminder */}
-      {!dingConfigured && (
-        <div className="max-w-2xl mx-auto px-6 mt-4">
-          <button
-            type="button"
-            onClick={() => setDingOpen(true)}
-            className="w-full flex items-center justify-between gap-3 rounded-lg border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors px-4 py-3 text-left"
-          >
-            <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-primary shrink-0" />
-              <span className="text-xs text-foreground">
-                请前置配置钉钉MCP，让Claude智能体与丰声NEXT无缝协作
-              </span>
-            </div>
-            <span className="text-xs text-primary font-medium shrink-0">立即配置 →</span>
-          </button>
-        </div>
-      )}
 
       {/* Recent & Hot sections */}
       <div className="max-w-2xl mx-auto px-6 mt-10">
@@ -218,11 +189,8 @@ const CreatePage = () => {
         </div>
       </div>
 
-      <DingtalkSetupDialog
-        open={dingOpen}
-        onOpenChange={setDingOpen}
-        onSaved={() => setDingConfigured(isDingtalkFullyConfigured())}
-      />
+
+
     </div>
 
   );
