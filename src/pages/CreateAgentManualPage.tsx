@@ -970,7 +970,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 <DialogHeader>
                   <DialogTitle className="text-sm">该 MCP 还未配置</DialogTitle>
                   <DialogDescription className="text-xs leading-relaxed pt-1">
-                    「{unconfiguredMcpAlert}」尚未在「全网 MCP 管理」中完成配置，请先前往配置完毕后再回到这里启用。
+                    「{unconfiguredMcpAlert}」尚未在「MCP 管理」中完成配置，请先前往配置完毕后再回到这里启用。
                   </DialogDescription>
                 </DialogHeader>
                 <DialogFooter className="gap-2">
