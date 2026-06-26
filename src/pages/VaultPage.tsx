@@ -363,6 +363,37 @@ const VaultPage = () => {
         </div>
       )}
 
+      {/* 权限范围 */}
+      <div>
+        <Label className="text-[11px] font-medium">权限范围</Label>
+        <p className="text-[10px] text-muted-foreground mt-0.5">控制该 MCP 在工作区内的可见范围</p>
+        <div className="mt-1.5 grid grid-cols-2 gap-2">
+          {([
+            { v: "personal", icon: User, label: "个人使用", desc: "仅自己可见" },
+            { v: "project", icon: Users, label: "项目内共用", desc: "项目成员可见" },
+          ] as { v: McpScope; icon: typeof User; label: string; desc: string }[]).map((opt) => {
+            const active = scope === opt.v;
+            const Icon = opt.icon;
+            return (
+              <button
+                type="button"
+                key={opt.v}
+                onClick={() => setScope(opt.v)}
+                className={`flex items-center gap-2 rounded-md border px-2.5 py-1.5 text-left transition-colors ${
+                  active ? "border-primary bg-primary/5" : "border-border bg-muted/20 hover:border-primary/40"
+                }`}
+              >
+                <Icon className={`w-3.5 h-3.5 shrink-0 ${active ? "text-primary" : "text-muted-foreground"}`} />
+                <div className="min-w-0">
+                  <div className="text-[11px] font-medium leading-tight">{opt.label}</div>
+                  <div className="text-[10px] text-muted-foreground leading-tight mt-0.5">{opt.desc}</div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* 1. 显示名称 */}
       <div>
         <Label className="text-[11px] font-medium flex items-center gap-1">
