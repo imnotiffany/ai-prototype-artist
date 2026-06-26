@@ -189,11 +189,8 @@ const CreatePage = () => {
         </div>
       </div>
 
-      <DingtalkSetupDialog
-        open={dingOpen}
-        onOpenChange={setDingOpen}
-        onSaved={() => setDingConfigured(isDingtalkFullyConfigured())}
-      />
+
+
     </div>
 
   );
