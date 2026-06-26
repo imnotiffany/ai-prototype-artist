@@ -108,9 +108,11 @@ const VaultPage = () => {
   const [description, setDescription] = useState("");
   const [headers, setHeaders] = useState<{ key: string; value: string }[]>([]);
   const [scope, setScope] = useState<McpScope>("personal");
-  const [createMode, setCreateMode] = useState<"market" | "dingtalk" | "manual">("market");
+  const [createMode, setCreateMode] = useState<"market" | "project" | "dingtalk">("market");
   const [marketSearch, setMarketSearch] = useState("");
   const [marketTag, setMarketTag] = useState<string>("__all__");
+  const [projectSearch, setProjectSearch] = useState("");
+  const [projectTag, setProjectTag] = useState<string>("__all__");
   const [dingtalkSearch, setDingtalkSearch] = useState("");
   // 钉钉 MCP URL 配置弹窗
   const [dingFormOpen, setDingFormOpen] = useState(false);
