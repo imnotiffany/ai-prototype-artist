@@ -952,20 +952,11 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   </button>
                   {officeSuiteOpen && (
                     <div className="px-5 pb-4 pt-1 space-y-3">
-                      <p className="text-[11px] text-muted-foreground leading-relaxed">
-                        办公套件用于让智能体在使用过程中与钉钉获得更顺畅的集成体验。
-                      </p>
-                      <div>
-                        <div className="text-[10px] text-muted-foreground/80 font-medium mb-1 px-0.5">MCP</div>
-                        <div className="grid grid-cols-2 gap-x-6 gap-y-0">
-                          {officeMcpSkus.map((s) => renderRow(s, "mcp", s.mcp))}
-                        </div>
+                      <div className="grid grid-cols-4 gap-x-4 gap-y-0">
+                        {officeMcpSkus.map((s) => renderRow(s, "mcp", s.mcp))}
                       </div>
-                      <div>
-                        <div className="text-[10px] text-muted-foreground/80 font-medium mb-1 px-0.5">Skill</div>
-                        <div className="grid grid-cols-2 gap-x-6 gap-y-0">
-                          {officeSkillSkus.map((s) => renderRow(s, "skill", s.skill))}
-                        </div>
+                      <div className="grid grid-cols-4 gap-x-4 gap-y-0">
+                        {officeSkillSkus.map((s) => renderRow(s, "skill", s.skill))}
                       </div>
                     </div>
                   )}
