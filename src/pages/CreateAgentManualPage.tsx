@@ -868,26 +868,35 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
               const availableCount = configuredMcpCount + officeSkillSkus.length;
               const allOn = availableCount > 0 && enabledSkus.size >= availableCount;
               const anyOn = enabledSkus.size > 0;
+              const DEFAULT_VER = "v1.0.0";
               const enableAll = (on: boolean) => {
                 if (on) {
                   const next = new Set(enabledSkus);
+                  const mcpToAdd: string[] = [];
+                  const skillToAdd: string[] = [];
                   officeMcpSkus.forEach((s) => {
                     if (!isMcpConfigured(s.mcp)) return;
                     next.add(s.id);
-                    if (!selMCPs.includes(s.mcp)) toggle(selMCPs, setSelMCPs, s.mcp);
+                    if (!selMCPs.includes(s.mcp)) mcpToAdd.push(s.mcp);
                   });
                   officeSkillSkus.forEach((s) => {
                     next.add(s.id);
-                    if (!selSkills.includes(s.skill)) toggle(selSkills, setSelSkills, s.skill);
+                    if (!selSkills.includes(s.skill)) skillToAdd.push(s.skill);
                   });
+                  if (mcpToAdd.length) {
+                    setSelMCPs([...selMCPs, ...mcpToAdd]);
+                    setMcpVersions({ ...mcpVersions, ...Object.fromEntries(mcpToAdd.map((n) => [n, mcpVersions[n] ?? DEFAULT_VER])) });
+                  }
+                  if (skillToAdd.length) {
+                    setSelSkills([...selSkills, ...skillToAdd]);
+                    setSkillVersions({ ...skillVersions, ...Object.fromEntries(skillToAdd.map((n) => [n, skillVersions[n] ?? DEFAULT_VER])) });
+                  }
                   setEnabledSkus(next);
                 } else {
-                  officeMcpSkus.forEach((s) => {
-                    if (selMCPs.includes(s.mcp)) toggle(selMCPs, setSelMCPs, s.mcp);
-                  });
-                  officeSkillSkus.forEach((s) => {
-                    if (selSkills.includes(s.skill)) toggle(selSkills, setSelSkills, s.skill);
-                  });
+                  const mcpRemove = new Set(officeMcpSkus.map((s) => s.mcp));
+                  const skillRemove = new Set(officeSkillSkus.map((s) => s.skill));
+                  setSelMCPs(selMCPs.filter((n) => !mcpRemove.has(n)));
+                  setSelSkills(selSkills.filter((n) => !skillRemove.has(n)));
                   setEnabledSkus(new Set());
                 }
               };
