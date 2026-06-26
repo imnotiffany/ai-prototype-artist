@@ -157,6 +157,7 @@ const VaultPage = () => {
     setLocked(false);
     setHeadersOnly(false);
     setDocUrl("");
+    setScope("personal");
   };
 
   const linkedAgents = (mcpName: string) =>
