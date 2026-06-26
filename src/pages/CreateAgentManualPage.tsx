@@ -191,8 +191,19 @@ const CreateAgentManualPage = () => {
     setFsFailMsg("");
   };
 
-  // Agent Hub publishing (optional) — 仅控制是否发布到 Hub 进行可视化监控
-  const [hubEnabled, setHubEnabled] = useState(false);
+  // 办公套件一键启用（业务用户友好：按文档格式批量绑定背后的 MCP / Skill）
+  const officeSuiteSkus: { id: string; name: string; format: string; mcp?: string; skill?: string; icon: string; desc: string }[] = [
+    { id: "dingtalk-doc", name: "钉钉文档", format: "DOC", mcp: "钉钉文档MCP", icon: "📄", desc: "读写钉钉在线文档" },
+    { id: "dingtalk-sheet", name: "钉钉表格", format: "XLSX", mcp: "钉钉表格MCP", icon: "📊", desc: "读写钉钉在线表格" },
+    { id: "dingtalk-ai-sheet", name: "钉钉 AI 表格", format: "智能表格", mcp: "AI表格MCP", icon: "🤖", desc: "AI 驱动的智能表格" },
+    { id: "skill-pptx", name: "PPT 生成", format: "PPT / PPTX", skill: "PPT生成", icon: "📽️", desc: "生成与解析演示文稿" },
+    { id: "skill-docx", name: "Word 文档", format: "DOC / DOCX", skill: "Word文档", icon: "📝", desc: "生成与解析 Word 文档" },
+    { id: "skill-xlsx", name: "Excel 处理", format: "XLSX", skill: "Excel处理", icon: "📈", desc: "本地 Excel 文件读写" },
+    { id: "skill-pdf", name: "PDF 处理", format: "PDF", skill: "PDF处理", icon: "📕", desc: "PDF 解析、合并、生成" },
+    { id: "skill-markdown", name: "Markdown 渲染", format: "MD", skill: "Markdown渲染", icon: "📑", desc: "Markdown 文档解析与渲染" },
+  ];
+  const [enabledSkus, setEnabledSkus] = useState<Set<string>>(new Set());
+
 
   // Controlled tab (so we can jump users between steps)
   const [currentTab, setCurrentTab] = useState("basic");
@@ -842,8 +853,90 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
 
           {/* Capability: 基座模型 + MCP + Skill + Subagent */}
           <TabsContent value="capability" className="mt-4 space-y-4">
+            {/* 办公套件 · 一键启用 —— 业务用户友好入口 */}
+            <div className="rounded-xl bg-muted/30 p-5">
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <div>
+                  <Label className="text-xs flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-primary" />
+                    办公套件 · 一键启用
+                  </Label>
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    点选常用文档格式，自动绑定背后的 MCP / Skill，无需手动配置
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs gap-1 shrink-0"
+                  onClick={() => {
+                    const allOn = enabledSkus.size === officeSuiteSkus.length;
+                    if (allOn) {
+                      // 取消全部
+                      officeSuiteSkus.forEach((s) => {
+                        if (s.mcp && selMCPs.includes(s.mcp)) toggle(selMCPs, setSelMCPs, s.mcp);
+                        if (s.skill && selSkills.includes(s.skill)) toggle(selSkills, setSelSkills, s.skill);
+                      });
+                      setEnabledSkus(new Set());
+                    } else {
+                      // 启用全部
+                      const next = new Set<string>();
+                      officeSuiteSkus.forEach((s) => {
+                        next.add(s.id);
+                        if (s.mcp && !selMCPs.includes(s.mcp)) toggle(selMCPs, setSelMCPs, s.mcp);
+                        if (s.skill && !selSkills.includes(s.skill)) toggle(selSkills, setSelSkills, s.skill);
+                      });
+                      setEnabledSkus(next);
+                    }
+                  }}
+                >
+                  {enabledSkus.size === officeSuiteSkus.length ? "全部取消" : "一键全部启用"}
+                </Button>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {officeSuiteSkus.map((sku) => {
+                  const on = enabledSkus.has(sku.id);
+                  return (
+                    <button
+                      key={sku.id}
+                      type="button"
+                      title={sku.desc}
+                      onClick={() => {
+                        const next = new Set(enabledSkus);
+                        if (on) {
+                          next.delete(sku.id);
+                          if (sku.mcp && selMCPs.includes(sku.mcp)) toggle(selMCPs, setSelMCPs, sku.mcp);
+                          if (sku.skill && selSkills.includes(sku.skill)) toggle(selSkills, setSelSkills, sku.skill);
+                        } else {
+                          next.add(sku.id);
+                          if (sku.mcp && !selMCPs.includes(sku.mcp)) toggle(selMCPs, setSelMCPs, sku.mcp);
+                          if (sku.skill && !selSkills.includes(sku.skill)) toggle(selSkills, setSelSkills, sku.skill);
+                        }
+                        setEnabledSkus(next);
+                      }}
+                      className={`group relative flex items-center gap-2 rounded-lg border px-2.5 py-2 text-left transition-all ${
+                        on
+                          ? "border-primary/60 bg-primary/5 shadow-sm"
+                          : "border-border bg-card hover:border-primary/40 hover:bg-muted/40"
+                      }`}
+                    >
+                      <span className="text-base leading-none shrink-0">{sku.icon}</span>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs font-medium truncate flex items-center gap-1">
+                          {sku.name}
+                          {on && <CheckCircle2 className="w-3 h-3 text-primary shrink-0" />}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground truncate">{sku.format}</div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* 模型配置 */}
             <div className="rounded-xl bg-muted/30 p-5 space-y-5">
+
               <div>
                 <Label className="text-xs">模型配置</Label>
                 <Select value={model} onValueChange={setModel}>
@@ -1558,35 +1651,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
             </div>
 
 
-            {/* Agent Hub 发布 */}
-            <div className="rounded-xl bg-muted/30">
-              <div className="px-5 py-3 flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="text-xs font-semibold flex items-center gap-1.5">
-                    <FolderKanban className="w-3.5 h-3.5 text-primary" />
-                    Agent Hub
-                    <Badge variant="outline" className="text-[10px] h-4 px-1.5 text-muted-foreground">可选</Badge>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">开启后，智能体保存时将同步发布到 Agent Hub，提供运行状态、调用次数、错误率等可视化监控</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Switch
-                    checked={hubEnabled}
-                    onCheckedChange={(v) => {
-                      setHubEnabled(v);
-                      
-                    }}
-                  />
-                  <Badge
-                    variant="outline"
-                    className={`text-[10px] gap-1 ${hubEnabled ? "text-emerald-600 border-emerald-600/40 bg-emerald-500/10" : "text-muted-foreground"}`}
-                  >
-                    <span className={`w-1.5 h-1.5 rounded-full ${hubEnabled ? "bg-emerald-500" : "bg-muted-foreground/50"}`} />
-                    {hubEnabled ? "已开启" : "未开启"}
-                  </Badge>
-                </div>
-              </div>
-            </div>
+
 
             <div className="flex justify-between mt-3">
               <Button size="sm" variant="ghost" className="h-8 text-xs gap-1" onClick={() => setCurrentTab("prompt")}>
