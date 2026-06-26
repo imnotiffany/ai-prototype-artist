@@ -152,6 +152,7 @@ const CreateAgentManualPage = () => {
   const [skillVersions, setSkillVersions] = useState<Record<string, string>>({});
 
   const [selMCPs, setSelMCPs] = useState<string[]>([]);
+  const [mcpVersions, setMcpVersions] = useState<Record<string, string>>({});
   const [selSubagents, setSelSubagents] = useState<string[]>([]);
   const [selBuiltinTools, setSelBuiltinTools] = useState<string[]>(["Bash", "Read", "Write", "Edit"]);
   const [subagentGapOpen, setSubagentGapOpen] = useState(false);
