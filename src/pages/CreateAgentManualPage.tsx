@@ -191,8 +191,19 @@ const CreateAgentManualPage = () => {
     setFsFailMsg("");
   };
 
-  // Agent Hub publishing (optional) — 仅控制是否发布到 Hub 进行可视化监控
-  const [hubEnabled, setHubEnabled] = useState(false);
+  // 办公套件一键启用（业务用户友好：按文档格式批量绑定背后的 MCP / Skill）
+  const officeSuiteSkus: { id: string; name: string; format: string; mcp?: string; skill?: string; icon: string; desc: string }[] = [
+    { id: "dingtalk-doc", name: "钉钉文档", format: "DOC", mcp: "钉钉文档MCP", icon: "📄", desc: "读写钉钉在线文档" },
+    { id: "dingtalk-sheet", name: "钉钉表格", format: "XLSX", mcp: "钉钉表格MCP", icon: "📊", desc: "读写钉钉在线表格" },
+    { id: "dingtalk-ai-sheet", name: "钉钉 AI 表格", format: "智能表格", mcp: "AI表格MCP", icon: "🤖", desc: "AI 驱动的智能表格" },
+    { id: "skill-pptx", name: "PPT 生成", format: "PPT / PPTX", skill: "PPT生成", icon: "📽️", desc: "生成与解析演示文稿" },
+    { id: "skill-docx", name: "Word 文档", format: "DOC / DOCX", skill: "Word文档", icon: "📝", desc: "生成与解析 Word 文档" },
+    { id: "skill-xlsx", name: "Excel 处理", format: "XLSX", skill: "Excel处理", icon: "📈", desc: "本地 Excel 文件读写" },
+    { id: "skill-pdf", name: "PDF 处理", format: "PDF", skill: "PDF处理", icon: "📕", desc: "PDF 解析、合并、生成" },
+    { id: "skill-markdown", name: "Markdown 渲染", format: "MD", skill: "Markdown渲染", icon: "📑", desc: "Markdown 文档解析与渲染" },
+  ];
+  const [enabledSkus, setEnabledSkus] = useState<Set<string>>(new Set());
+
 
   // Controlled tab (so we can jump users between steps)
   const [currentTab, setCurrentTab] = useState("basic");
