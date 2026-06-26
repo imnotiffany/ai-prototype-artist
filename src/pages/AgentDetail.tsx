@@ -44,6 +44,7 @@ import { FolderOpen } from "lucide-react";
 import { AgentMonitoringPanel } from "@/components/AgentMonitoringPanel";
 import { AgentLogsPanel } from "@/components/AgentLogsPanel";
 import { getLatestSkillVersion } from "@/lib/skillVersion";
+import OfficeSuiteSection from "@/components/OfficeSuiteSection";
 
 /* ───────── Mock run history ───────── */
 type RunStatus = "success" | "failed" | "running";
