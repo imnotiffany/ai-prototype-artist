@@ -204,6 +204,12 @@ export const getCredentialRequiredMcps = () =>
     .filter((r) => r.type === "mcp" && r.status === "active" && r.requiresCredential)
     .map((r) => ({ id: r.id, name: r.name, description: r.description, provider: r.provider, deployment: r.deployment, tag: MCP_TAGS[r.id] ?? "其他" }));
 
+/** 项目 MCP：仅发布在领慧 MCP 项目内的 MCP（与市场共享 UI，只是来源不同） */
+export const getProjectMcps = () =>
+  sharedResources
+    .filter((r) => r.type === "mcp" && r.status === "active" && r.requiresCredential && r.id.startsWith("lh"))
+    .map((r) => ({ id: r.id, name: r.name, description: r.description, provider: r.provider, deployment: r.deployment, tag: MCP_TAGS[r.id] ?? "其他" }));
+
 /** 所有免凭据 MCP（默认即出现在 MCP 管理列表） */
 export const getCredentialFreeMcps = () =>
   sharedResources
