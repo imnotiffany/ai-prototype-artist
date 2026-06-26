@@ -978,9 +978,6 @@ const VaultPage = () => {
         <DialogContent className="max-w-[520px] p-4">
           <DialogHeader className="space-y-1">
             <DialogTitle className="text-sm">{editingId ? "编辑" : "配置"} MCP{marketFormItem ? ` · ${marketFormItem.name}` : ""}</DialogTitle>
-            <DialogDescription className="text-[11px]">
-              来自 MCP 广场，服务地址、显示名称与英文标识已自动填入；请完成类型、请求头等凭据配置后保存
-            </DialogDescription>
           </DialogHeader>
 
           {renderForm()}
