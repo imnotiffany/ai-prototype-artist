@@ -927,8 +927,14 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                           if (kind === "skill" && selSkills.includes(target)) toggle(selSkills, setSelSkills, target);
                         } else {
                           next.add(sku.id);
-                          if (kind === "mcp" && !selMCPs.includes(target)) toggle(selMCPs, setSelMCPs, target);
-                          if (kind === "skill" && !selSkills.includes(target)) toggle(selSkills, setSelSkills, target);
+                          if (kind === "mcp" && !selMCPs.includes(target)) {
+                            toggle(selMCPs, setSelMCPs, target);
+                            if (!mcpVersions[target]) setMcpVersions({ ...mcpVersions, [target]: "v1.0.0" });
+                          }
+                          if (kind === "skill" && !selSkills.includes(target)) {
+                            toggle(selSkills, setSelSkills, target);
+                            if (!skillVersions[target]) setSkillVersions({ ...skillVersions, [target]: "v1.0.0" });
+                          }
                         }
                         setEnabledSkus(next);
                       }}
