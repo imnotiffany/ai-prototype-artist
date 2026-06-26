@@ -192,17 +192,17 @@ const CreateAgentManualPage = () => {
   };
 
   // 办公套件一键启用：分 MCP / Skill 两组
-  const officeMcpSkus: { id: string; name: string; mcp: string; format: string }[] = [
-    { id: "dingtalk-doc", name: "钉钉文档", mcp: "钉钉文档", format: "DOC" },
-    { id: "dingtalk-ai-sheet", name: "钉钉 AI 表格", mcp: "钉钉 AI 表格", format: "智能表格" },
-    { id: "dingtalk-sheet", name: "钉钉表格", mcp: "钉钉表格", format: "XLSX" },
-    { id: "dingtalk-robot", name: "机器人消息", mcp: "机器人消息", format: "IM" },
+  const officeMcpSkus: { id: string; name: string; mcp: string }[] = [
+    { id: "dingtalk-doc", name: "钉钉文档", mcp: "钉钉文档" },
+    { id: "dingtalk-ai-sheet", name: "钉钉 AI 表格", mcp: "钉钉 AI 表格" },
+    { id: "dingtalk-sheet", name: "钉钉表格", mcp: "钉钉表格" },
+    { id: "dingtalk-robot", name: "机器人消息", mcp: "机器人消息" },
   ];
-  const officeSkillSkus: { id: string; name: string; skill: string; format: string }[] = [
-    { id: "skill-xlsx", name: "xlsx", skill: "Excel处理", format: "XLSX" },
-    { id: "skill-docx", name: "docx", skill: "Word文档", format: "DOCX" },
-    { id: "skill-pdf", name: "pdf", skill: "PDF处理", format: "PDF" },
-    { id: "skill-pptx", name: "pptx", skill: "PPT生成", format: "PPTX" },
+  const officeSkillSkus: { id: string; name: string; skill: string; code: string }[] = [
+    { id: "skill-xlsx", name: "表格处理", skill: "Excel处理", code: "xlsx" },
+    { id: "skill-docx", name: "文档处理", skill: "Word文档", code: "docx" },
+    { id: "skill-pdf", name: "PDF 处理", skill: "PDF处理", code: "pdf" },
+    { id: "skill-pptx", name: "PPT 处理", skill: "PPT生成", code: "pptx" },
   ];
   const [enabledSkus, setEnabledSkus] = useState<Set<string>>(new Set());
   const [officeSuiteOpen, setOfficeSuiteOpen] = useState(false);
@@ -863,13 +863,15 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
             {/* 办公套件 · 一键启用 —— 默认折叠 */}
             {(() => {
               void mcpStoreVer; // 订阅 MCP 配置变化
-              const totalCount = officeMcpSkus.length + officeSkillSkus.length;
-              const allOn = enabledSkus.size === totalCount;
+              const configuredMcpCount = officeMcpSkus.filter((s) => isMcpConfigured(s.mcp)).length;
+              const availableCount = configuredMcpCount + officeSkillSkus.length;
+              const allOn = availableCount > 0 && enabledSkus.size >= availableCount;
+              const anyOn = enabledSkus.size > 0;
               const enableAll = (on: boolean) => {
                 if (on) {
                   const next = new Set(enabledSkus);
                   officeMcpSkus.forEach((s) => {
-                    if (!isMcpConfigured(s.mcp)) return; // 跳过未配置 MCP
+                    if (!isMcpConfigured(s.mcp)) return;
                     next.add(s.id);
                     if (!selMCPs.includes(s.mcp)) toggle(selMCPs, setSelMCPs, s.mcp);
                   });
@@ -888,43 +890,49 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   setEnabledSkus(new Set());
                 }
               };
-              const renderRow = (sku: { id: string; name: string; format: string }, kind: "mcp" | "skill", target: string) => {
+              const renderRow = (
+                sku: { id: string; name: string; code?: string },
+                kind: "mcp" | "skill",
+                target: string,
+              ) => {
                 const on = enabledSkus.has(sku.id);
                 const configured = kind === "skill" || isMcpConfigured(target);
                 return (
                   <label
                     key={sku.id}
-                    className={`flex items-center justify-between gap-2 py-1.5 group ${configured ? "cursor-pointer" : "cursor-pointer"}`}
+                    className="flex items-center gap-2 py-1.5 cursor-pointer group min-w-0"
                   >
-                    <span className="flex items-center gap-2 min-w-0">
-                      <input
-                        type="checkbox"
-                        checked={on}
-                        onChange={() => {
-                          if (kind === "mcp" && !configured) {
-                            setUnconfiguredMcpAlert(target);
-                            return;
-                          }
-                          const next = new Set(enabledSkus);
-                          if (on) {
-                            next.delete(sku.id);
-                            if (kind === "mcp" && selMCPs.includes(target)) toggle(selMCPs, setSelMCPs, target);
-                            if (kind === "skill" && selSkills.includes(target)) toggle(selSkills, setSelSkills, target);
-                          } else {
-                            next.add(sku.id);
-                            if (kind === "mcp" && !selMCPs.includes(target)) toggle(selMCPs, setSelMCPs, target);
-                            if (kind === "skill" && !selSkills.includes(target)) toggle(selSkills, setSelSkills, target);
-                          }
-                          setEnabledSkus(next);
-                        }}
-                        className="w-3.5 h-3.5 rounded border-border accent-primary cursor-pointer"
-                      />
-                      <span className={`text-xs truncate ${configured ? "group-hover:text-foreground" : "text-muted-foreground"}`}>{sku.name}</span>
-                      {kind === "mcp" && !configured && (
-                        <span className="text-[10px] text-amber-600 dark:text-amber-500 shrink-0">未配置</span>
+                    <input
+                      type="checkbox"
+                      checked={on}
+                      onChange={() => {
+                        if (kind === "mcp" && !configured) {
+                          setUnconfiguredMcpAlert(target);
+                          return;
+                        }
+                        const next = new Set(enabledSkus);
+                        if (on) {
+                          next.delete(sku.id);
+                          if (kind === "mcp" && selMCPs.includes(target)) toggle(selMCPs, setSelMCPs, target);
+                          if (kind === "skill" && selSkills.includes(target)) toggle(selSkills, setSelSkills, target);
+                        } else {
+                          next.add(sku.id);
+                          if (kind === "mcp" && !selMCPs.includes(target)) toggle(selMCPs, setSelMCPs, target);
+                          if (kind === "skill" && !selSkills.includes(target)) toggle(selSkills, setSelSkills, target);
+                        }
+                        setEnabledSkus(next);
+                      }}
+                      className="w-3.5 h-3.5 rounded border-border accent-primary cursor-pointer shrink-0"
+                    />
+                    <span className={`text-xs truncate ${configured ? "" : "text-muted-foreground"}`}>
+                      {sku.name}
+                      {sku.code && (
+                        <span className="ml-1 text-[10px] text-muted-foreground font-mono">{sku.code}</span>
                       )}
                     </span>
-                    <span className="text-[10px] text-muted-foreground font-mono shrink-0">{sku.format}</span>
+                    {kind === "mcp" && !configured && (
+                      <span className="text-[10px] text-amber-600 dark:text-amber-500 shrink-0">未配置</span>
+                    )}
                   </label>
                 );
               };
@@ -939,24 +947,30 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                       <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${officeSuiteOpen ? "" : "-rotate-90"}`} />
                       <span className="text-xs font-medium">办公套件</span>
                       <span className="text-[11px] text-muted-foreground">
-                        {enabledSkus.size > 0 ? `已启用 ${enabledSkus.size} 项` : `让智能体与钉钉无缝协作的常用能力`}
+                        {anyOn ? `已启用 ${enabledSkus.size} 项` : `让智能体与钉钉无缝协作的常用能力`}
                       </span>
                     </div>
                     <div
                       className="flex items-center gap-2 shrink-0"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <span className="text-[11px] text-muted-foreground">全部启用</span>
-                      <Switch checked={allOn} onCheckedChange={enableAll} />
+                      <span className="text-[11px] text-muted-foreground">{anyOn && !allOn ? "全部启用" : allOn ? "全部启用" : "全部启用"}</span>
+                      <Switch checked={anyOn} onCheckedChange={(v) => enableAll(v)} />
                     </div>
                   </button>
                   {officeSuiteOpen && (
                     <div className="px-5 pb-4 pt-1 space-y-3">
-                      <div className="grid grid-cols-4 gap-x-4 gap-y-0">
-                        {officeMcpSkus.map((s) => renderRow(s, "mcp", s.mcp))}
+                      <div className="flex items-start gap-3">
+                        <span className="text-[11px] text-muted-foreground shrink-0 pt-2 w-10">MCP</span>
+                        <div className="grid grid-cols-4 gap-x-4 gap-y-0 flex-1 min-w-0">
+                          {officeMcpSkus.map((s) => renderRow(s, "mcp", s.mcp))}
+                        </div>
                       </div>
-                      <div className="grid grid-cols-4 gap-x-4 gap-y-0">
-                        {officeSkillSkus.map((s) => renderRow(s, "skill", s.skill))}
+                      <div className="flex items-start gap-3">
+                        <span className="text-[11px] text-muted-foreground shrink-0 pt-2 w-10">Skill</span>
+                        <div className="grid grid-cols-4 gap-x-4 gap-y-0 flex-1 min-w-0">
+                          {officeSkillSkus.map((s) => renderRow(s, "skill", s.skill))}
+                        </div>
                       </div>
                     </div>
                   )}
