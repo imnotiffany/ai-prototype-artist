@@ -27,6 +27,7 @@ import { RunningIndicator, type TranscriptEvent } from "@/components/RunViews";
 import { RunTimelineView } from "@/components/RunTimelineView";
 import { transcriptToTimelineScenario } from "@/lib/transcriptToTimeline";
 import { PublishAgentDialog } from "@/components/PublishAgentDialog";
+import OfficeSuiteSection from "@/components/OfficeSuiteSection";
 import { AvatarPicker } from "@/components/AvatarPicker";
 import { FengshengIncompleteDialog, type FsAlertStatus } from "@/components/FengshengIncompleteDialog";
 import { FengshengHowToCard } from "@/components/FengshengHowToCard";
