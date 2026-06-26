@@ -108,7 +108,7 @@ const VaultPage = () => {
   const [description, setDescription] = useState("");
   const [headers, setHeaders] = useState<{ key: string; value: string }[]>([]);
   const [scope, setScope] = useState<McpScope>("personal");
-  const [createMode, setCreateMode] = useState<"market" | "project" | "dingtalk">("market");
+  const [createMode, setCreateMode] = useState<"market" | "project" | "dingtalk" | "manual">("market");
   const [marketSearch, setMarketSearch] = useState("");
   const [marketTag, setMarketTag] = useState<string>("__all__");
   const [projectSearch, setProjectSearch] = useState("");
