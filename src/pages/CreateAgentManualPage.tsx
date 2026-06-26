@@ -199,10 +199,10 @@ const CreateAgentManualPage = () => {
     { id: "dingtalk-robot", name: "机器人消息", mcp: "机器人消息", format: "IM" },
   ];
   const officeSkillSkus: { id: string; name: string; skill: string; format: string }[] = [
-    { id: "skill-xlsx", name: "Excel 处理", skill: "Excel处理", format: "XLSX" },
-    { id: "skill-docx", name: "Word 处理", skill: "Word文档", format: "DOCX" },
-    { id: "skill-pdf", name: "PDF 处理", skill: "PDF处理", format: "PDF" },
-    { id: "skill-pptx", name: "PPT 处理", skill: "PPT生成", format: "PPTX" },
+    { id: "skill-xlsx", name: "xlsx", skill: "Excel处理", format: "XLSX" },
+    { id: "skill-docx", name: "docx", skill: "Word文档", format: "DOCX" },
+    { id: "skill-pdf", name: "pdf", skill: "PDF处理", format: "PDF" },
+    { id: "skill-pptx", name: "pptx", skill: "PPT生成", format: "PPTX" },
   ];
   const [enabledSkus, setEnabledSkus] = useState<Set<string>>(new Set());
   const [officeSuiteOpen, setOfficeSuiteOpen] = useState(false);
