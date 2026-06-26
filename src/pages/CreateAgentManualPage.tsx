@@ -191,19 +191,24 @@ const CreateAgentManualPage = () => {
     setFsFailMsg("");
   };
 
-  // 办公套件一键启用（业务用户友好：按文档格式批量绑定背后的 MCP / Skill）
-  const officeSuiteSkus: { id: string; name: string; format: string; mcp?: string; skill?: string; icon: string; desc: string }[] = [
-    { id: "dingtalk-doc", name: "钉钉文档", format: "DOC", mcp: "钉钉文档MCP", icon: "📄", desc: "读写钉钉在线文档" },
-    { id: "dingtalk-sheet", name: "钉钉表格", format: "XLSX", mcp: "钉钉表格MCP", icon: "📊", desc: "读写钉钉在线表格" },
-    { id: "dingtalk-ai-sheet", name: "钉钉 AI 表格", format: "智能表格", mcp: "AI表格MCP", icon: "🤖", desc: "AI 驱动的智能表格" },
-    { id: "skill-pptx", name: "PPT 生成", format: "PPT / PPTX", skill: "PPT生成", icon: "📽️", desc: "生成与解析演示文稿" },
-    { id: "skill-docx", name: "Word 文档", format: "DOC / DOCX", skill: "Word文档", icon: "📝", desc: "生成与解析 Word 文档" },
-    { id: "skill-xlsx", name: "Excel 处理", format: "XLSX", skill: "Excel处理", icon: "📈", desc: "本地 Excel 文件读写" },
-    { id: "skill-pdf", name: "PDF 处理", format: "PDF", skill: "PDF处理", icon: "📕", desc: "PDF 解析、合并、生成" },
-    { id: "skill-markdown", name: "Markdown 渲染", format: "MD", skill: "Markdown渲染", icon: "📑", desc: "Markdown 文档解析与渲染" },
+  // 办公套件一键启用：分 MCP / Skill 两组
+  const officeMcpSkus: { id: string; name: string; mcp: string; format: string }[] = [
+    { id: "dingtalk-doc", name: "钉钉文档", mcp: "钉钉文档", format: "DOC" },
+    { id: "dingtalk-ai-sheet", name: "钉钉 AI 表格", mcp: "钉钉 AI 表格", format: "智能表格" },
+    { id: "dingtalk-sheet", name: "钉钉表格", mcp: "钉钉表格", format: "XLSX" },
+    { id: "dingtalk-robot", name: "机器人消息", mcp: "机器人消息", format: "IM" },
+  ];
+  const officeSkillSkus: { id: string; name: string; skill: string; format: string }[] = [
+    { id: "skill-xlsx", name: "Excel 处理", skill: "Excel处理", format: "XLSX" },
+    { id: "skill-docx", name: "Word 处理", skill: "Word文档", format: "DOCX" },
+    { id: "skill-pdf", name: "PDF 处理", skill: "PDF处理", format: "PDF" },
+    { id: "skill-pptx", name: "PPT 处理", skill: "PPT生成", format: "PPTX" },
   ];
   const [enabledSkus, setEnabledSkus] = useState<Set<string>>(new Set());
   const [officeSuiteOpen, setOfficeSuiteOpen] = useState(false);
+  const [mcpStoreVer, setMcpStoreVer] = useState(0);
+  useEffect(() => subscribeMcpStore(() => setMcpStoreVer((v) => v + 1)), []);
+  const [unconfiguredMcpAlert, setUnconfiguredMcpAlert] = useState<string | null>(null);
 
 
 
