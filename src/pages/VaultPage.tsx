@@ -967,6 +967,7 @@ const VaultPage = () => {
                     fromMarket: true,
                     description: "钉钉 MCP 服务",
                     headers: [],
+                    scope: "personal",
                   };
                   setCredMcps((arr) => [newEntry, ...arr]);
                   setMcpConfigured(dingFormItem.name, true);
