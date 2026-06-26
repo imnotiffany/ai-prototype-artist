@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { ChevronDown, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -134,10 +133,15 @@ export default function OfficeSuiteSection({
               让智能体与钉钉无缝协作的常用能力
             </span>
           </div>
-          <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
-            <span className="text-[11px] text-muted-foreground">全部启用</span>
-            <Switch checked={anyOn} onCheckedChange={(v) => enableAll(v)} />
-          </div>
+          <label className="flex items-center gap-1.5 shrink-0 cursor-pointer" onClick={(e) => e.stopPropagation()}>
+            <input
+              type="checkbox"
+              checked={anyOn}
+              onChange={(e) => enableAll(e.target.checked)}
+              className="w-3.5 h-3.5 rounded border-border accent-primary cursor-pointer"
+            />
+            <span className="text-[11px] text-muted-foreground">全选</span>
+          </label>
         </button>
         {open && (
           <div className="px-5 pb-4 pt-1 space-y-3">
