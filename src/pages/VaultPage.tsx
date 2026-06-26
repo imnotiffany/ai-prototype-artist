@@ -16,6 +16,8 @@ import { sharedResources, mockAgents, getCredentialFreeMcps, getCredentialRequir
 import { setMcpConfigured, isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { toast } from "@/hooks/use-toast";
 
+type McpScope = "personal" | "project";
+
 interface McpEntry {
   id: string;
   name: string;
@@ -32,6 +34,7 @@ interface McpEntry {
   stdioCommand?: string;
   stdioArgs?: string;
   envVars?: { key: string; value: string }[];
+  scope?: McpScope;
 }
 
 const typeLabel = (t: McpType) => (t === "studio" ? "STDIO" : t === "sse" ? "SSE" : "StreamableHTTP");
