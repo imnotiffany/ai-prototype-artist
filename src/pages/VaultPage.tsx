@@ -714,12 +714,12 @@ const VaultPage = () => {
             <DialogTitle className="text-sm">{editingId ? "编辑 MCP 服务" : "新增 MCP"}</DialogTitle>
           </DialogHeader>
 
-          <Tabs value={createMode} onValueChange={(v) => setCreateMode(v as "market" | "dingtalk" | "manual")} className="w-full">
-            {!editingId && (
+          <Tabs value={createMode} onValueChange={(v) => setCreateMode(v as "market" | "project" | "dingtalk" | "manual")} className="w-full">
+            {!editingId && createMode !== "manual" && (
               <TabsList className="grid grid-cols-3 w-full bg-muted/40 h-8 mb-3">
-                <TabsTrigger value="market" className="text-xs h-6">领慧MCP</TabsTrigger>
+                <TabsTrigger value="market" className="text-xs h-6">MCP 市场</TabsTrigger>
+                <TabsTrigger value="project" className="text-xs h-6">项目 MCP</TabsTrigger>
                 <TabsTrigger value="dingtalk" className="text-xs h-6">钉钉 MCP</TabsTrigger>
-                <TabsTrigger value="manual" className="text-xs h-6">手动创建</TabsTrigger>
               </TabsList>
             )}
 
