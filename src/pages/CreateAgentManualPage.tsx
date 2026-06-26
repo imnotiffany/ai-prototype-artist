@@ -853,8 +853,90 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
 
           {/* Capability: 基座模型 + MCP + Skill + Subagent */}
           <TabsContent value="capability" className="mt-4 space-y-4">
+            {/* 办公套件 · 一键启用 —— 业务用户友好入口 */}
+            <div className="rounded-xl bg-muted/30 p-5">
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <div>
+                  <Label className="text-xs flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-primary" />
+                    办公套件 · 一键启用
+                  </Label>
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    点选常用文档格式，自动绑定背后的 MCP / Skill，无需手动配置
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs gap-1 shrink-0"
+                  onClick={() => {
+                    const allOn = enabledSkus.size === officeSuiteSkus.length;
+                    if (allOn) {
+                      // 取消全部
+                      officeSuiteSkus.forEach((s) => {
+                        if (s.mcp && selMCPs.includes(s.mcp)) toggle(selMCPs, setSelMCPs, s.mcp);
+                        if (s.skill && selSkills.includes(s.skill)) toggle(selSkills, setSelSkills, s.skill);
+                      });
+                      setEnabledSkus(new Set());
+                    } else {
+                      // 启用全部
+                      const next = new Set<string>();
+                      officeSuiteSkus.forEach((s) => {
+                        next.add(s.id);
+                        if (s.mcp && !selMCPs.includes(s.mcp)) toggle(selMCPs, setSelMCPs, s.mcp);
+                        if (s.skill && !selSkills.includes(s.skill)) toggle(selSkills, setSelSkills, s.skill);
+                      });
+                      setEnabledSkus(next);
+                    }
+                  }}
+                >
+                  {enabledSkus.size === officeSuiteSkus.length ? "全部取消" : "一键全部启用"}
+                </Button>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {officeSuiteSkus.map((sku) => {
+                  const on = enabledSkus.has(sku.id);
+                  return (
+                    <button
+                      key={sku.id}
+                      type="button"
+                      title={sku.desc}
+                      onClick={() => {
+                        const next = new Set(enabledSkus);
+                        if (on) {
+                          next.delete(sku.id);
+                          if (sku.mcp && selMCPs.includes(sku.mcp)) toggle(selMCPs, setSelMCPs, sku.mcp);
+                          if (sku.skill && selSkills.includes(sku.skill)) toggle(selSkills, setSelSkills, sku.skill);
+                        } else {
+                          next.add(sku.id);
+                          if (sku.mcp && !selMCPs.includes(sku.mcp)) toggle(selMCPs, setSelMCPs, sku.mcp);
+                          if (sku.skill && !selSkills.includes(sku.skill)) toggle(selSkills, setSelSkills, sku.skill);
+                        }
+                        setEnabledSkus(next);
+                      }}
+                      className={`group relative flex items-center gap-2 rounded-lg border px-2.5 py-2 text-left transition-all ${
+                        on
+                          ? "border-primary/60 bg-primary/5 shadow-sm"
+                          : "border-border bg-card hover:border-primary/40 hover:bg-muted/40"
+                      }`}
+                    >
+                      <span className="text-base leading-none shrink-0">{sku.icon}</span>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs font-medium truncate flex items-center gap-1">
+                          {sku.name}
+                          {on && <CheckCircle2 className="w-3 h-3 text-primary shrink-0" />}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground truncate">{sku.format}</div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* 模型配置 */}
             <div className="rounded-xl bg-muted/30 p-5 space-y-5">
+
               <div>
                 <Label className="text-xs">模型配置</Label>
                 <Select value={model} onValueChange={setModel}>
