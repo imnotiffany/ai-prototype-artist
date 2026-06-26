@@ -191,19 +191,24 @@ const CreateAgentManualPage = () => {
     setFsFailMsg("");
   };
 
-  // 办公套件一键启用（业务用户友好：按文档格式批量绑定背后的 MCP / Skill）
-  const officeSuiteSkus: { id: string; name: string; format: string; mcp?: string; skill?: string; icon: string; desc: string }[] = [
-    { id: "dingtalk-doc", name: "钉钉文档", format: "DOC", mcp: "钉钉文档MCP", icon: "📄", desc: "读写钉钉在线文档" },
-    { id: "dingtalk-sheet", name: "钉钉表格", format: "XLSX", mcp: "钉钉表格MCP", icon: "📊", desc: "读写钉钉在线表格" },
-    { id: "dingtalk-ai-sheet", name: "钉钉 AI 表格", format: "智能表格", mcp: "AI表格MCP", icon: "🤖", desc: "AI 驱动的智能表格" },
-    { id: "skill-pptx", name: "PPT 生成", format: "PPT / PPTX", skill: "PPT生成", icon: "📽️", desc: "生成与解析演示文稿" },
-    { id: "skill-docx", name: "Word 文档", format: "DOC / DOCX", skill: "Word文档", icon: "📝", desc: "生成与解析 Word 文档" },
-    { id: "skill-xlsx", name: "Excel 处理", format: "XLSX", skill: "Excel处理", icon: "📈", desc: "本地 Excel 文件读写" },
-    { id: "skill-pdf", name: "PDF 处理", format: "PDF", skill: "PDF处理", icon: "📕", desc: "PDF 解析、合并、生成" },
-    { id: "skill-markdown", name: "Markdown 渲染", format: "MD", skill: "Markdown渲染", icon: "📑", desc: "Markdown 文档解析与渲染" },
+  // 办公套件一键启用：分 MCP / Skill 两组
+  const officeMcpSkus: { id: string; name: string; mcp: string; format: string }[] = [
+    { id: "dingtalk-doc", name: "钉钉文档", mcp: "钉钉文档", format: "DOC" },
+    { id: "dingtalk-ai-sheet", name: "钉钉 AI 表格", mcp: "钉钉 AI 表格", format: "智能表格" },
+    { id: "dingtalk-sheet", name: "钉钉表格", mcp: "钉钉表格", format: "XLSX" },
+    { id: "dingtalk-robot", name: "机器人消息", mcp: "机器人消息", format: "IM" },
+  ];
+  const officeSkillSkus: { id: string; name: string; skill: string; format: string }[] = [
+    { id: "skill-xlsx", name: "Excel 处理", skill: "Excel处理", format: "XLSX" },
+    { id: "skill-docx", name: "Word 处理", skill: "Word文档", format: "DOCX" },
+    { id: "skill-pdf", name: "PDF 处理", skill: "PDF处理", format: "PDF" },
+    { id: "skill-pptx", name: "PPT 处理", skill: "PPT生成", format: "PPTX" },
   ];
   const [enabledSkus, setEnabledSkus] = useState<Set<string>>(new Set());
   const [officeSuiteOpen, setOfficeSuiteOpen] = useState(false);
+  const [mcpStoreVer, setMcpStoreVer] = useState(0);
+  useEffect(() => subscribeMcpStore(() => setMcpStoreVer((v) => v + 1)), []);
+  const [unconfiguredMcpAlert, setUnconfiguredMcpAlert] = useState<string | null>(null);
 
 
 
@@ -857,23 +862,71 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
           <TabsContent value="capability" className="mt-4 space-y-4">
             {/* 办公套件 · 一键启用 —— 默认折叠 */}
             {(() => {
-              const allOn = enabledSkus.size === officeSuiteSkus.length;
+              void mcpStoreVer; // 订阅 MCP 配置变化
+              const totalCount = officeMcpSkus.length + officeSkillSkus.length;
+              const allOn = enabledSkus.size === totalCount;
               const enableAll = (on: boolean) => {
                 if (on) {
-                  const next = new Set<string>();
-                  officeSuiteSkus.forEach((s) => {
+                  const next = new Set(enabledSkus);
+                  officeMcpSkus.forEach((s) => {
+                    if (!isMcpConfigured(s.mcp)) return; // 跳过未配置 MCP
                     next.add(s.id);
-                    if (s.mcp && !selMCPs.includes(s.mcp)) toggle(selMCPs, setSelMCPs, s.mcp);
-                    if (s.skill && !selSkills.includes(s.skill)) toggle(selSkills, setSelSkills, s.skill);
+                    if (!selMCPs.includes(s.mcp)) toggle(selMCPs, setSelMCPs, s.mcp);
+                  });
+                  officeSkillSkus.forEach((s) => {
+                    next.add(s.id);
+                    if (!selSkills.includes(s.skill)) toggle(selSkills, setSelSkills, s.skill);
                   });
                   setEnabledSkus(next);
                 } else {
-                  officeSuiteSkus.forEach((s) => {
-                    if (s.mcp && selMCPs.includes(s.mcp)) toggle(selMCPs, setSelMCPs, s.mcp);
-                    if (s.skill && selSkills.includes(s.skill)) toggle(selSkills, setSelSkills, s.skill);
+                  officeMcpSkus.forEach((s) => {
+                    if (selMCPs.includes(s.mcp)) toggle(selMCPs, setSelMCPs, s.mcp);
+                  });
+                  officeSkillSkus.forEach((s) => {
+                    if (selSkills.includes(s.skill)) toggle(selSkills, setSelSkills, s.skill);
                   });
                   setEnabledSkus(new Set());
                 }
+              };
+              const renderRow = (sku: { id: string; name: string; format: string }, kind: "mcp" | "skill", target: string) => {
+                const on = enabledSkus.has(sku.id);
+                const configured = kind === "skill" || isMcpConfigured(target);
+                return (
+                  <label
+                    key={sku.id}
+                    className={`flex items-center justify-between gap-2 py-1.5 group ${configured ? "cursor-pointer" : "cursor-pointer"}`}
+                  >
+                    <span className="flex items-center gap-2 min-w-0">
+                      <input
+                        type="checkbox"
+                        checked={on}
+                        onChange={() => {
+                          if (kind === "mcp" && !configured) {
+                            setUnconfiguredMcpAlert(target);
+                            return;
+                          }
+                          const next = new Set(enabledSkus);
+                          if (on) {
+                            next.delete(sku.id);
+                            if (kind === "mcp" && selMCPs.includes(target)) toggle(selMCPs, setSelMCPs, target);
+                            if (kind === "skill" && selSkills.includes(target)) toggle(selSkills, setSelSkills, target);
+                          } else {
+                            next.add(sku.id);
+                            if (kind === "mcp" && !selMCPs.includes(target)) toggle(selMCPs, setSelMCPs, target);
+                            if (kind === "skill" && !selSkills.includes(target)) toggle(selSkills, setSelSkills, target);
+                          }
+                          setEnabledSkus(next);
+                        }}
+                        className="w-3.5 h-3.5 rounded border-border accent-primary cursor-pointer"
+                      />
+                      <span className={`text-xs truncate ${configured ? "group-hover:text-foreground" : "text-muted-foreground"}`}>{sku.name}</span>
+                      {kind === "mcp" && !configured && (
+                        <span className="text-[10px] text-amber-600 dark:text-amber-500 shrink-0">未配置</span>
+                      )}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground font-mono shrink-0">{sku.format}</span>
+                  </label>
+                );
               };
               return (
                 <div className="rounded-xl bg-muted/30">
@@ -886,7 +939,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                       <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${officeSuiteOpen ? "" : "-rotate-90"}`} />
                       <span className="text-xs font-medium">办公套件</span>
                       <span className="text-[11px] text-muted-foreground">
-                        {enabledSkus.size > 0 ? `已启用 ${enabledSkus.size} 项` : `共 ${officeSuiteSkus.length} 项常用文档能力`}
+                        {enabledSkus.size > 0 ? `已启用 ${enabledSkus.size} 项` : `让智能体与钉钉无缝协作的常用能力`}
                       </span>
                     </div>
                     <div
@@ -898,46 +951,46 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                     </div>
                   </button>
                   {officeSuiteOpen && (
-                    <div className="px-5 pb-4 pt-1">
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-1">
-                        {officeSuiteSkus.map((sku) => {
-                          const on = enabledSkus.has(sku.id);
-                          return (
-                            <label
-                              key={sku.id}
-                              className="flex items-center justify-between gap-2 py-1.5 cursor-pointer group"
-                            >
-                              <span className="flex items-center gap-2 min-w-0">
-                                <input
-                                  type="checkbox"
-                                  checked={on}
-                                  onChange={() => {
-                                    const next = new Set(enabledSkus);
-                                    if (on) {
-                                      next.delete(sku.id);
-                                      if (sku.mcp && selMCPs.includes(sku.mcp)) toggle(selMCPs, setSelMCPs, sku.mcp);
-                                      if (sku.skill && selSkills.includes(sku.skill)) toggle(selSkills, setSelSkills, sku.skill);
-                                    } else {
-                                      next.add(sku.id);
-                                      if (sku.mcp && !selMCPs.includes(sku.mcp)) toggle(selMCPs, setSelMCPs, sku.mcp);
-                                      if (sku.skill && !selSkills.includes(sku.skill)) toggle(selSkills, setSelSkills, sku.skill);
-                                    }
-                                    setEnabledSkus(next);
-                                  }}
-                                  className="w-3.5 h-3.5 rounded border-border accent-primary cursor-pointer"
-                                />
-                                <span className="text-xs truncate group-hover:text-foreground">{sku.name}</span>
-                              </span>
-                              <span className="text-[10px] text-muted-foreground font-mono shrink-0">{sku.format}</span>
-                            </label>
-                          );
-                        })}
+                    <div className="px-5 pb-4 pt-1 space-y-3">
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        办公套件用于让智能体在使用过程中与钉钉获得更顺畅的集成体验。
+                      </p>
+                      <div>
+                        <div className="text-[10px] text-muted-foreground/80 font-medium mb-1 px-0.5">MCP</div>
+                        <div className="grid grid-cols-2 gap-x-6 gap-y-0">
+                          {officeMcpSkus.map((s) => renderRow(s, "mcp", s.mcp))}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-[10px] text-muted-foreground/80 font-medium mb-1 px-0.5">Skill</div>
+                        <div className="grid grid-cols-2 gap-x-6 gap-y-0">
+                          {officeSkillSkus.map((s) => renderRow(s, "skill", s.skill))}
+                        </div>
                       </div>
                     </div>
                   )}
                 </div>
               );
             })()}
+
+            {/* 未配置 MCP 提醒弹窗 */}
+            <Dialog open={!!unconfiguredMcpAlert} onOpenChange={(o) => !o && setUnconfiguredMcpAlert(null)}>
+              <DialogContent className="max-w-sm">
+                <DialogHeader>
+                  <DialogTitle className="text-sm">该 MCP 还未配置</DialogTitle>
+                  <DialogDescription className="text-xs leading-relaxed pt-1">
+                    「{unconfiguredMcpAlert}」尚未在「全网 MCP 管理」中完成配置，请先前往配置完毕后再回到这里启用。
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter className="gap-2">
+                  <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setUnconfiguredMcpAlert(null)}>稍后</Button>
+                  <Button size="sm" className="h-7 text-xs gap-1" onClick={() => { setUnconfiguredMcpAlert(null); navigate("/vault"); }}>
+                    前往 MCP 管理 <ArrowRight className="w-3 h-3" />
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
 
 
             {/* 模型配置 */}
