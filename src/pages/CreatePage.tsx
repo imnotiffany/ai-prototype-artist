@@ -9,15 +9,7 @@ const CreatePage = () => {
   const navigate = useNavigate();
   const [description, setDescription] = useState("");
   const [agentMode, setAgentMode] = useState<"auto" | "manual">("auto");
-  const [dingOpen, setDingOpen] = useState(false);
-  const [dingConfigured, setDingConfigured] = useState(() => isDingtalkFullyConfigured());
 
-  useEffect(() => {
-    if (!localStorage.getItem(FIRST_VISIT_KEY) && !isDingtalkFullyConfigured()) {
-      setDingOpen(true);
-      localStorage.setItem(FIRST_VISIT_KEY, "1");
-    }
-  }, []);
 
   const myAgents = getMyAgents().slice(0, 3);
   const hotAgents = getRecentAgents().slice(0, 3);
