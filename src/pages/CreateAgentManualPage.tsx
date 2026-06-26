@@ -1095,6 +1095,9 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                       <div key={mcpName} className={`inline-flex items-center gap-1.5 rounded-md border pl-2 pr-1 py-1 text-xs ${credMissing ? "border-amber-300 bg-amber-50/40 dark:bg-amber-950/20" : "border-border bg-card"}`}>
                         <Server className="w-3 h-3 text-primary shrink-0" />
                         <span className="font-medium max-w-[140px] truncate">{mcpName}</span>
+                        {mcpVersions[mcpName] && (
+                          <Badge variant="outline" className="text-[10px] h-4 px-1 border-border font-mono text-muted-foreground">{mcpVersions[mcpName]}</Badge>
+                        )}
                         {needsCred && (
                           <Popover>
                             <PopoverTrigger asChild>
