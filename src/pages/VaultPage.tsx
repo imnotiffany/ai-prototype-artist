@@ -926,7 +926,7 @@ const VaultPage = () => {
                 {dingtalkList.length === 0 ? (
                   <p className="text-center text-[11px] text-muted-foreground py-8">未找到匹配的钉钉 MCP</p>
                 ) : (
-                  <div className="grid grid-cols-3 gap-2.5">
+                  <div className="grid grid-cols-2 gap-2.5">
                     {dingtalkList.map((it) => {
                       const done = isMcpConfigured(it.name);
                       return (
