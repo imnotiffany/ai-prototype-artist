@@ -1,12 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Clock, Flame, Wand, SlidersHorizontal, AlertCircle } from "lucide-react";
+import { ArrowRight, Clock, Flame, Wand, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getRecentAgents, getMyAgents } from "@/data/mockData";
-import { DingtalkSetupDialog, isDingtalkFullyConfigured } from "@/components/DingtalkSetupDialog";
-
-const FIRST_VISIT_KEY = "dingtalk_mcp_first_visit_seen";
 
 const CreatePage = () => {
   const navigate = useNavigate();
