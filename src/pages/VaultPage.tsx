@@ -1039,7 +1039,7 @@ const VaultPage = () => {
                   </a>
                 </div>
                 <Input
-                  className="h-8 text-xs font-mono"
+                  className="h-8 text-xs md:text-xs font-mono placeholder:text-xs"
                   placeholder="https://api.dingtalk.com/v1/mcp/..."
                   value={dingUrl}
                   onChange={(e) => setDingUrl(e.target.value)}
