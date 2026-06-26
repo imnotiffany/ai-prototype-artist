@@ -192,17 +192,17 @@ const CreateAgentManualPage = () => {
   };
 
   // 办公套件一键启用：分 MCP / Skill 两组
-  const officeMcpSkus: { id: string; name: string; mcp: string; format: string }[] = [
-    { id: "dingtalk-doc", name: "钉钉文档", mcp: "钉钉文档", format: "DOC" },
-    { id: "dingtalk-ai-sheet", name: "钉钉 AI 表格", mcp: "钉钉 AI 表格", format: "智能表格" },
-    { id: "dingtalk-sheet", name: "钉钉表格", mcp: "钉钉表格", format: "XLSX" },
-    { id: "dingtalk-robot", name: "机器人消息", mcp: "机器人消息", format: "IM" },
+  const officeMcpSkus: { id: string; name: string; mcp: string }[] = [
+    { id: "dingtalk-doc", name: "钉钉文档", mcp: "钉钉文档" },
+    { id: "dingtalk-ai-sheet", name: "钉钉 AI 表格", mcp: "钉钉 AI 表格" },
+    { id: "dingtalk-sheet", name: "钉钉表格", mcp: "钉钉表格" },
+    { id: "dingtalk-robot", name: "机器人消息", mcp: "机器人消息" },
   ];
-  const officeSkillSkus: { id: string; name: string; skill: string; format: string }[] = [
-    { id: "skill-xlsx", name: "xlsx", skill: "Excel处理", format: "XLSX" },
-    { id: "skill-docx", name: "docx", skill: "Word文档", format: "DOCX" },
-    { id: "skill-pdf", name: "pdf", skill: "PDF处理", format: "PDF" },
-    { id: "skill-pptx", name: "pptx", skill: "PPT生成", format: "PPTX" },
+  const officeSkillSkus: { id: string; name: string; skill: string; code: string }[] = [
+    { id: "skill-xlsx", name: "表格处理", skill: "Excel处理", code: "xlsx" },
+    { id: "skill-docx", name: "文档处理", skill: "Word文档", code: "docx" },
+    { id: "skill-pdf", name: "PDF 处理", skill: "PDF处理", code: "pdf" },
+    { id: "skill-pptx", name: "PPT 处理", skill: "PPT生成", code: "pptx" },
   ];
   const [enabledSkus, setEnabledSkus] = useState<Set<string>>(new Set());
   const [officeSuiteOpen, setOfficeSuiteOpen] = useState(false);
