@@ -825,7 +825,26 @@ fengsheng:
                 <Textarea value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)} rows={8}
                   className="mt-1.5 font-mono text-xs leading-relaxed bg-card" />
               </div>
-            </div>
+
+            {/* 办公套件 · 一键启用 */}
+            <OfficeSuiteSection
+              selMcps={mcpBindings.map((b) => b.name)}
+              selSkills={selSkills}
+              addMcp={(n) => {
+                if (!mcpBindings.find((b) => b.name === n)) addMcp(n);
+              }}
+              removeMcp={(n) => {
+                const i = mcpBindings.findIndex((b) => b.name === n);
+                if (i >= 0) removeMcp(i);
+              }}
+              addSkill={(n) => {
+                if (!selSkills.includes(n)) toggleSkill(n);
+              }}
+              removeSkill={(n) => {
+                if (selSkills.includes(n)) toggleSkill(n);
+              }}
+            />
+
 
             {/* 3. MCP 绑定 */}
             <section className="border border-border rounded-lg bg-card">
