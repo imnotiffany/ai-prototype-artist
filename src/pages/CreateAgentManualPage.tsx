@@ -203,6 +203,8 @@ const CreateAgentManualPage = () => {
     { id: "skill-markdown", name: "Markdown 渲染", format: "MD", skill: "Markdown渲染", icon: "📑", desc: "Markdown 文档解析与渲染" },
   ];
   const [enabledSkus, setEnabledSkus] = useState<Set<string>>(new Set());
+  const [officeSuiteOpen, setOfficeSuiteOpen] = useState(false);
+
 
 
   // Controlled tab (so we can jump users between steps)
