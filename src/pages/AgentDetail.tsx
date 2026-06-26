@@ -825,8 +825,10 @@ fengsheng:
                 <Textarea value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)} rows={8}
                   className="mt-1.5 font-mono text-xs leading-relaxed bg-card" />
               </div>
+            </div>
 
             {/* 办公套件 · 一键启用 */}
+
             <OfficeSuiteSection
               selMcps={mcpBindings.map((b) => b.name)}
               selSkills={selSkills}
