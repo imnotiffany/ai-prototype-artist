@@ -152,6 +152,22 @@ const VaultPage = () => {
     );
   }, [marketSearch, marketTag, allMarketMcps]);
 
+  // 项目 MCP 列表 = 仅发布在领慧 MCP 项目内的 MCP
+  const allProjectMcps = useMemo(() => getProjectMcps(), []);
+  const projectTags = useMemo(() => {
+    const set = new Set<string>();
+    allProjectMcps.forEach((m) => set.add(m.tag));
+    return Array.from(set).sort();
+  }, [allProjectMcps]);
+  const projectList = useMemo(() => {
+    const q = projectSearch.toLowerCase();
+    return allProjectMcps.filter(
+      (r) =>
+        (projectTag === "__all__" || r.tag === projectTag) &&
+        (r.name.toLowerCase().includes(q) || r.description.toLowerCase().includes(q)),
+    );
+  }, [projectSearch, projectTag, allProjectMcps]);
+
   const reset = () => {
     setEndpoint(""); setName(""); setIdentifier(""); setDescription("");
     setHeaders([]);
