@@ -199,10 +199,10 @@ const CreateAgentManualPage = () => {
     { id: "dingtalk-robot", name: "机器人消息", mcp: "机器人消息", format: "IM" },
   ];
   const officeSkillSkus: { id: string; name: string; skill: string; format: string }[] = [
-    { id: "skill-xlsx", name: "Excel 处理", skill: "Excel处理", format: "XLSX" },
-    { id: "skill-docx", name: "Word 处理", skill: "Word文档", format: "DOCX" },
-    { id: "skill-pdf", name: "PDF 处理", skill: "PDF处理", format: "PDF" },
-    { id: "skill-pptx", name: "PPT 处理", skill: "PPT生成", format: "PPTX" },
+    { id: "skill-xlsx", name: "xlsx", skill: "Excel处理", format: "XLSX" },
+    { id: "skill-docx", name: "docx", skill: "Word文档", format: "DOCX" },
+    { id: "skill-pdf", name: "pdf", skill: "PDF处理", format: "PDF" },
+    { id: "skill-pptx", name: "pptx", skill: "PPT生成", format: "PPTX" },
   ];
   const [enabledSkus, setEnabledSkus] = useState<Set<string>>(new Set());
   const [officeSuiteOpen, setOfficeSuiteOpen] = useState(false);
@@ -952,20 +952,11 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                   </button>
                   {officeSuiteOpen && (
                     <div className="px-5 pb-4 pt-1 space-y-3">
-                      <p className="text-[11px] text-muted-foreground leading-relaxed">
-                        办公套件用于让智能体在使用过程中与钉钉获得更顺畅的集成体验。
-                      </p>
-                      <div>
-                        <div className="text-[10px] text-muted-foreground/80 font-medium mb-1 px-0.5">MCP</div>
-                        <div className="grid grid-cols-2 gap-x-6 gap-y-0">
-                          {officeMcpSkus.map((s) => renderRow(s, "mcp", s.mcp))}
-                        </div>
+                      <div className="grid grid-cols-4 gap-x-4 gap-y-0">
+                        {officeMcpSkus.map((s) => renderRow(s, "mcp", s.mcp))}
                       </div>
-                      <div>
-                        <div className="text-[10px] text-muted-foreground/80 font-medium mb-1 px-0.5">Skill</div>
-                        <div className="grid grid-cols-2 gap-x-6 gap-y-0">
-                          {officeSkillSkus.map((s) => renderRow(s, "skill", s.skill))}
-                        </div>
+                      <div className="grid grid-cols-4 gap-x-4 gap-y-0">
+                        {officeSkillSkus.map((s) => renderRow(s, "skill", s.skill))}
                       </div>
                     </div>
                   )}
@@ -979,7 +970,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                 <DialogHeader>
                   <DialogTitle className="text-sm">该 MCP 还未配置</DialogTitle>
                   <DialogDescription className="text-xs leading-relaxed pt-1">
-                    「{unconfiguredMcpAlert}」尚未在「全网 MCP 管理」中完成配置，请先前往配置完毕后再回到这里启用。
+                    「{unconfiguredMcpAlert}」尚未在「MCP 管理」中完成配置，请先前往配置完毕后再回到这里启用。
                   </DialogDescription>
                 </DialogHeader>
                 <DialogFooter className="gap-2">
