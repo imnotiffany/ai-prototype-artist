@@ -1569,35 +1569,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
             </div>
 
 
-            {/* Agent Hub 发布 */}
-            <div className="rounded-xl bg-muted/30">
-              <div className="px-5 py-3 flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="text-xs font-semibold flex items-center gap-1.5">
-                    <FolderKanban className="w-3.5 h-3.5 text-primary" />
-                    Agent Hub
-                    <Badge variant="outline" className="text-[10px] h-4 px-1.5 text-muted-foreground">可选</Badge>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">开启后，智能体保存时将同步发布到 Agent Hub，提供运行状态、调用次数、错误率等可视化监控</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Switch
-                    checked={hubEnabled}
-                    onCheckedChange={(v) => {
-                      setHubEnabled(v);
-                      
-                    }}
-                  />
-                  <Badge
-                    variant="outline"
-                    className={`text-[10px] gap-1 ${hubEnabled ? "text-emerald-600 border-emerald-600/40 bg-emerald-500/10" : "text-muted-foreground"}`}
-                  >
-                    <span className={`w-1.5 h-1.5 rounded-full ${hubEnabled ? "bg-emerald-500" : "bg-muted-foreground/50"}`} />
-                    {hubEnabled ? "已开启" : "未开启"}
-                  </Badge>
-                </div>
-              </div>
-            </div>
+
 
             <div className="flex justify-between mt-3">
               <Button size="sm" variant="ghost" className="h-8 text-xs gap-1" onClick={() => setCurrentTab("prompt")}>
