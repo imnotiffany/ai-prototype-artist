@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { ChevronRight, ChevronLeft, Wand2, Wrench, Server, User, Calendar, Tag, Bot } from "lucide-react";
+import { ChevronRight, ChevronLeft, Wand2, Wrench, Server, User, Calendar, Tag, Bot, Sparkles } from "lucide-react";
 import type { Agent } from "@/data/mockData";
 import { cn } from "@/lib/utils";
 import { getLatestSkillVersion } from "@/lib/skillVersion";
+import { OFFICE_MCP_SKUS, OFFICE_SKILL_SKUS } from "@/components/OfficeSuiteSection";
 
 interface Props {
   agent: Agent;
@@ -89,6 +90,30 @@ export const AgentInfoPanel = ({ agent, suggestions, onSuggestionClick, defaultC
             </div>
           </Section>
         )}
+        {/* Office Suite */}
+        {(() => {
+          const officeMcps = OFFICE_MCP_SKUS.filter((s) => agent.mcpServers.includes(s.mcp));
+          const officeSkills = OFFICE_SKILL_SKUS.filter((s) => agent.skills.includes(s.skill));
+          if (officeMcps.length === 0 && officeSkills.length === 0) return null;
+          return (
+            <Section icon={Sparkles} title={`办公套件 · ${officeMcps.length + officeSkills.length}`}>
+              <div className="flex flex-wrap gap-1">
+                {officeMcps.map((s) => (
+                  <span key={s.id} className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-primary/10 text-primary">
+                    {s.name}
+                  </span>
+                ))}
+                {officeSkills.map((s) => (
+                  <span key={s.id} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-muted text-muted-foreground">
+                    {s.name}
+                    <span className="font-mono text-[9px]">{s.code}</span>
+                  </span>
+                ))}
+              </div>
+            </Section>
+          );
+        })()}
+
 
         {/* MCP */}
         {agent.mcpServers.length > 0 && (
