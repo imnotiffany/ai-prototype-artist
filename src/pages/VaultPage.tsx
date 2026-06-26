@@ -374,19 +374,9 @@ const VaultPage = () => {
 
   const renderForm = () => (
     <div className="space-y-3 max-h-[440px] overflow-auto -mx-1 px-1">
-      {locked && (
-        <div className="flex items-start gap-1.5 rounded-md border border-primary/30 bg-primary/5 px-2.5 py-1.5">
-          <Lock className="w-3 h-3 text-primary mt-0.5 shrink-0" />
-          <p className="text-[10px] text-muted-foreground leading-relaxed">
-            来自 MCP 广场，显示名称、英文标识、简介与类型已自动填入且不可修改；请在下方完成凭据等配置。
-          </p>
-        </div>
-      )}
-
       {/* 权限范围 */}
       <div>
         <Label className="text-[11px] font-medium">权限范围</Label>
-        <p className="text-[10px] text-muted-foreground mt-0.5">控制该 MCP 在工作区内的可见范围</p>
         <div className="mt-1.5 grid grid-cols-2 gap-2">
           {([
             { v: "personal", icon: User, label: "个人使用", desc: "仅自己可见" },
@@ -420,10 +410,9 @@ const VaultPage = () => {
           显示名称
           {locked && <Lock className="w-2.5 h-2.5 text-muted-foreground" />}
         </Label>
-        <p className="text-[10px] text-muted-foreground mt-0.5">展示在列表与智能体里的名字，方便识别</p>
         <div className="mt-1 flex items-center gap-2">
           <Input
-            className="h-8 text-xs bg-muted/30 flex-1"
+            className="h-8 text-xs md:text-xs placeholder:text-xs bg-muted/30 flex-1"
             value={name}
             readOnly={locked}
             disabled={locked}
@@ -442,11 +431,8 @@ const VaultPage = () => {
           英文标识
           {locked && <Lock className="w-2.5 h-2.5 text-muted-foreground" />}
         </Label>
-        <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">
-          供系统内部调用的英文别名，创建后不可修改；仅支持小写字母、数字、下划线和连字符，最多 24 个字符
-        </p>
         <Input
-          className="mt-1 h-8 text-xs bg-muted/30 font-mono"
+          className="mt-1 h-8 text-xs md:text-xs placeholder:text-xs bg-muted/30 font-mono"
           value={identifier}
           maxLength={24}
           readOnly={locked}
@@ -462,9 +448,8 @@ const VaultPage = () => {
           简介
           {locked && <Lock className="w-2.5 h-2.5 text-muted-foreground" />}
         </Label>
-        <p className="text-[10px] text-muted-foreground mt-0.5">一句话说明该 MCP 的用途，便于在列表中识别</p>
         <Textarea
-          className="mt-1 text-xs bg-muted/30 min-h-[60px]"
+          className="mt-1 text-xs md:text-xs placeholder:text-xs bg-muted/30 min-h-[60px]"
           value={description}
           readOnly={locked}
           disabled={locked}
@@ -472,6 +457,7 @@ const VaultPage = () => {
           placeholder="例如 提供钉钉文档的读写与搜索能力"
         />
       </div>
+
 
       {/* 4. 类型 */}
       <div>
