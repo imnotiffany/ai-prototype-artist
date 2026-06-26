@@ -206,6 +206,8 @@ const VaultPage = () => {
     setEditingId(null);
     setCreateMode("market");
     setMarketSearch("");
+    setProjectSearch("");
+    setProjectTag("__all__");
     setCreateOpen(true);
   };
 
