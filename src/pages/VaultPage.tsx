@@ -205,6 +205,7 @@ const VaultPage = () => {
     setEnvVars(m.envVars ?? []);
     setLocked(!!m.fromMarket);
     setHeadersOnly(false);
+    setScope(m.scope ?? "personal");
 
     // 钉钉 MCP：复用钉钉添加弹窗（仅 URL 可编辑）
     const ding = dingtalkMcps.find((d) => d.identifier === m.identifier);
