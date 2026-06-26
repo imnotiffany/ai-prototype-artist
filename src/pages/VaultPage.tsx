@@ -926,7 +926,7 @@ const VaultPage = () => {
                 {dingtalkList.length === 0 ? (
                   <p className="text-center text-[11px] text-muted-foreground py-8">未找到匹配的钉钉 MCP</p>
                 ) : (
-                  <div className="grid grid-cols-3 gap-2.5">
+                  <div className="grid grid-cols-2 gap-2.5">
                     {dingtalkList.map((it) => {
                       const done = isMcpConfigured(it.name);
                       return (
@@ -1039,7 +1039,7 @@ const VaultPage = () => {
                   </a>
                 </div>
                 <Input
-                  className="h-8 text-xs font-mono"
+                  className="h-8 text-xs md:text-xs font-mono placeholder:text-xs"
                   placeholder="https://api.dingtalk.com/v1/mcp/..."
                   value={dingUrl}
                   onChange={(e) => setDingUrl(e.target.value)}
