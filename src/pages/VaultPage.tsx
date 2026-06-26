@@ -660,6 +660,11 @@ const VaultPage = () => {
                         <span className="font-mono truncate">{m.identifier}</span>
                         <span className="text-border shrink-0">·</span>
                         <span className="font-mono whitespace-nowrap shrink-0">{typeLabel(m.type)}</span>
+                        <span className="text-border shrink-0">·</span>
+                        <span className="inline-flex items-center gap-0.5 whitespace-nowrap shrink-0">
+                          {(m.scope ?? "personal") === "project" ? <Users className="w-2.5 h-2.5" /> : <User className="w-2.5 h-2.5" />}
+                          {(m.scope ?? "personal") === "project" ? "项目共用" : "个人"}
+                        </span>
                       </div>
                     </div>
                     <div className="flex items-center gap-0.5 shrink-0 -mr-1 -mt-1">
