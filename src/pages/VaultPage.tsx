@@ -250,6 +250,7 @@ const VaultPage = () => {
         stdioCommand,
         stdioArgs,
         envVars,
+        scope,
       } : m));
       const editedId = editingId;
       setTimeout(() => runTest(editedId, name), 200);
@@ -261,6 +262,7 @@ const VaultPage = () => {
         createdAt: new Date().toISOString().slice(0, 10),
         requiresCredential: true, type: mcpType,
         fromMarket: locked, description, headers, stdioCommand, stdioArgs, envVars,
+        scope,
       };
       setCredMcps((arr) => [newEntry, ...arr]);
       setMcpConfigured(name, true);
