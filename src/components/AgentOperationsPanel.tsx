@@ -220,8 +220,8 @@ export function AgentOperationsPanel() {
       </div>
 
       {/* Combined chart: 访问趋势 + 新增用户 */}
-      <div className="border border-border rounded-md bg-card">
-        <div className="px-3 h-9 border-b border-border flex items-center gap-2">
+      <div>
+        <div className="px-3 h-9 flex items-center gap-2">
           <span className="text-xs font-semibold">访问趋势</span>
           <span className="text-[11px] text-muted-foreground">总调用量 / 总用户量 / 新增用户</span>
         </div>
