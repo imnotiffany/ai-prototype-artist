@@ -659,11 +659,12 @@ const AgentDetail = () => {
                       丰声 NEXT 机器人{fsBlocking === "connecting" ? "正在连接中" : fsBlocking === "failed" ? "连接失败" : "凭证未连接"}，无法保存
                     </p>
                     <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80 mt-0.5">
-                      {fsBlocking === "connecting"
-                        ? "请等待连接结果后再保存"
-                        : fsBlocking === "failed"
-                        ? "请检查 Client ID / Client Secret / Robot Code 后重新连接，或清空凭证不对接丰声 NEXT 机器人"
-                        : "请点击「连接」校验凭证后再保存，或清空凭证不对接丰声 NEXT 机器人"}
+                    {fsBlocking === "connecting"
+                      ? "请等待连接结果后再保存"
+                      : fsBlocking === "failed"
+                      ? "请检查 Client ID / Client Secret 后重新连接，或清空凭证不对接丰声 NEXT 机器人"
+                      : "请点击「连接」校验凭证后再保存，或清空凭证不对接丰声 NEXT 机器人"}
+
                     </p>
                   </div>
                 </div>
