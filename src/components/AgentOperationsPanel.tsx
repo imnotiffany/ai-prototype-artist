@@ -60,36 +60,41 @@ type UserRow = {
 };
 
 const MOCK_USERS: UserRow[] = [
-  { name: "张伟", jobId: "01441970", calls: 328, last: "2 分钟前", source: "丰声 NEXT" },
-  { name: "李娜", jobId: "01523841", calls: 214, last: "12 分钟前", source: "Web" },
-  { name: "王强", jobId: "01330217", calls: 189, last: "1 小时前", source: "API" },
-  { name: "刘敏", jobId: "01488102", calls: 176, last: "3 小时前", source: "丰声 NEXT" },
-  { name: "陈晨", jobId: "01609934", calls: 142, last: "今天 10:22", source: "Web" },
-  { name: "杨帆", jobId: "01554720", calls: 118, last: "昨天 18:04", source: "丰声 NEXT" },
-  { name: "赵磊", jobId: "01472085", calls: 96, last: "昨天 09:47", source: "Web" },
-  { name: "周瑶", jobId: "01388461", calls: 71, last: "2 天前", source: "API" },
-  { name: "孙浩", jobId: "01502233", calls: 68, last: "2 天前", source: "丰声 NEXT" },
-  { name: "郑爽", jobId: "01411678", calls: 64, last: "3 天前", source: "Web" },
-  { name: "钱枫", jobId: "01655120", calls: 59, last: "3 天前", source: "丰声 NEXT" },
-  { name: "冯洋", jobId: "01298744", calls: 52, last: "4 天前", source: "API" },
-  { name: "褚青", jobId: "01377281", calls: 47, last: "4 天前", source: "Web" },
-  { name: "卫涛", jobId: "01466019", calls: 41, last: "5 天前", source: "丰声 NEXT" },
-  { name: "蒋雯", jobId: "01590482", calls: 36, last: "5 天前", source: "Web" },
-  { name: "沈鹏", jobId: "01311856", calls: 33, last: "6 天前", source: "API" },
-  { name: "韩梅", jobId: "01432107", calls: 28, last: "6 天前", source: "丰声 NEXT" },
-  { name: "曹阳", jobId: "01521934", calls: 22, last: "7 天前", source: "Web" },
+  { name: "张伟", jobId: "01441970", calls: 328, last: "2026-07-02 14:32", source: "丰声 NEXT" },
+  { name: "李娜", jobId: "01523841", calls: 214, last: "2026-07-02 14:20", source: "Web" },
+  { name: "王强", jobId: "01330217", calls: 189, last: "2026-07-02 13:15", source: "API" },
+  { name: "刘敏", jobId: "01488102", calls: 176, last: "2026-07-02 11:08", source: "丰声 NEXT" },
+  { name: "陈晨", jobId: "01609934", calls: 142, last: "2026-07-02 10:22", source: "Web" },
+  { name: "杨帆", jobId: "01554720", calls: 118, last: "2026-07-01 18:04", source: "丰声 NEXT" },
+  { name: "赵磊", jobId: "01472085", calls: 96, last: "2026-07-01 09:47", source: "Web" },
+  { name: "周瑶", jobId: "01388461", calls: 71, last: "2026-06-30 16:33", source: "API" },
+  { name: "孙浩", jobId: "01502233", calls: 68, last: "2026-06-30 11:12", source: "丰声 NEXT" },
+  { name: "郑爽", jobId: "01411678", calls: 64, last: "2026-06-29 15:45", source: "Web" },
+  { name: "钱枫", jobId: "01655120", calls: 59, last: "2026-06-29 09:20", source: "丰声 NEXT" },
+  { name: "冯洋", jobId: "01298744", calls: 52, last: "2026-06-28 17:58", source: "API" },
+  { name: "褚青", jobId: "01377281", calls: 47, last: "2026-06-28 10:04", source: "Web" },
+  { name: "卫涛", jobId: "01466019", calls: 41, last: "2026-06-27 14:22", source: "丰声 NEXT" },
+  { name: "蒋雯", jobId: "01590482", calls: 36, last: "2026-06-27 08:51", source: "Web" },
+  { name: "沈鹏", jobId: "01311856", calls: 33, last: "2026-06-26 19:07", source: "API" },
+  { name: "韩梅", jobId: "01432107", calls: 28, last: "2026-06-26 10:36", source: "丰声 NEXT" },
+  { name: "曹阳", jobId: "01521934", calls: 22, last: "2026-06-25 15:19", source: "Web" },
 ];
 
-type GroupRow = { name: string; webhook: string; messages: number };
+type GroupRow = { name: string; webhook: string; members: number; messages: number };
 
 const MOCK_GROUPS: GroupRow[] = [
-  { name: "【项目】领汇智能体接入群", webhook: "cidkbWdSCTNaI3/HBXryaXPxw==", messages: 128 },
-  { name: "研发效能助手交流", webhook: "cidA2fMlqQ7nzR9/LKpuwbXTma==", messages: 76 },
-  { name: "BI 数据周报讨论", webhook: "cidHnBpEt4rXs21/UYevkzDLpo==", messages: 34 },
-  { name: "产品评审 · Q3", webhook: "cidMR3xVdF8wJ56/AbNqPyGCik==", messages: 210 },
-  { name: "增长实验小组", webhook: "cidZK9tQrY2mL08/CvExOhWNud==", messages: 45 },
-  { name: "客户成功日报群", webhook: "cidPLQtEwR3xU29/FbNzMkAoRy==", messages: 82 },
-  { name: "运维告警通知群", webhook: "cidVX4nHmS7kJ08/QwErTyUiOp==", messages: 156 },
+  { name: "【项目】领汇智能体接入群", webhook: "cidkbWdSCTNaI3/HBXryaXPxw==", members: 68, messages: 128 },
+  { name: "研发效能助手交流", webhook: "cidA2fMlqQ7nzR9/LKpuwbXTma==", members: 42, messages: 76 },
+  { name: "BI 数据周报讨论", webhook: "cidHnBpEt4rXs21/UYevkzDLpo==", members: 25, messages: 34 },
+  { name: "产品评审 · Q3", webhook: "cidMR3xVdF8wJ56/AbNqPyGCik==", members: 88, messages: 210 },
+  { name: "增长实验小组", webhook: "cidZK9tQrY2mL08/CvExOhWNud==", members: 18, messages: 45 },
+  { name: "客户成功日报群", webhook: "cidPLQtEwR3xU29/FbNzMkAoRy==", members: 54, messages: 82 },
+  { name: "运维告警通知群", webhook: "cidVX4nHmS7kJ08/QwErTyUiOp==", members: 96, messages: 156 },
+  { name: "数据治理专项群", webhook: "cidDT8fLkP2yN44/HmXnQaVbCz==", members: 31, messages: 62 },
+  { name: "AI 平台答疑群", webhook: "cidAI9pQrS7wM12/KtEuBnRxLo==", members: 120, messages: 245 },
+  { name: "前端体验优化群", webhook: "cidFE3xNkT6vB90/GdWcJmPqHy==", members: 46, messages: 58 },
+  { name: "供应链协同群", webhook: "cidSC5mZqW8pL71/YbFeKnHtGa==", members: 73, messages: 91 },
+  { name: "HR 招聘沟通群", webhook: "cidHR4dRsC1nJ58/PxLoMzVaEu==", members: 22, messages: 27 },
 ];
 
 function StatCard({ label, value, unit }: { label: string; value: string | number; unit?: string }) {
@@ -135,6 +140,7 @@ export function AgentOperationsPanel() {
   const [userQuery, setUserQuery] = useState("");
   const [groupQuery, setGroupQuery] = useState("");
   const [userPage, setUserPage] = useState(1);
+  const [groupPage, setGroupPage] = useState(1);
 
   const showGroups = source === "all" || source === "fengsheng";
   const data = useMemo(() => buildDaily(from, to), [from, to]);
@@ -160,6 +166,8 @@ export function AgentOperationsPanel() {
   const filteredGroups = MOCK_GROUPS
     .filter((g) => (groupQuery ? g.name.includes(groupQuery) || g.webhook.includes(groupQuery) : true))
     .sort((a, b) => b.messages - a.messages);
+  const totalGroupPages = Math.max(1, Math.ceil(filteredGroups.length / PAGE_SIZE));
+  const pagedGroups = filteredGroups.slice((groupPage - 1) * PAGE_SIZE, groupPage * PAGE_SIZE);
 
   return (
     <div className="space-y-4">
@@ -222,7 +230,6 @@ export function AgentOperationsPanel() {
       <div>
         <div className="px-3 h-9 flex items-center gap-2">
           <span className="text-xs font-semibold">访问趋势</span>
-          <span className="text-[11px] text-muted-foreground">总调用量 / 总用户量 / 新增用户</span>
         </div>
         <div className="p-2 h-[260px]">
           <ResponsiveContainer width="100%" height="100%">
@@ -254,7 +261,6 @@ export function AgentOperationsPanel() {
       <div>
         <div className="flex items-center gap-2 mb-2">
           <span className="text-xs font-semibold">活跃用户</span>
-          <span className="text-[11px] text-muted-foreground">按调用量排序</span>
           <div className="ml-auto relative">
             <Search className="w-3 h-3 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -331,12 +337,14 @@ export function AgentOperationsPanel() {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xs font-semibold">被拉入的群聊</span>
-            <span className="text-[11px] text-muted-foreground">仅丰声 NEXT · 按消息数倒序</span>
             <div className="ml-auto relative">
               <Search className="w-3 h-3 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={groupQuery}
-                onChange={(e) => setGroupQuery(e.target.value)}
+                onChange={(e) => {
+                  setGroupQuery(e.target.value);
+                  setGroupPage(1);
+                }}
                 placeholder="搜索群名 / Webhook"
                 className="h-7 w-[220px] text-[11px] pl-6 md:text-[11px]"
               />
@@ -347,28 +355,57 @@ export function AgentOperationsPanel() {
               <TableRow className="hover:bg-transparent">
                 <TableHead className="h-8 text-[11px]">群名称</TableHead>
                 <TableHead className="h-8 text-[11px]">群 Webhook</TableHead>
+                <TableHead className="h-8 text-[11px] text-right">群人数</TableHead>
                 <TableHead className="h-8 text-[11px] text-right">消息数</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredGroups.map((g) => (
+              {pagedGroups.map((g) => (
                 <TableRow key={g.webhook} className="text-xs">
                   <TableCell className="py-2 font-medium">{g.name}</TableCell>
                   <TableCell className="py-2 text-muted-foreground font-mono text-[11px] truncate max-w-[320px]">
                     {g.webhook}
                   </TableCell>
+                  <TableCell className="py-2 text-right tabular-nums">{g.members}</TableCell>
                   <TableCell className="py-2 text-right tabular-nums">{g.messages}</TableCell>
                 </TableRow>
               ))}
-              {filteredGroups.length === 0 && (
+              {pagedGroups.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center text-xs text-muted-foreground py-6">
+                  <TableCell colSpan={4} className="text-center text-xs text-muted-foreground py-6">
                     无匹配群聊
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
+          {filteredGroups.length > 0 && (
+            <div className="flex items-center justify-end gap-3 mt-2 text-[11px] text-muted-foreground">
+              <span>
+                共 {filteredGroups.length} 条 · 第 {groupPage} / {totalGroupPages} 页
+              </span>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  disabled={groupPage <= 1}
+                  onClick={() => setGroupPage((p) => Math.max(1, p - 1))}
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  disabled={groupPage >= totalGroupPages}
+                  onClick={() => setGroupPage((p) => Math.min(totalGroupPages, p + 1))}
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
