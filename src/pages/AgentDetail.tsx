@@ -1678,14 +1678,14 @@ fengsheng:
                     </div>
                   </div>
 
-                  <div className="pt-1 flex items-start justify-between gap-4 border-t border-border/50 mt-1">
-                    <div className="min-w-0 pt-3">
+                  <div className="pt-1 flex items-center justify-between gap-4 border-t border-border/50 mt-1">
+                    <div className="min-w-0 flex items-center gap-2">
                       <div className="text-xs font-medium">群聊会话复用</div>
-                      <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
-                        开启后，同一群聊内的成员共享同一会话与上下文；关闭则每位成员各自独立会话，互不影响。
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        开启则同一群聊群聊会话复用内的成员共享同一会话与上下文；关闭则每位成员各自独立会话
                       </p>
                     </div>
-                    <Switch size="sm" className="mt-3 shrink-0" checked={fsShareSession} onCheckedChange={setFsShareSession} />
+                    <Switch size="sm" className="shrink-0" checked={fsShareSession} onCheckedChange={setFsShareSession} />
                   </div>
 
                   {fsStatus === "failed" && (
