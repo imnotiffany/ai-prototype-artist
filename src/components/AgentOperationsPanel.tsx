@@ -166,6 +166,8 @@ export function AgentOperationsPanel() {
   const filteredGroups = MOCK_GROUPS
     .filter((g) => (groupQuery ? g.name.includes(groupQuery) || g.webhook.includes(groupQuery) : true))
     .sort((a, b) => b.messages - a.messages);
+  const totalGroupPages = Math.max(1, Math.ceil(filteredGroups.length / PAGE_SIZE));
+  const pagedGroups = filteredGroups.slice((groupPage - 1) * PAGE_SIZE, groupPage * PAGE_SIZE);
 
   return (
     <div className="space-y-4">
