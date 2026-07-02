@@ -116,7 +116,8 @@ const AgentDetail = () => {
     mcpBindings: ((agent?.mcpServers ?? []) as string[]).map((m) => ({ name: m, credential: "" })),
     fsAppKey: "",
     fsAppSecret: "",
-    fsRobotCode: "",
+    fsShareSession: false,
+
   }), [agent]);
 
   const [name, setName] = useState(initialSnapshot.name);
