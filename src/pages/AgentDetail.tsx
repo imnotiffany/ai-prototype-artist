@@ -191,8 +191,8 @@ const AgentDetail = () => {
   const [justSaved, setJustSaved] = useState(false);
 
   const isDirty = useMemo(() => JSON.stringify({
-    name, description, model, systemPrompt, skills: selSkills, mcpBindings, fsAppKey, fsAppSecret, fsRobotCode,
-  }) !== JSON.stringify(savedSnapshot), [name, description, model, systemPrompt, selSkills, mcpBindings, fsAppKey, fsAppSecret, fsRobotCode, savedSnapshot]);
+    name, description, model, systemPrompt, skills: selSkills, mcpBindings, fsAppKey, fsAppSecret, fsShareSession,
+  }) !== JSON.stringify(savedSnapshot), [name, description, model, systemPrompt, selSkills, mcpBindings, fsAppKey, fsAppSecret, fsShareSession, savedSnapshot]);
 
   /* ── Debug state ── */
   type PromptSuggestion = { id: string; addition: string; summaryNote: string; status: "pending" | "adopted" | "rejected" };
@@ -415,7 +415,8 @@ const AgentDetail = () => {
 
   /* ── Config actions ── */
   const handleSave = () => {
-    setSavedSnapshot({ name, description, model, systemPrompt, skills: selSkills, mcpBindings, fsAppKey, fsAppSecret, fsRobotCode });
+    setSavedSnapshot({ name, description, model, systemPrompt, skills: selSkills, mcpBindings, fsAppKey, fsAppSecret, fsShareSession });
+
     setJustSaved(true);
     window.setTimeout(() => setJustSaved(false), 2800);
     
@@ -435,7 +436,8 @@ const AgentDetail = () => {
     setMcpBindings(savedSnapshot.mcpBindings);
     setFsAppKey(savedSnapshot.fsAppKey);
     setFsAppSecret(savedSnapshot.fsAppSecret);
-    setFsRobotCode(savedSnapshot.fsRobotCode);
+    setFsShareSession(savedSnapshot.fsShareSession);
+
     
   };
 
@@ -725,7 +727,7 @@ sub_agents:
 ${selSubagents.map((s) => `  - ${s}`).join("\n") || "  []"}
 fengsheng:
   client_id: ${fsAppKey || "(未配置)"}
-  robot_code: ${fsRobotCode || "(未配置)"}`;
+  share_session: ${fsShareSession ? "是" : "否"}`;
               const jsonText = JSON.stringify({
                 name,
                 model,
@@ -735,7 +737,7 @@ fengsheng:
                 sub_agents: selSubagents,
                 fengsheng: {
                   client_id: fsAppKey || null,
-                  robot_code: fsRobotCode || null,
+                  share_session: fsShareSession,
                 },
               }, null, 2);
               const text = codeFormat === "yaml" ? yamlText : jsonText;
