@@ -179,17 +179,16 @@ const CreateAgentManualPage = () => {
   // FengSheng NEXT bot
   const [fsAppKey, setFsAppKey] = useState("");
   const [fsAppSecret, setFsAppSecret] = useState("");
-  const [fsRobotCode, setFsRobotCode] = useState("");
   const [fsSecretVisible, setFsSecretVisible] = useState(false);
+  const [fsShareSession, setFsShareSession] = useState(false);
   type FsStatus = "empty" | "draft" | "connecting" | "connected" | "failed";
   const [fsStatus, setFsStatus] = useState<FsStatus>("empty");
   const [fsFailMsg, setFsFailMsg] = useState("");
   const fsConnected = fsStatus === "connected";
-  const onFsFieldChange = (next: { appKey?: string; appSecret?: string; robotCode?: string }) => {
+  const onFsFieldChange = (next: { appKey?: string; appSecret?: string }) => {
     const appKey = next.appKey ?? fsAppKey;
     const appSecret = next.appSecret ?? fsAppSecret;
-    const robotCode = next.robotCode ?? fsRobotCode;
-    setFsStatus(!appKey && !appSecret && !robotCode ? "empty" : "draft");
+    setFsStatus(!appKey && !appSecret ? "empty" : "draft");
     setFsFailMsg("");
   };
 
