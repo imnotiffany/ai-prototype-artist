@@ -54,29 +54,28 @@ type UserRow = {
   name: string;
   jobId: string;
   calls: number;
-  last: string;
   source: "丰声 NEXT" | "Web" | "API";
 };
 
 const MOCK_USERS: UserRow[] = [
-  { name: "张伟", jobId: "01441970", calls: 328, last: "2026-07-02 14:32", source: "丰声 NEXT" },
-  { name: "李娜", jobId: "01523841", calls: 214, last: "2026-07-02 14:20", source: "Web" },
-  { name: "王强", jobId: "01330217", calls: 189, last: "2026-07-02 13:15", source: "API" },
-  { name: "刘敏", jobId: "01488102", calls: 176, last: "2026-07-02 11:08", source: "丰声 NEXT" },
-  { name: "陈晨", jobId: "01609934", calls: 142, last: "2026-07-02 10:22", source: "Web" },
-  { name: "杨帆", jobId: "01554720", calls: 118, last: "2026-07-01 18:04", source: "丰声 NEXT" },
-  { name: "赵磊", jobId: "01472085", calls: 96, last: "2026-07-01 09:47", source: "Web" },
-  { name: "周瑶", jobId: "01388461", calls: 71, last: "2026-06-30 16:33", source: "API" },
-  { name: "孙浩", jobId: "01502233", calls: 68, last: "2026-06-30 11:12", source: "丰声 NEXT" },
-  { name: "郑爽", jobId: "01411678", calls: 64, last: "2026-06-29 15:45", source: "Web" },
-  { name: "钱枫", jobId: "01655120", calls: 59, last: "2026-06-29 09:20", source: "丰声 NEXT" },
-  { name: "冯洋", jobId: "01298744", calls: 52, last: "2026-06-28 17:58", source: "API" },
-  { name: "褚青", jobId: "01377281", calls: 47, last: "2026-06-28 10:04", source: "Web" },
-  { name: "卫涛", jobId: "01466019", calls: 41, last: "2026-06-27 14:22", source: "丰声 NEXT" },
-  { name: "蒋雯", jobId: "01590482", calls: 36, last: "2026-06-27 08:51", source: "Web" },
-  { name: "沈鹏", jobId: "01311856", calls: 33, last: "2026-06-26 19:07", source: "API" },
-  { name: "韩梅", jobId: "01432107", calls: 28, last: "2026-06-26 10:36", source: "丰声 NEXT" },
-  { name: "曹阳", jobId: "01521934", calls: 22, last: "2026-06-25 15:19", source: "Web" },
+  { name: "张伟", jobId: "01441970", calls: 328, source: "丰声 NEXT" },
+  { name: "李娜", jobId: "01523841", calls: 214, source: "Web" },
+  { name: "王强", jobId: "01330217", calls: 189, source: "API" },
+  { name: "刘敏", jobId: "01488102", calls: 176, source: "丰声 NEXT" },
+  { name: "陈晨", jobId: "01609934", calls: 142, source: "Web" },
+  { name: "杨帆", jobId: "01554720", calls: 118, source: "丰声 NEXT" },
+  { name: "赵磊", jobId: "01472085", calls: 96, source: "Web" },
+  { name: "周瑶", jobId: "01388461", calls: 71, source: "API" },
+  { name: "孙浩", jobId: "01502233", calls: 68, source: "丰声 NEXT" },
+  { name: "郑爽", jobId: "01411678", calls: 64, source: "Web" },
+  { name: "钱枫", jobId: "01655120", calls: 59, source: "丰声 NEXT" },
+  { name: "冯洋", jobId: "01298744", calls: 52, source: "API" },
+  { name: "褚青", jobId: "01377281", calls: 47, source: "Web" },
+  { name: "卫涛", jobId: "01466019", calls: 41, source: "丰声 NEXT" },
+  { name: "蒋雯", jobId: "01590482", calls: 36, source: "Web" },
+  { name: "沈鹏", jobId: "01311856", calls: 33, source: "API" },
+  { name: "韩梅", jobId: "01432107", calls: 28, source: "丰声 NEXT" },
+  { name: "曹阳", jobId: "01521934", calls: 22, source: "Web" },
 ];
 
 type GroupRow = { name: string; webhook: string; members: number; messages: number };
@@ -278,33 +277,31 @@ export function AgentOperationsPanel() {
           </div>
         </div>
         <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="h-8 text-[11px]">用户</TableHead>
-              <TableHead className="h-8 text-[11px]">工号</TableHead>
-              <TableHead className="h-8 text-[11px]">来源</TableHead>
-              <TableHead className="h-8 text-[11px] text-right">调用量</TableHead>
-              <TableHead className="h-8 text-[11px]">最后访问</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {pagedUsers.map((u) => (
-              <TableRow key={u.jobId} className="text-xs">
-                <TableCell className="py-2 font-medium">{u.name}</TableCell>
-                <TableCell className="py-2 text-muted-foreground tabular-nums">{u.jobId}</TableCell>
-                <TableCell className="py-2 text-muted-foreground">{u.source}</TableCell>
-                <TableCell className="py-2 text-right tabular-nums">{u.calls}</TableCell>
-                <TableCell className="py-2 text-muted-foreground">{u.last}</TableCell>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="h-8 text-[11px]">用户</TableHead>
+                <TableHead className="h-8 text-[11px]">工号</TableHead>
+                <TableHead className="h-8 text-[11px]">来源</TableHead>
+                <TableHead className="h-8 text-[11px] text-right">调用量</TableHead>
               </TableRow>
-            ))}
-            {pagedUsers.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center text-xs text-muted-foreground py-6">
-                  无匹配用户
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
+            </TableHeader>
+            <TableBody>
+              {pagedUsers.map((u) => (
+                <TableRow key={u.jobId} className="text-xs">
+                  <TableCell className="py-2 font-medium">{u.name}</TableCell>
+                  <TableCell className="py-2 text-muted-foreground tabular-nums">{u.jobId}</TableCell>
+                  <TableCell className="py-2 text-muted-foreground">{u.source}</TableCell>
+                  <TableCell className="py-2 text-right tabular-nums">{u.calls}</TableCell>
+                </TableRow>
+              ))}
+              {pagedUsers.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center text-xs text-muted-foreground py-6">
+                    无匹配用户
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
         </Table>
         {filteredUsers.length > 0 && (
           <div className="flex items-center justify-end gap-3 mt-2 text-[11px] text-muted-foreground">
