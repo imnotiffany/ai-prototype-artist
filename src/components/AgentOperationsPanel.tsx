@@ -221,7 +221,7 @@ export function AgentOperationsPanel() {
         <StatCard label="总调用量" value={totals.calls.toLocaleString()} unit="次" />
         <StatCard label="总用户量" value={totals.uv.toLocaleString()} unit="人" />
         <StatCard label="新增用户" value={totals.newUsers.toLocaleString()} unit="人" />
-        {showGroups && <StatCard label="被拉入群聊" value={totals.groups.toLocaleString()} unit="个" />}
+        {showGroups && <StatCard label="群聊数量" value={totals.groups.toLocaleString()} unit="个" />}
       </div>
 
       {/* Combined chart: 访问趋势 + 新增用户 */}
