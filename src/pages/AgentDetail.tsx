@@ -159,30 +159,30 @@ const AgentDetail = () => {
   const [mcpBindings, setMcpBindings] = useState<{ name: string; credential: string }[]>(initialSnapshot.mcpBindings);
   const [fsAppKey, setFsAppKey] = useState(initialSnapshot.fsAppKey);
   const [fsAppSecret, setFsAppSecret] = useState(initialSnapshot.fsAppSecret);
-  const [fsRobotCode, setFsRobotCode] = useState(initialSnapshot.fsRobotCode);
+  const [fsShareSession, setFsShareSession] = useState(initialSnapshot.fsShareSession);
   const [fsSecretVisible, setFsSecretVisible] = useState(false);
   // 丰声 NEXT 连接状态机：empty → draft → connecting → connected | failed
   type FsStatus = "empty" | "draft" | "connecting" | "connected" | "failed";
-  // 根据已保存凭证推导：三项均空 → empty(未配置)；有任意已保存值 → connected(已连接)；否则 draft
+  // 根据已保存凭证推导：两项均空 → empty(未配置)；有任意已保存值 → connected(已连接)；否则 draft
   const [fsStatus, setFsStatus] = useState<FsStatus>(() => {
-    const hasAny = !!(initialSnapshot.fsAppKey || initialSnapshot.fsAppSecret || initialSnapshot.fsRobotCode);
+    const hasAny = !!(initialSnapshot.fsAppKey || initialSnapshot.fsAppSecret);
     return hasAny ? "connected" : "empty";
   });
   const [fsFailMsg, setFsFailMsg] = useState<string>("");
   const fsConnected = fsStatus === "connected";
 
   // 任一凭证字段被编辑时，让状态回退（验证结果作废）
-  const onFsFieldChange = (next: { appKey?: string; appSecret?: string; robotCode?: string }) => {
+  const onFsFieldChange = (next: { appKey?: string; appSecret?: string }) => {
     const appKey = next.appKey ?? fsAppKey;
     const appSecret = next.appSecret ?? fsAppSecret;
-    const robotCode = next.robotCode ?? fsRobotCode;
-    if (!appKey && !appSecret && !robotCode) {
+    if (!appKey && !appSecret) {
       setFsStatus("empty");
     } else {
       setFsStatus("draft");
     }
     setFsFailMsg("");
   };
+
   const [selSubagents, setSelSubagents] = useState<string[]>(["数据查询子智能体", "报告撰写子智能体"]);
   const [subagentGapDialogOpen, setSubagentGapDialogOpen] = useState(false);
   const [configView, setConfigView] = useState<"form" | "code">("form");
