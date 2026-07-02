@@ -168,8 +168,8 @@ export function AgentOperationsPanel() {
         {/* Date range */}
         <Popover>
           <PopoverTrigger asChild>
-            <button className="inline-flex items-center gap-1.5 text-xs text-foreground hover:text-primary transition-colors">
-              <CalendarIcon className="w-3.5 h-3.5" />
+            <button className="inline-flex items-center gap-1.5 h-7 px-2.5 border border-input rounded-md bg-background text-xs text-foreground hover:border-ring/40 transition-colors">
+              <CalendarIcon className="w-3.5 h-3.5 text-muted-foreground" />
               <span className="tabular-nums">{formatDate(from)}</span>
               <span className="text-muted-foreground">—</span>
               <span className="tabular-nums">{formatDate(to)}</span>
@@ -185,6 +185,7 @@ export function AgentOperationsPanel() {
               }}
               numberOfMonths={2}
               defaultMonth={from}
+              className="pointer-events-auto"
             />
           </PopoverContent>
         </Popover>
