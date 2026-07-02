@@ -60,36 +60,41 @@ type UserRow = {
 };
 
 const MOCK_USERS: UserRow[] = [
-  { name: "张伟", jobId: "01441970", calls: 328, last: "2 分钟前", source: "丰声 NEXT" },
-  { name: "李娜", jobId: "01523841", calls: 214, last: "12 分钟前", source: "Web" },
-  { name: "王强", jobId: "01330217", calls: 189, last: "1 小时前", source: "API" },
-  { name: "刘敏", jobId: "01488102", calls: 176, last: "3 小时前", source: "丰声 NEXT" },
-  { name: "陈晨", jobId: "01609934", calls: 142, last: "今天 10:22", source: "Web" },
-  { name: "杨帆", jobId: "01554720", calls: 118, last: "昨天 18:04", source: "丰声 NEXT" },
-  { name: "赵磊", jobId: "01472085", calls: 96, last: "昨天 09:47", source: "Web" },
-  { name: "周瑶", jobId: "01388461", calls: 71, last: "2 天前", source: "API" },
-  { name: "孙浩", jobId: "01502233", calls: 68, last: "2 天前", source: "丰声 NEXT" },
-  { name: "郑爽", jobId: "01411678", calls: 64, last: "3 天前", source: "Web" },
-  { name: "钱枫", jobId: "01655120", calls: 59, last: "3 天前", source: "丰声 NEXT" },
-  { name: "冯洋", jobId: "01298744", calls: 52, last: "4 天前", source: "API" },
-  { name: "褚青", jobId: "01377281", calls: 47, last: "4 天前", source: "Web" },
-  { name: "卫涛", jobId: "01466019", calls: 41, last: "5 天前", source: "丰声 NEXT" },
-  { name: "蒋雯", jobId: "01590482", calls: 36, last: "5 天前", source: "Web" },
-  { name: "沈鹏", jobId: "01311856", calls: 33, last: "6 天前", source: "API" },
-  { name: "韩梅", jobId: "01432107", calls: 28, last: "6 天前", source: "丰声 NEXT" },
-  { name: "曹阳", jobId: "01521934", calls: 22, last: "7 天前", source: "Web" },
+  { name: "张伟", jobId: "01441970", calls: 328, last: "2026-07-02 14:32", source: "丰声 NEXT" },
+  { name: "李娜", jobId: "01523841", calls: 214, last: "2026-07-02 14:20", source: "Web" },
+  { name: "王强", jobId: "01330217", calls: 189, last: "2026-07-02 13:15", source: "API" },
+  { name: "刘敏", jobId: "01488102", calls: 176, last: "2026-07-02 11:08", source: "丰声 NEXT" },
+  { name: "陈晨", jobId: "01609934", calls: 142, last: "2026-07-02 10:22", source: "Web" },
+  { name: "杨帆", jobId: "01554720", calls: 118, last: "2026-07-01 18:04", source: "丰声 NEXT" },
+  { name: "赵磊", jobId: "01472085", calls: 96, last: "2026-07-01 09:47", source: "Web" },
+  { name: "周瑶", jobId: "01388461", calls: 71, last: "2026-06-30 16:33", source: "API" },
+  { name: "孙浩", jobId: "01502233", calls: 68, last: "2026-06-30 11:12", source: "丰声 NEXT" },
+  { name: "郑爽", jobId: "01411678", calls: 64, last: "2026-06-29 15:45", source: "Web" },
+  { name: "钱枫", jobId: "01655120", calls: 59, last: "2026-06-29 09:20", source: "丰声 NEXT" },
+  { name: "冯洋", jobId: "01298744", calls: 52, last: "2026-06-28 17:58", source: "API" },
+  { name: "褚青", jobId: "01377281", calls: 47, last: "2026-06-28 10:04", source: "Web" },
+  { name: "卫涛", jobId: "01466019", calls: 41, last: "2026-06-27 14:22", source: "丰声 NEXT" },
+  { name: "蒋雯", jobId: "01590482", calls: 36, last: "2026-06-27 08:51", source: "Web" },
+  { name: "沈鹏", jobId: "01311856", calls: 33, last: "2026-06-26 19:07", source: "API" },
+  { name: "韩梅", jobId: "01432107", calls: 28, last: "2026-06-26 10:36", source: "丰声 NEXT" },
+  { name: "曹阳", jobId: "01521934", calls: 22, last: "2026-06-25 15:19", source: "Web" },
 ];
 
-type GroupRow = { name: string; webhook: string; messages: number };
+type GroupRow = { name: string; webhook: string; members: number; messages: number };
 
 const MOCK_GROUPS: GroupRow[] = [
-  { name: "【项目】领汇智能体接入群", webhook: "cidkbWdSCTNaI3/HBXryaXPxw==", messages: 128 },
-  { name: "研发效能助手交流", webhook: "cidA2fMlqQ7nzR9/LKpuwbXTma==", messages: 76 },
-  { name: "BI 数据周报讨论", webhook: "cidHnBpEt4rXs21/UYevkzDLpo==", messages: 34 },
-  { name: "产品评审 · Q3", webhook: "cidMR3xVdF8wJ56/AbNqPyGCik==", messages: 210 },
-  { name: "增长实验小组", webhook: "cidZK9tQrY2mL08/CvExOhWNud==", messages: 45 },
-  { name: "客户成功日报群", webhook: "cidPLQtEwR3xU29/FbNzMkAoRy==", messages: 82 },
-  { name: "运维告警通知群", webhook: "cidVX4nHmS7kJ08/QwErTyUiOp==", messages: 156 },
+  { name: "【项目】领汇智能体接入群", webhook: "cidkbWdSCTNaI3/HBXryaXPxw==", members: 68, messages: 128 },
+  { name: "研发效能助手交流", webhook: "cidA2fMlqQ7nzR9/LKpuwbXTma==", members: 42, messages: 76 },
+  { name: "BI 数据周报讨论", webhook: "cidHnBpEt4rXs21/UYevkzDLpo==", members: 25, messages: 34 },
+  { name: "产品评审 · Q3", webhook: "cidMR3xVdF8wJ56/AbNqPyGCik==", members: 88, messages: 210 },
+  { name: "增长实验小组", webhook: "cidZK9tQrY2mL08/CvExOhWNud==", members: 18, messages: 45 },
+  { name: "客户成功日报群", webhook: "cidPLQtEwR3xU29/FbNzMkAoRy==", members: 54, messages: 82 },
+  { name: "运维告警通知群", webhook: "cidVX4nHmS7kJ08/QwErTyUiOp==", members: 96, messages: 156 },
+  { name: "数据治理专项群", webhook: "cidDT8fLkP2yN44/HmXnQaVbCz==", members: 31, messages: 62 },
+  { name: "AI 平台答疑群", webhook: "cidAI9pQrS7wM12/KtEuBnRxLo==", members: 120, messages: 245 },
+  { name: "前端体验优化群", webhook: "cidFE3xNkT6vB90/GdWcJmPqHy==", members: 46, messages: 58 },
+  { name: "供应链协同群", webhook: "cidSC5mZqW8pL71/YbFeKnHtGa==", members: 73, messages: 91 },
+  { name: "HR 招聘沟通群", webhook: "cidHR4dRsC1nJ58/PxLoMzVaEu==", members: 22, messages: 27 },
 ];
 
 function StatCard({ label, value, unit }: { label: string; value: string | number; unit?: string }) {
