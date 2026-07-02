@@ -335,12 +335,14 @@ export function AgentOperationsPanel() {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xs font-semibold">被拉入的群聊</span>
-            <span className="text-[11px] text-muted-foreground">仅丰声 NEXT · 按消息数倒序</span>
             <div className="ml-auto relative">
               <Search className="w-3 h-3 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={groupQuery}
-                onChange={(e) => setGroupQuery(e.target.value)}
+                onChange={(e) => {
+                  setGroupQuery(e.target.value);
+                  setGroupPage(1);
+                }}
                 placeholder="搜索群名 / Webhook"
                 className="h-7 w-[220px] text-[11px] pl-6 md:text-[11px]"
               />
@@ -351,28 +353,57 @@ export function AgentOperationsPanel() {
               <TableRow className="hover:bg-transparent">
                 <TableHead className="h-8 text-[11px]">群名称</TableHead>
                 <TableHead className="h-8 text-[11px]">群 Webhook</TableHead>
+                <TableHead className="h-8 text-[11px] text-right">群人数</TableHead>
                 <TableHead className="h-8 text-[11px] text-right">消息数</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredGroups.map((g) => (
+              {pagedGroups.map((g) => (
                 <TableRow key={g.webhook} className="text-xs">
                   <TableCell className="py-2 font-medium">{g.name}</TableCell>
                   <TableCell className="py-2 text-muted-foreground font-mono text-[11px] truncate max-w-[320px]">
                     {g.webhook}
                   </TableCell>
+                  <TableCell className="py-2 text-right tabular-nums">{g.members}</TableCell>
                   <TableCell className="py-2 text-right tabular-nums">{g.messages}</TableCell>
                 </TableRow>
               ))}
-              {filteredGroups.length === 0 && (
+              {pagedGroups.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center text-xs text-muted-foreground py-6">
+                  <TableCell colSpan={4} className="text-center text-xs text-muted-foreground py-6">
                     无匹配群聊
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
+          {filteredGroups.length > 0 && (
+            <div className="flex items-center justify-end gap-3 mt-2 text-[11px] text-muted-foreground">
+              <span>
+                共 {filteredGroups.length} 条 · 第 {groupPage} / {totalGroupPages} 页
+              </span>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  disabled={groupPage <= 1}
+                  onClick={() => setGroupPage((p) => Math.max(1, p - 1))}
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  disabled={groupPage >= totalGroupPages}
+                  onClick={() => setGroupPage((p) => Math.min(totalGroupPages, p + 1))}
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
