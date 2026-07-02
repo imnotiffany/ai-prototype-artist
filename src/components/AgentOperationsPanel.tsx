@@ -243,13 +243,17 @@ export function AgentOperationsPanel() {
                   <stop offset="0%" stopColor="#10b981" stopOpacity={0.25} />
                   <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
                 </linearGradient>
+                <linearGradient id="gNewUsers" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.25} />
+                  <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
+                </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
               <XAxis dataKey="t" {...axisProps} />
               <YAxis {...axisProps} />
               <Tooltip {...tooltipStyle} />
               <Legend wrapperStyle={{ fontSize: 10 }} iconSize={8} />
-              <Bar dataKey="newUsers" name="新增用户" fill="#3b82f6" radius={[2, 2, 0, 0]} barSize={12} />
+              <Area type="monotone" dataKey="newUsers" name="新增用户" stroke="#3b82f6" fill="url(#gNewUsers)" strokeWidth={1.5} />
               <Area type="monotone" dataKey="calls" name="总调用量" stroke="hsl(var(--primary))" fill="url(#gCalls)" strokeWidth={1.5} />
               <Area type="monotone" dataKey="uv" name="总用户量" stroke="#10b981" fill="url(#gUv)" strokeWidth={1.5} />
             </ComposedChart>
