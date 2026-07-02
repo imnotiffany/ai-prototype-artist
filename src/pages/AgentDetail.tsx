@@ -43,6 +43,7 @@ import { mockArtifacts } from "@/data/artifacts";
 import { FolderOpen } from "lucide-react";
 import { AgentMonitoringPanel } from "@/components/AgentMonitoringPanel";
 import { AgentLogsPanel } from "@/components/AgentLogsPanel";
+import { AgentOperationsPanel } from "@/components/AgentOperationsPanel";
 import { getLatestSkillVersion } from "@/lib/skillVersion";
 import OfficeSuiteSection from "@/components/OfficeSuiteSection";
 
