@@ -1550,8 +1550,9 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                       开启后，同一群聊内的成员共享同一会话与上下文；关闭则每位成员各自独立会话，互不影响。
                     </p>
                   </div>
-                  <Switch className="mt-3 shrink-0" checked={fsShareSession} onCheckedChange={setFsShareSession} />
+                  <Switch size="sm" className="mt-3 shrink-0" checked={fsShareSession} onCheckedChange={setFsShareSession} />
                 </div>
+
 
                 {fsStatus === "failed" && (
                   <div className="border border-destructive/40 bg-destructive/5 rounded px-2.5 py-2 text-[11px] text-destructive flex items-start gap-1.5">

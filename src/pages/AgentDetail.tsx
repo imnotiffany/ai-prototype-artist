@@ -116,7 +116,8 @@ const AgentDetail = () => {
     mcpBindings: ((agent?.mcpServers ?? []) as string[]).map((m) => ({ name: m, credential: "" })),
     fsAppKey: "",
     fsAppSecret: "",
-    fsRobotCode: "",
+    fsShareSession: false,
+
   }), [agent]);
 
   const [name, setName] = useState(initialSnapshot.name);
@@ -158,30 +159,30 @@ const AgentDetail = () => {
   const [mcpBindings, setMcpBindings] = useState<{ name: string; credential: string }[]>(initialSnapshot.mcpBindings);
   const [fsAppKey, setFsAppKey] = useState(initialSnapshot.fsAppKey);
   const [fsAppSecret, setFsAppSecret] = useState(initialSnapshot.fsAppSecret);
-  const [fsRobotCode, setFsRobotCode] = useState(initialSnapshot.fsRobotCode);
+  const [fsShareSession, setFsShareSession] = useState(initialSnapshot.fsShareSession);
   const [fsSecretVisible, setFsSecretVisible] = useState(false);
   // 丰声 NEXT 连接状态机：empty → draft → connecting → connected | failed
   type FsStatus = "empty" | "draft" | "connecting" | "connected" | "failed";
-  // 根据已保存凭证推导：三项均空 → empty(未配置)；有任意已保存值 → connected(已连接)；否则 draft
+  // 根据已保存凭证推导：两项均空 → empty(未配置)；有任意已保存值 → connected(已连接)；否则 draft
   const [fsStatus, setFsStatus] = useState<FsStatus>(() => {
-    const hasAny = !!(initialSnapshot.fsAppKey || initialSnapshot.fsAppSecret || initialSnapshot.fsRobotCode);
+    const hasAny = !!(initialSnapshot.fsAppKey || initialSnapshot.fsAppSecret);
     return hasAny ? "connected" : "empty";
   });
   const [fsFailMsg, setFsFailMsg] = useState<string>("");
   const fsConnected = fsStatus === "connected";
 
   // 任一凭证字段被编辑时，让状态回退（验证结果作废）
-  const onFsFieldChange = (next: { appKey?: string; appSecret?: string; robotCode?: string }) => {
+  const onFsFieldChange = (next: { appKey?: string; appSecret?: string }) => {
     const appKey = next.appKey ?? fsAppKey;
     const appSecret = next.appSecret ?? fsAppSecret;
-    const robotCode = next.robotCode ?? fsRobotCode;
-    if (!appKey && !appSecret && !robotCode) {
+    if (!appKey && !appSecret) {
       setFsStatus("empty");
     } else {
       setFsStatus("draft");
     }
     setFsFailMsg("");
   };
+
   const [selSubagents, setSelSubagents] = useState<string[]>(["数据查询子智能体", "报告撰写子智能体"]);
   const [subagentGapDialogOpen, setSubagentGapDialogOpen] = useState(false);
   const [configView, setConfigView] = useState<"form" | "code">("form");
@@ -190,8 +191,8 @@ const AgentDetail = () => {
   const [justSaved, setJustSaved] = useState(false);
 
   const isDirty = useMemo(() => JSON.stringify({
-    name, description, model, systemPrompt, skills: selSkills, mcpBindings, fsAppKey, fsAppSecret, fsRobotCode,
-  }) !== JSON.stringify(savedSnapshot), [name, description, model, systemPrompt, selSkills, mcpBindings, fsAppKey, fsAppSecret, fsRobotCode, savedSnapshot]);
+    name, description, model, systemPrompt, skills: selSkills, mcpBindings, fsAppKey, fsAppSecret, fsShareSession,
+  }) !== JSON.stringify(savedSnapshot), [name, description, model, systemPrompt, selSkills, mcpBindings, fsAppKey, fsAppSecret, fsShareSession, savedSnapshot]);
 
   /* ── Debug state ── */
   type PromptSuggestion = { id: string; addition: string; summaryNote: string; status: "pending" | "adopted" | "rejected" };
@@ -414,7 +415,8 @@ const AgentDetail = () => {
 
   /* ── Config actions ── */
   const handleSave = () => {
-    setSavedSnapshot({ name, description, model, systemPrompt, skills: selSkills, mcpBindings, fsAppKey, fsAppSecret, fsRobotCode });
+    setSavedSnapshot({ name, description, model, systemPrompt, skills: selSkills, mcpBindings, fsAppKey, fsAppSecret, fsShareSession });
+
     setJustSaved(true);
     window.setTimeout(() => setJustSaved(false), 2800);
     
@@ -434,7 +436,8 @@ const AgentDetail = () => {
     setMcpBindings(savedSnapshot.mcpBindings);
     setFsAppKey(savedSnapshot.fsAppKey);
     setFsAppSecret(savedSnapshot.fsAppSecret);
-    setFsRobotCode(savedSnapshot.fsRobotCode);
+    setFsShareSession(savedSnapshot.fsShareSession);
+
     
   };
 
@@ -656,11 +659,12 @@ const AgentDetail = () => {
                       丰声 NEXT 机器人{fsBlocking === "connecting" ? "正在连接中" : fsBlocking === "failed" ? "连接失败" : "凭证未连接"}，无法保存
                     </p>
                     <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80 mt-0.5">
-                      {fsBlocking === "connecting"
-                        ? "请等待连接结果后再保存"
-                        : fsBlocking === "failed"
-                        ? "请检查 Client ID / Client Secret / Robot Code 后重新连接，或清空凭证不对接丰声 NEXT 机器人"
-                        : "请点击「连接」校验凭证后再保存，或清空凭证不对接丰声 NEXT 机器人"}
+                    {fsBlocking === "connecting"
+                      ? "请等待连接结果后再保存"
+                      : fsBlocking === "failed"
+                      ? "请检查 Client ID / Client Secret 后重新连接，或清空凭证不对接丰声 NEXT 机器人"
+                      : "请点击「连接」校验凭证后再保存，或清空凭证不对接丰声 NEXT 机器人"}
+
                     </p>
                   </div>
                 </div>
@@ -724,7 +728,7 @@ sub_agents:
 ${selSubagents.map((s) => `  - ${s}`).join("\n") || "  []"}
 fengsheng:
   client_id: ${fsAppKey || "(未配置)"}
-  robot_code: ${fsRobotCode || "(未配置)"}`;
+  share_session: ${fsShareSession ? "是" : "否"}`;
               const jsonText = JSON.stringify({
                 name,
                 model,
@@ -734,7 +738,7 @@ fengsheng:
                 sub_agents: selSubagents,
                 fengsheng: {
                   client_id: fsAppKey || null,
-                  robot_code: fsRobotCode || null,
+                  share_session: fsShareSession,
                 },
               }, null, 2);
               const text = codeFormat === "yaml" ? yamlText : jsonText;
@@ -1674,12 +1678,23 @@ fengsheng:
                     </div>
                   </div>
 
+                  <div className="pt-1 flex items-start justify-between gap-4 border-t border-border/50 mt-1">
+                    <div className="min-w-0 pt-3">
+                      <div className="text-xs font-medium">群聊会话复用</div>
+                      <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+                        开启后，同一群聊内的成员共享同一会话与上下文；关闭则每位成员各自独立会话，互不影响。
+                      </p>
+                    </div>
+                    <Switch size="sm" className="mt-3 shrink-0" checked={fsShareSession} onCheckedChange={setFsShareSession} />
+                  </div>
+
                   {fsStatus === "failed" && (
                     <div className="border border-destructive/40 bg-destructive/5 rounded px-2.5 py-2 text-[11px] text-destructive flex items-start gap-1.5">
                       <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-                      <span>{fsFailMsg || "凭证校验未通过，请检查 Client ID / Client Secret / Robot Code 是否正确"}</span>
+                      <span>{fsFailMsg || "凭证校验未通过，请检查 Client ID / Client Secret 是否正确"}</span>
                     </div>
                   )}
+
 
                   <div className="flex items-center justify-end pt-1">
                     <Button
@@ -1694,12 +1709,13 @@ fengsheng:
                           const ok = fsAppKey.length >= 4 && fsAppSecret.length >= 4 && !fsAppSecret.endsWith("_fail");
                           if (ok) {
                             setFsStatus("connected");
-                            
+
                           } else {
                             setFsStatus("failed");
-                            setFsFailMsg("凭证校验未通过：请检查 Client ID / Client Secret / Robot Code 是否正确");
+                            setFsFailMsg("凭证校验未通过：请检查 Client ID / Client Secret 是否正确");
                             toast({ title: "连接失败", description: "凭证校验未通过，请检查后重试", variant: "destructive" });
                           }
+
                         }, 800);
                       }}
                     >
