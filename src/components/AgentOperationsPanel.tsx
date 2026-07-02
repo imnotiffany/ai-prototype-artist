@@ -1,14 +1,15 @@
 import { useMemo, useState } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Eye, Users, UserPlus, MessagesSquare, TrendingUp, Search } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Search, Calendar as CalendarIcon, Download, ChevronLeft, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   ResponsiveContainer,
-  AreaChart,
+  ComposedChart,
   Area,
-  BarChart,
   Bar,
   XAxis,
   YAxis,
@@ -17,14 +18,13 @@ import {
   Legend,
 } from "recharts";
 
-type RangeKey = "7d" | "14d" | "30d" | "90d";
 type SourceKey = "all" | "fengsheng" | "web" | "api";
 
-const RANGE_OPTIONS: { key: RangeKey; label: string; days: number }[] = [
-  { key: "7d", label: "近 7 天", days: 7 },
-  { key: "14d", label: "近 14 天", days: 14 },
-  { key: "30d", label: "近 30 天", days: 30 },
-  { key: "90d", label: "近 90 天", days: 90 },
+const SOURCE_TABS: { key: SourceKey; label: string }[] = [
+  { key: "all", label: "全部渠道" },
+  { key: "fengsheng", label: "丰声 NEXT" },
+  { key: "web", label: "Web" },
+  { key: "api", label: "API" },
 ];
 
 function seeded(i: number, base: number, amp: number, freq = 0.6) {
@@ -33,11 +33,13 @@ function seeded(i: number, base: number, amp: number, freq = 0.6) {
   return Math.max(0, Math.round(base + (r - 0.5) * amp * 2));
 }
 
-function buildDaily(days: number) {
+function buildDaily(from: Date, to: Date) {
   const arr = [];
-  const now = new Date();
+  const start = new Date(from.getFullYear(), from.getMonth(), from.getDate()).getTime();
+  const end = new Date(to.getFullYear(), to.getMonth(), to.getDate()).getTime();
+  const days = Math.max(1, Math.round((end - start) / 86400_000) + 1);
   for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(now.getTime() - i * 86400_000);
+    const d = new Date(end - i * 86400_000);
     const label = `${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     const uv = seeded(i, 120, 60, 0.4);
     const calls = uv * seeded(i, 4, 2, 0.7) + seeded(i, 60, 40, 0.9);
@@ -65,13 +67,19 @@ const MOCK_USERS: UserRow[] = [
   { name: "杨帆", jobId: "01554720", calls: 118, last: "昨天 18:04", source: "丰声 NEXT" },
   { name: "赵磊", jobId: "01472085", calls: 96, last: "昨天 09:47", source: "Web" },
   { name: "周瑶", jobId: "01388461", calls: 71, last: "2 天前", source: "API" },
+  { name: "孙浩", jobId: "01502233", calls: 68, last: "2 天前", source: "丰声 NEXT" },
+  { name: "郑爽", jobId: "01411678", calls: 64, last: "3 天前", source: "Web" },
+  { name: "钱枫", jobId: "01655120", calls: 59, last: "3 天前", source: "丰声 NEXT" },
+  { name: "冯洋", jobId: "01298744", calls: 52, last: "4 天前", source: "API" },
+  { name: "褚青", jobId: "01377281", calls: 47, last: "4 天前", source: "Web" },
+  { name: "卫涛", jobId: "01466019", calls: 41, last: "5 天前", source: "丰声 NEXT" },
+  { name: "蒋雯", jobId: "01590482", calls: 36, last: "5 天前", source: "Web" },
+  { name: "沈鹏", jobId: "01311856", calls: 33, last: "6 天前", source: "API" },
+  { name: "韩梅", jobId: "01432107", calls: 28, last: "6 天前", source: "丰声 NEXT" },
+  { name: "曹阳", jobId: "01521934", calls: 22, last: "7 天前", source: "Web" },
 ];
 
-type GroupRow = {
-  name: string;
-  webhook: string;
-  messages: number;
-};
+type GroupRow = { name: string; webhook: string; messages: number };
 
 const MOCK_GROUPS: GroupRow[] = [
   { name: "【项目】领汇智能体接入群", webhook: "cidkbWdSCTNaI3/HBXryaXPxw==", messages: 128 },
@@ -79,53 +87,17 @@ const MOCK_GROUPS: GroupRow[] = [
   { name: "BI 数据周报讨论", webhook: "cidHnBpEt4rXs21/UYevkzDLpo==", messages: 34 },
   { name: "产品评审 · Q3", webhook: "cidMR3xVdF8wJ56/AbNqPyGCik==", messages: 210 },
   { name: "增长实验小组", webhook: "cidZK9tQrY2mL08/CvExOhWNud==", messages: 45 },
+  { name: "客户成功日报群", webhook: "cidPLQtEwR3xU29/FbNzMkAoRy==", messages: 82 },
+  { name: "运维告警通知群", webhook: "cidVX4nHmS7kJ08/QwErTyUiOp==", messages: 156 },
 ];
 
-function StatCard({
-  icon,
-  label,
-  value,
-  unit,
-  delta,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string | number;
-  unit?: string;
-  delta?: number;
-}) {
-  const positive = (delta ?? 0) >= 0;
+function StatCard({ label, value, unit }: { label: string; value: string | number; unit?: string }) {
   return (
-    <div className="border border-border rounded-lg bg-card px-3 py-2.5">
-      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-        <span className="text-primary">{icon}</span>
-        {label}
-      </div>
+    <div className="border border-border rounded-md bg-card px-3 py-2.5">
+      <div className="text-[11px] text-muted-foreground">{label}</div>
       <div className="mt-1 flex items-baseline gap-1">
         <span className="text-lg font-semibold tabular-nums">{value}</span>
         {unit && <span className="text-[11px] text-muted-foreground">{unit}</span>}
-        {typeof delta === "number" && (
-          <span className={`ml-auto text-[11px] tabular-nums ${positive ? "text-emerald-600" : "text-rose-600"}`}>
-            {positive ? "+" : ""}
-            {delta}%
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function ChartCard({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
-  return (
-    <div className="border border-border rounded-lg bg-card">
-      <div className="px-3 h-9 border-b border-border flex items-center gap-2">
-        <span className="text-xs font-semibold">{title}</span>
-        {subtitle && <span className="text-[11px] text-muted-foreground">{subtitle}</span>}
-      </div>
-      <div className="p-2 h-[220px]">
-        <ResponsiveContainer width="100%" height="100%">
-          {children as any}
-        </ResponsiveContainer>
       </div>
     </div>
   );
@@ -147,16 +119,24 @@ const tooltipStyle = {
   labelStyle: { color: "hsl(var(--muted-foreground))", fontSize: 10 },
 };
 
+function formatDate(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+const PAGE_SIZE = 10;
+
 export function AgentOperationsPanel() {
-  const [rangeKey, setRangeKey] = useState<RangeKey>("14d");
+  const today = useMemo(() => new Date(), []);
+  const defaultFrom = useMemo(() => new Date(today.getTime() - 13 * 86400_000), [today]);
+  const [from, setFrom] = useState<Date>(defaultFrom);
+  const [to, setTo] = useState<Date>(today);
   const [source, setSource] = useState<SourceKey>("all");
   const [userQuery, setUserQuery] = useState("");
+  const [groupQuery, setGroupQuery] = useState("");
+  const [userPage, setUserPage] = useState(1);
 
-  const days = RANGE_OPTIONS.find((r) => r.key === rangeKey)!.days;
-  const data = useMemo(() => buildDaily(days), [days]);
-
-  // 只有「丰声 NEXT」渠道才有群聊数据
   const showGroups = source === "all" || source === "fengsheng";
+  const data = useMemo(() => buildDaily(from, to), [from, to]);
 
   const totals = useMemo(() => {
     const calls = data.reduce((s, d) => s + d.calls, 0);
@@ -173,115 +153,119 @@ export function AgentOperationsPanel() {
     if (!userQuery) return true;
     return u.name.includes(userQuery) || u.jobId.includes(userQuery);
   });
+  const totalUserPages = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE));
+  const pagedUsers = filteredUsers.slice((userPage - 1) * PAGE_SIZE, userPage * PAGE_SIZE);
+
+  const filteredGroups = MOCK_GROUPS
+    .filter((g) => (groupQuery ? g.name.includes(groupQuery) || g.webhook.includes(groupQuery) : true))
+    .sort((a, b) => b.messages - a.messages);
 
   return (
-    <div className="space-y-3">
-      {/* Filter bar */}
-      <div className="flex items-center gap-2 text-[11px] flex-wrap">
-        <div className="flex items-center gap-1">
-          <span className="text-muted-foreground">时间范围</span>
-          <Select value={rangeKey} onValueChange={(v) => setRangeKey(v as RangeKey)}>
-            <SelectTrigger className="h-7 w-[92px] text-[11px] px-2">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {RANGE_OPTIONS.map((r) => (
-                <SelectItem key={r.key} value={r.key} className="text-xs">
-                  {r.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+    <div className="space-y-4">
+      {/* Toolbar — clean, borderless */}
+      <div className="flex items-center gap-3 flex-wrap">
+        {/* Date range */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className="inline-flex items-center gap-1.5 text-xs text-foreground hover:text-primary transition-colors">
+              <CalendarIcon className="w-3.5 h-3.5" />
+              <span className="tabular-nums">{formatDate(from)}</span>
+              <span className="text-muted-foreground">—</span>
+              <span className="tabular-nums">{formatDate(to)}</span>
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="range"
+              selected={{ from, to }}
+              onSelect={(range) => {
+                if (range?.from) setFrom(range.from);
+                if (range?.to) setTo(range.to);
+              }}
+              numberOfMonths={2}
+              defaultMonth={from}
+            />
+          </PopoverContent>
+        </Popover>
+
+        {/* Source segmented tabs */}
+        <div className="flex items-center gap-4 text-xs">
+          {SOURCE_TABS.map((s) => (
+            <button
+              key={s.key}
+              onClick={() => setSource(s.key)}
+              className={cn(
+                "relative py-1 transition-colors",
+                source === s.key ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {s.label}
+              {source === s.key && <span className="absolute -bottom-0.5 left-0 right-0 h-px bg-foreground" />}
+            </button>
+          ))}
         </div>
-        <div className="flex items-center gap-1">
-          <span className="text-muted-foreground">来源</span>
-          <Select value={source} onValueChange={(v) => setSource(v as SourceKey)}>
-            <SelectTrigger className="h-7 w-[110px] text-[11px] px-2">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all" className="text-xs">全部渠道</SelectItem>
-              <SelectItem value="fengsheng" className="text-xs">丰声 NEXT</SelectItem>
-              <SelectItem value="web" className="text-xs">Web</SelectItem>
-              <SelectItem value="api" className="text-xs">API</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <Button size="sm" variant="ghost" className="h-7 text-[11px] gap-1 ml-auto">
-          <TrendingUp className="w-3 h-3" />
-          导出数据
-        </Button>
+
+        <button className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
+          <Download className="w-3.5 h-3.5" />
+          导出
+        </button>
       </div>
 
       {/* Stat cards */}
-      <div className={`grid grid-cols-2 gap-2 ${showGroups ? "md:grid-cols-4" : "md:grid-cols-3"}`}>
-        <StatCard icon={<Eye className="w-3.5 h-3.5" />} label="总调用量" value={totals.calls.toLocaleString()} unit="次" delta={12} />
-        <StatCard icon={<Users className="w-3.5 h-3.5" />} label="总用户量" value={totals.uv.toLocaleString()} unit="人" delta={8} />
-        <StatCard icon={<UserPlus className="w-3.5 h-3.5" />} label="新增用户" value={totals.newUsers.toLocaleString()} unit="人" delta={-3} />
-        {showGroups && (
-          <StatCard icon={<MessagesSquare className="w-3.5 h-3.5" />} label="被拉入群聊" value={totals.groups.toLocaleString()} unit="个" delta={18} />
-        )}
+      <div className={cn("grid grid-cols-2 gap-2", showGroups ? "md:grid-cols-4" : "md:grid-cols-3")}>
+        <StatCard label="总调用量" value={totals.calls.toLocaleString()} unit="次" />
+        <StatCard label="总用户量" value={totals.uv.toLocaleString()} unit="人" />
+        <StatCard label="新增用户" value={totals.newUsers.toLocaleString()} unit="人" />
+        {showGroups && <StatCard label="被拉入群聊" value={totals.groups.toLocaleString()} unit="个" />}
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        <ChartCard title="访问趋势" subtitle="总调用量 / 总用户量">
-          <AreaChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
-            <defs>
-              <linearGradient id="gCalls" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="gUv" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#10b981" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-            <XAxis dataKey="t" {...axisProps} />
-            <YAxis {...axisProps} />
-            <Tooltip {...tooltipStyle} />
-            <Legend wrapperStyle={{ fontSize: 10 }} iconSize={8} />
-            <Area type="monotone" dataKey="calls" name="总调用量" stroke="hsl(var(--primary))" fill="url(#gCalls)" strokeWidth={1.5} />
-            <Area type="monotone" dataKey="uv" name="总用户量" stroke="#10b981" fill="url(#gUv)" strokeWidth={1.5} />
-          </AreaChart>
-        </ChartCard>
-
-        <ChartCard title="新增用户" subtitle="每日新增">
-          <BarChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-            <XAxis dataKey="t" {...axisProps} />
-            <YAxis {...axisProps} />
-            <Tooltip {...tooltipStyle} />
-            <Bar dataKey="newUsers" name="新增用户" fill="#3b82f6" radius={[2, 2, 0, 0]} />
-          </BarChart>
-        </ChartCard>
-
-        {showGroups && (
-          <ChartCard title="被拉入群聊" subtitle="每日新增群数 · 仅丰声 NEXT">
-            <BarChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
+      {/* Combined chart: 访问趋势 + 新增用户 */}
+      <div className="border border-border rounded-md bg-card">
+        <div className="px-3 h-9 border-b border-border flex items-center gap-2">
+          <span className="text-xs font-semibold">访问趋势</span>
+          <span className="text-[11px] text-muted-foreground">总调用量 / 总用户量 / 新增用户</span>
+        </div>
+        <div className="p-2 h-[260px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="gCalls" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="gUv" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.25} />
+                  <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+                </linearGradient>
+              </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
               <XAxis dataKey="t" {...axisProps} />
-              <YAxis allowDecimals={false} {...axisProps} />
+              <YAxis {...axisProps} />
               <Tooltip {...tooltipStyle} />
-              <Bar dataKey="groups" name="群聊" fill="#8b5cf6" radius={[2, 2, 0, 0]} />
-            </BarChart>
-          </ChartCard>
-        )}
+              <Legend wrapperStyle={{ fontSize: 10 }} iconSize={8} />
+              <Bar dataKey="newUsers" name="新增用户" fill="#3b82f6" radius={[2, 2, 0, 0]} barSize={12} />
+              <Area type="monotone" dataKey="calls" name="总调用量" stroke="hsl(var(--primary))" fill="url(#gCalls)" strokeWidth={1.5} />
+              <Area type="monotone" dataKey="uv" name="总用户量" stroke="#10b981" fill="url(#gUv)" strokeWidth={1.5} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
-      {/* Top users */}
-      <div className="border border-border rounded-lg bg-card">
-        <div className="px-3 h-9 border-b border-border flex items-center gap-2">
+      {/* Active users — no outer box */}
+      <div>
+        <div className="flex items-center gap-2 mb-2">
           <span className="text-xs font-semibold">活跃用户</span>
           <span className="text-[11px] text-muted-foreground">按调用量排序</span>
           <div className="ml-auto relative">
             <Search className="w-3 h-3 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={userQuery}
-              onChange={(e) => setUserQuery(e.target.value)}
+              onChange={(e) => {
+                setUserQuery(e.target.value);
+                setUserPage(1);
+              }}
               placeholder="搜索姓名 / 工号"
-              className="h-6 w-[180px] text-[11px] pl-6 md:text-[11px]"
+              className="h-7 w-[200px] text-[11px] pl-6 md:text-[11px]"
             />
           </div>
         </div>
@@ -296,7 +280,7 @@ export function AgentOperationsPanel() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredUsers.map((u) => (
+            {pagedUsers.map((u) => (
               <TableRow key={u.jobId} className="text-xs">
                 <TableCell className="py-2 font-medium">{u.name}</TableCell>
                 <TableCell className="py-2 text-muted-foreground tabular-nums">{u.jobId}</TableCell>
@@ -305,7 +289,7 @@ export function AgentOperationsPanel() {
                 <TableCell className="py-2 text-muted-foreground">{u.last}</TableCell>
               </TableRow>
             ))}
-            {filteredUsers.length === 0 && (
+            {pagedUsers.length === 0 && (
               <TableRow>
                 <TableCell colSpan={5} className="text-center text-xs text-muted-foreground py-6">
                   无匹配用户
@@ -314,14 +298,50 @@ export function AgentOperationsPanel() {
             )}
           </TableBody>
         </Table>
+        {filteredUsers.length > 0 && (
+          <div className="flex items-center justify-end gap-3 mt-2 text-[11px] text-muted-foreground">
+            <span>
+              共 {filteredUsers.length} 条 · 第 {userPage} / {totalUserPages} 页
+            </span>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                disabled={userPage <= 1}
+                onClick={() => setUserPage((p) => Math.max(1, p - 1))}
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                disabled={userPage >= totalUserPages}
+                onClick={() => setUserPage((p) => Math.min(totalUserPages, p + 1))}
+              >
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Group chats — 仅丰声 NEXT */}
       {showGroups && (
-        <div className="border border-border rounded-lg bg-card">
-          <div className="px-3 h-9 border-b border-border flex items-center gap-2">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
             <span className="text-xs font-semibold">被拉入的群聊</span>
             <span className="text-[11px] text-muted-foreground">仅丰声 NEXT · 按消息数倒序</span>
+            <div className="ml-auto relative">
+              <Search className="w-3 h-3 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={groupQuery}
+                onChange={(e) => setGroupQuery(e.target.value)}
+                placeholder="搜索群名 / Webhook"
+                className="h-7 w-[220px] text-[11px] pl-6 md:text-[11px]"
+              />
+            </div>
           </div>
           <Table>
             <TableHeader>
@@ -332,13 +352,22 @@ export function AgentOperationsPanel() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {[...MOCK_GROUPS].sort((a, b) => b.messages - a.messages).map((g) => (
+              {filteredGroups.map((g) => (
                 <TableRow key={g.webhook} className="text-xs">
                   <TableCell className="py-2 font-medium">{g.name}</TableCell>
-                  <TableCell className="py-2 text-muted-foreground font-mono text-[11px] truncate max-w-[280px]">{g.webhook}</TableCell>
+                  <TableCell className="py-2 text-muted-foreground font-mono text-[11px] truncate max-w-[320px]">
+                    {g.webhook}
+                  </TableCell>
                   <TableCell className="py-2 text-right tabular-nums">{g.messages}</TableCell>
                 </TableRow>
               ))}
+              {filteredGroups.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={3} className="text-center text-xs text-muted-foreground py-6">
+                    无匹配群聊
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </div>
