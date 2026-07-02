@@ -11,7 +11,6 @@ import {
   ResponsiveContainer,
   ComposedChart,
   Area,
-  Bar,
   XAxis,
   YAxis,
   Tooltip,
