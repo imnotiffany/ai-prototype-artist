@@ -1532,6 +1532,11 @@ fengsheng:
           <AgentMonitoringPanel />
         </TabsContent>
 
+        {/* ───────── 运营看板 ───────── */}
+        <TabsContent value="operations" className="mt-4">
+          <AgentOperationsPanel />
+        </TabsContent>
+
 
 
         {/* ───────── 集成方式 ───────── */}
