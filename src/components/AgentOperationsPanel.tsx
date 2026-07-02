@@ -259,7 +259,6 @@ export function AgentOperationsPanel() {
       <div>
         <div className="flex items-center gap-2 mb-2">
           <span className="text-xs font-semibold">活跃用户</span>
-          <span className="text-[11px] text-muted-foreground">按调用量排序</span>
           <div className="ml-auto relative">
             <Search className="w-3 h-3 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
