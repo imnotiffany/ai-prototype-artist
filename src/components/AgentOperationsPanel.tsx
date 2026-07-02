@@ -260,10 +260,10 @@ export function AgentOperationsPanel() {
         </div>
       </div>
 
-      {/* Active users — no outer box */}
+      {/* User details — no outer box */}
       <div>
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-xs font-semibold">活跃用户</span>
+          <span className="text-xs font-semibold">用户明细</span>
           <div className="ml-auto relative">
             <Search className="w-3 h-3 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -335,11 +335,11 @@ export function AgentOperationsPanel() {
         )}
       </div>
 
-      {/* Group chats — 仅丰声 NEXT */}
+      {/* Group details */}
       {showGroups && (
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs font-semibold">被拉入的群聊</span>
+            <span className="text-xs font-semibold">群聊明细</span>
             <div className="ml-auto relative">
               <Search className="w-3 h-3 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input
