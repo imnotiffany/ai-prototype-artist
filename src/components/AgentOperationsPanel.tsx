@@ -2,8 +2,9 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Search, Calendar as CalendarIcon, Download, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -188,22 +189,19 @@ export function AgentOperationsPanel() {
           </PopoverContent>
         </Popover>
 
-        {/* Source segmented tabs */}
-        <div className="flex items-center gap-4 text-xs">
-          {SOURCE_TABS.map((s) => (
-            <button
-              key={s.key}
-              onClick={() => setSource(s.key)}
-              className={cn(
-                "relative py-1 transition-colors",
-                source === s.key ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {s.label}
-              {source === s.key && <span className="absolute -bottom-0.5 left-0 right-0 h-px bg-foreground" />}
-            </button>
-          ))}
-        </div>
+        {/* Source selector */}
+        <Select value={source} onValueChange={(v) => setSource(v as SourceKey)}>
+          <SelectTrigger className="h-7 w-[130px] text-xs md:text-xs">
+            <SelectValue placeholder="选择渠道" />
+          </SelectTrigger>
+          <SelectContent>
+            {SOURCE_TABS.map((s) => (
+              <SelectItem key={s.key} value={s.key} className="text-xs">
+                {s.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         <button className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
           <Download className="w-3.5 h-3.5" />
