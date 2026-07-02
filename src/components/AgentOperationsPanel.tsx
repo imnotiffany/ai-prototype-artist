@@ -278,33 +278,31 @@ export function AgentOperationsPanel() {
           </div>
         </div>
         <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="h-8 text-[11px]">用户</TableHead>
-              <TableHead className="h-8 text-[11px]">工号</TableHead>
-              <TableHead className="h-8 text-[11px]">来源</TableHead>
-              <TableHead className="h-8 text-[11px] text-right">调用量</TableHead>
-              <TableHead className="h-8 text-[11px]">最后访问</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {pagedUsers.map((u) => (
-              <TableRow key={u.jobId} className="text-xs">
-                <TableCell className="py-2 font-medium">{u.name}</TableCell>
-                <TableCell className="py-2 text-muted-foreground tabular-nums">{u.jobId}</TableCell>
-                <TableCell className="py-2 text-muted-foreground">{u.source}</TableCell>
-                <TableCell className="py-2 text-right tabular-nums">{u.calls}</TableCell>
-                <TableCell className="py-2 text-muted-foreground">{u.last}</TableCell>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="h-8 text-[11px]">用户</TableHead>
+                <TableHead className="h-8 text-[11px]">工号</TableHead>
+                <TableHead className="h-8 text-[11px]">来源</TableHead>
+                <TableHead className="h-8 text-[11px] text-right">调用量</TableHead>
               </TableRow>
-            ))}
-            {pagedUsers.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center text-xs text-muted-foreground py-6">
-                  无匹配用户
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
+            </TableHeader>
+            <TableBody>
+              {pagedUsers.map((u) => (
+                <TableRow key={u.jobId} className="text-xs">
+                  <TableCell className="py-2 font-medium">{u.name}</TableCell>
+                  <TableCell className="py-2 text-muted-foreground tabular-nums">{u.jobId}</TableCell>
+                  <TableCell className="py-2 text-muted-foreground">{u.source}</TableCell>
+                  <TableCell className="py-2 text-right tabular-nums">{u.calls}</TableCell>
+                </TableRow>
+              ))}
+              {pagedUsers.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center text-xs text-muted-foreground py-6">
+                    无匹配用户
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
         </Table>
         {filteredUsers.length > 0 && (
           <div className="flex items-center justify-end gap-3 mt-2 text-[11px] text-muted-foreground">
