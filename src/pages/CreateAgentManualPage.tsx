@@ -507,7 +507,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
   const basicComplete = !!name.trim();
   const promptComplete = systemPrompt.trim().length >= 20;
   const debugComplete = debugPassed && !debugLastError;
-  const channelsValid = fsConnected || (!fsAppKey && !fsAppSecret && !fsRobotCode);
+  const channelsValid = fsConnected || (!fsAppKey && !fsAppSecret);
 
   // ── Dirty 检测：step 1-3 任一字段变了 → 重置 hasSaved/调试状态，重新上锁 4/5 ──
   const currentSig = JSON.stringify({
