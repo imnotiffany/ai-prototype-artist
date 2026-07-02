@@ -179,17 +179,16 @@ const CreateAgentManualPage = () => {
   // FengSheng NEXT bot
   const [fsAppKey, setFsAppKey] = useState("");
   const [fsAppSecret, setFsAppSecret] = useState("");
-  const [fsRobotCode, setFsRobotCode] = useState("");
   const [fsSecretVisible, setFsSecretVisible] = useState(false);
+  const [fsShareSession, setFsShareSession] = useState(false);
   type FsStatus = "empty" | "draft" | "connecting" | "connected" | "failed";
   const [fsStatus, setFsStatus] = useState<FsStatus>("empty");
   const [fsFailMsg, setFsFailMsg] = useState("");
   const fsConnected = fsStatus === "connected";
-  const onFsFieldChange = (next: { appKey?: string; appSecret?: string; robotCode?: string }) => {
+  const onFsFieldChange = (next: { appKey?: string; appSecret?: string }) => {
     const appKey = next.appKey ?? fsAppKey;
     const appSecret = next.appSecret ?? fsAppSecret;
-    const robotCode = next.robotCode ?? fsRobotCode;
-    setFsStatus(!appKey && !appSecret && !robotCode ? "empty" : "draft");
+    setFsStatus(!appKey && !appSecret ? "empty" : "draft");
     setFsFailMsg("");
   };
 
@@ -508,7 +507,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
   const basicComplete = !!name.trim();
   const promptComplete = systemPrompt.trim().length >= 20;
   const debugComplete = debugPassed && !debugLastError;
-  const channelsValid = fsConnected || (!fsAppKey && !fsAppSecret && !fsRobotCode);
+  const channelsValid = fsConnected || (!fsAppKey && !fsAppSecret);
 
   // ── Dirty 检测：step 1-3 任一字段变了 → 重置 hasSaved/调试状态，重新上锁 4/5 ──
   const currentSig = JSON.stringify({
@@ -635,7 +634,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
     fengsheng_next: {
       enabled: fsConnected,
       app_key: fsAppKey || null,
-      robot_code: fsRobotCode || null,
+      share_session: fsShareSession,
       persistent: persistentFs,
     },
   };
@@ -1544,15 +1543,20 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                     </button>
                   </div>
                 </div>
-                <div>
-                  <Label className="text-xs">Robot Code</Label>
-                  <Input className="mt-1.5 h-8 text-xs font-mono" placeholder="机器人编码" value={fsRobotCode} onChange={(e) => { setFsRobotCode(e.target.value); onFsFieldChange({ robotCode: e.target.value }); }} />
+                <div className="pt-1 flex items-start justify-between gap-4 border-t border-border/50 mt-1">
+                  <div className="min-w-0 pt-3">
+                    <div className="text-xs font-medium">群聊会话复用</div>
+                    <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+                      开启后，同一群聊内的成员共享同一会话与上下文；关闭则每位成员各自独立会话，互不影响。
+                    </p>
+                  </div>
+                  <Switch className="mt-3 shrink-0" checked={fsShareSession} onCheckedChange={setFsShareSession} />
                 </div>
 
                 {fsStatus === "failed" && (
                   <div className="border border-destructive/40 bg-destructive/5 rounded px-2.5 py-2 text-[11px] text-destructive flex items-start gap-1.5">
                     <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-                    <span>{fsFailMsg || "凭证校验未通过，请检查 Client ID / Client Secret / Robot Code 是否正确"}</span>
+                    <span>{fsFailMsg || "凭证校验未通过,请检查 Client ID / Client Secret 是否正确"}</span>
                   </div>
                 )}
 
@@ -1561,18 +1565,18 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
                     size="sm"
                     variant={fsStatus === "connected" ? "outline" : "default"}
                     className="h-8 text-xs gap-1.5"
-                    disabled={!fsAppKey.trim() || !fsAppSecret.trim() || !fsRobotCode.trim() || fsStatus === "connecting" || fsStatus === "connected"}
+                    disabled={!fsAppKey.trim() || !fsAppSecret.trim() || fsStatus === "connecting" || fsStatus === "connected"}
                     onClick={() => {
                       setFsStatus("connecting");
                       setFsFailMsg("");
                       setTimeout(() => {
-                        const ok = !fsRobotCode.endsWith("_fail") && fsAppKey.length >= 4 && fsAppSecret.length >= 4 && fsRobotCode.length >= 4;
+                        const ok = fsAppKey.length >= 4 && fsAppSecret.length >= 4;
                         if (ok) {
                           setFsStatus("connected");
                           
                         } else {
                           setFsStatus("failed");
-                          setFsFailMsg("凭证校验未通过：请检查 Client ID / Client Secret / Robot Code 是否正确");
+                          setFsFailMsg("凭证校验未通过：请检查 Client ID / Client Secret 是否正确");
                           toast({ title: "连接失败", description: "凭证校验未通过，请检查后重试", variant: "destructive" });
                         }
                       }, 800);
