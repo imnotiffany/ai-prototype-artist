@@ -634,7 +634,7 @@ ${subLines ? `\n## 可调度的子智能体\n${subLines}\n` : ""}
     fengsheng_next: {
       enabled: fsConnected,
       app_key: fsAppKey || null,
-      robot_code: fsRobotCode || null,
+      share_session: fsShareSession,
       persistent: persistentFs,
     },
   };
