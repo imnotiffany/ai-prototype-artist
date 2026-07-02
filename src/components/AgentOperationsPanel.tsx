@@ -228,7 +228,6 @@ export function AgentOperationsPanel() {
       <div>
         <div className="px-3 h-9 flex items-center gap-2">
           <span className="text-xs font-semibold">访问趋势</span>
-          <span className="text-[11px] text-muted-foreground">总调用量 / 总用户量 / 新增用户</span>
         </div>
         <div className="p-2 h-[260px]">
           <ResponsiveContainer width="100%" height="100%">
