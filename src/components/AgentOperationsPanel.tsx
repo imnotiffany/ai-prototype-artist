@@ -140,6 +140,7 @@ export function AgentOperationsPanel() {
   const [userQuery, setUserQuery] = useState("");
   const [groupQuery, setGroupQuery] = useState("");
   const [userPage, setUserPage] = useState(1);
+  const [groupPage, setGroupPage] = useState(1);
 
   const showGroups = source === "all" || source === "fengsheng";
   const data = useMemo(() => buildDaily(from, to), [from, to]);
