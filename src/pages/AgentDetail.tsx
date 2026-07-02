@@ -1709,12 +1709,13 @@ fengsheng:
                           const ok = fsAppKey.length >= 4 && fsAppSecret.length >= 4 && !fsAppSecret.endsWith("_fail");
                           if (ok) {
                             setFsStatus("connected");
-                            
+
                           } else {
                             setFsStatus("failed");
-                            setFsFailMsg("凭证校验未通过：请检查 Client ID / Client Secret / Robot Code 是否正确");
+                            setFsFailMsg("凭证校验未通过：请检查 Client ID / Client Secret 是否正确");
                             toast({ title: "连接失败", description: "凭证校验未通过，请检查后重试", variant: "destructive" });
                           }
+
                         }, 800);
                       }}
                     >
