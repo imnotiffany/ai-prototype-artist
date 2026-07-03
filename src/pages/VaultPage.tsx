@@ -898,65 +898,77 @@ const VaultPage = () => {
 
 
 
-            <TabsContent value="dingtalk" className="mt-0 space-y-3">
-              <div className="flex items-center gap-2">
-                <div className="relative flex-1">
-                  <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    className="h-8 text-xs pl-8 bg-muted/30"
-                    placeholder="搜索 钉钉 MCP 名称或功能描述"
-                    value={dingtalkSearch}
-                    onChange={(e) => setDingtalkSearch(e.target.value)}
+            <TabsContent value="dingtalk" className="mt-0">
+              <div className="flex flex-col items-center text-center py-4 px-2">
+                <p className="text-xs text-muted-foreground max-w-[360px] leading-relaxed">
+                  使用钉钉扫描下方二维码完成授权，系统将自动为你添加钉钉全套 MCP（文档、表格、AI 表格等）。
+                </p>
+
+                <div className="relative mt-5 rounded-xl border border-border bg-white p-3 shadow-sm">
+                  <img
+                    key={dingQrToken}
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=0&data=${encodeURIComponent(
+                      `dingtalk-mcp-auth://grant?token=${dingQrToken}`,
+                    )}`}
+                    alt="钉钉授权二维码"
+                    className="w-[200px] h-[200px] block"
                   />
                 </div>
-              </div>
 
+                <button
+                  type="button"
+                  onClick={refreshDingQr}
+                  className="mt-3 inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  刷新二维码
+                </button>
 
-              <div className="max-h-[400px] overflow-auto -mx-1 px-1">
-                {dingtalkList.length === 0 ? (
-                  <p className="text-center text-[11px] text-muted-foreground py-8">未找到匹配的钉钉 MCP</p>
-                ) : (
-                  <div className="grid grid-cols-2 gap-2.5">
-                    {dingtalkList.map((it) => {
-                      const done = isMcpConfigured(it.name);
-                      return (
-                        <div
-                          key={it.id}
-                          className={`border rounded-lg p-3 transition-colors flex flex-col ${done ? "border-emerald-300/60 bg-emerald-50/40 dark:bg-emerald-950/10" : "border-border bg-card"}`}
-                        >
-                          <div className="min-w-0">
-                            <p className="text-xs font-semibold truncate" title={it.name}>{it.name}</p>
-                            <p className="text-[10px] text-muted-foreground truncate font-mono mt-0.5">{it.identifier}</p>
-                          </div>
+                <div className="mt-5 w-full max-w-[380px] rounded-md border border-amber-200/70 bg-amber-50/60 dark:border-amber-900/40 dark:bg-amber-950/20 px-3 py-2 text-left">
+                  <p className="text-[11px] leading-relaxed text-amber-800 dark:text-amber-300">
+                    钉钉授权有效期为 1 个月，到期后请重新扫码以继续使用相关 MCP 能力。
+                  </p>
+                </div>
 
-                          <p className="text-[11px] text-muted-foreground line-clamp-2 mt-2 min-h-[32px]">{it.description}</p>
-                          <div className="flex items-center justify-between mt-3 pt-2 border-t border-border/60">
-                            <button className="text-[11px] text-primary hover:underline">查看详情</button>
-                            {done ? (
-                              <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0 text-[10px] gap-1">
-                                <CheckCircle2 className="w-3 h-3" />已配置
-                              </Badge>
-                            ) : (
-                              <Button
-                                size="sm"
-                                className="h-7 text-[11px] px-3"
-                                onClick={() => {
-                                  setDingFormItem(it);
-                                  setDingUrl("");
-                                  setDingFormOpen(true);
-                                }}
-                              >
-                                添加
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const added: string[] = [];
+                    dingtalkMcps.forEach((it) => {
+                      if (isMcpConfigured(it.name)) return;
+                      const id = `m_${Date.now()}_${it.id}`;
+                      const newEntry: McpEntry = {
+                        id,
+                        name: it.name,
+                        identifier: it.identifier,
+                        endpoint: `https://api.dingtalk.com/v1/mcp/${it.identifier}?token=${dingQrToken}`,
+                        deployment: "Remote",
+                        createdAt: new Date().toISOString().slice(0, 10),
+                        requiresCredential: true,
+                        type: "http",
+                        fromMarket: true,
+                        description: it.description,
+                        headers: [],
+                        scope: "personal",
+                      };
+                      setCredMcps((arr) => [newEntry, ...arr]);
+                      setMcpConfigured(it.name, true);
+                      added.push(it.name);
+                    });
+                    if (added.length === 0) {
+                      toast({ title: "钉钉 MCP 已全部添加", description: "无需重复授权" });
+                    } else {
+                      toast({ title: "授权成功", description: `已添加 ${added.length} 个钉钉 MCP：${added.join("、")}` });
+                    }
+                    setCreateOpen(false);
+                  }}
+                  className="mt-4 text-[11px] text-primary hover:underline"
+                >
+                  模拟扫码完成（Demo）
+                </button>
               </div>
             </TabsContent>
+
 
             <TabsContent value="manual" className="mt-0">
               {headersOnly ? renderHeadersOnly() : renderForm()}
