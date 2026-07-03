@@ -118,6 +118,9 @@ const VaultPage = () => {
   const [dingFormOpen, setDingFormOpen] = useState(false);
   const [dingFormItem, setDingFormItem] = useState<{ id: string; name: string; identifier: string; getUrlHref: string } | null>(null);
   const [dingUrl, setDingUrl] = useState("");
+  // 钉钉 MCP 扫码授权
+  const [dingQrToken, setDingQrToken] = useState<string>(() => Math.random().toString(36).slice(2, 10));
+  const refreshDingQr = () => setDingQrToken(Math.random().toString(36).slice(2, 10));
   const dingtalkMcps = useMemo(
     () => [
       { id: "dingtalk-doc", name: "钉钉文档MCP", identifier: "dingtalk-doc", description: "读写钉钉文档内容，支持新建、检索、编辑钉钉文档。", getUrlHref: "https://open.dingtalk.com/document/orgapp/dingtalk-doc-mcp" },
