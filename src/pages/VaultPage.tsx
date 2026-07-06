@@ -900,8 +900,8 @@ const VaultPage = () => {
 
             <TabsContent value="dingtalk" className="mt-0">
               <div className="flex flex-col items-center text-center py-4 px-2">
-                <p className="text-xs text-muted-foreground max-w-[360px] leading-relaxed">
-                  使用丰声NEXT扫描下方二维码完成授权，系统将自动为你添加常用钉钉MCP。
+                <p className="text-xs text-muted-foreground whitespace-nowrap leading-relaxed">
+                  使用丰声NEXT扫描下方二维码完成授权，系统将自动为你添加常用钉钉MCP
                 </p>
 
                 <div className="relative mt-5 rounded-xl border border-border bg-white p-3 shadow-sm">
