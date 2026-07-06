@@ -901,7 +901,7 @@ const VaultPage = () => {
             <TabsContent value="dingtalk" className="mt-0">
               <div className="flex flex-col items-center text-center py-4 px-2">
                 <p className="text-xs text-muted-foreground max-w-[360px] leading-relaxed">
-                  使用钉钉扫描下方二维码完成授权，系统将自动为你添加钉钉全套 MCP（文档、表格、AI 表格等）。
+                  使用丰声NEXT扫描下方二维码完成授权，系统将自动为你添加常用钉钉MCP。
                 </p>
 
                 <div className="relative mt-5 rounded-xl border border-border bg-white p-3 shadow-sm">
@@ -926,7 +926,7 @@ const VaultPage = () => {
 
                 <div className="mt-5 w-full max-w-[380px] rounded-md border border-amber-200/70 bg-amber-50/60 dark:border-amber-900/40 dark:bg-amber-950/20 px-3 py-2 text-left">
                   <p className="text-[11px] leading-relaxed text-amber-800 dark:text-amber-300">
-                    钉钉授权有效期为 1 个月，到期后请重新扫码以继续使用相关 MCP 能力。
+                    授权有效期为 1 个月，到期后请重新扫码。
                   </p>
                 </div>
 
