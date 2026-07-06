@@ -121,6 +121,11 @@ const VaultPage = () => {
   // 钉钉 MCP 扫码授权
   const [dingQrToken, setDingQrToken] = useState<string>(() => Math.random().toString(36).slice(2, 10));
   const refreshDingQr = () => setDingQrToken(Math.random().toString(36).slice(2, 10));
+  // 钉钉授权成功提示（上下左右居中弹窗）
+  const [dingSuccessOpen, setDingSuccessOpen] = useState(false);
+  const [dingSuccessTitle, setDingSuccessTitle] = useState("");
+  const [dingSuccessDesc, setDingSuccessDesc] = useState("");
+
   const dingtalkMcps = useMemo(
     () => [
       { id: "dingtalk-doc", name: "钉钉文档MCP", identifier: "dingtalk-doc", description: "读写钉钉文档内容，支持新建、检索、编辑钉钉文档。", getUrlHref: "https://open.dingtalk.com/document/orgapp/dingtalk-doc-mcp" },
@@ -956,16 +961,20 @@ const VaultPage = () => {
                       added.push(it.name);
                     });
                     if (added.length === 0) {
-                      toast({ title: "钉钉 MCP 已全部添加", description: "无需重复授权" });
+                      setDingSuccessTitle("钉钉 MCP 已全部添加");
+                      setDingSuccessDesc("无需重复授权");
                     } else {
-                      toast({ title: "授权成功", description: `已添加 ${added.length} 个钉钉 MCP：${added.join("、")}` });
+                      setDingSuccessTitle("授权成功");
+                      setDingSuccessDesc(`已添加 ${added.length} 个钉钉 MCP：${added.join("、")}`);
                     }
+                    setDingSuccessOpen(true);
                     setCreateOpen(false);
                   }}
                   className="mt-4 text-[11px] text-primary hover:underline"
                 >
                   模拟扫码完成（Demo）
                 </button>
+
               </div>
             </TabsContent>
 
@@ -1143,7 +1152,18 @@ const VaultPage = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* 钉钉授权成功提示：上下左右居中弹窗 */}
+      <Dialog open={dingSuccessOpen} onOpenChange={setDingSuccessOpen}>
+        <DialogContent className="max-w-[420px] p-6">
+          <DialogHeader className="space-y-2 text-center sm:text-center">
+            <DialogTitle>{dingSuccessTitle}</DialogTitle>
+            <DialogDescription>{dingSuccessDesc}</DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </div>
+
   );
 };
 
