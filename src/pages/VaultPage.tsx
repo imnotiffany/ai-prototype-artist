@@ -1152,7 +1152,18 @@ const VaultPage = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* 钉钉授权成功提示：上下左右居中弹窗 */}
+      <Dialog open={dingSuccessOpen} onOpenChange={setDingSuccessOpen}>
+        <DialogContent className="max-w-[420px] p-6">
+          <DialogHeader className="space-y-2 text-center sm:text-center">
+            <DialogTitle>{dingSuccessTitle}</DialogTitle>
+            <DialogDescription>{dingSuccessDesc}</DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </div>
+
   );
 };
 
