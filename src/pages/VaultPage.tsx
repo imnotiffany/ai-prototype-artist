@@ -924,9 +924,9 @@ const VaultPage = () => {
                   刷新二维码
                 </button>
 
-                <div className="mt-5 w-full max-w-[380px] rounded-md border border-amber-200/70 bg-amber-50/60 dark:border-amber-900/40 dark:bg-amber-950/20 px-3 py-2 text-left">
-                  <p className="text-[11px] leading-relaxed text-amber-800 dark:text-amber-300">
-                    授权有效期为 1 个月，到期后请重新扫码。
+                <div className="mt-5 w-full max-w-[380px] rounded-md border border-amber-200/70 bg-amber-50/60 dark:border-amber-900/40 dark:bg-amber-950/20 px-3 py-2">
+                  <p className="text-[11px] leading-relaxed text-amber-800 dark:text-amber-300 text-center">
+                    授权有效期为 1 个月，到期后请重新扫码
                   </p>
                 </div>
 
