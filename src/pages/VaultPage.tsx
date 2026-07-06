@@ -961,16 +961,20 @@ const VaultPage = () => {
                       added.push(it.name);
                     });
                     if (added.length === 0) {
-                      toast({ title: "钉钉 MCP 已全部添加", description: "无需重复授权" });
+                      setDingSuccessTitle("钉钉 MCP 已全部添加");
+                      setDingSuccessDesc("无需重复授权");
                     } else {
-                      toast({ title: "授权成功", description: `已添加 ${added.length} 个钉钉 MCP：${added.join("、")}` });
+                      setDingSuccessTitle("授权成功");
+                      setDingSuccessDesc(`已添加 ${added.length} 个钉钉 MCP：${added.join("、")}`);
                     }
+                    setDingSuccessOpen(true);
                     setCreateOpen(false);
                   }}
                   className="mt-4 text-[11px] text-primary hover:underline"
                 >
                   模拟扫码完成（Demo）
                 </button>
+
               </div>
             </TabsContent>
 
