@@ -1793,6 +1793,14 @@ fengsheng:
           </div>
         </TabsContent>
 
+        <TabsContent value="permissions" className="mt-4">
+          <AgentPermissionsPanel
+            agentId={agent?.id ?? ""}
+            creatorWorkId={agent?.authorId ?? ""}
+            creatorName={agent?.author ?? ""}
+          />
+        </TabsContent>
+
       </Tabs>
 
       {/* Edit basic info dialog */}
