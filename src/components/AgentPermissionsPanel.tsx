@@ -13,7 +13,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import {
-  ChevronRight, ChevronDown, Building2, UserPlus, Search, Trash2, X,
+  ChevronRight, ChevronDown, Search, Trash2, X,
 } from "lucide-react";
 
 
@@ -444,7 +444,6 @@ function AddMembersDialog({ open, onOpenChange, existing, onConfirm }: AddMember
             checked={checkedDept.has(node.id)}
             onCheckedChange={() => toggleDept(node)}
           />
-          <Building2 className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
           <span className="text-xs">{node.name}</span>
           <span className="text-[10px] text-muted-foreground">（{collectMembers(node).length} 人）</span>
         </div>
@@ -519,9 +518,7 @@ function AddMembersDialog({ open, onOpenChange, existing, onConfirm }: AddMember
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-base flex items-center gap-2">
-            <UserPlus className="w-4 h-4 text-primary" />添加成员
-          </DialogTitle>
+          <DialogTitle className="text-base">添加成员</DialogTitle>
           <DialogDescription className="text-xs">
             选择成员并加入使用者名单，添加后成员即可访问并使用该智能体。
           </DialogDescription>
@@ -529,22 +526,21 @@ function AddMembersDialog({ open, onOpenChange, existing, onConfirm }: AddMember
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as "org" | "id")}>
           <TabsList className="h-8 bg-muted/40 p-0.5">
-            <TabsTrigger value="org" className="h-7 px-3 text-xs gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              <Building2 className="w-3.5 h-3.5" />从组织架构选择
+            <TabsTrigger value="org" className="h-7 px-3 text-xs data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              从组织架构选择
             </TabsTrigger>
-            <TabsTrigger value="id" className="h-7 px-3 text-xs gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              <UserPlus className="w-3.5 h-3.5" />按工号批量添加
+            <TabsTrigger value="id" className="h-7 px-3 text-xs data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              按工号批量添加
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="org" className="mt-3 space-y-2">
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <div>
               <Input
                 value={orgQ}
                 onChange={(e) => setOrgQ(e.target.value)}
                 placeholder="搜索组织名称或成员"
-                className="h-8 text-xs pl-7"
+                className="h-8 text-xs pl-3"
               />
             </div>
             <div className="border border-border rounded max-h-[380px] overflow-auto p-2">
