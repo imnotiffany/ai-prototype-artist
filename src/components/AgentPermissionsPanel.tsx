@@ -96,8 +96,18 @@ const MOCK_ORG_TREE: OrgNode[] = [
     name: "市场中心",
     children: [
       { id: "d-mkt-brand", name: "品牌组", members: MOCK_DIRECTORY.filter((e) => e.deptId === "d-mkt-brand") },
+      { id: "d-mkt-growth", name: "增长组", members: MOCK_DIRECTORY.filter((e) => e.deptId === "d-mkt-growth") },
     ],
   },
+  {
+    id: "c-prod",
+    name: "产品中心",
+    children: [
+      { id: "d-prod-growth", name: "增长产品组", members: MOCK_DIRECTORY.filter((e) => e.deptId === "d-prod-growth") },
+      { id: "d-prod-platform", name: "平台产品组", members: MOCK_DIRECTORY.filter((e) => e.deptId === "d-prod-platform") },
+    ],
+  },
+
 ];
 
 function collectMembers(node: OrgNode): Employee[] {
