@@ -535,13 +535,12 @@ function AddMembersDialog({ open, onOpenChange, existing, onConfirm }: AddMember
           </TabsList>
 
           <TabsContent value="org" className="mt-3 space-y-2">
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <div>
               <Input
                 value={orgQ}
                 onChange={(e) => setOrgQ(e.target.value)}
                 placeholder="搜索组织名称或成员"
-                className="h-8 text-xs pl-7"
+                className="h-8 text-xs pl-3"
               />
             </div>
             <div className="border border-border rounded max-h-[380px] overflow-auto p-2">
