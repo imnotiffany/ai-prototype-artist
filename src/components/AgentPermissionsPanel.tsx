@@ -201,12 +201,7 @@ export default function AgentPermissionsPanel({ agentId: _agentId, creatorWorkId
 
   return (
     <div className="space-y-3">
-      {/* Top: total count */}
-      <div className="text-xs text-muted-foreground">
-        共 <span className="text-foreground font-medium">{members.length}</span> 人
-      </div>
-
-      {/* Toolbar: search left, single add entry right */}
+      {/* Toolbar: search left, count beside it, add entry right */}
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="w-3.5 h-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -216,6 +211,9 @@ export default function AgentPermissionsPanel({ agentId: _agentId, creatorWorkId
             placeholder="搜索工号 / 姓名 / 组织名称"
             className="h-8 text-xs pl-7"
           />
+        </div>
+        <div className="text-xs text-muted-foreground whitespace-nowrap">
+          共 <span className="text-foreground font-medium">{members.length}</span> 人
         </div>
         <div className="flex-1" />
         {selected.size > 0 && (
@@ -229,8 +227,7 @@ export default function AgentPermissionsPanel({ agentId: _agentId, creatorWorkId
             移除所选（{selected.size}）
           </Button>
         )}
-        <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setAddOpen(true)}>
-          <UserPlus className="w-3.5 h-3.5" />
+        <Button size="sm" className="h-8 text-xs" onClick={() => setAddOpen(true)}>
           添加成员
         </Button>
       </div>
