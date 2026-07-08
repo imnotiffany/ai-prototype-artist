@@ -201,42 +201,37 @@ export default function AgentPermissionsPanel({ agentId: _agentId, creatorWorkId
 
   return (
     <div className="space-y-3">
-      {/* Top: count + toolbar (search left, actions right) */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="text-xs text-muted-foreground">
-          共 <span className="text-foreground font-medium">{members.length}</span> 位可访问成员
-        </div>
-        {selected.size > 0 && (
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-8 text-xs gap-1.5 text-destructive border-destructive/40 hover:bg-destructive/5"
-            onClick={removeSelected}
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            移除所选（{selected.size}）
-          </Button>
-        )}
+      {/* Top: total count */}
+      <div className="text-xs text-muted-foreground">
+        共 <span className="text-foreground font-medium">{members.length}</span> 人
       </div>
 
+      {/* Toolbar: search left, single add entry right */}
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="w-3.5 h-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="搜索工号 / 姓名 / 部门"
+            placeholder="搜索工号 / 姓名 / 组织名称"
             className="h-8 text-xs pl-7"
           />
         </div>
         <div className="flex-1" />
-        <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={() => setOrgOpen(true)}>
-          <Building2 className="w-3.5 h-3.5" />
-          从组织架构选择
-        </Button>
-        <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setAddByIdOpen(true)}>
+        {selected.size > 0 && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 text-xs gap-1.5 text-destructive border-destructive/40 hover:bg-destructive/5"
+            onClick={() => setBatchRemoveOpen(true)}
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            移除所选（{selected.size}）
+          </Button>
+        )}
+        <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setAddOpen(true)}>
           <UserPlus className="w-3.5 h-3.5" />
-          按工号添加
+          添加成员
         </Button>
       </div>
 
@@ -251,8 +246,8 @@ export default function AgentPermissionsPanel({ agentId: _agentId, creatorWorkId
           />
           <div className="w-28">工号</div>
           <div className="w-28">姓名</div>
-          <div className="flex-1">部门</div>
-          <div className="w-16 text-right">操作</div>
+          <div className="flex-1">组织名称</div>
+          <div className="w-10 text-right">操作</div>
         </div>
         {filtered.length === 0 ? (
           <div className="py-16 text-center text-xs text-muted-foreground">
@@ -273,16 +268,14 @@ export default function AgentPermissionsPanel({ agentId: _agentId, creatorWorkId
                   <div className="w-28 font-mono text-muted-foreground">{m.workId}</div>
                   <div className="w-28">{m.name}</div>
                   <div className="flex-1 text-muted-foreground truncate">{m.department}</div>
-                  <div className="w-16 text-right">
+                  <div className="w-10 flex items-center justify-end">
                     {!creatorRow && (
                       <button
-                        className="text-destructive hover:opacity-80 inline-flex items-center gap-0.5"
-                        onClick={() => {
-                          setMembers((prev) => prev.filter((x) => x.workId !== m.workId));
-                          toast({ title: `已移除 ${m.name}` });
-                        }}
+                        aria-label={`移除 ${m.name}`}
+                        className="w-6 h-6 inline-flex items-center justify-center rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                        onClick={() => setRemoveTarget(m)}
                       >
-                        <X className="w-3.5 h-3.5" />移除
+                        <X className="w-3.5 h-3.5" />
                       </button>
                     )}
                   </div>
@@ -293,26 +286,65 @@ export default function AgentPermissionsPanel({ agentId: _agentId, creatorWorkId
         )}
       </div>
 
-
-      <AddByWorkIdDialog
-        open={addByIdOpen}
-        onOpenChange={setAddByIdOpen}
+      <AddMembersDialog
+        open={addOpen}
+        onOpenChange={setAddOpen}
         existing={members.map((m) => m.workId)}
         onConfirm={(emps) => {
           addMembers(emps);
           toast({ title: `已添加 ${emps.length} 位成员` });
         }}
       />
-      <OrgTreeDialog
-        open={orgOpen}
-        onOpenChange={setOrgOpen}
-        existing={members.map((m) => m.workId)}
-        onConfirm={(emps) => {
-          addMembers(emps);
-          toast({ title: `已从组织架构添加 ${emps.length} 位成员` });
-        }}
-      />
+
+      {/* Single row remove confirm */}
+      <AlertDialog open={!!removeTarget} onOpenChange={(o) => !o && setRemoveTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>移除成员</AlertDialogTitle>
+            <AlertDialogDescription>
+              确定要移除「{removeTarget?.name}（{removeTarget?.workId}）」吗？移除后该成员将无法再访问此智能体。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (!removeTarget) return;
+                const name = removeTarget.name;
+                setMembers((prev) => prev.filter((x) => x.workId !== removeTarget.workId));
+                setRemoveTarget(null);
+                toast({ title: `已移除 ${name}` });
+              }}
+            >
+              确认移除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Batch remove confirm */}
+      <AlertDialog open={batchRemoveOpen} onOpenChange={setBatchRemoveOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>批量移除成员</AlertDialogTitle>
+            <AlertDialogDescription>
+              确定要移除所选的 {selected.size} 位成员吗？移除后他们将无法再访问此智能体。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => { removeSelected(); setBatchRemoveOpen(false); }}
+            >
+              确认移除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
+
   );
 }
 
