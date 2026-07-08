@@ -518,9 +518,7 @@ function AddMembersDialog({ open, onOpenChange, existing, onConfirm }: AddMember
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-base flex items-center gap-2">
-            <UserPlus className="w-4 h-4 text-primary" />添加成员
-          </DialogTitle>
+          <DialogTitle className="text-base">添加成员</DialogTitle>
           <DialogDescription className="text-xs">
             选择成员并加入使用者名单，添加后成员即可访问并使用该智能体。
           </DialogDescription>
@@ -528,11 +526,11 @@ function AddMembersDialog({ open, onOpenChange, existing, onConfirm }: AddMember
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as "org" | "id")}>
           <TabsList className="h-8 bg-muted/40 p-0.5">
-            <TabsTrigger value="org" className="h-7 px-3 text-xs gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              <Building2 className="w-3.5 h-3.5" />从组织架构选择
+            <TabsTrigger value="org" className="h-7 px-3 text-xs data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              从组织架构选择
             </TabsTrigger>
-            <TabsTrigger value="id" className="h-7 px-3 text-xs gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              <UserPlus className="w-3.5 h-3.5" />按工号批量添加
+            <TabsTrigger value="id" className="h-7 px-3 text-xs data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              按工号批量添加
             </TabsTrigger>
           </TabsList>
 
