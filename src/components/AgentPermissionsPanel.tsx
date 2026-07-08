@@ -29,16 +29,35 @@ interface OrgNode {
 const MOCK_DIRECTORY: Employee[] = [
   { workId: "01441970", name: "廖奕通", department: "AI技术平台 / 智能体组", deptId: "d-ai-agent" },
   { workId: "01422596", name: "张毅超", department: "AI技术平台 / 智能体组", deptId: "d-ai-agent" },
+  { workId: "01441971", name: "陈昊", department: "AI技术平台 / 智能体组", deptId: "d-ai-agent" },
+  { workId: "01441972", name: "林思远", department: "AI技术平台 / 智能体组", deptId: "d-ai-agent" },
   { workId: "01419965", name: "杨彪龙", department: "AI技术平台 / 平台组", deptId: "d-ai-platform" },
   { workId: "01234567", name: "张三", department: "AI技术平台 / 平台组", deptId: "d-ai-platform" },
+  { workId: "01419966", name: "郑清怡", department: "AI技术平台 / 平台组", deptId: "d-ai-platform" },
+  { workId: "01419967", name: "何俊杰", department: "AI技术平台 / 平台组", deptId: "d-ai-platform" },
   { workId: "01234568", name: "李四", department: "AI技术平台 / 算法组", deptId: "d-ai-algo" },
   { workId: "01234569", name: "王五", department: "AI技术平台 / 算法组", deptId: "d-ai-algo" },
+  { workId: "01234580", name: "苏映雪", department: "AI技术平台 / 算法组", deptId: "d-ai-algo" },
+  { workId: "01234581", name: "梁子豪", department: "AI技术平台 / 算法组", deptId: "d-ai-algo" },
   { workId: "01234570", name: "赵六", department: "基础架构部 / 云平台组", deptId: "d-infra-cloud" },
-  { workId: "01234571", name: "钱七", department: "市场部 / 品牌组", deptId: "d-mkt-brand" },
-  { workId: "01234572", name: "孙八", department: "数据中心 / 数据工程组", deptId: "d-data-eng" },
+  { workId: "01234575", name: "冯博文", department: "基础架构部 / 云平台组", deptId: "d-infra-cloud" },
+  { workId: "01234576", name: "许安琪", department: "基础架构部 / 云平台组", deptId: "d-infra-cloud" },
   { workId: "01234573", name: "周九", department: "基础架构部 / 网络组", deptId: "d-infra-net" },
+  { workId: "01234577", name: "曹景行", department: "基础架构部 / 网络组", deptId: "d-infra-net" },
+  { workId: "01234571", name: "钱七", department: "市场部 / 品牌组", deptId: "d-mkt-brand" },
+  { workId: "01234578", name: "宋婉婷", department: "市场部 / 品牌组", deptId: "d-mkt-brand" },
+  { workId: "01234582", name: "袁嘉睿", department: "市场部 / 增长组", deptId: "d-mkt-growth" },
+  { workId: "01234583", name: "顾茹馨", department: "市场部 / 增长组", deptId: "d-mkt-growth" },
+  { workId: "01234572", name: "孙八", department: "数据中心 / 数据工程组", deptId: "d-data-eng" },
+  { workId: "01234579", name: "夏文钦", department: "数据中心 / 数据工程组", deptId: "d-data-eng" },
   { workId: "01234574", name: "吴十", department: "数据中心 / 数据分析组", deptId: "d-data-ana" },
+  { workId: "01234584", name: "沈欣然", department: "数据中心 / 数据分析组", deptId: "d-data-ana" },
+  { workId: "01234585", name: "田睿泽", department: "数据中心 / 数据分析组", deptId: "d-data-ana" },
+  { workId: "01234586", name: "叶知秋", department: "产品中心 / 增长产品组", deptId: "d-prod-growth" },
+  { workId: "01234587", name: "范雨蒙", department: "产品中心 / 增长产品组", deptId: "d-prod-growth" },
+  { workId: "01234588", name: "邓浩然", department: "产品中心 / 平台产品组", deptId: "d-prod-platform" },
 ];
+
 
 const MOCK_ORG_TREE: OrgNode[] = [
   {
@@ -77,8 +96,18 @@ const MOCK_ORG_TREE: OrgNode[] = [
     name: "市场中心",
     children: [
       { id: "d-mkt-brand", name: "品牌组", members: MOCK_DIRECTORY.filter((e) => e.deptId === "d-mkt-brand") },
+      { id: "d-mkt-growth", name: "增长组", members: MOCK_DIRECTORY.filter((e) => e.deptId === "d-mkt-growth") },
     ],
   },
+  {
+    id: "c-prod",
+    name: "产品中心",
+    children: [
+      { id: "d-prod-growth", name: "增长产品组", members: MOCK_DIRECTORY.filter((e) => e.deptId === "d-prod-growth") },
+      { id: "d-prod-platform", name: "平台产品组", members: MOCK_DIRECTORY.filter((e) => e.deptId === "d-prod-platform") },
+    ],
+  },
+
 ];
 
 function collectMembers(node: OrgNode): Employee[] {
@@ -105,8 +134,13 @@ export default function AgentPermissionsPanel({ agentId: _agentId, creatorWorkId
     deptId: findEmployee(creatorWorkId)?.deptId ?? "",
   };
 
-  // Default: only creator
-  const [members, setMembers] = useState<Employee[]>([creator]);
+  // Mock: creator + a handful of preloaded members for demo
+  const initialMockIds = ["01234567", "01234568", "01234570", "01234572", "01234578", "01441971"];
+  const initialMembers: Employee[] = [
+    creator,
+    ...MOCK_DIRECTORY.filter((e) => initialMockIds.includes(e.workId) && e.workId !== creatorWorkId),
+  ];
+  const [members, setMembers] = useState<Employee[]>(initialMembers);
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [addByIdOpen, setAddByIdOpen] = useState(false);
@@ -159,39 +193,49 @@ export default function AgentPermissionsPanel({ agentId: _agentId, creatorWorkId
   };
 
   return (
-    <div className="space-y-4">
-      {/* Toolbar */}
-
-      <div className="flex flex-wrap items-center gap-2">
-        <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setAddByIdOpen(true)}>
-          <UserPlus className="w-3.5 h-3.5" />
-          按工号添加
-        </Button>
-        <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={() => setOrgOpen(true)}>
-          <Building2 className="w-3.5 h-3.5" />
-          从组织架构选择
-        </Button>
-        <div className="flex-1" />
-        <div className="relative">
-          <Search className="w-3.5 h-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="搜索工号 / 姓名 / 部门"
-            className="h-8 text-xs pl-7 w-56"
-          />
+    <div className="space-y-3">
+      {/* Top: count + toolbar (search left, actions right) */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="text-xs text-muted-foreground">
+          共 <span className="text-foreground font-medium">{members.length}</span> 位可访问成员
         </div>
         {selected.size > 0 && (
-          <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5 text-destructive border-destructive/40 hover:bg-destructive/5" onClick={removeSelected}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 text-xs gap-1.5 text-destructive border-destructive/40 hover:bg-destructive/5"
+            onClick={removeSelected}
+          >
             <Trash2 className="w-3.5 h-3.5" />
             移除所选（{selected.size}）
           </Button>
         )}
       </div>
 
-      {/* List */}
-      <div className="rounded-lg border border-border overflow-hidden">
-        <div className="flex items-center gap-3 px-4 py-2 bg-muted/40 border-b border-border text-[11px] text-muted-foreground">
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <Search className="w-3.5 h-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="搜索工号 / 姓名 / 部门"
+            className="h-8 text-xs pl-7"
+          />
+        </div>
+        <div className="flex-1" />
+        <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={() => setOrgOpen(true)}>
+          <Building2 className="w-3.5 h-3.5" />
+          从组织架构选择
+        </Button>
+        <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setAddByIdOpen(true)}>
+          <UserPlus className="w-3.5 h-3.5" />
+          按工号添加
+        </Button>
+      </div>
+
+      {/* List (no outer frame) */}
+      <div>
+        <div className="flex items-center gap-3 px-2 py-2 border-b border-border text-[11px] text-muted-foreground">
           <Checkbox className="h-3.5 w-3.5 rounded-[3px] border-muted-foreground/40 data-[state=checked]:border-primary"
             checked={allRemovableSelected}
             onCheckedChange={toggleSelectAll}
@@ -212,7 +256,7 @@ export default function AgentPermissionsPanel({ agentId: _agentId, creatorWorkId
             {filtered.map((m) => {
               const creatorRow = isCreator(m.workId);
               return (
-                <li key={m.workId} className="flex items-center gap-3 px-4 py-2.5 text-xs hover:bg-muted/30">
+                <li key={m.workId} className="flex items-center gap-3 px-2 py-2.5 text-xs hover:bg-muted/30">
                   <Checkbox className="h-3.5 w-3.5 rounded-[3px] border-muted-foreground/40 data-[state=checked]:border-primary"
                     checked={selected.has(m.workId)}
                     onCheckedChange={() => toggleSelect(m.workId)}
@@ -220,14 +264,7 @@ export default function AgentPermissionsPanel({ agentId: _agentId, creatorWorkId
                     aria-label={`选择 ${m.name}`}
                   />
                   <div className="w-28 font-mono text-muted-foreground">{m.workId}</div>
-                  <div className="w-28 flex items-center gap-1.5">
-                    <span>{m.name}</span>
-                    {creatorRow && (
-                      <Badge variant="outline" className="h-4 px-1 gap-0.5 text-[10px] text-primary border-primary/30">
-                        <Crown className="w-2.5 h-2.5" />创建者
-                      </Badge>
-                    )}
-                  </div>
+                  <div className="w-28">{m.name}</div>
                   <div className="flex-1 text-muted-foreground truncate">{m.department}</div>
                   <div className="w-16 text-right">
                     {!creatorRow && (
@@ -247,10 +284,8 @@ export default function AgentPermissionsPanel({ agentId: _agentId, creatorWorkId
             })}
           </ul>
         )}
-        <div className="px-4 py-2 bg-muted/20 border-t border-border text-[11px] text-muted-foreground">
-          共 {members.length} 位可访问成员
-        </div>
       </div>
+
 
       <AddByWorkIdDialog
         open={addByIdOpen}
