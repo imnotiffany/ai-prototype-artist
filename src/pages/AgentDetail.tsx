@@ -46,6 +46,7 @@ import { AgentLogsPanel } from "@/components/AgentLogsPanel";
 import { AgentOperationsPanel } from "@/components/AgentOperationsPanel";
 import { getLatestSkillVersion } from "@/lib/skillVersion";
 import OfficeSuiteSection from "@/components/OfficeSuiteSection";
+import AgentPermissionsPanel from "@/components/AgentPermissionsPanel";
 
 /* ───────── Mock run history ───────── */
 type RunStatus = "success" | "failed" | "running";
@@ -550,7 +551,7 @@ const AgentDetail = () => {
           <TabsTrigger value="operations" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><BarChart3 className="w-3.5 h-3.5" />运营看板</TabsTrigger>
           <TabsTrigger value="apikey" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><Plug className="w-3.5 h-3.5" />集成方式</TabsTrigger>
           <TabsTrigger value="versions" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><History className="w-3.5 h-3.5" />版本管理</TabsTrigger>
-
+          <TabsTrigger value="permissions" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><Users className="w-3.5 h-3.5" />权限管理</TabsTrigger>
         </TabsList>
 
 
@@ -1790,6 +1791,14 @@ fengsheng:
               })}
             </ul>
           </div>
+        </TabsContent>
+
+        <TabsContent value="permissions" className="mt-4">
+          <AgentPermissionsPanel
+            agentId={agent?.id ?? ""}
+            creatorWorkId={agent?.authorId ?? ""}
+            creatorName={agent?.author ?? ""}
+          />
         </TabsContent>
 
       </Tabs>
