@@ -13,7 +13,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import {
-  ChevronRight, ChevronDown, Building2, UserPlus, Search, Trash2, X,
+  ChevronRight, ChevronDown, Building2, Search, Trash2, X,
 } from "lucide-react";
 
 
