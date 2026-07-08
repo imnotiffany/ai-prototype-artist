@@ -160,22 +160,8 @@ export default function AgentPermissionsPanel({ agentId: _agentId, creatorWorkId
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="rounded-lg border border-border bg-muted/30 p-4">
-        <div className="flex items-start gap-3">
-          <div className="w-8 h-8 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
-            <Users className="w-4 h-4" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="text-sm font-medium">使用者权限（User）</div>
-            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-              这里管理「谁可以访问并使用该智能体」。新建的智能体默认仅创建者可访问，添加成员后他们即可在智能体广场看到并使用该智能体。
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Toolbar */}
+
       <div className="flex flex-wrap items-center gap-2">
         <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setAddByIdOpen(true)}>
           <UserPlus className="w-3.5 h-3.5" />
