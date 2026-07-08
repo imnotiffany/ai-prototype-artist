@@ -134,8 +134,13 @@ export default function AgentPermissionsPanel({ agentId: _agentId, creatorWorkId
     deptId: findEmployee(creatorWorkId)?.deptId ?? "",
   };
 
-  // Default: only creator
-  const [members, setMembers] = useState<Employee[]>([creator]);
+  // Mock: creator + a handful of preloaded members for demo
+  const initialMockIds = ["01234567", "01234568", "01234570", "01234572", "01234578", "01441971"];
+  const initialMembers: Employee[] = [
+    creator,
+    ...MOCK_DIRECTORY.filter((e) => initialMockIds.includes(e.workId) && e.workId !== creatorWorkId),
+  ];
+  const [members, setMembers] = useState<Employee[]>(initialMembers);
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [addByIdOpen, setAddByIdOpen] = useState(false);
