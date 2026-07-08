@@ -3,14 +3,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import {
-  ChevronRight, ChevronDown, Building2, UserPlus, Users, Search, Trash2, X, Crown,
+  ChevronRight, ChevronDown, Building2, UserPlus, Search, Trash2, X,
 } from "lucide-react";
+
 
 /* ───────── Mock directory ───────── */
 interface Employee {
@@ -143,8 +148,10 @@ export default function AgentPermissionsPanel({ agentId: _agentId, creatorWorkId
   const [members, setMembers] = useState<Employee[]>(initialMembers);
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [addByIdOpen, setAddByIdOpen] = useState(false);
-  const [orgOpen, setOrgOpen] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [removeTarget, setRemoveTarget] = useState<Employee | null>(null);
+  const [batchRemoveOpen, setBatchRemoveOpen] = useState(false);
+
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -194,42 +201,37 @@ export default function AgentPermissionsPanel({ agentId: _agentId, creatorWorkId
 
   return (
     <div className="space-y-3">
-      {/* Top: count + toolbar (search left, actions right) */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="text-xs text-muted-foreground">
-          共 <span className="text-foreground font-medium">{members.length}</span> 位可访问成员
-        </div>
-        {selected.size > 0 && (
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-8 text-xs gap-1.5 text-destructive border-destructive/40 hover:bg-destructive/5"
-            onClick={removeSelected}
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            移除所选（{selected.size}）
-          </Button>
-        )}
+      {/* Top: total count */}
+      <div className="text-xs text-muted-foreground">
+        共 <span className="text-foreground font-medium">{members.length}</span> 人
       </div>
 
+      {/* Toolbar: search left, single add entry right */}
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="w-3.5 h-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="搜索工号 / 姓名 / 部门"
+            placeholder="搜索工号 / 姓名 / 组织名称"
             className="h-8 text-xs pl-7"
           />
         </div>
         <div className="flex-1" />
-        <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={() => setOrgOpen(true)}>
-          <Building2 className="w-3.5 h-3.5" />
-          从组织架构选择
-        </Button>
-        <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setAddByIdOpen(true)}>
+        {selected.size > 0 && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 text-xs gap-1.5 text-destructive border-destructive/40 hover:bg-destructive/5"
+            onClick={() => setBatchRemoveOpen(true)}
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            移除所选（{selected.size}）
+          </Button>
+        )}
+        <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setAddOpen(true)}>
           <UserPlus className="w-3.5 h-3.5" />
-          按工号添加
+          添加成员
         </Button>
       </div>
 
@@ -244,8 +246,8 @@ export default function AgentPermissionsPanel({ agentId: _agentId, creatorWorkId
           />
           <div className="w-28">工号</div>
           <div className="w-28">姓名</div>
-          <div className="flex-1">部门</div>
-          <div className="w-16 text-right">操作</div>
+          <div className="flex-1">组织名称</div>
+          <div className="w-10 text-right">操作</div>
         </div>
         {filtered.length === 0 ? (
           <div className="py-16 text-center text-xs text-muted-foreground">
@@ -266,16 +268,14 @@ export default function AgentPermissionsPanel({ agentId: _agentId, creatorWorkId
                   <div className="w-28 font-mono text-muted-foreground">{m.workId}</div>
                   <div className="w-28">{m.name}</div>
                   <div className="flex-1 text-muted-foreground truncate">{m.department}</div>
-                  <div className="w-16 text-right">
+                  <div className="w-10 flex items-center justify-end">
                     {!creatorRow && (
                       <button
-                        className="text-destructive hover:opacity-80 inline-flex items-center gap-0.5"
-                        onClick={() => {
-                          setMembers((prev) => prev.filter((x) => x.workId !== m.workId));
-                          toast({ title: `已移除 ${m.name}` });
-                        }}
+                        aria-label={`移除 ${m.name}`}
+                        className="w-6 h-6 inline-flex items-center justify-center rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                        onClick={() => setRemoveTarget(m)}
                       >
-                        <X className="w-3.5 h-3.5" />移除
+                        <X className="w-3.5 h-3.5" />
                       </button>
                     )}
                   </div>
@@ -286,147 +286,107 @@ export default function AgentPermissionsPanel({ agentId: _agentId, creatorWorkId
         )}
       </div>
 
-
-      <AddByWorkIdDialog
-        open={addByIdOpen}
-        onOpenChange={setAddByIdOpen}
+      <AddMembersDialog
+        open={addOpen}
+        onOpenChange={setAddOpen}
         existing={members.map((m) => m.workId)}
         onConfirm={(emps) => {
           addMembers(emps);
           toast({ title: `已添加 ${emps.length} 位成员` });
         }}
       />
-      <OrgTreeDialog
-        open={orgOpen}
-        onOpenChange={setOrgOpen}
-        existing={members.map((m) => m.workId)}
-        onConfirm={(emps) => {
-          addMembers(emps);
-          toast({ title: `已从组织架构添加 ${emps.length} 位成员` });
-        }}
-      />
+
+      {/* Single row remove confirm */}
+      <AlertDialog open={!!removeTarget} onOpenChange={(o) => !o && setRemoveTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>移除成员</AlertDialogTitle>
+            <AlertDialogDescription>
+              确定要移除「{removeTarget?.name}（{removeTarget?.workId}）」吗？移除后该成员将无法再访问此智能体。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (!removeTarget) return;
+                const name = removeTarget.name;
+                setMembers((prev) => prev.filter((x) => x.workId !== removeTarget.workId));
+                setRemoveTarget(null);
+                toast({ title: `已移除 ${name}` });
+              }}
+            >
+              确认移除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Batch remove confirm */}
+      <AlertDialog open={batchRemoveOpen} onOpenChange={setBatchRemoveOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>批量移除成员</AlertDialogTitle>
+            <AlertDialogDescription>
+              确定要移除所选的 {selected.size} 位成员吗？移除后他们将无法再访问此智能体。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => { removeSelected(); setBatchRemoveOpen(false); }}
+            >
+              确认移除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
+
   );
 }
 
-/* ───────── Add by workId dialog ───────── */
-interface AddByIdProps {
+/* ───────── Unified Add Members Dialog (Tabs) ───────── */
+interface AddMembersDialogProps {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   existing: string[];
   onConfirm: (emps: Employee[]) => void;
 }
-function AddByWorkIdDialog({ open, onOpenChange, existing, onConfirm }: AddByIdProps) {
+
+function AddMembersDialog({ open, onOpenChange, existing, onConfirm }: AddMembersDialogProps) {
+  const [tab, setTab] = useState<"org" | "id">("org");
+
+  // Org tree state
+  const [expanded, setExpanded] = useState<Set<string>>(new Set(["c-tech", "d-ai"]));
+  const [checkedDept, setCheckedDept] = useState<Set<string>>(new Set());
+  const [checkedEmp, setCheckedEmp] = useState<Set<string>>(new Set());
+  const [orgQ, setOrgQ] = useState("");
+
+  // WorkId state
   const [raw, setRaw] = useState("");
   const [validated, setValidated] = useState<
     { workId: string; ok: boolean; emp?: Employee; reason?: string }[] | null
   >(null);
 
-  const parseIds = () =>
-    Array.from(new Set(raw.split(/[\s,，、;；\n]+/).map((s) => s.trim()).filter(Boolean)));
-
-  const handleValidate = () => {
-    const ids = parseIds();
-    if (ids.length === 0) {
-      toast({ title: "请输入工号", variant: "destructive" });
-      return;
-    }
-    const result = ids.map((id) => {
-      const emp = findEmployee(id);
-      if (!emp) return { workId: id, ok: false, reason: "工号不存在" };
-      if (existing.includes(id)) return { workId: id, ok: false, emp, reason: "已在名单中" };
-      return { workId: id, ok: true, emp };
-    });
-    setValidated(result);
+  const resetAll = () => {
+    setTab("org");
+    setExpanded(new Set(["c-tech", "d-ai"]));
+    setCheckedDept(new Set());
+    setCheckedEmp(new Set());
+    setOrgQ("");
+    setRaw("");
+    setValidated(null);
   };
 
-  const handleConfirm = () => {
-    const emps = (validated ?? []).filter((v) => v.ok && v.emp).map((v) => v.emp!);
-    if (emps.length === 0) {
-      toast({ title: "没有可添加的有效工号", variant: "destructive" });
-      return;
-    }
-    onConfirm(emps);
-    reset();
-    onOpenChange(false);
+  const handleOpenChange = (o: boolean) => {
+    if (!o) resetAll();
+    onOpenChange(o);
   };
 
-  const reset = () => { setRaw(""); setValidated(null); };
-
-  return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) reset(); onOpenChange(o); }}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle className="text-base flex items-center gap-2">
-            <UserPlus className="w-4 h-4 text-primary" />按工号添加成员
-          </DialogTitle>
-          <DialogDescription className="text-xs">
-            支持批量输入，多个工号用逗号、空格或换行分隔。校验通过后回填姓名与部门。
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-3">
-          <Textarea
-            value={raw}
-            onChange={(e) => { setRaw(e.target.value); setValidated(null); }}
-            placeholder={"示例：\n01441970\n01234567, 01234568\n01234569 01234570"}
-            className="min-h-[110px] text-xs font-mono"
-          />
-          <div className="flex justify-end">
-            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={handleValidate}>
-              校验工号
-            </Button>
-          </div>
-          {validated && (
-            <div className="rounded border border-border max-h-60 overflow-auto">
-              <ul className="divide-y divide-border text-xs">
-                {validated.map((v) => (
-                  <li key={v.workId} className="flex items-center gap-2 px-3 py-2">
-                    <span className={`w-1.5 h-1.5 rounded-full ${v.ok ? "bg-green-500" : "bg-destructive"}`} />
-                    <span className="font-mono w-24">{v.workId}</span>
-                    {v.ok ? (
-                      <>
-                        <span className="w-20">{v.emp!.name}</span>
-                        <span className="text-muted-foreground truncate flex-1">{v.emp!.department}</span>
-                        <span className="text-green-600 text-[11px]">可添加</span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="w-20 text-muted-foreground">{v.emp?.name ?? "-"}</span>
-                        <span className="text-muted-foreground truncate flex-1">{v.emp?.department ?? "-"}</span>
-                        <span className="text-destructive text-[11px]">{v.reason}</span>
-                      </>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-        <DialogFooter>
-          <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => onOpenChange(false)}>取消</Button>
-          <Button size="sm" className="h-8 text-xs" disabled={!validated || !validated.some((v) => v.ok)} onClick={handleConfirm}>
-            添加 {validated ? `（${validated.filter((v) => v.ok).length}）` : ""}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-/* ───────── Org tree dialog ───────── */
-interface OrgProps {
-  open: boolean;
-  onOpenChange: (o: boolean) => void;
-  existing: string[];
-  onConfirm: (emps: Employee[]) => void;
-}
-
-function OrgTreeDialog({ open, onOpenChange, existing, onConfirm }: OrgProps) {
-  const [expanded, setExpanded] = useState<Set<string>>(new Set(["c-tech", "d-ai"]));
-  const [checkedDept, setCheckedDept] = useState<Set<string>>(new Set());
-  const [checkedEmp, setCheckedEmp] = useState<Set<string>>(new Set());
-  const [q, setQ] = useState("");
-
+  /* Org tree helpers */
   const toggleExpand = (id: string) =>
     setExpanded((prev) => {
       const next = new Set(prev);
@@ -436,6 +396,7 @@ function OrgTreeDialog({ open, onOpenChange, existing, onConfirm }: OrgProps) {
 
   const toggleDept = (node: OrgNode) => {
     const emps = collectMembers(node);
+    const isNowChecked = !checkedDept.has(node.id);
     setCheckedDept((prev) => {
       const next = new Set(prev);
       next.has(node.id) ? next.delete(node.id) : next.add(node.id);
@@ -443,23 +404,21 @@ function OrgTreeDialog({ open, onOpenChange, existing, onConfirm }: OrgProps) {
     });
     setCheckedEmp((prev) => {
       const next = new Set(prev);
-      const isNowChecked = !checkedDept.has(node.id);
       emps.forEach((e) => { isNowChecked ? next.add(e.workId) : next.delete(e.workId); });
       return next;
     });
   };
 
-  const toggleEmp = (workId: string) => {
+  const toggleEmp = (workId: string) =>
     setCheckedEmp((prev) => {
       const next = new Set(prev);
       next.has(workId) ? next.delete(workId) : next.add(workId);
       return next;
     });
-  };
 
   const matches = (node: OrgNode): boolean => {
-    if (!q.trim()) return true;
-    const ql = q.toLowerCase();
+    if (!orgQ.trim()) return true;
+    const ql = orgQ.toLowerCase();
     if (node.name.toLowerCase().includes(ql)) return true;
     if (node.members?.some((m) => m.name.toLowerCase().includes(ql) || m.workId.includes(ql))) return true;
     return node.children?.some(matches) ?? false;
@@ -467,7 +426,7 @@ function OrgTreeDialog({ open, onOpenChange, existing, onConfirm }: OrgProps) {
 
   const renderNode = (node: OrgNode, depth = 0) => {
     if (!matches(node)) return null;
-    const isOpen = expanded.has(node.id) || !!q.trim();
+    const isOpen = expanded.has(node.id) || !!orgQ.trim();
     const hasChildren = (node.children?.length ?? 0) > 0;
     const members = node.members ?? [];
     return (
@@ -496,7 +455,7 @@ function OrgTreeDialog({ open, onOpenChange, existing, onConfirm }: OrgProps) {
           <ul>
             {node.children?.map((c) => renderNode(c, depth + 1))}
             {members
-              .filter((m) => !q.trim() || m.name.toLowerCase().includes(q.toLowerCase()) || m.workId.includes(q))
+              .filter((m) => !orgQ.trim() || m.name.toLowerCase().includes(orgQ.toLowerCase()) || m.workId.includes(orgQ))
               .map((m) => (
                 <li
                   key={m.workId}
@@ -517,56 +476,136 @@ function OrgTreeDialog({ open, onOpenChange, existing, onConfirm }: OrgProps) {
     );
   };
 
+  const totalNewFromOrg = Array.from(checkedEmp).filter((id) => !existing.includes(id)).length;
+
+  /* WorkId helpers */
+  const parseIds = () =>
+    Array.from(new Set(raw.split(/[\s,，、;；\n]+/).map((s) => s.trim()).filter(Boolean)));
+
+  const handleValidate = () => {
+    const ids = parseIds();
+    if (ids.length === 0) {
+      toast({ title: "请输入工号", variant: "destructive" });
+      return;
+    }
+    const result = ids.map((id) => {
+      const emp = findEmployee(id);
+      if (!emp) return { workId: id, ok: false, reason: "工号不存在" };
+      if (existing.includes(id)) return { workId: id, ok: false, emp, reason: "已在名单中" };
+      return { workId: id, ok: true, emp };
+    });
+    setValidated(result);
+  };
+
+  const totalOkIds = validated?.filter((v) => v.ok).length ?? 0;
+
   const handleConfirm = () => {
-    const emps = MOCK_DIRECTORY.filter((e) => checkedEmp.has(e.workId) && !existing.includes(e.workId));
+    let emps: Employee[] = [];
+    if (tab === "org") {
+      emps = MOCK_DIRECTORY.filter((e) => checkedEmp.has(e.workId) && !existing.includes(e.workId));
+    } else {
+      emps = (validated ?? []).filter((v) => v.ok && v.emp).map((v) => v.emp!);
+    }
     if (emps.length === 0) {
-      toast({ title: "未选择任何新成员", variant: "destructive" });
+      toast({ title: "没有可添加的成员", variant: "destructive" });
       return;
     }
     onConfirm(emps);
-    reset();
+    resetAll();
     onOpenChange(false);
   };
 
-  const reset = () => { setCheckedDept(new Set()); setCheckedEmp(new Set()); setQ(""); };
-
-  const totalNew = Array.from(checkedEmp).filter((id) => !existing.includes(id)).length;
+  const canConfirm = tab === "org" ? totalNewFromOrg > 0 : totalOkIds > 0;
+  const confirmCount = tab === "org" ? totalNewFromOrg : totalOkIds;
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) reset(); onOpenChange(o); }}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-base flex items-center gap-2">
-            <Building2 className="w-4 h-4 text-primary" />从组织架构选择
+            <UserPlus className="w-4 h-4 text-primary" />添加成员
           </DialogTitle>
           <DialogDescription className="text-xs">
-            勾选整个中心/部门可批量选中其下所有成员，选中的成员将被逐个加入名单。
+            选择成员并加入使用者名单，添加后成员即可访问并使用该智能体。
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-2">
-          <div className="relative">
-            <Search className="w-3.5 h-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="搜索部门或成员"
-              className="h-8 text-xs pl-7"
+
+        <Tabs value={tab} onValueChange={(v) => setTab(v as "org" | "id")}>
+          <TabsList className="h-8 bg-muted/40 p-0.5">
+            <TabsTrigger value="org" className="h-7 px-3 text-xs gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <Building2 className="w-3.5 h-3.5" />从组织架构选择
+            </TabsTrigger>
+            <TabsTrigger value="id" className="h-7 px-3 text-xs gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <UserPlus className="w-3.5 h-3.5" />按工号批量添加
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="org" className="mt-3 space-y-2">
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={orgQ}
+                onChange={(e) => setOrgQ(e.target.value)}
+                placeholder="搜索组织名称或成员"
+                className="h-8 text-xs pl-7"
+              />
+            </div>
+            <div className="border border-border rounded max-h-[380px] overflow-auto p-2">
+              <ul>{MOCK_ORG_TREE.map((n) => renderNode(n))}</ul>
+            </div>
+            <div className="text-[11px] text-muted-foreground">
+              已选 {checkedEmp.size} 人（其中 {totalNewFromOrg} 位为新增）
+            </div>
+          </TabsContent>
+
+          <TabsContent value="id" className="mt-3 space-y-3">
+            <Textarea
+              value={raw}
+              onChange={(e) => { setRaw(e.target.value); setValidated(null); }}
+              placeholder={"多个工号用逗号、空格或换行分隔，例如：\n01441970\n01234567, 01234568\n01234569 01234570"}
+              className="min-h-[110px] text-xs font-mono"
             />
-          </div>
-          <div className="border border-border rounded max-h-[380px] overflow-auto p-2">
-            <ul>{MOCK_ORG_TREE.map((n) => renderNode(n))}</ul>
-          </div>
-          <div className="text-[11px] text-muted-foreground">
-            已选 {checkedEmp.size} 人（其中 {totalNew} 位为新增）
-          </div>
-        </div>
+            <div className="flex justify-end">
+              <Button size="sm" variant="outline" className="h-7 text-xs" onClick={handleValidate}>
+                校验工号
+              </Button>
+            </div>
+            {validated && (
+              <div className="rounded border border-border max-h-52 overflow-auto">
+                <ul className="divide-y divide-border text-xs">
+                  {validated.map((v) => (
+                    <li key={v.workId} className="flex items-center gap-2 px-3 py-2">
+                      <span className={`w-1.5 h-1.5 rounded-full ${v.ok ? "bg-green-500" : "bg-destructive"}`} />
+                      <span className="font-mono w-24">{v.workId}</span>
+                      {v.ok ? (
+                        <>
+                          <span className="w-20">{v.emp!.name}</span>
+                          <span className="text-muted-foreground truncate flex-1">{v.emp!.department}</span>
+                          <span className="text-green-600 text-[11px]">可添加</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="w-20 text-muted-foreground">{v.emp?.name ?? "-"}</span>
+                          <span className="text-muted-foreground truncate flex-1">{v.emp?.department ?? "-"}</span>
+                          <span className="text-destructive text-[11px]">{v.reason}</span>
+                        </>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+
         <DialogFooter>
-          <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => onOpenChange(false)}>取消</Button>
-          <Button size="sm" className="h-8 text-xs" disabled={totalNew === 0} onClick={handleConfirm}>
-            添加（{totalNew}）
+          <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => handleOpenChange(false)}>取消</Button>
+          <Button size="sm" className="h-8 text-xs" disabled={!canConfirm} onClick={handleConfirm}>
+            添加{confirmCount > 0 ? `（${confirmCount}）` : ""}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
+
