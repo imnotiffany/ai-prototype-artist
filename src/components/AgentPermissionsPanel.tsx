@@ -193,39 +193,49 @@ export default function AgentPermissionsPanel({ agentId: _agentId, creatorWorkId
   };
 
   return (
-    <div className="space-y-4">
-      {/* Toolbar */}
-
-      <div className="flex flex-wrap items-center gap-2">
-        <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setAddByIdOpen(true)}>
-          <UserPlus className="w-3.5 h-3.5" />
-          按工号添加
-        </Button>
-        <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={() => setOrgOpen(true)}>
-          <Building2 className="w-3.5 h-3.5" />
-          从组织架构选择
-        </Button>
-        <div className="flex-1" />
-        <div className="relative">
-          <Search className="w-3.5 h-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="搜索工号 / 姓名 / 部门"
-            className="h-8 text-xs pl-7 w-56"
-          />
+    <div className="space-y-3">
+      {/* Top: count + toolbar (search left, actions right) */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="text-xs text-muted-foreground">
+          共 <span className="text-foreground font-medium">{members.length}</span> 位可访问成员
         </div>
         {selected.size > 0 && (
-          <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5 text-destructive border-destructive/40 hover:bg-destructive/5" onClick={removeSelected}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 text-xs gap-1.5 text-destructive border-destructive/40 hover:bg-destructive/5"
+            onClick={removeSelected}
+          >
             <Trash2 className="w-3.5 h-3.5" />
             移除所选（{selected.size}）
           </Button>
         )}
       </div>
 
-      {/* List */}
-      <div className="rounded-lg border border-border overflow-hidden">
-        <div className="flex items-center gap-3 px-4 py-2 bg-muted/40 border-b border-border text-[11px] text-muted-foreground">
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <Search className="w-3.5 h-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="搜索工号 / 姓名 / 部门"
+            className="h-8 text-xs pl-7"
+          />
+        </div>
+        <div className="flex-1" />
+        <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={() => setOrgOpen(true)}>
+          <Building2 className="w-3.5 h-3.5" />
+          从组织架构选择
+        </Button>
+        <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setAddByIdOpen(true)}>
+          <UserPlus className="w-3.5 h-3.5" />
+          按工号添加
+        </Button>
+      </div>
+
+      {/* List (no outer frame) */}
+      <div>
+        <div className="flex items-center gap-3 px-2 py-2 border-b border-border text-[11px] text-muted-foreground">
           <Checkbox className="h-3.5 w-3.5 rounded-[3px] border-muted-foreground/40 data-[state=checked]:border-primary"
             checked={allRemovableSelected}
             onCheckedChange={toggleSelectAll}
@@ -246,7 +256,7 @@ export default function AgentPermissionsPanel({ agentId: _agentId, creatorWorkId
             {filtered.map((m) => {
               const creatorRow = isCreator(m.workId);
               return (
-                <li key={m.workId} className="flex items-center gap-3 px-4 py-2.5 text-xs hover:bg-muted/30">
+                <li key={m.workId} className="flex items-center gap-3 px-2 py-2.5 text-xs hover:bg-muted/30">
                   <Checkbox className="h-3.5 w-3.5 rounded-[3px] border-muted-foreground/40 data-[state=checked]:border-primary"
                     checked={selected.has(m.workId)}
                     onCheckedChange={() => toggleSelect(m.workId)}
@@ -254,14 +264,7 @@ export default function AgentPermissionsPanel({ agentId: _agentId, creatorWorkId
                     aria-label={`选择 ${m.name}`}
                   />
                   <div className="w-28 font-mono text-muted-foreground">{m.workId}</div>
-                  <div className="w-28 flex items-center gap-1.5">
-                    <span>{m.name}</span>
-                    {creatorRow && (
-                      <Badge variant="outline" className="h-4 px-1 gap-0.5 text-[10px] text-primary border-primary/30">
-                        <Crown className="w-2.5 h-2.5" />创建者
-                      </Badge>
-                    )}
-                  </div>
+                  <div className="w-28">{m.name}</div>
                   <div className="flex-1 text-muted-foreground truncate">{m.department}</div>
                   <div className="w-16 text-right">
                     {!creatorRow && (
@@ -281,10 +284,8 @@ export default function AgentPermissionsPanel({ agentId: _agentId, creatorWorkId
             })}
           </ul>
         )}
-        <div className="px-4 py-2 bg-muted/20 border-t border-border text-[11px] text-muted-foreground">
-          共 {members.length} 位可访问成员
-        </div>
       </div>
+
 
       <AddByWorkIdDialog
         open={addByIdOpen}
