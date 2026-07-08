@@ -444,7 +444,6 @@ function AddMembersDialog({ open, onOpenChange, existing, onConfirm }: AddMember
             checked={checkedDept.has(node.id)}
             onCheckedChange={() => toggleDept(node)}
           />
-          <Building2 className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
           <span className="text-xs">{node.name}</span>
           <span className="text-[10px] text-muted-foreground">（{collectMembers(node).length} 人）</span>
         </div>
