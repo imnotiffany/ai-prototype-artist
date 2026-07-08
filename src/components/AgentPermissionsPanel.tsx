@@ -192,7 +192,7 @@ export default function AgentPermissionsPanel({ agentId: _agentId, creatorWorkId
       {/* List */}
       <div className="rounded-lg border border-border overflow-hidden">
         <div className="flex items-center gap-3 px-4 py-2 bg-muted/40 border-b border-border text-[11px] text-muted-foreground">
-          <Checkbox
+          <Checkbox className="h-3.5 w-3.5 rounded-[3px] border-muted-foreground/40 data-[state=checked]:border-primary"
             checked={allRemovableSelected}
             onCheckedChange={toggleSelectAll}
             disabled={removableCount === 0}
@@ -213,7 +213,7 @@ export default function AgentPermissionsPanel({ agentId: _agentId, creatorWorkId
               const creatorRow = isCreator(m.workId);
               return (
                 <li key={m.workId} className="flex items-center gap-3 px-4 py-2.5 text-xs hover:bg-muted/30">
-                  <Checkbox
+                  <Checkbox className="h-3.5 w-3.5 rounded-[3px] border-muted-foreground/40 data-[state=checked]:border-primary"
                     checked={selected.has(m.workId)}
                     onCheckedChange={() => toggleSelect(m.workId)}
                     disabled={creatorRow}
@@ -449,7 +449,7 @@ function OrgTreeDialog({ open, onOpenChange, existing, onConfirm }: OrgProps) {
               isOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />
             ) : null}
           </button>
-          <Checkbox
+          <Checkbox className="h-3.5 w-3.5 rounded-[3px] border-muted-foreground/40 data-[state=checked]:border-primary"
             checked={checkedDept.has(node.id)}
             onCheckedChange={() => toggleDept(node)}
           />
@@ -468,7 +468,7 @@ function OrgTreeDialog({ open, onOpenChange, existing, onConfirm }: OrgProps) {
                   className="flex items-center gap-1.5 py-1 px-1 hover:bg-muted/40 rounded"
                   style={{ paddingLeft: (depth + 1) * 14 + 22 }}
                 >
-                  <Checkbox
+                  <Checkbox className="h-3.5 w-3.5 rounded-[3px] border-muted-foreground/40 data-[state=checked]:border-primary"
                     checked={checkedEmp.has(m.workId)}
                     onCheckedChange={() => toggleEmp(m.workId)}
                   />
