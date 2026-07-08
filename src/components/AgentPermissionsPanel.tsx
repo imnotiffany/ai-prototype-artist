@@ -148,8 +148,10 @@ export default function AgentPermissionsPanel({ agentId: _agentId, creatorWorkId
   const [members, setMembers] = useState<Employee[]>(initialMembers);
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [addByIdOpen, setAddByIdOpen] = useState(false);
-  const [orgOpen, setOrgOpen] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [removeTarget, setRemoveTarget] = useState<Employee | null>(null);
+  const [batchRemoveOpen, setBatchRemoveOpen] = useState(false);
+
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
