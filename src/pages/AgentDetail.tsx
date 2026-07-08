@@ -46,6 +46,7 @@ import { AgentLogsPanel } from "@/components/AgentLogsPanel";
 import { AgentOperationsPanel } from "@/components/AgentOperationsPanel";
 import { getLatestSkillVersion } from "@/lib/skillVersion";
 import OfficeSuiteSection from "@/components/OfficeSuiteSection";
+import AgentPermissionsPanel from "@/components/AgentPermissionsPanel";
 
 /* ───────── Mock run history ───────── */
 type RunStatus = "success" | "failed" | "running";
