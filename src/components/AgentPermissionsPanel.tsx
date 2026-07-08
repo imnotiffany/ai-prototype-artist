@@ -1,0 +1,551 @@
+import { useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
+} from "@/components/ui/dialog";
+import { toast } from "@/hooks/use-toast";
+import {
+  ChevronRight, ChevronDown, Building2, UserPlus, Users, Search, Trash2, X, Crown,
+} from "lucide-react";
+
+/* ───────── Mock directory ───────── */
+interface Employee {
+  workId: string;
+  name: string;
+  department: string;
+  deptId: string;
+}
+interface OrgNode {
+  id: string;
+  name: string;
+  children?: OrgNode[];
+  members?: Employee[];
+}
+
+const MOCK_DIRECTORY: Employee[] = [
+  { workId: "01441970", name: "廖奕通", department: "AI技术平台 / 智能体组", deptId: "d-ai-agent" },
+  { workId: "01422596", name: "张毅超", department: "AI技术平台 / 智能体组", deptId: "d-ai-agent" },
+  { workId: "01419965", name: "杨彪龙", department: "AI技术平台 / 平台组", deptId: "d-ai-platform" },
+  { workId: "01234567", name: "张三", department: "AI技术平台 / 平台组", deptId: "d-ai-platform" },
+  { workId: "01234568", name: "李四", department: "AI技术平台 / 算法组", deptId: "d-ai-algo" },
+  { workId: "01234569", name: "王五", department: "AI技术平台 / 算法组", deptId: "d-ai-algo" },
+  { workId: "01234570", name: "赵六", department: "基础架构部 / 云平台组", deptId: "d-infra-cloud" },
+  { workId: "01234571", name: "钱七", department: "市场部 / 品牌组", deptId: "d-mkt-brand" },
+  { workId: "01234572", name: "孙八", department: "数据中心 / 数据工程组", deptId: "d-data-eng" },
+  { workId: "01234573", name: "周九", department: "基础架构部 / 网络组", deptId: "d-infra-net" },
+  { workId: "01234574", name: "吴十", department: "数据中心 / 数据分析组", deptId: "d-data-ana" },
+];
+
+const MOCK_ORG_TREE: OrgNode[] = [
+  {
+    id: "c-tech",
+    name: "技术中心",
+    children: [
+      {
+        id: "d-ai",
+        name: "AI技术平台",
+        children: [
+          { id: "d-ai-agent", name: "智能体组", members: MOCK_DIRECTORY.filter((e) => e.deptId === "d-ai-agent") },
+          { id: "d-ai-platform", name: "平台组", members: MOCK_DIRECTORY.filter((e) => e.deptId === "d-ai-platform") },
+          { id: "d-ai-algo", name: "算法组", members: MOCK_DIRECTORY.filter((e) => e.deptId === "d-ai-algo") },
+        ],
+      },
+      {
+        id: "d-infra",
+        name: "基础架构部",
+        children: [
+          { id: "d-infra-cloud", name: "云平台组", members: MOCK_DIRECTORY.filter((e) => e.deptId === "d-infra-cloud") },
+          { id: "d-infra-net", name: "网络组", members: MOCK_DIRECTORY.filter((e) => e.deptId === "d-infra-net") },
+        ],
+      },
+    ],
+  },
+  {
+    id: "c-data",
+    name: "数据中心",
+    children: [
+      { id: "d-data-eng", name: "数据工程组", members: MOCK_DIRECTORY.filter((e) => e.deptId === "d-data-eng") },
+      { id: "d-data-ana", name: "数据分析组", members: MOCK_DIRECTORY.filter((e) => e.deptId === "d-data-ana") },
+    ],
+  },
+  {
+    id: "c-mkt",
+    name: "市场中心",
+    children: [
+      { id: "d-mkt-brand", name: "品牌组", members: MOCK_DIRECTORY.filter((e) => e.deptId === "d-mkt-brand") },
+    ],
+  },
+];
+
+function collectMembers(node: OrgNode): Employee[] {
+  const out: Employee[] = [...(node.members ?? [])];
+  node.children?.forEach((c) => out.push(...collectMembers(c)));
+  return out;
+}
+function findEmployee(workId: string) {
+  return MOCK_DIRECTORY.find((e) => e.workId === workId);
+}
+
+/* ───────── Permissions Panel ───────── */
+interface Props {
+  agentId: string;
+  creatorWorkId: string;
+  creatorName: string;
+}
+
+export default function AgentPermissionsPanel({ agentId: _agentId, creatorWorkId, creatorName }: Props) {
+  const creator: Employee = {
+    workId: creatorWorkId,
+    name: creatorName,
+    department: findEmployee(creatorWorkId)?.department ?? "-",
+    deptId: findEmployee(creatorWorkId)?.deptId ?? "",
+  };
+
+  // Default: only creator
+  const [members, setMembers] = useState<Employee[]>([creator]);
+  const [query, setQuery] = useState("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [addByIdOpen, setAddByIdOpen] = useState(false);
+  const [orgOpen, setOrgOpen] = useState(false);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return members;
+    return members.filter(
+      (m) => m.workId.includes(q) || m.name.toLowerCase().includes(q) || m.department.toLowerCase().includes(q),
+    );
+  }, [members, query]);
+
+  const isCreator = (workId: string) => workId === creatorWorkId;
+
+  const addMembers = (emps: Employee[]) => {
+    setMembers((prev) => {
+      const map = new Map(prev.map((m) => [m.workId, m]));
+      emps.forEach((e) => { if (!map.has(e.workId)) map.set(e.workId, e); });
+      return Array.from(map.values());
+    });
+  };
+
+  const removeSelected = () => {
+    const toRemove = Array.from(selected).filter((id) => !isCreator(id));
+    if (toRemove.length === 0) return;
+    setMembers((prev) => prev.filter((m) => !toRemove.includes(m.workId)));
+    setSelected(new Set());
+    toast({ title: `已移除 ${toRemove.length} 位成员` });
+  };
+
+  const toggleSelect = (workId: string) => {
+    if (isCreator(workId)) return;
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(workId)) next.delete(workId); else next.add(workId);
+      return next;
+    });
+  };
+
+  const removableCount = filtered.filter((m) => !isCreator(m.workId)).length;
+  const allRemovableSelected =
+    removableCount > 0 && filtered.every((m) => isCreator(m.workId) || selected.has(m.workId));
+  const toggleSelectAll = () => {
+    if (allRemovableSelected) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(filtered.filter((m) => !isCreator(m.workId)).map((m) => m.workId)));
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="rounded-lg border border-border bg-muted/30 p-4">
+        <div className="flex items-start gap-3">
+          <div className="w-8 h-8 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <Users className="w-4 h-4" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-medium">使用者权限（User）</div>
+            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+              这里管理「谁可以访问并使用该智能体」。新建的智能体默认仅创建者可访问，添加成员后他们即可在智能体广场看到并使用该智能体。
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Toolbar */}
+      <div className="flex flex-wrap items-center gap-2">
+        <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setAddByIdOpen(true)}>
+          <UserPlus className="w-3.5 h-3.5" />
+          按工号添加
+        </Button>
+        <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={() => setOrgOpen(true)}>
+          <Building2 className="w-3.5 h-3.5" />
+          从组织架构选择
+        </Button>
+        <div className="flex-1" />
+        <div className="relative">
+          <Search className="w-3.5 h-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="搜索工号 / 姓名 / 部门"
+            className="h-8 text-xs pl-7 w-56"
+          />
+        </div>
+        {selected.size > 0 && (
+          <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5 text-destructive border-destructive/40 hover:bg-destructive/5" onClick={removeSelected}>
+            <Trash2 className="w-3.5 h-3.5" />
+            移除所选（{selected.size}）
+          </Button>
+        )}
+      </div>
+
+      {/* List */}
+      <div className="rounded-lg border border-border overflow-hidden">
+        <div className="flex items-center gap-3 px-4 py-2 bg-muted/40 border-b border-border text-[11px] text-muted-foreground">
+          <Checkbox
+            checked={allRemovableSelected}
+            onCheckedChange={toggleSelectAll}
+            disabled={removableCount === 0}
+            aria-label="全选"
+          />
+          <div className="w-28">工号</div>
+          <div className="w-28">姓名</div>
+          <div className="flex-1">部门</div>
+          <div className="w-16 text-right">操作</div>
+        </div>
+        {filtered.length === 0 ? (
+          <div className="py-16 text-center text-xs text-muted-foreground">
+            仅创建者可访问，添加成员后他们即可使用该智能体
+          </div>
+        ) : (
+          <ul className="divide-y divide-border">
+            {filtered.map((m) => {
+              const creatorRow = isCreator(m.workId);
+              return (
+                <li key={m.workId} className="flex items-center gap-3 px-4 py-2.5 text-xs hover:bg-muted/30">
+                  <Checkbox
+                    checked={selected.has(m.workId)}
+                    onCheckedChange={() => toggleSelect(m.workId)}
+                    disabled={creatorRow}
+                    aria-label={`选择 ${m.name}`}
+                  />
+                  <div className="w-28 font-mono text-muted-foreground">{m.workId}</div>
+                  <div className="w-28 flex items-center gap-1.5">
+                    <span>{m.name}</span>
+                    {creatorRow && (
+                      <Badge variant="outline" className="h-4 px-1 gap-0.5 text-[10px] text-primary border-primary/30">
+                        <Crown className="w-2.5 h-2.5" />创建者
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex-1 text-muted-foreground truncate">{m.department}</div>
+                  <div className="w-16 text-right">
+                    {!creatorRow && (
+                      <button
+                        className="text-destructive hover:opacity-80 inline-flex items-center gap-0.5"
+                        onClick={() => {
+                          setMembers((prev) => prev.filter((x) => x.workId !== m.workId));
+                          toast({ title: `已移除 ${m.name}` });
+                        }}
+                      >
+                        <X className="w-3.5 h-3.5" />移除
+                      </button>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        <div className="px-4 py-2 bg-muted/20 border-t border-border text-[11px] text-muted-foreground">
+          共 {members.length} 位可访问成员
+        </div>
+      </div>
+
+      <AddByWorkIdDialog
+        open={addByIdOpen}
+        onOpenChange={setAddByIdOpen}
+        existing={members.map((m) => m.workId)}
+        onConfirm={(emps) => {
+          addMembers(emps);
+          toast({ title: `已添加 ${emps.length} 位成员` });
+        }}
+      />
+      <OrgTreeDialog
+        open={orgOpen}
+        onOpenChange={setOrgOpen}
+        existing={members.map((m) => m.workId)}
+        onConfirm={(emps) => {
+          addMembers(emps);
+          toast({ title: `已从组织架构添加 ${emps.length} 位成员` });
+        }}
+      />
+    </div>
+  );
+}
+
+/* ───────── Add by workId dialog ───────── */
+interface AddByIdProps {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  existing: string[];
+  onConfirm: (emps: Employee[]) => void;
+}
+function AddByWorkIdDialog({ open, onOpenChange, existing, onConfirm }: AddByIdProps) {
+  const [raw, setRaw] = useState("");
+  const [validated, setValidated] = useState<
+    { workId: string; ok: boolean; emp?: Employee; reason?: string }[] | null
+  >(null);
+
+  const parseIds = () =>
+    Array.from(new Set(raw.split(/[\s,，、;；\n]+/).map((s) => s.trim()).filter(Boolean)));
+
+  const handleValidate = () => {
+    const ids = parseIds();
+    if (ids.length === 0) {
+      toast({ title: "请输入工号", variant: "destructive" });
+      return;
+    }
+    const result = ids.map((id) => {
+      const emp = findEmployee(id);
+      if (!emp) return { workId: id, ok: false, reason: "工号不存在" };
+      if (existing.includes(id)) return { workId: id, ok: false, emp, reason: "已在名单中" };
+      return { workId: id, ok: true, emp };
+    });
+    setValidated(result);
+  };
+
+  const handleConfirm = () => {
+    const emps = (validated ?? []).filter((v) => v.ok && v.emp).map((v) => v.emp!);
+    if (emps.length === 0) {
+      toast({ title: "没有可添加的有效工号", variant: "destructive" });
+      return;
+    }
+    onConfirm(emps);
+    reset();
+    onOpenChange(false);
+  };
+
+  const reset = () => { setRaw(""); setValidated(null); };
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) reset(); onOpenChange(o); }}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="text-base flex items-center gap-2">
+            <UserPlus className="w-4 h-4 text-primary" />按工号添加成员
+          </DialogTitle>
+          <DialogDescription className="text-xs">
+            支持批量输入，多个工号用逗号、空格或换行分隔。校验通过后回填姓名与部门。
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          <Textarea
+            value={raw}
+            onChange={(e) => { setRaw(e.target.value); setValidated(null); }}
+            placeholder={"示例：\n01441970\n01234567, 01234568\n01234569 01234570"}
+            className="min-h-[110px] text-xs font-mono"
+          />
+          <div className="flex justify-end">
+            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={handleValidate}>
+              校验工号
+            </Button>
+          </div>
+          {validated && (
+            <div className="rounded border border-border max-h-60 overflow-auto">
+              <ul className="divide-y divide-border text-xs">
+                {validated.map((v) => (
+                  <li key={v.workId} className="flex items-center gap-2 px-3 py-2">
+                    <span className={`w-1.5 h-1.5 rounded-full ${v.ok ? "bg-green-500" : "bg-destructive"}`} />
+                    <span className="font-mono w-24">{v.workId}</span>
+                    {v.ok ? (
+                      <>
+                        <span className="w-20">{v.emp!.name}</span>
+                        <span className="text-muted-foreground truncate flex-1">{v.emp!.department}</span>
+                        <span className="text-green-600 text-[11px]">可添加</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="w-20 text-muted-foreground">{v.emp?.name ?? "-"}</span>
+                        <span className="text-muted-foreground truncate flex-1">{v.emp?.department ?? "-"}</span>
+                        <span className="text-destructive text-[11px]">{v.reason}</span>
+                      </>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => onOpenChange(false)}>取消</Button>
+          <Button size="sm" className="h-8 text-xs" disabled={!validated || !validated.some((v) => v.ok)} onClick={handleConfirm}>
+            添加 {validated ? `（${validated.filter((v) => v.ok).length}）` : ""}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* ───────── Org tree dialog ───────── */
+interface OrgProps {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  existing: string[];
+  onConfirm: (emps: Employee[]) => void;
+}
+
+function OrgTreeDialog({ open, onOpenChange, existing, onConfirm }: OrgProps) {
+  const [expanded, setExpanded] = useState<Set<string>>(new Set(["c-tech", "d-ai"]));
+  const [checkedDept, setCheckedDept] = useState<Set<string>>(new Set());
+  const [checkedEmp, setCheckedEmp] = useState<Set<string>>(new Set());
+  const [q, setQ] = useState("");
+
+  const toggleExpand = (id: string) =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+
+  const toggleDept = (node: OrgNode) => {
+    const emps = collectMembers(node);
+    setCheckedDept((prev) => {
+      const next = new Set(prev);
+      next.has(node.id) ? next.delete(node.id) : next.add(node.id);
+      return next;
+    });
+    setCheckedEmp((prev) => {
+      const next = new Set(prev);
+      const isNowChecked = !checkedDept.has(node.id);
+      emps.forEach((e) => { isNowChecked ? next.add(e.workId) : next.delete(e.workId); });
+      return next;
+    });
+  };
+
+  const toggleEmp = (workId: string) => {
+    setCheckedEmp((prev) => {
+      const next = new Set(prev);
+      next.has(workId) ? next.delete(workId) : next.add(workId);
+      return next;
+    });
+  };
+
+  const matches = (node: OrgNode): boolean => {
+    if (!q.trim()) return true;
+    const ql = q.toLowerCase();
+    if (node.name.toLowerCase().includes(ql)) return true;
+    if (node.members?.some((m) => m.name.toLowerCase().includes(ql) || m.workId.includes(ql))) return true;
+    return node.children?.some(matches) ?? false;
+  };
+
+  const renderNode = (node: OrgNode, depth = 0) => {
+    if (!matches(node)) return null;
+    const isOpen = expanded.has(node.id) || !!q.trim();
+    const hasChildren = (node.children?.length ?? 0) > 0;
+    const members = node.members ?? [];
+    return (
+      <li key={node.id}>
+        <div
+          className="flex items-center gap-1.5 py-1 px-1 hover:bg-muted/40 rounded"
+          style={{ paddingLeft: depth * 14 + 4 }}
+        >
+          <button
+            className="w-4 h-4 flex items-center justify-center text-muted-foreground shrink-0"
+            onClick={() => (hasChildren || members.length > 0) && toggleExpand(node.id)}
+          >
+            {(hasChildren || members.length > 0) ? (
+              isOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />
+            ) : null}
+          </button>
+          <Checkbox
+            checked={checkedDept.has(node.id)}
+            onCheckedChange={() => toggleDept(node)}
+          />
+          <Building2 className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+          <span className="text-xs">{node.name}</span>
+          <span className="text-[10px] text-muted-foreground">（{collectMembers(node).length} 人）</span>
+        </div>
+        {isOpen && (
+          <ul>
+            {node.children?.map((c) => renderNode(c, depth + 1))}
+            {members
+              .filter((m) => !q.trim() || m.name.toLowerCase().includes(q.toLowerCase()) || m.workId.includes(q))
+              .map((m) => (
+                <li
+                  key={m.workId}
+                  className="flex items-center gap-1.5 py-1 px-1 hover:bg-muted/40 rounded"
+                  style={{ paddingLeft: (depth + 1) * 14 + 22 }}
+                >
+                  <Checkbox
+                    checked={checkedEmp.has(m.workId)}
+                    onCheckedChange={() => toggleEmp(m.workId)}
+                  />
+                  <span className="text-xs">{m.name}</span>
+                  <span className="text-[10px] text-muted-foreground font-mono">{m.workId}</span>
+                </li>
+              ))}
+          </ul>
+        )}
+      </li>
+    );
+  };
+
+  const handleConfirm = () => {
+    const emps = MOCK_DIRECTORY.filter((e) => checkedEmp.has(e.workId) && !existing.includes(e.workId));
+    if (emps.length === 0) {
+      toast({ title: "未选择任何新成员", variant: "destructive" });
+      return;
+    }
+    onConfirm(emps);
+    reset();
+    onOpenChange(false);
+  };
+
+  const reset = () => { setCheckedDept(new Set()); setCheckedEmp(new Set()); setQ(""); };
+
+  const totalNew = Array.from(checkedEmp).filter((id) => !existing.includes(id)).length;
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) reset(); onOpenChange(o); }}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="text-base flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-primary" />从组织架构选择
+          </DialogTitle>
+          <DialogDescription className="text-xs">
+            勾选整个中心/部门可批量选中其下所有成员，选中的成员将被逐个加入名单。
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-2">
+          <div className="relative">
+            <Search className="w-3.5 h-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="搜索部门或成员"
+              className="h-8 text-xs pl-7"
+            />
+          </div>
+          <div className="border border-border rounded max-h-[380px] overflow-auto p-2">
+            <ul>{MOCK_ORG_TREE.map((n) => renderNode(n))}</ul>
+          </div>
+          <div className="text-[11px] text-muted-foreground">
+            已选 {checkedEmp.size} 人（其中 {totalNew} 位为新增）
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => onOpenChange(false)}>取消</Button>
+          <Button size="sm" className="h-8 text-xs" disabled={totalNew === 0} onClick={handleConfirm}>
+            添加（{totalNew}）
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
