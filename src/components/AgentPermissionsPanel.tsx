@@ -29,16 +29,35 @@ interface OrgNode {
 const MOCK_DIRECTORY: Employee[] = [
   { workId: "01441970", name: "廖奕通", department: "AI技术平台 / 智能体组", deptId: "d-ai-agent" },
   { workId: "01422596", name: "张毅超", department: "AI技术平台 / 智能体组", deptId: "d-ai-agent" },
+  { workId: "01441971", name: "陈昊", department: "AI技术平台 / 智能体组", deptId: "d-ai-agent" },
+  { workId: "01441972", name: "林思远", department: "AI技术平台 / 智能体组", deptId: "d-ai-agent" },
   { workId: "01419965", name: "杨彪龙", department: "AI技术平台 / 平台组", deptId: "d-ai-platform" },
   { workId: "01234567", name: "张三", department: "AI技术平台 / 平台组", deptId: "d-ai-platform" },
+  { workId: "01419966", name: "郑清怡", department: "AI技术平台 / 平台组", deptId: "d-ai-platform" },
+  { workId: "01419967", name: "何俊杰", department: "AI技术平台 / 平台组", deptId: "d-ai-platform" },
   { workId: "01234568", name: "李四", department: "AI技术平台 / 算法组", deptId: "d-ai-algo" },
   { workId: "01234569", name: "王五", department: "AI技术平台 / 算法组", deptId: "d-ai-algo" },
+  { workId: "01234580", name: "苏映雪", department: "AI技术平台 / 算法组", deptId: "d-ai-algo" },
+  { workId: "01234581", name: "梁子豪", department: "AI技术平台 / 算法组", deptId: "d-ai-algo" },
   { workId: "01234570", name: "赵六", department: "基础架构部 / 云平台组", deptId: "d-infra-cloud" },
-  { workId: "01234571", name: "钱七", department: "市场部 / 品牌组", deptId: "d-mkt-brand" },
-  { workId: "01234572", name: "孙八", department: "数据中心 / 数据工程组", deptId: "d-data-eng" },
+  { workId: "01234575", name: "冯博文", department: "基础架构部 / 云平台组", deptId: "d-infra-cloud" },
+  { workId: "01234576", name: "许安琪", department: "基础架构部 / 云平台组", deptId: "d-infra-cloud" },
   { workId: "01234573", name: "周九", department: "基础架构部 / 网络组", deptId: "d-infra-net" },
+  { workId: "01234577", name: "曹景行", department: "基础架构部 / 网络组", deptId: "d-infra-net" },
+  { workId: "01234571", name: "钱七", department: "市场部 / 品牌组", deptId: "d-mkt-brand" },
+  { workId: "01234578", name: "宋婉婷", department: "市场部 / 品牌组", deptId: "d-mkt-brand" },
+  { workId: "01234582", name: "袁嘉睿", department: "市场部 / 增长组", deptId: "d-mkt-growth" },
+  { workId: "01234583", name: "顾茹馨", department: "市场部 / 增长组", deptId: "d-mkt-growth" },
+  { workId: "01234572", name: "孙八", department: "数据中心 / 数据工程组", deptId: "d-data-eng" },
+  { workId: "01234579", name: "夏文钦", department: "数据中心 / 数据工程组", deptId: "d-data-eng" },
   { workId: "01234574", name: "吴十", department: "数据中心 / 数据分析组", deptId: "d-data-ana" },
+  { workId: "01234584", name: "沈欣然", department: "数据中心 / 数据分析组", deptId: "d-data-ana" },
+  { workId: "01234585", name: "田睿泽", department: "数据中心 / 数据分析组", deptId: "d-data-ana" },
+  { workId: "01234586", name: "叶知秋", department: "产品中心 / 增长产品组", deptId: "d-prod-growth" },
+  { workId: "01234587", name: "范雨蒙", department: "产品中心 / 增长产品组", deptId: "d-prod-growth" },
+  { workId: "01234588", name: "邓浩然", department: "产品中心 / 平台产品组", deptId: "d-prod-platform" },
 ];
+
 
 const MOCK_ORG_TREE: OrgNode[] = [
   {
