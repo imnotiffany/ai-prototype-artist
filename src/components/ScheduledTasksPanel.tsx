@@ -465,26 +465,62 @@ export default function ScheduledTasksPanel() {
                     className="h-8 text-xs font-mono flex-1 min-w-[160px]"
                   />
                 ) : (
-                  <Select
-                    value={`${draft.schedule.hour}:${draft.schedule.minute}`}
-                    onValueChange={(v) => {
-                      const [h, m] = v.split(":").map((n) => parseInt(n, 10));
-                      setSchedule({ hour: h, minute: m });
-                    }}
-                  >
-                    <SelectTrigger className="h-8 text-xs w-24"><SelectValue /></SelectTrigger>
-                    <SelectContent className="max-h-64">
-                      {Array.from({ length: 48 }, (_, i) => {
-                        const h = Math.floor(i / 2);
-                        const m = (i % 2) * 30;
-                        return (
-                          <SelectItem key={i} value={`${h}:${m}`} className="text-xs">
-                            {pad(h)}:{pad(m)}
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 text-xs font-normal justify-between w-24"
+                      >
+                        <span className="font-mono">{pad(draft.schedule.hour)}:{pad(draft.schedule.minute)}</span>
+                        <ChevronDown className="w-3.5 h-3.5 opacity-60 ml-1 shrink-0" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-40 p-0" align="start">
+                      <div className="grid grid-cols-2 text-xs">
+                        <div className="border-r border-border">
+                          <div className="px-2 py-1 text-[10px] text-muted-foreground border-b border-border">时</div>
+                          <div className="max-h-56 overflow-y-auto py-1">
+                            {Array.from({ length: 24 }, (_, h) => {
+                              const active = draft.schedule.hour === h;
+                              return (
+                                <button
+                                  key={h}
+                                  type="button"
+                                  onClick={() => setSchedule({ hour: h })}
+                                  className={`w-full px-3 py-1 text-left font-mono hover:bg-muted ${
+                                    active ? "bg-primary/10 text-primary font-medium" : ""
+                                  }`}
+                                >
+                                  {pad(h)}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="px-2 py-1 text-[10px] text-muted-foreground border-b border-border">分</div>
+                          <div className="max-h-56 overflow-y-auto py-1">
+                            {Array.from({ length: 60 }, (_, m) => {
+                              const active = draft.schedule.minute === m;
+                              return (
+                                <button
+                                  key={m}
+                                  type="button"
+                                  onClick={() => setSchedule({ minute: m })}
+                                  className={`w-full px-3 py-1 text-left font-mono hover:bg-muted ${
+                                    active ? "bg-primary/10 text-primary font-medium" : ""
+                                  }`}
+                                >
+                                  {pad(m)}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 )}
               </div>
               <div className="text-[11px] text-muted-foreground pt-1">
