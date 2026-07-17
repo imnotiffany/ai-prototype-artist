@@ -1497,20 +1497,8 @@ fengsheng:
                         agentAvatar={agent?.avatar}
                       />
                     </div>
-                    <div className="border-t border-border p-2.5 shrink-0">
-                      <ChatComposer
-                        value={runReplyInput}
-                        onChange={setRunReplyInput}
-                        onSend={({ text }) => {
-                          setRunReplyInput(text);
-                          handleRunReplySend();
-                        }}
-                        placeholder="继续这个会话…"
-                        compact
-                        onOpenFiles={() => setArtifactsOpen(true)}
-                        mentionableFiles={mockArtifacts}
-                      />
-                    </div>
+
+
                   </div>
                 </>
               ) : (
