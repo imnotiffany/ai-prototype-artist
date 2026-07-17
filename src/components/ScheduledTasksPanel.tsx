@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, Settings2, X } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -72,6 +73,8 @@ const emptyDraft: Omit<ScheduledTask, "id" | "creator" | "createdAt" | "lastRunA
   prompt: "",
 };
 
+type NlPermMode = "all" | "allowlist" | "off";
+
 export default function ScheduledTasksPanel() {
   const [tasks, setTasks] = useState<ScheduledTask[]>(initialTasks);
   const [query, setQuery] = useState("");
@@ -79,6 +82,16 @@ export default function ScheduledTasksPanel() {
   const [editing, setEditing] = useState<ScheduledTask | null>(null);
   const [draft, setDraft] = useState({ ...emptyDraft });
   const [pendingDelete, setPendingDelete] = useState<ScheduledTask | null>(null);
+
+  // 自然语言新建任务的权限配置
+  const [nlPermOpen, setNlPermOpen] = useState(false);
+  const [nlMode, setNlMode] = useState<NlPermMode>("allowlist");
+  const [nlAllowlist, setNlAllowlist] = useState<{ id: string; name: string; org: string }[]>([
+    { id: "10086", name: "张伟", org: "智能平台部" },
+    { id: "10250", name: "李娜", org: "增长中台" },
+  ]);
+  const [nlIdInput, setNlIdInput] = useState("");
+
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -154,9 +167,23 @@ export default function ScheduledTasksPanel() {
           共 <span className="text-foreground font-medium">{tasks.length}</span> 个任务
         </div>
         <div className="flex-1" />
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 text-xs gap-1.5"
+          onClick={() => setNlPermOpen(true)}
+          title="配置谁可以通过自然语言创建任务"
+        >
+          <Settings2 className="w-3.5 h-3.5" />
+          自然语言创建权限
+          <span className="ml-1 text-[10px] text-muted-foreground">
+            {nlMode === "all" ? "所有人" : nlMode === "off" ? "已关闭" : `${nlAllowlist.length} 人`}
+          </span>
+        </Button>
         <Button size="sm" className="h-8 text-xs" onClick={openCreate}>
           新建任务
         </Button>
+
       </div>
 
       {/* List (no outer frame) */}
@@ -304,6 +331,109 @@ export default function ScheduledTasksPanel() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* 自然语言创建任务权限配置 */}
+      <Dialog open={nlPermOpen} onOpenChange={setNlPermOpen}>
+        <DialogContent className="sm:max-w-[520px]">
+          <DialogHeader>
+            <DialogTitle className="text-sm">自然语言创建任务权限</DialogTitle>
+            <DialogDescription className="text-xs">
+              配置谁可以在会话中用自然语言直接让智能体创建定时任务。未授权用户仍可在本页手动新建。
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            {([
+              { v: "all", label: "所有人", desc: "任何与该智能体对话的成员都可通过自然语言创建" },
+              { v: "allowlist", label: "仅指定成员", desc: "只有下方名单中的成员可通过自然语言创建" },
+              { v: "off", label: "关闭", desc: "禁用自然语言创建，仅允许在本页手动新建" },
+            ] as { v: NlPermMode; label: string; desc: string }[]).map((opt) => (
+              <label
+                key={opt.v}
+                className={`flex items-start gap-2 p-2.5 rounded border cursor-pointer transition-colors ${
+                  nlMode === opt.v ? "border-primary bg-primary/5" : "border-border hover:bg-muted/40"
+                }`}
+              >
+                <input
+                  type="radio"
+                  className="mt-0.5"
+                  checked={nlMode === opt.v}
+                  onChange={() => setNlMode(opt.v)}
+                />
+                <div className="min-w-0">
+                  <div className="text-xs font-medium">{opt.label}</div>
+                  <div className="text-[11px] text-muted-foreground">{opt.desc}</div>
+                </div>
+              </label>
+            ))}
+
+            {nlMode === "allowlist" && (
+              <div className="space-y-2 pt-1">
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={nlIdInput}
+                    onChange={(e) => setNlIdInput(e.target.value)}
+                    placeholder="输入工号，回车添加"
+                    className="h-8 text-xs"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        const id = nlIdInput.trim();
+                        if (!id || nlAllowlist.some((m) => m.id === id)) return;
+                        setNlAllowlist((prev) => [...prev, { id, name: `员工${id.slice(-3)}`, org: "—" }]);
+                        setNlIdInput("");
+                      }
+                    }}
+                  />
+                  <div className="text-[11px] text-muted-foreground whitespace-nowrap">
+                    共 {nlAllowlist.length} 人
+                  </div>
+                </div>
+                <div className="max-h-56 overflow-auto">
+                  {nlAllowlist.length === 0 ? (
+                    <div className="py-8 text-center text-[11px] text-muted-foreground">尚未添加成员</div>
+                  ) : (
+                    <ul>
+                      {nlAllowlist.map((m) => (
+                        <li
+                          key={m.id}
+                          className="h-9 px-2 flex items-center gap-3 text-xs border-b border-border last:border-b-0"
+                        >
+                          <span className="font-mono text-muted-foreground w-16 shrink-0">{m.id}</span>
+                          <span className="flex-1 min-w-0 truncate">{m.name}</span>
+                          <span className="text-muted-foreground truncate">{m.org}</span>
+                          <button
+                            className="text-muted-foreground hover:text-destructive"
+                            onClick={() => setNlAllowlist((prev) => prev.filter((x) => x.id !== m.id))}
+                            title="移除"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setNlPermOpen(false)}>
+              取消
+            </Button>
+            <Button
+              size="sm"
+              className="h-8 text-xs"
+              onClick={() => {
+                setNlPermOpen(false);
+                toast({ title: "已保存自然语言创建权限" });
+              }}
+            >
+              保存
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
