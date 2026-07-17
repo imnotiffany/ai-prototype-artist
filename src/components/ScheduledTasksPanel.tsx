@@ -363,26 +363,132 @@ export default function ScheduledTasksPanel() {
                 className="min-h-[72px] text-xs"
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs">调度表达式</Label>
-                <Input
-                  value={draft.cron}
-                  onChange={(e) => setDraft({ ...draft, cron: e.target.value })}
-                  placeholder="0 9 * * *"
-                  className="h-8 text-xs font-mono"
-                />
+            <div className="space-y-1.5">
+              <Label className="text-xs">触发周期</Label>
+              <div className="grid grid-cols-[120px_1fr] gap-2 items-start">
+                <Select
+                  value={draft.schedule.frequency}
+                  onValueChange={(v: Freq) => setSchedule({ frequency: v })}
+                >
+                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hourly" className="text-xs">每小时</SelectItem>
+                    <SelectItem value="daily" className="text-xs">每天</SelectItem>
+                    <SelectItem value="weekly" className="text-xs">每周</SelectItem>
+                    <SelectItem value="monthly" className="text-xs">每月</SelectItem>
+                    <SelectItem value="custom" className="text-xs">自定义 (Cron)</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {draft.schedule.frequency === "hourly" && (
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="text-muted-foreground">第</span>
+                    <Select
+                      value={String(draft.schedule.minute)}
+                      onValueChange={(v) => setSchedule({ minute: parseInt(v, 10) })}
+                    >
+                      <SelectTrigger className="h-8 text-xs w-20"><SelectValue /></SelectTrigger>
+                      <SelectContent className="max-h-64">
+                        {Array.from({ length: 60 }, (_, i) => (
+                          <SelectItem key={i} value={String(i)} className="text-xs">{pad(i)}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <span className="text-muted-foreground">分钟执行</span>
+                  </div>
+                )}
+
+                {(draft.schedule.frequency === "daily" ||
+                  draft.schedule.frequency === "weekly" ||
+                  draft.schedule.frequency === "monthly") && (
+                  <div className="space-y-2">
+                    {draft.schedule.frequency === "weekly" && (
+                      <div className="flex flex-wrap items-center gap-1">
+                        {WEEK_LABEL.map((label, i) => {
+                          const active = draft.schedule.weekdays.includes(i);
+                          return (
+                            <button
+                              key={i}
+                              type="button"
+                              onClick={() =>
+                                setSchedule({
+                                  weekdays: active
+                                    ? draft.schedule.weekdays.filter((x) => x !== i)
+                                    : [...draft.schedule.weekdays, i],
+                                })
+                              }
+                              className={`h-7 w-8 rounded border text-xs transition-colors ${
+                                active
+                                  ? "bg-primary text-primary-foreground border-primary"
+                                  : "border-border text-foreground/70 hover:border-primary/50"
+                              }`}
+                            >
+                              {label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {draft.schedule.frequency === "monthly" && (
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className="text-muted-foreground">每月</span>
+                        <Select
+                          value={String(draft.schedule.dayOfMonth)}
+                          onValueChange={(v) => setSchedule({ dayOfMonth: parseInt(v, 10) })}
+                        >
+                          <SelectTrigger className="h-8 text-xs w-24"><SelectValue /></SelectTrigger>
+                          <SelectContent className="max-h-64">
+                            {Array.from({ length: 31 }, (_, i) => (
+                              <SelectItem key={i + 1} value={String(i + 1)} className="text-xs">{i + 1} 日</SelectItem>
+                            ))}
+                            <SelectItem value="32" className="text-xs">月末</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="text-muted-foreground">时间</span>
+                      <Select
+                        value={String(draft.schedule.hour)}
+                        onValueChange={(v) => setSchedule({ hour: parseInt(v, 10) })}
+                      >
+                        <SelectTrigger className="h-8 text-xs w-20"><SelectValue /></SelectTrigger>
+                        <SelectContent className="max-h-64">
+                          {Array.from({ length: 24 }, (_, i) => (
+                            <SelectItem key={i} value={String(i)} className="text-xs">{pad(i)} 时</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Select
+                        value={String(draft.schedule.minute)}
+                        onValueChange={(v) => setSchedule({ minute: parseInt(v, 10) })}
+                      >
+                        <SelectTrigger className="h-8 text-xs w-20"><SelectValue /></SelectTrigger>
+                        <SelectContent className="max-h-64">
+                          {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((i) => (
+                            <SelectItem key={i} value={String(i)} className="text-xs">{pad(i)} 分</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
+
+                {draft.schedule.frequency === "custom" && (
+                  <Input
+                    value={draft.schedule.customCron}
+                    onChange={(e) => setSchedule({ customCron: e.target.value })}
+                    placeholder="0 9 * * *"
+                    className="h-8 text-xs font-mono"
+                  />
+                )}
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">触发周期</Label>
-                <Input
-                  value={draft.triggerDesc}
-                  onChange={(e) => setDraft({ ...draft, triggerDesc: e.target.value })}
-                  placeholder="每天 09:00"
-                  className="h-8 text-xs"
-                />
+              <div className="text-[11px] text-muted-foreground pt-1">
+                预览：{preview.triggerDesc}
+                <span className="font-mono ml-2">{preview.cron}</span>
               </div>
             </div>
+
             <div className="flex items-center justify-between pt-1">
               <div className="text-xs text-muted-foreground">创建后立即启用</div>
               <Switch size="sm" checked={draft.enabled} onCheckedChange={(v) => setDraft({ ...draft, enabled: v })} />
