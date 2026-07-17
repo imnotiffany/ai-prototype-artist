@@ -317,9 +317,22 @@ export default function ScheduledTasksPanel() {
                 key={t.id}
                 className="px-2 h-12 flex items-center gap-4 border-b border-border hover:bg-muted/30 transition-colors"
               >
-                <div className="flex-1 min-w-0 font-medium truncate" title={t.description}>
-                  {t.description}
-                </div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div
+                      className={`flex-1 min-w-0 font-medium cursor-default ${
+                        t.description.length <= SINGLE_LINE_MAX_CHARS
+                          ? "text-sm line-clamp-1 leading-5"
+                          : "text-xs line-clamp-2 leading-4"
+                      }`}
+                    >
+                      {t.description}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-xs text-xs">
+                    {t.description}
+                  </TooltipContent>
+                </Tooltip>
                 <div className="w-32 shrink-0 flex flex-col justify-center gap-0.5">
                   <div className="truncate" title={t.triggerDesc}>{t.triggerDesc}</div>
                   <div className="text-[11px] font-mono text-muted-foreground truncate" title={t.cron}>{t.cron}</div>
