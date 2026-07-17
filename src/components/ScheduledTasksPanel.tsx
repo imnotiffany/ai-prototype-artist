@@ -84,7 +84,11 @@ export default function ScheduledTasksPanel() {
     const q = query.trim().toLowerCase();
     if (!q) return tasks;
     return tasks.filter(
-      (t) => t.name.toLowerCase().includes(q) || t.cron.toLowerCase().includes(q) || t.triggerDesc.toLowerCase().includes(q),
+      (t) =>
+        t.name.toLowerCase().includes(q) ||
+        t.cron.toLowerCase().includes(q) ||
+        t.triggerDesc.toLowerCase().includes(q) ||
+        (t.prompt ?? "").toLowerCase().includes(q),
     );
   }, [tasks, query]);
 
