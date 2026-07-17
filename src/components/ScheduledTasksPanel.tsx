@@ -811,12 +811,20 @@ export default function ScheduledTasksPanel() {
                   ) : (() => {
                     const idx = records.findIndex((r) => r.id === active.id);
                     const base = TIMELINE_SCENARIOS[idx % TIMELINE_SCENARIOS.length];
+                    // 定时任务：第一条应为触发发送的消息，而非用户提问
+                    const triggerEvent = {
+                      id: `trigger-${active.id}`,
+                      kind: "user" as const,
+                      text: `⏰ 定时触发 · ${historyTask.triggerDesc}\n${historyTask.description}`,
+                    };
+                    const restEvents = base.events.filter((e) => e.kind !== "user");
                     const scenario = {
                       ...base,
                       id: active.id,
                       title: `${active.ts} · ${statusLabel(active.status)}`,
                       status: active.status === "running" ? ("running" as const)
                         : active.status === "failed" ? ("failed" as const) : ("done" as const),
+                      events: [triggerEvent, ...restEvents],
                     };
                     return <RunTimelineView scenario={scenario} />;
                   })()}
