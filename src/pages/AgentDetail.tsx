@@ -15,7 +15,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import {
   ArrowLeft, MessageSquare, Send, Save, Bot, CheckCircle2, Server, Bug, Mic, MicOff, Zap, Plus, X, RotateCcw, EyeOff, Eye, Settings2,
   AlertTriangle, Copy, Pencil, Rocket, Code2, Layout, Users, KeyRound, Filter, Check, ExternalLink, Activity, Plug, FileText, Cpu, HardDrive,
-  ChevronDown, ChevronUp, User, History, BarChart3,
+  ChevronDown, ChevronUp, User, History, BarChart3, Clock,
 } from "lucide-react";
 import { mockAgents, getActiveMCPs, getActiveSkills, mockApiKeys } from "@/data/mockData";
 import { projectImages, DU_OPTIONS, DEFAULT_IMAGE } from "@/data/environments";
@@ -47,6 +47,7 @@ import { AgentOperationsPanel } from "@/components/AgentOperationsPanel";
 import { getLatestSkillVersion } from "@/lib/skillVersion";
 import OfficeSuiteSection from "@/components/OfficeSuiteSection";
 import AgentPermissionsPanel from "@/components/AgentPermissionsPanel";
+import ScheduledTasksPanel from "@/components/ScheduledTasksPanel";
 
 /* ───────── Mock run history ───────── */
 type RunStatus = "success" | "failed" | "running";
@@ -546,6 +547,7 @@ const AgentDetail = () => {
         <TabsList className="h-9 bg-transparent border-b border-border w-full justify-start rounded-none p-0 gap-1">
           <TabsTrigger value="config" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><Settings2 className="w-3.5 h-3.5" />配置</TabsTrigger>
           <TabsTrigger value="runs" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><MessageSquare className="w-3.5 h-3.5" />会话记录</TabsTrigger>
+          <TabsTrigger value="schedules" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><Clock className="w-3.5 h-3.5" />定时任务</TabsTrigger>
           <TabsTrigger value="logs" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><FileText className="w-3.5 h-3.5" />日志记录</TabsTrigger>
           <TabsTrigger value="monitor" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><Activity className="w-3.5 h-3.5" />基础监控</TabsTrigger>
           <TabsTrigger value="operations" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><BarChart3 className="w-3.5 h-3.5" />运营看板</TabsTrigger>
@@ -1525,6 +1527,11 @@ fengsheng:
               )}
             </div>
           </div>
+        </TabsContent>
+
+        {/* ───────── 定时任务 ───────── */}
+        <TabsContent value="schedules" className="mt-4">
+          <ScheduledTasksPanel />
         </TabsContent>
 
         {/* ───────── 日志 ───────── */}
