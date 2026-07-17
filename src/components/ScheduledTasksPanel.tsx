@@ -20,7 +20,12 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { toast } from "@/hooks/use-toast";
+
+const SINGLE_LINE_MAX_CHARS = 16;
 
 type Freq = "hourly" | "daily" | "weekly" | "monthly" | "custom";
 interface ScheduleDraft {
