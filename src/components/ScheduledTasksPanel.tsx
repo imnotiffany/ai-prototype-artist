@@ -120,6 +120,7 @@ const initialTasks: ScheduledTask[] = [
     enabled: true,
     lastRunAt: "2026-07-17 09:00",
     creator: "张伟",
+    creatorId: "01111111",
     createdAt: "2026-06-01 10:12",
   },
   {
@@ -130,6 +131,7 @@ const initialTasks: ScheduledTask[] = [
     enabled: true,
     lastRunAt: "2026-07-11 18:00",
     creator: "李娜",
+    creatorId: "01222222",
     createdAt: "2026-05-20 15:30",
   },
   {
@@ -140,6 +142,7 @@ const initialTasks: ScheduledTask[] = [
     enabled: false,
     lastRunAt: "2026-07-01 10:00",
     creator: "王强",
+    creatorId: "01333333",
     createdAt: "2026-04-02 09:00",
   },
 ];
