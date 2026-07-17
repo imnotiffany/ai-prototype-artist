@@ -84,7 +84,11 @@ export default function ScheduledTasksPanel() {
     const q = query.trim().toLowerCase();
     if (!q) return tasks;
     return tasks.filter(
-      (t) => t.name.toLowerCase().includes(q) || t.cron.toLowerCase().includes(q) || t.triggerDesc.toLowerCase().includes(q),
+      (t) =>
+        t.name.toLowerCase().includes(q) ||
+        t.cron.toLowerCase().includes(q) ||
+        t.triggerDesc.toLowerCase().includes(q) ||
+        (t.prompt ?? "").toLowerCase().includes(q),
     );
   }, [tasks, query]);
 
@@ -142,7 +146,7 @@ export default function ScheduledTasksPanel() {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="搜索任务名称 / 调度表达式"
+            placeholder="搜索任务名称 / 任务描述 / 触发周期"
             className="h-8 text-xs pl-7"
           />
         </div>
@@ -158,14 +162,13 @@ export default function ScheduledTasksPanel() {
       {/* List (no outer frame) */}
       <div className="text-xs">
         <div className="h-9 px-2 flex items-center gap-4 text-[11px] text-muted-foreground border-b border-border">
-          <div className="w-40 shrink-0">任务名称</div>
-          <div className="w-32 shrink-0 font-mono">调度表达式</div>
+          <div className="w-32 shrink-0">任务名称</div>
+          <div className="flex-1 min-w-0">任务描述</div>
           <div className="w-32 shrink-0">触发周期</div>
           <div className="w-16 shrink-0">状态</div>
-          <div className="w-40 shrink-0">最近执行时间</div>
+          <div className="w-36 shrink-0">最近执行时间</div>
           <div className="w-20 shrink-0">创建人</div>
-          <div className="w-40 shrink-0">创建时间</div>
-          <div className="flex-1" />
+          <div className="w-36 shrink-0">创建时间</div>
           <div className="w-40 shrink-0 text-right">操作</div>
         </div>
         {filtered.length === 0 ? (
@@ -177,18 +180,24 @@ export default function ScheduledTasksPanel() {
             {filtered.map((t) => (
               <li
                 key={t.id}
-                className="px-2 h-10 flex items-center gap-4 border-b border-border hover:bg-muted/30 transition-colors"
+                className="px-2 h-12 flex items-center gap-4 border-b border-border hover:bg-muted/30 transition-colors"
               >
-                <div className="w-40 shrink-0 font-medium truncate">{t.name}</div>
-                <div className="w-32 shrink-0 font-mono text-muted-foreground truncate">{t.cron}</div>
-                <div className="w-32 shrink-0 text-muted-foreground truncate">{t.triggerDesc}</div>
+                <div className="w-32 shrink-0 font-medium truncate" title={t.name}>
+                  {t.name}
+                </div>
+                <div className="flex-1 min-w-0 text-foreground/80 truncate" title={t.prompt || ""}>
+                  {t.prompt || "—"}
+                </div>
+                <div className="w-32 shrink-0 flex flex-col justify-center gap-0.5">
+                  <div className="truncate" title={t.triggerDesc}>{t.triggerDesc}</div>
+                  <div className="text-[11px] font-mono text-muted-foreground truncate" title={t.cron}>{t.cron}</div>
+                </div>
                 <div className={`w-16 shrink-0 text-[11px] ${t.enabled ? "text-emerald-600" : "text-muted-foreground"}`}>
                   {t.enabled ? "开启" : "暂停"}
                 </div>
-                <div className="w-40 shrink-0 font-mono text-muted-foreground">{t.lastRunAt ?? "—"}</div>
+                <div className="w-36 shrink-0 font-mono text-muted-foreground">{t.lastRunAt ?? "—"}</div>
                 <div className="w-20 shrink-0 text-foreground/80 truncate">{t.creator}</div>
-                <div className="w-40 shrink-0 font-mono text-muted-foreground">{t.createdAt}</div>
-                <div className="flex-1" />
+                <div className="w-36 shrink-0 font-mono text-muted-foreground">{t.createdAt}</div>
                 <div className="w-40 shrink-0 flex items-center justify-end gap-3">
                   <button className="text-[11px] text-foreground/80 hover:text-primary hover:underline" onClick={() => openEdit(t)}>
                     编辑
@@ -252,7 +261,7 @@ export default function ScheduledTasksPanel() {
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">执行内容（可选）</Label>
+              <Label className="text-xs">任务描述（可选）</Label>
               <Textarea
                 value={draft.prompt}
                 onChange={(e) => setDraft({ ...draft, prompt: e.target.value })}
