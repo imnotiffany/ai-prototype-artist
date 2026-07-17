@@ -329,10 +329,11 @@ export default function ScheduledTasksPanel() {
                     {t.description}
                   </TooltipContent>
                 </Tooltip>
-                <div className="w-32 shrink-0 flex flex-col justify-center gap-0.5">
+                <div className="w-32 shrink-0 flex flex-col justify-center gap-0.5 text-xs">
                   <div className="truncate" title={t.triggerDesc}>{t.triggerDesc}</div>
                   <div className="text-[11px] font-mono text-muted-foreground truncate" title={t.cron}>{t.cron}</div>
                 </div>
+
                 <div className={`w-16 shrink-0 text-[11px] ${t.enabled ? "text-emerald-600" : "text-muted-foreground"}`}>
                   {t.enabled ? "开启" : "暂停"}
                 </div>
