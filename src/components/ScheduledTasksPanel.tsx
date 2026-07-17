@@ -73,6 +73,8 @@ const emptyDraft: Omit<ScheduledTask, "id" | "creator" | "createdAt" | "lastRunA
   prompt: "",
 };
 
+type NlPermMode = "all" | "allowlist" | "off";
+
 export default function ScheduledTasksPanel() {
   const [tasks, setTasks] = useState<ScheduledTask[]>(initialTasks);
   const [query, setQuery] = useState("");
@@ -80,6 +82,16 @@ export default function ScheduledTasksPanel() {
   const [editing, setEditing] = useState<ScheduledTask | null>(null);
   const [draft, setDraft] = useState({ ...emptyDraft });
   const [pendingDelete, setPendingDelete] = useState<ScheduledTask | null>(null);
+
+  // 自然语言新建任务的权限配置
+  const [nlPermOpen, setNlPermOpen] = useState(false);
+  const [nlMode, setNlMode] = useState<NlPermMode>("allowlist");
+  const [nlAllowlist, setNlAllowlist] = useState<{ id: string; name: string; org: string }[]>([
+    { id: "10086", name: "张伟", org: "智能平台部" },
+    { id: "10250", name: "李娜", org: "增长中台" },
+  ]);
+  const [nlIdInput, setNlIdInput] = useState("");
+
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
