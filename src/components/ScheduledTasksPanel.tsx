@@ -105,6 +105,7 @@ export interface ScheduledTask {
   enabled: boolean;
   lastRunAt?: string;
   creator: string;
+  creatorId: string;
   createdAt: string;
 }
 
