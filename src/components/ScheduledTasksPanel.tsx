@@ -320,15 +320,10 @@ export default function ScheduledTasksPanel() {
               >
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div
-                      className={`flex-1 min-w-0 font-medium cursor-default ${
-                        t.description.length <= SINGLE_LINE_MAX_CHARS
-                          ? "text-sm line-clamp-1 leading-5"
-                          : "text-xs line-clamp-2 leading-4"
-                      }`}
-                    >
+                    <div className="flex-1 min-w-0 text-xs font-medium cursor-default line-clamp-2 leading-4">
                       {t.description}
                     </div>
+
                   </TooltipTrigger>
                   <TooltipContent side="top" className="max-w-xs text-xs">
                     {t.description}
