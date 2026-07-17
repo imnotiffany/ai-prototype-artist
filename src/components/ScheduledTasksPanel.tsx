@@ -369,12 +369,12 @@ export default function ScheduledTasksPanel() {
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">触发周期</Label>
-              <div className="grid grid-cols-[120px_1fr] gap-2 items-start">
+              <div className="flex flex-wrap items-center gap-2">
                 <Select
                   value={draft.schedule.frequency}
                   onValueChange={(v: Freq) => setSchedule({ frequency: v })}
                 >
-                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="h-8 text-xs w-28"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="hourly" className="text-xs">每小时</SelectItem>
                     <SelectItem value="daily" className="text-xs">每天</SelectItem>
@@ -384,7 +384,64 @@ export default function ScheduledTasksPanel() {
                   </SelectContent>
                 </Select>
 
-                {draft.schedule.frequency === "hourly" && (
+                {draft.schedule.frequency === "weekly" && (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 text-xs font-normal justify-between min-w-[140px]"
+                      >
+                        <span className="truncate">
+                          {draft.schedule.weekdays.length
+                            ? `周${[...draft.schedule.weekdays].sort((a, b) => a - b).map((d) => WEEK_LABEL[d]).join("、")}`
+                            : "选择星期"}
+                        </span>
+                        <ChevronDown className="w-3.5 h-3.5 opacity-60 ml-1 shrink-0" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-40 p-1" align="start">
+                      {WEEK_LABEL.map((label, i) => {
+                        const active = draft.schedule.weekdays.includes(i);
+                        return (
+                          <label
+                            key={i}
+                            className="flex items-center gap-2 px-2 py-1.5 text-xs rounded hover:bg-muted cursor-pointer"
+                          >
+                            <Checkbox
+                              checked={active}
+                              onCheckedChange={(v) =>
+                                setSchedule({
+                                  weekdays: v
+                                    ? [...draft.schedule.weekdays, i]
+                                    : draft.schedule.weekdays.filter((x) => x !== i),
+                                })
+                              }
+                            />
+                            <span>周{label}</span>
+                          </label>
+                        );
+                      })}
+                    </PopoverContent>
+                  </Popover>
+                )}
+
+                {draft.schedule.frequency === "monthly" && (
+                  <Select
+                    value={String(draft.schedule.dayOfMonth)}
+                    onValueChange={(v) => setSchedule({ dayOfMonth: parseInt(v, 10) })}
+                  >
+                    <SelectTrigger className="h-8 text-xs w-24"><SelectValue /></SelectTrigger>
+                    <SelectContent className="max-h-64">
+                      {Array.from({ length: 31 }, (_, i) => (
+                        <SelectItem key={i + 1} value={String(i + 1)} className="text-xs">{i + 1} 日</SelectItem>
+                      ))}
+                      <SelectItem value="32" className="text-xs">月末</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+
+                {draft.schedule.frequency === "hourly" ? (
                   <div className="flex items-center gap-2 text-xs">
                     <span className="text-muted-foreground">第</span>
                     <Select
@@ -398,93 +455,36 @@ export default function ScheduledTasksPanel() {
                         ))}
                       </SelectContent>
                     </Select>
-                    <span className="text-muted-foreground">分钟执行</span>
+                    <span className="text-muted-foreground">分</span>
                   </div>
-                )}
-
-                {(draft.schedule.frequency === "daily" ||
-                  draft.schedule.frequency === "weekly" ||
-                  draft.schedule.frequency === "monthly") && (
-                  <div className="space-y-2">
-                    {draft.schedule.frequency === "weekly" && (
-                      <div className="flex flex-wrap items-center gap-1">
-                        {WEEK_LABEL.map((label, i) => {
-                          const active = draft.schedule.weekdays.includes(i);
-                          return (
-                            <button
-                              key={i}
-                              type="button"
-                              onClick={() =>
-                                setSchedule({
-                                  weekdays: active
-                                    ? draft.schedule.weekdays.filter((x) => x !== i)
-                                    : [...draft.schedule.weekdays, i],
-                                })
-                              }
-                              className={`h-7 w-8 rounded border text-xs transition-colors ${
-                                active
-                                  ? "bg-primary text-primary-foreground border-primary"
-                                  : "border-border text-foreground/70 hover:border-primary/50"
-                              }`}
-                            >
-                              {label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                    {draft.schedule.frequency === "monthly" && (
-                      <div className="flex items-center gap-2 text-xs">
-                        <span className="text-muted-foreground">每月</span>
-                        <Select
-                          value={String(draft.schedule.dayOfMonth)}
-                          onValueChange={(v) => setSchedule({ dayOfMonth: parseInt(v, 10) })}
-                        >
-                          <SelectTrigger className="h-8 text-xs w-24"><SelectValue /></SelectTrigger>
-                          <SelectContent className="max-h-64">
-                            {Array.from({ length: 31 }, (_, i) => (
-                              <SelectItem key={i + 1} value={String(i + 1)} className="text-xs">{i + 1} 日</SelectItem>
-                            ))}
-                            <SelectItem value="32" className="text-xs">月末</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2 text-xs">
-                      <span className="text-muted-foreground">时间</span>
-                      <Select
-                        value={String(draft.schedule.hour)}
-                        onValueChange={(v) => setSchedule({ hour: parseInt(v, 10) })}
-                      >
-                        <SelectTrigger className="h-8 text-xs w-20"><SelectValue /></SelectTrigger>
-                        <SelectContent className="max-h-64">
-                          {Array.from({ length: 24 }, (_, i) => (
-                            <SelectItem key={i} value={String(i)} className="text-xs">{pad(i)} 时</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Select
-                        value={String(draft.schedule.minute)}
-                        onValueChange={(v) => setSchedule({ minute: parseInt(v, 10) })}
-                      >
-                        <SelectTrigger className="h-8 text-xs w-20"><SelectValue /></SelectTrigger>
-                        <SelectContent className="max-h-64">
-                          {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((i) => (
-                            <SelectItem key={i} value={String(i)} className="text-xs">{pad(i)} 分</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                )}
-
-                {draft.schedule.frequency === "custom" && (
+                ) : draft.schedule.frequency === "custom" ? (
                   <Input
                     value={draft.schedule.customCron}
                     onChange={(e) => setSchedule({ customCron: e.target.value })}
                     placeholder="0 9 * * *"
-                    className="h-8 text-xs font-mono"
+                    className="h-8 text-xs font-mono flex-1 min-w-[160px]"
                   />
+                ) : (
+                  <Select
+                    value={`${draft.schedule.hour}:${draft.schedule.minute}`}
+                    onValueChange={(v) => {
+                      const [h, m] = v.split(":").map((n) => parseInt(n, 10));
+                      setSchedule({ hour: h, minute: m });
+                    }}
+                  >
+                    <SelectTrigger className="h-8 text-xs w-24"><SelectValue /></SelectTrigger>
+                    <SelectContent className="max-h-64">
+                      {Array.from({ length: 48 }, (_, i) => {
+                        const h = Math.floor(i / 2);
+                        const m = (i % 2) * 30;
+                        return (
+                          <SelectItem key={i} value={`${h}:${m}`} className="text-xs">
+                            {pad(h)}:{pad(m)}
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
                 )}
               </div>
               <div className="text-[11px] text-muted-foreground pt-1">
