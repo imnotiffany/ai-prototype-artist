@@ -1,12 +1,10 @@
 import { useMemo, useState } from "react";
-import { Plus, Play, Pencil, Trash2, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
@@ -137,91 +135,83 @@ export default function ScheduledTasksPanel() {
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between gap-3">
-        <div className="relative w-64">
-          <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+      {/* Toolbar: search left, count, add entry right */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <Search className="w-3.5 h-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="搜索任务名称 / 表达式"
-            className="h-8 pl-7 text-xs"
+            placeholder="搜索任务名称 / 调度表达式"
+            className="h-8 text-xs pl-7"
           />
         </div>
-        <Button size="sm" className="h-8 text-xs gap-1.5" onClick={openCreate}>
-          <Plus className="w-3.5 h-3.5" />新建任务
+        <div className="text-xs text-muted-foreground whitespace-nowrap">
+          共 <span className="text-foreground font-medium">{tasks.length}</span> 个任务
+        </div>
+        <div className="flex-1" />
+        <Button size="sm" className="h-8 text-xs" onClick={openCreate}>
+          新建任务
         </Button>
       </div>
 
-      <div className="border border-border rounded-md overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="text-xs">任务名称</TableHead>
-              <TableHead className="text-xs">调度表达式</TableHead>
-              <TableHead className="text-xs">触发周期</TableHead>
-              <TableHead className="text-xs w-20">状态</TableHead>
-              <TableHead className="text-xs">最近执行时间</TableHead>
-              <TableHead className="text-xs">创建人</TableHead>
-              <TableHead className="text-xs">创建时间</TableHead>
-              <TableHead className="text-xs text-right w-44">操作</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filtered.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={8} className="text-center text-xs text-muted-foreground py-10">
-                  暂无任务
-                </TableCell>
-              </TableRow>
-            ) : (
-              filtered.map((t) => (
-                <TableRow key={t.id} className="text-xs">
-                  <TableCell className="font-medium">{t.name}</TableCell>
-                  <TableCell className="font-mono text-[11px] text-muted-foreground">{t.cron}</TableCell>
-                  <TableCell className="text-muted-foreground">{t.triggerDesc}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="secondary"
-                      className={
-                        t.enabled
-                          ? "bg-green-500/10 text-green-600 hover:bg-green-500/10 border-transparent"
-                          : "bg-muted text-muted-foreground border-transparent"
-                      }
-                    >
-                      {t.enabled ? "开启" : "暂停"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">{t.lastRunAt ?? "—"}</TableCell>
-                  <TableCell className="text-muted-foreground">{t.creator}</TableCell>
-                  <TableCell className="text-muted-foreground">{t.createdAt}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="inline-flex items-center gap-0.5">
-                      <Button size="icon" variant="ghost" className="h-7 w-7" title="编辑" onClick={() => openEdit(t)}>
-                        <Pencil className="w-3.5 h-3.5" />
-                      </Button>
-                      <div className="inline-flex items-center px-1.5" title={t.enabled ? "停用" : "启用"}>
-                        <Switch size="sm" checked={t.enabled} onCheckedChange={() => toggle(t)} />
-                      </div>
-                      <Button size="icon" variant="ghost" className="h-7 w-7" title="立即执行" onClick={() => runNow(t)}>
-                        <Play className="w-3.5 h-3.5" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-7 w-7 text-destructive hover:text-destructive"
-                        title="删除"
-                        onClick={() => setPendingDelete(t)}
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+      {/* List (no outer frame) */}
+      <div className="text-xs">
+        <div className="h-9 px-2 flex items-center gap-4 text-[11px] text-muted-foreground border-b border-border">
+          <div className="w-40 shrink-0">任务名称</div>
+          <div className="w-32 shrink-0 font-mono">调度表达式</div>
+          <div className="w-32 shrink-0">触发周期</div>
+          <div className="w-16 shrink-0">状态</div>
+          <div className="w-40 shrink-0">最近执行时间</div>
+          <div className="w-20 shrink-0">创建人</div>
+          <div className="w-40 shrink-0">创建时间</div>
+          <div className="flex-1" />
+          <div className="w-40 shrink-0 text-right">操作</div>
+        </div>
+        {filtered.length === 0 ? (
+          <div className="py-16 text-center text-xs text-muted-foreground">
+            暂无定时任务，点击右上角「新建任务」创建
+          </div>
+        ) : (
+          <ul>
+            {filtered.map((t) => (
+              <li
+                key={t.id}
+                className="px-2 h-10 flex items-center gap-4 border-b border-border hover:bg-muted/30 transition-colors"
+              >
+                <div className="w-40 shrink-0 font-medium truncate">{t.name}</div>
+                <div className="w-32 shrink-0 font-mono text-muted-foreground truncate">{t.cron}</div>
+                <div className="w-32 shrink-0 text-muted-foreground truncate">{t.triggerDesc}</div>
+                <div className={`w-16 shrink-0 text-[11px] ${t.enabled ? "text-emerald-600" : "text-muted-foreground"}`}>
+                  {t.enabled ? "开启" : "暂停"}
+                </div>
+                <div className="w-40 shrink-0 font-mono text-muted-foreground">{t.lastRunAt ?? "—"}</div>
+                <div className="w-20 shrink-0 text-foreground/80 truncate">{t.creator}</div>
+                <div className="w-40 shrink-0 font-mono text-muted-foreground">{t.createdAt}</div>
+                <div className="flex-1" />
+                <div className="w-40 shrink-0 flex items-center justify-end gap-3">
+                  <button className="text-[11px] text-foreground/80 hover:text-primary hover:underline" onClick={() => openEdit(t)}>
+                    编辑
+                  </button>
+                  <button
+                    className={`text-[11px] hover:underline ${t.enabled ? "text-muted-foreground hover:text-foreground" : "text-primary"}`}
+                    onClick={() => toggle(t)}
+                  >
+                    {t.enabled ? "停用" : "启用"}
+                  </button>
+                  <button className="text-[11px] text-primary hover:underline" onClick={() => runNow(t)}>
+                    立即执行
+                  </button>
+                  <button className="text-[11px] text-destructive hover:underline" onClick={() => setPendingDelete(t)}>
+                    删除
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
+
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-[520px]">
