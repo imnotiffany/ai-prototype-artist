@@ -172,10 +172,10 @@ export default function ScheduledTasksPanel() {
           size="sm"
           className="h-8 text-xs gap-1.5"
           onClick={() => setNlPermOpen(true)}
-          title="配置谁可以通过自然语言创建任务（创建者默认已开启）"
+          title="配置谁可以通过对话创建任务（创建者默认已开启）"
         >
           <Settings2 className="w-3.5 h-3.5" />
-          自然语言创建权限
+          对话创建权限配置
           <span className="ml-1 text-[10px] text-muted-foreground">
             创建者 + {nlAllowlist.length} 人
           </span>
@@ -318,13 +318,13 @@ export default function ScheduledTasksPanel() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* 自然语言创建任务权限配置 */}
+      {/* 对话创建任务权限配置 */}
       <Dialog open={nlPermOpen} onOpenChange={setNlPermOpen}>
         <DialogContent className="sm:max-w-[520px]">
           <DialogHeader>
-            <DialogTitle className="text-sm">自然语言创建任务权限</DialogTitle>
+            <DialogTitle className="text-sm">对话创建任务权限配置</DialogTitle>
             <DialogDescription className="text-xs">
-              智能体创建者默认已开启。在下方添加需要额外授权的成员，被授权成员可在会话中用自然语言直接让智能体创建定时任务。
+              智能体创建者默认已开启。在下方添加需要额外授权的成员，被授权成员可在会话中直接让智能体创建定时任务。
             </DialogDescription>
           </DialogHeader>
 
@@ -397,7 +397,7 @@ export default function ScheduledTasksPanel() {
               className="h-8 text-xs"
               onClick={() => {
                 setNlPermOpen(false);
-                toast({ title: "已保存自然语言创建权限" });
+                toast({ title: "已保存对话创建权限配置" });
               }}
             >
               保存
