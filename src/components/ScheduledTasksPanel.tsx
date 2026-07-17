@@ -314,7 +314,7 @@ export default function ScheduledTasksPanel() {
           <div className="w-36 shrink-0">最近执行时间</div>
           <div className="w-20 shrink-0">创建人</div>
           <div className="w-36 shrink-0">创建时间</div>
-          <div class-placeholder="hidden" /><div className="w-56 shrink-0 text-right">操作</div>
+          <div className="w-56 shrink-0 text-right">操作</div>
         </div>
         {filtered.length === 0 ? (
           <div className="py-16 text-center text-xs text-muted-foreground">
