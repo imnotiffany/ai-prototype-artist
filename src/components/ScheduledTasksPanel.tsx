@@ -809,72 +809,16 @@ export default function ScheduledTasksPanel() {
                       })}
                     </ul>
                   ) : (() => {
-                    const Icon = StatusIcon(active.status);
-                    const steps = [
-                      { label: "调度触发", detail: `按周期 ${historyTask.triggerDesc}`, ms: 12, ok: true },
-                      { label: "加载智能体上下文", detail: "已注入系统提示 & 环境变量", ms: 88, ok: true },
-                      { label: "执行任务指令", detail: historyTask.description, ms: 620, ok: true },
-                      { label: "调用工具", detail: "MCP · query_logs · 3 条结果", ms: 412, ok: true },
-                      { label: "生成回复", detail: active.status === "failed" ? "LLM 调用超时" : "已生成结果并回写",
-                        ms: active.status === "failed" ? 3000 : 980, ok: active.status !== "failed" },
-                    ];
-                    return (
-                      <div className="p-5 space-y-4 text-xs">
-                        <div className="flex items-center gap-2">
-                          <Icon className={`w-4 h-4 ${statusCls(active.status)}`} />
-                          <span className="font-medium">{statusLabel(active.status)}</span>
-                          {active.duration !== undefined && (
-                            <span className="text-muted-foreground font-mono ml-1">
-                              耗时 {(active.duration / 1000).toFixed(1)}s
-                            </span>
-                          )}
-                        </div>
-                        <div className="grid grid-cols-[64px_1fr] gap-y-1.5 text-[11px]">
-                          <div className="text-muted-foreground">开始时间</div>
-                          <div className="font-mono">{active.ts}</div>
-                          <div className="text-muted-foreground">触发方式</div>
-                          <div>定时触发</div>
-                          <div className="text-muted-foreground">记录 ID</div>
-                          <div className="font-mono text-muted-foreground">{active.id}</div>
-                        </div>
-
-                        <div>
-                          <div className="text-[11px] text-muted-foreground mb-2">执行步骤</div>
-                          <ol className="relative border-l border-border ml-1.5 space-y-3">
-                            {steps.map((s, i) => (
-                              <li key={i} className="pl-4 relative">
-                                <span className={`absolute -left-[5px] top-1 w-2 h-2 rounded-full ${
-                                  s.ok ? "bg-emerald-500" : "bg-destructive"
-                                }`} />
-                                <div className="flex items-center justify-between gap-2">
-                                  <span className="font-medium">{s.label}</span>
-                                  <span className="font-mono text-[11px] text-muted-foreground">{s.ms}ms</span>
-                                </div>
-                                <div className="text-[11px] text-muted-foreground mt-0.5">{s.detail}</div>
-                              </li>
-                            ))}
-                          </ol>
-                        </div>
-
-                        {active.status === "failed" && (
-                          <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3">
-                            <div className="text-[11px] font-medium text-destructive mb-1">错误信息</div>
-                            <div className="text-[11px] font-mono text-destructive/90 whitespace-pre-wrap">
-                              Error: LLM upstream timeout after 3000ms{"\n"}at runTask (task-runner.ts:184)
-                            </div>
-                          </div>
-                        )}
-
-                        <div>
-                          <div className="text-[11px] text-muted-foreground mb-1.5">输出摘要</div>
-                          <div className="rounded-md border border-border bg-muted/30 p-3 text-[11px] leading-relaxed">
-                            {active.status === "failed"
-                              ? "本次执行失败，未生成有效输出。"
-                              : "已生成《昨日项目进展晨报》，共 6 项关键进展、2 项风险，已推送至指定群聊。"}
-                          </div>
-                        </div>
-                      </div>
-                    );
+                    const idx = records.findIndex((r) => r.id === active.id);
+                    const base = TIMELINE_SCENARIOS[idx % TIMELINE_SCENARIOS.length];
+                    const scenario = {
+                      ...base,
+                      id: active.id,
+                      title: `${active.ts} · ${statusLabel(active.status)}`,
+                      status: active.status === "running" ? ("running" as const)
+                        : active.status === "failed" ? ("failed" as const) : ("done" as const),
+                    };
+                    return <RunTimelineView scenario={scenario} />;
                   })()}
                 </div>
               </>
