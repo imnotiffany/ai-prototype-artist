@@ -265,6 +265,7 @@ export default function ScheduledTasksPanel() {
   };
 
   return (
+    <TooltipProvider delayDuration={200}>
     <div className="space-y-3">
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2">
