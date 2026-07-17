@@ -129,11 +129,25 @@ const initialTasks: ScheduledTask[] = [
   },
 ];
 
-const emptyDraft: Omit<ScheduledTask, "id" | "creator" | "createdAt" | "lastRunAt"> = {
+interface TaskDraft {
+  description: string;
+  enabled: boolean;
+  schedule: ScheduleDraft;
+}
+
+const emptySchedule: ScheduleDraft = {
+  frequency: "daily",
+  hour: 9,
+  minute: 0,
+  weekdays: [1],
+  dayOfMonth: 1,
+  customCron: "0 9 * * *",
+};
+
+const emptyDraft: TaskDraft = {
   description: "",
-  cron: "",
-  triggerDesc: "",
   enabled: true,
+  schedule: { ...emptySchedule },
 };
 
 export default function ScheduledTasksPanel() {
@@ -141,10 +155,10 @@ export default function ScheduledTasksPanel() {
   const [query, setQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<ScheduledTask | null>(null);
-  const [draft, setDraft] = useState({ ...emptyDraft });
+  const [draft, setDraft] = useState<TaskDraft>({ ...emptyDraft });
   const [pendingDelete, setPendingDelete] = useState<ScheduledTask | null>(null);
 
-  // 自然语言新建任务：创建者默认已开启，此处维护额外授权名单
+  // 对话创建任务权限：创建者默认已开启，此处维护额外授权名单
   const [nlPermOpen, setNlPermOpen] = useState(false);
   const [nlAllowlist, setNlAllowlist] = useState<{ id: string; name: string; org: string }[]>([
     { id: "10086", name: "张伟", org: "智能平台部" },
@@ -173,31 +187,54 @@ export default function ScheduledTasksPanel() {
     );
   }, [tasks, query]);
 
+  const preview = useMemo(() => buildSchedule(draft.schedule), [draft.schedule]);
+  const setSchedule = (patch: Partial<ScheduleDraft>) =>
+    setDraft((d) => ({ ...d, schedule: { ...d.schedule, ...patch } }));
+
   const openCreate = () => {
     setEditing(null);
-    setDraft({ ...emptyDraft });
+    setDraft({ ...emptyDraft, schedule: { ...emptySchedule } });
     setDialogOpen(true);
   };
   const openEdit = (t: ScheduledTask) => {
     setEditing(t);
-    setDraft({ description: t.description, cron: t.cron, triggerDesc: t.triggerDesc, enabled: t.enabled });
+    setDraft({
+      description: t.description,
+      enabled: t.enabled,
+      schedule: parseSchedule(t.cron, t.triggerDesc),
+    });
     setDialogOpen(true);
   };
 
   const save = () => {
-    if (!draft.description.trim() || !draft.cron.trim() || !draft.triggerDesc.trim()) {
-      toast({ title: "请完善任务描述、调度表达式与触发周期", variant: "destructive" });
+    if (!draft.description.trim()) {
+      toast({ title: "请填写任务描述", variant: "destructive" });
+      return;
+    }
+    const { cron, triggerDesc } = preview;
+    if (draft.schedule.frequency === "custom" && !draft.schedule.customCron.trim()) {
+      toast({ title: "请填写自定义调度表达式", variant: "destructive" });
+      return;
+    }
+    if (draft.schedule.frequency === "weekly" && draft.schedule.weekdays.length === 0) {
+      toast({ title: "请至少选择一个星期", variant: "destructive" });
       return;
     }
     if (editing) {
-      setTasks((prev) => prev.map((t) => (t.id === editing.id ? { ...t, ...draft } : t)));
+      setTasks((prev) => prev.map((t) =>
+        t.id === editing.id ? { ...t, description: draft.description, enabled: draft.enabled, cron, triggerDesc } : t,
+      ));
       toast({ title: "已保存" });
     } else {
       const t: ScheduledTask = {
         id: `t-${Date.now()}`,
         creator: "当前用户",
         createdAt: now(),
-        ...draft,
+        description: draft.description,
+        enabled: draft.enabled,
+        cron,
+        triggerDesc,
+
       };
       setTasks((prev) => [t, ...prev]);
       toast({ title: "已创建任务" });
