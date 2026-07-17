@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Search, Settings2, X, Users } from "lucide-react";
+import { Search, X, Users } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -170,15 +170,11 @@ export default function ScheduledTasksPanel() {
         <Button
           variant="outline"
           size="sm"
-          className="h-8 text-xs gap-1.5"
+          className="h-8 text-xs"
           onClick={() => setNlPermOpen(true)}
           title="配置谁可以通过对话创建任务（创建者默认已开启）"
         >
-          <Settings2 className="w-3.5 h-3.5" />
           对话创建权限配置
-          <span className="ml-1 text-[10px] text-muted-foreground">
-            创建者 + {nlAllowlist.length} 人
-          </span>
         </Button>
         <Button size="sm" className="h-8 text-xs" onClick={openCreate}>
           新建任务
