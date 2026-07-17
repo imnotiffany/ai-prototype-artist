@@ -205,7 +205,9 @@ export default function ScheduledTasksPanel() {
       (t) =>
         t.description.toLowerCase().includes(q) ||
         t.cron.toLowerCase().includes(q) ||
-        t.triggerDesc.toLowerCase().includes(q),
+        t.triggerDesc.toLowerCase().includes(q) ||
+        t.creator.toLowerCase().includes(q) ||
+        t.creatorId.toLowerCase().includes(q),
     );
   }, [tasks, query]);
 
@@ -288,7 +290,7 @@ export default function ScheduledTasksPanel() {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="搜索任务描述 / 触发周期"
+            placeholder="搜索任务描述 / 创建人 / 工号"
             className="h-8 text-xs pl-7"
           />
         </div>
