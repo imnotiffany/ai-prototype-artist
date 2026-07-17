@@ -353,9 +353,7 @@ export default function ScheduledTasksPanel() {
         <DialogContent className="sm:max-w-[520px]">
           <DialogHeader>
             <DialogTitle className="text-sm">{editing ? "编辑任务" : "新建任务"}</DialogTitle>
-            <DialogDescription className="text-xs">
-              配置任务的调度表达式与触发周期，任务将按周期自动执行。
-            </DialogDescription>
+            <DialogDescription className="sr-only">新建或编辑定时任务</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
