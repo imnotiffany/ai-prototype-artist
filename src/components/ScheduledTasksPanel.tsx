@@ -320,24 +320,20 @@ export default function ScheduledTasksPanel() {
               >
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div
-                      className={`flex-1 min-w-0 font-medium cursor-default ${
-                        t.description.length <= SINGLE_LINE_MAX_CHARS
-                          ? "text-sm line-clamp-1 leading-5"
-                          : "text-xs line-clamp-2 leading-4"
-                      }`}
-                    >
+                    <div className="flex-1 min-w-0 text-xs font-medium cursor-default line-clamp-2 leading-4">
                       {t.description}
                     </div>
+
                   </TooltipTrigger>
                   <TooltipContent side="top" className="max-w-xs text-xs">
                     {t.description}
                   </TooltipContent>
                 </Tooltip>
-                <div className="w-32 shrink-0 flex flex-col justify-center gap-0.5">
+                <div className="w-32 shrink-0 flex flex-col justify-center gap-0.5 text-xs">
                   <div className="truncate" title={t.triggerDesc}>{t.triggerDesc}</div>
                   <div className="text-[11px] font-mono text-muted-foreground truncate" title={t.cron}>{t.cron}</div>
                 </div>
+
                 <div className={`w-16 shrink-0 text-[11px] ${t.enabled ? "text-emerald-600" : "text-muted-foreground"}`}>
                   {t.enabled ? "开启" : "暂停"}
                 </div>

@@ -1399,14 +1399,7 @@ fengsheng:
             {/* 左侧会话列表 */}
             <aside className="w-48 shrink-0 border-r border-border flex flex-col bg-muted/20">
               <div className="p-1.5 border-b border-border shrink-0 space-y-1.5">
-                <Button
-                  size="sm"
-                  className="h-7 w-full text-[11px] gap-1.5"
-                  onClick={handleNewRun}
-                  title="新建会话"
-                >
-                  <Plus className="w-3 h-3" />新建会话
-                </Button>
+
                 <div className="relative">
                   <MessageSquare className="w-3 h-3 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
                   <Input
@@ -1504,20 +1497,8 @@ fengsheng:
                         agentAvatar={agent?.avatar}
                       />
                     </div>
-                    <div className="border-t border-border p-2.5 shrink-0">
-                      <ChatComposer
-                        value={runReplyInput}
-                        onChange={setRunReplyInput}
-                        onSend={({ text }) => {
-                          setRunReplyInput(text);
-                          handleRunReplySend();
-                        }}
-                        placeholder="继续这个会话…"
-                        compact
-                        onOpenFiles={() => setArtifactsOpen(true)}
-                        mentionableFiles={mockArtifacts}
-                      />
-                    </div>
+
+
                   </div>
                 </>
               ) : (
