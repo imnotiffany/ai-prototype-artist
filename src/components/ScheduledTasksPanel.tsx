@@ -181,6 +181,11 @@ export default function ScheduledTasksPanel() {
   const [batchOpen, setBatchOpen] = useState(false);
   const [batchText, setBatchText] = useState("");
 
+  // 执行记录抽屉
+  const [historyTask, setHistoryTask] = useState<ScheduledTask | null>(null);
+  const navigate = useNavigate();
+  const { id: agentId } = useParams();
+
   const addOneId = (id: string) => {
     const v = id.trim();
     if (!v) return false;
