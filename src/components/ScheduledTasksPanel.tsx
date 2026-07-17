@@ -731,7 +731,7 @@ export default function ScheduledTasksPanel() {
           if (!v) { setHistoryTask(null); setActiveRecordId(null); }
         }}
       >
-        <SheetContent side="right" className={`p-0 flex flex-col ${activeRecordId ? "w-[760px] sm:max-w-[760px]" : "w-[460px] sm:max-w-[460px]"}`}>
+        <SheetContent side="right" className="p-0 flex flex-col w-[460px] sm:max-w-[460px]">
           {historyTask && (() => {
             // 演示用：基于 lastRunAt 生成近 8 次执行记录
             const seed = historyTask.id.charCodeAt(historyTask.id.length - 1) || 0;
