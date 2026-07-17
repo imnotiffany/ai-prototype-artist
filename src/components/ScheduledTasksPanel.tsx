@@ -167,9 +167,23 @@ export default function ScheduledTasksPanel() {
           共 <span className="text-foreground font-medium">{tasks.length}</span> 个任务
         </div>
         <div className="flex-1" />
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 text-xs gap-1.5"
+          onClick={() => setNlPermOpen(true)}
+          title="配置谁可以通过自然语言创建任务"
+        >
+          <Settings2 className="w-3.5 h-3.5" />
+          自然语言创建权限
+          <span className="ml-1 text-[10px] text-muted-foreground">
+            {nlMode === "all" ? "所有人" : nlMode === "off" ? "已关闭" : `${nlAllowlist.length} 人`}
+          </span>
+        </Button>
         <Button size="sm" className="h-8 text-xs" onClick={openCreate}>
           新建任务
         </Button>
+
       </div>
 
       {/* List (no outer frame) */}
