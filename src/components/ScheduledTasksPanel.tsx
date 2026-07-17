@@ -3,6 +3,8 @@ import { Search, X, ChevronDown, CheckCircle2, XCircle, Loader2, ChevronRight, C
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from "@/components/ui/sheet";
+import { RunTimelineView } from "@/components/RunTimelineView";
+import { TIMELINE_SCENARIOS } from "@/data/timelineMock";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
