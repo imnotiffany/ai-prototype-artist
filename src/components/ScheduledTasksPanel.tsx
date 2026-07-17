@@ -479,8 +479,10 @@ export default function ScheduledTasksPanel() {
                     <PopoverContent className="w-40 p-0" align="start">
                       <div className="grid grid-cols-2 text-xs">
                         <div className="border-r border-border">
-                          <div className="px-2 py-1 text-[10px] text-muted-foreground border-b border-border">时</div>
-                          <div className="max-h-56 overflow-y-auto py-1">
+                          <div
+                            className="max-h-56 overflow-y-auto py-1"
+                            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+                          >
                             {Array.from({ length: 24 }, (_, h) => {
                               const active = draft.schedule.hour === h;
                               return (
@@ -499,8 +501,10 @@ export default function ScheduledTasksPanel() {
                           </div>
                         </div>
                         <div>
-                          <div className="px-2 py-1 text-[10px] text-muted-foreground border-b border-border">分</div>
-                          <div className="max-h-56 overflow-y-auto py-1">
+                          <div
+                            className="max-h-56 overflow-y-auto py-1"
+                            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+                          >
                             {Array.from({ length: 60 }, (_, m) => {
                               const active = draft.schedule.minute === m;
                               return (
