@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Search, X, Users } from "lucide-react";
+import { Search, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -320,17 +320,11 @@ export default function ScheduledTasksPanel() {
           <DialogHeader>
             <DialogTitle className="text-sm">对话创建任务权限配置</DialogTitle>
             <DialogDescription className="text-xs">
-              智能体创建者默认已开启。在下方添加需要额外授权的成员，被授权成员可在会话中直接让智能体创建定时任务。
+              在下方添加需要额外授权的成员，被授权成员可在会话中直接让智能体创建定时任务。
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-3">
-            <div className="flex items-center gap-2 px-2.5 py-2 rounded border border-dashed border-border bg-muted/30">
-              <Users className="w-3.5 h-3.5 text-muted-foreground" />
-              <span className="text-xs text-foreground/80">创建者</span>
-              <span className="text-[11px] text-muted-foreground">已默认开启，无需配置</span>
-            </div>
-
             <div className="flex items-center gap-2">
               <Input
                 value={nlIdInput}
@@ -369,7 +363,6 @@ export default function ScheduledTasksPanel() {
                     >
                       <span className="font-mono text-muted-foreground w-16 shrink-0">{m.id}</span>
                       <span className="flex-1 min-w-0 truncate">{m.name}</span>
-                      <span className="text-muted-foreground truncate">{m.org}</span>
                       <button
                         className="text-muted-foreground hover:text-destructive"
                         onClick={() => setNlAllowlist((prev) => prev.filter((x) => x.id !== m.id))}
