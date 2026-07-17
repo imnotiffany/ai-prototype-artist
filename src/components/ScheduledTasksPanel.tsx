@@ -742,7 +742,6 @@ export default function ScheduledTasksPanel() {
               // 演示用：基于 lastRunAt 生成近 8 次执行记录
               const seed = historyTask.id.charCodeAt(historyTask.id.length - 1) || 0;
               const base = historyTask.lastRunAt ? new Date(historyTask.lastRunAt.replace(" ", "T")) : new Date();
-              const parseStep = /every ?(\d+)?/i;
               // 简易：按天回退
               const records = Array.from({ length: 8 }, (_, i) => {
                 const d = new Date(base);
