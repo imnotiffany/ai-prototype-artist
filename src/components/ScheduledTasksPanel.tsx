@@ -7,12 +7,80 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+
+type Freq = "hourly" | "daily" | "weekly" | "monthly" | "custom";
+interface ScheduleDraft {
+  frequency: Freq;
+  hour: number;      // 0-23
+  minute: number;    // 0-59
+  weekdays: number[]; // 0=Sun..6=Sat
+  dayOfMonth: number; // 1-31, 32 = 月末
+  customCron: string;
+}
+
+const WEEK_LABEL = ["日", "一", "二", "三", "四", "五", "六"];
+const pad = (n: number) => n.toString().padStart(2, "0");
+
+function buildSchedule(s: ScheduleDraft): { cron: string; triggerDesc: string } {
+  const hh = pad(s.hour), mm = pad(s.minute);
+  const time = `${hh}:${mm}`;
+  switch (s.frequency) {
+    case "hourly":
+      return { cron: `${s.minute} * * * *`, triggerDesc: `每小时第 ${s.minute} 分钟` };
+    case "daily":
+      return { cron: `${s.minute} ${s.hour} * * *`, triggerDesc: `每天 ${time}` };
+    case "weekly": {
+      const days = [...s.weekdays].sort((a, b) => a - b);
+      const dowExpr = days.length ? days.join(",") : "1";
+      const label = days.length
+        ? `每周${days.map((d) => WEEK_LABEL[d]).join("、")} ${time}`
+        : `每周一 ${time}`;
+      return { cron: `${s.minute} ${s.hour} * * ${dowExpr}`, triggerDesc: label };
+    }
+    case "monthly": {
+      const dom = s.dayOfMonth === 32 ? "L" : s.dayOfMonth;
+      const label = s.dayOfMonth === 32 ? `每月月末 ${time}` : `每月 ${s.dayOfMonth} 日 ${time}`;
+      return { cron: `${s.minute} ${s.hour} ${dom} * *`, triggerDesc: label };
+    }
+    case "custom":
+      return { cron: s.customCron.trim() || "0 9 * * *", triggerDesc: "自定义调度" };
+  }
+}
+
+function parseSchedule(cron: string, triggerDesc: string): ScheduleDraft {
+  const base: ScheduleDraft = {
+    frequency: "custom", hour: 9, minute: 0, weekdays: [1], dayOfMonth: 1, customCron: cron,
+  };
+  const parts = cron.trim().split(/\s+/);
+  if (parts.length !== 5) return base;
+  const [m, h, dom, mon, dow] = parts;
+  const num = (x: string) => (/^\d+$/.test(x) ? parseInt(x, 10) : NaN);
+  if (mon === "*" && dow === "*" && dom === "*" && !isNaN(num(h)) && !isNaN(num(m))) {
+    return { ...base, frequency: "daily", hour: num(h), minute: num(m) };
+  }
+  if (mon === "*" && dom === "*" && dow !== "*" && !isNaN(num(h)) && !isNaN(num(m))) {
+    const days = dow.split(",").map(num).filter((x) => !isNaN(x) && x >= 0 && x <= 6);
+    if (days.length) return { ...base, frequency: "weekly", hour: num(h), minute: num(m), weekdays: days };
+  }
+  if (mon === "*" && dow === "*" && dom !== "*" && !isNaN(num(h)) && !isNaN(num(m))) {
+    const d = dom === "L" ? 32 : num(dom);
+    if (!isNaN(d)) return { ...base, frequency: "monthly", hour: num(h), minute: num(m), dayOfMonth: d };
+  }
+  if (h === "*" && dom === "*" && mon === "*" && dow === "*" && !isNaN(num(m))) {
+    return { ...base, frequency: "hourly", minute: num(m), hour: 0 };
+  }
+  return base;
+}
+
 import { toast } from "@/hooks/use-toast";
 
 export interface ScheduledTask {
