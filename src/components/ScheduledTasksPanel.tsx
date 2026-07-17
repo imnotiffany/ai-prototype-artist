@@ -352,7 +352,9 @@ export default function ScheduledTasksPanel() {
                   {t.enabled ? "开启" : "暂停"}
                 </div>
                 <div className="w-36 shrink-0 font-mono text-muted-foreground">{t.lastRunAt ?? "—"}</div>
-                <div className="w-20 shrink-0 text-foreground/80 truncate">{t.creator}</div>
+                <div className="w-28 shrink-0 text-foreground/80 truncate" title={`${t.creator}（${t.creatorId}）`}>
+                  {t.creator}（{t.creatorId}）
+                </div>
                 <div className="w-36 shrink-0 font-mono text-muted-foreground">{t.createdAt}</div>
                 <div className="w-56 shrink-0 flex items-center justify-end gap-3">
                   <button className="text-[11px] text-foreground/80 hover:text-primary hover:underline" onClick={() => setHistoryTask(t)}>
