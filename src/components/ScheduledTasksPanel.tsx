@@ -183,8 +183,7 @@ export default function ScheduledTasksPanel() {
 
   // 执行记录抽屉
   const [historyTask, setHistoryTask] = useState<ScheduledTask | null>(null);
-  const navigate = useNavigate();
-  const { id: agentId } = useParams();
+  const [activeRecordId, setActiveRecordId] = useState<string | null>(null);
 
   const addOneId = (id: string) => {
     const v = id.trim();
