@@ -1,5 +1,9 @@
 import { useMemo, useState } from "react";
-import { Search, X, ChevronDown } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Search, X, ChevronDown, CheckCircle2, XCircle, Loader2, ChevronRight } from "lucide-react";
+import {
+  Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
+} from "@/components/ui/sheet";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -177,6 +181,11 @@ export default function ScheduledTasksPanel() {
   const [batchOpen, setBatchOpen] = useState(false);
   const [batchText, setBatchText] = useState("");
 
+  // 执行记录抽屉
+  const [historyTask, setHistoryTask] = useState<ScheduledTask | null>(null);
+  const navigate = useNavigate();
+  const { id: agentId } = useParams();
+
   const addOneId = (id: string) => {
     const v = id.trim();
     if (!v) return false;
@@ -305,7 +314,7 @@ export default function ScheduledTasksPanel() {
           <div className="w-36 shrink-0">最近执行时间</div>
           <div className="w-20 shrink-0">创建人</div>
           <div className="w-36 shrink-0">创建时间</div>
-          <div className="w-40 shrink-0 text-right">操作</div>
+          <div className="w-56 shrink-0 text-right">操作</div>
         </div>
         {filtered.length === 0 ? (
           <div className="py-16 text-center text-xs text-muted-foreground">
@@ -340,7 +349,10 @@ export default function ScheduledTasksPanel() {
                 <div className="w-36 shrink-0 font-mono text-muted-foreground">{t.lastRunAt ?? "—"}</div>
                 <div className="w-20 shrink-0 text-foreground/80 truncate">{t.creator}</div>
                 <div className="w-36 shrink-0 font-mono text-muted-foreground">{t.createdAt}</div>
-                <div className="w-40 shrink-0 flex items-center justify-end gap-3">
+                <div className="w-56 shrink-0 flex items-center justify-end gap-3">
+                  <button className="text-[11px] text-foreground/80 hover:text-primary hover:underline" onClick={() => setHistoryTask(t)}>
+                    执行记录
+                  </button>
                   <button className="text-[11px] text-foreground/80 hover:text-primary hover:underline" onClick={() => openEdit(t)}>
                     编辑
                   </button>
@@ -711,6 +723,77 @@ export default function ScheduledTasksPanel() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* 执行记录抽屉 */}
+      <Sheet open={!!historyTask} onOpenChange={(v) => !v && setHistoryTask(null)}>
+        <SheetContent side="right" className="w-[440px] sm:max-w-[440px] p-0 flex flex-col">
+          <SheetHeader className="px-5 py-4 border-b border-border shrink-0">
+            <SheetTitle className="text-sm">执行记录</SheetTitle>
+            <SheetDescription className="text-xs line-clamp-2">
+              {historyTask?.description}
+            </SheetDescription>
+            <div className="text-[11px] text-muted-foreground pt-1">
+              {historyTask?.triggerDesc}
+              <span className="font-mono ml-2">{historyTask?.cron}</span>
+            </div>
+          </SheetHeader>
+          <div className="flex-1 min-h-0 overflow-auto">
+            {historyTask && (() => {
+              // 演示用：基于 lastRunAt 生成近 8 次执行记录
+              const seed = historyTask.id.charCodeAt(historyTask.id.length - 1) || 0;
+              const base = historyTask.lastRunAt ? new Date(historyTask.lastRunAt.replace(" ", "T")) : new Date();
+              // 简易：按天回退
+              const records = Array.from({ length: 8 }, (_, i) => {
+                const d = new Date(base);
+                d.setDate(d.getDate() - i);
+                const ts = d.toISOString().slice(0, 16).replace("T", " ");
+                const roll = (seed + i) % 7;
+                const status: "success" | "failed" | "running" =
+                  i === 0 && historyTask.enabled && roll === 6 ? "running"
+                  : roll === 5 ? "failed"
+                  : "success";
+                const duration = status === "running" ? undefined : 800 + ((seed * 37 + i * 113) % 4200);
+                return { id: `${historyTask.id}-r${i}`, ts, status, duration };
+              });
+              return (
+                <ul className="text-xs">
+                  {records.map((r) => {
+                    const Icon = r.status === "success" ? CheckCircle2 : r.status === "failed" ? XCircle : Loader2;
+                    const iconCls = r.status === "success" ? "text-emerald-600"
+                      : r.status === "failed" ? "text-destructive" : "text-primary animate-spin";
+                    const label = r.status === "success" ? "执行成功" : r.status === "failed" ? "执行失败" : "执行中";
+                    return (
+                      <li
+                        key={r.id}
+                        className="px-5 h-14 flex items-center gap-3 border-b border-border hover:bg-muted/40 cursor-pointer group"
+                        onClick={() => {
+                          setHistoryTask(null);
+                          if (agentId) navigate(`/chat/${agentId}`);
+                        }}
+                      >
+                        <Icon className={`w-4 h-4 shrink-0 ${iconCls}`} />
+                        <div className="flex-1 min-w-0">
+                          <div className="font-mono text-xs">{r.ts}</div>
+                          <div className="text-[11px] text-muted-foreground">
+                            {label}
+                            {r.duration !== undefined && (
+                              <span className="ml-2 font-mono">耗时 {(r.duration / 1000).toFixed(1)}s</span>
+                            )}
+                          </div>
+                        </div>
+                        <ChevronRight className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 shrink-0" />
+                      </li>
+                    );
+                  })}
+                </ul>
+              );
+            })()}
+            {historyTask && !historyTask.lastRunAt && (
+              <div className="py-16 text-center text-xs text-muted-foreground">该任务暂无执行记录</div>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
     </TooltipProvider>
   );
