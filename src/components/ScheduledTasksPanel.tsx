@@ -312,15 +312,15 @@ export default function ScheduledTasksPanel() {
 
       {/* List */}
       <div className="text-xs">
-        <div className="h-9 px-2 flex items-center gap-4 text-[11px] text-muted-foreground border-b border-border">
-          <div className="flex-1 min-w-0">任务描述</div>
-          <div className="w-32 shrink-0">触发周期</div>
-          <div className="w-16 shrink-0">状态</div>
-          <div className="w-36 shrink-0">最近执行时间</div>
-          <div className="w-20 shrink-0">创建人</div>
-          <div className="w-36 shrink-0">创建时间</div>
-          <div className="w-56 shrink-0 text-right">操作</div>
-        </div>
+          <div className="h-9 px-2 flex items-center gap-4 text-[11px] text-muted-foreground border-b border-border">
+            <div className="flex-1 min-w-0">任务描述</div>
+            <div className="w-32 shrink-0">触发周期</div>
+            <div className="w-16 shrink-0">状态</div>
+            <div className="w-36 shrink-0">最近执行时间</div>
+            <div className="w-28 shrink-0">创建人</div>
+            <div className="w-36 shrink-0">创建时间</div>
+            <div className="w-56 shrink-0 text-right">操作</div>
+          </div>
         {filtered.length === 0 ? (
           <div className="py-16 text-center text-xs text-muted-foreground">
             暂无定时任务，点击右上角「新建任务」创建
