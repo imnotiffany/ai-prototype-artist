@@ -7,6 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
 import {
@@ -14,6 +17,71 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
+
+type Freq = "hourly" | "daily" | "weekly" | "monthly" | "custom";
+interface ScheduleDraft {
+  frequency: Freq;
+  hour: number;      // 0-23
+  minute: number;    // 0-59
+  weekdays: number[]; // 0=Sun..6=Sat
+  dayOfMonth: number; // 1-31, 32 = 月末
+  customCron: string;
+}
+
+const WEEK_LABEL = ["日", "一", "二", "三", "四", "五", "六"];
+const pad = (n: number) => n.toString().padStart(2, "0");
+
+function buildSchedule(s: ScheduleDraft): { cron: string; triggerDesc: string } {
+  const hh = pad(s.hour), mm = pad(s.minute);
+  const time = `${hh}:${mm}`;
+  switch (s.frequency) {
+    case "hourly":
+      return { cron: `${s.minute} * * * *`, triggerDesc: `每小时第 ${s.minute} 分钟` };
+    case "daily":
+      return { cron: `${s.minute} ${s.hour} * * *`, triggerDesc: `每天 ${time}` };
+    case "weekly": {
+      const days = [...s.weekdays].sort((a, b) => a - b);
+      const dowExpr = days.length ? days.join(",") : "1";
+      const label = days.length
+        ? `每周${days.map((d) => WEEK_LABEL[d]).join("、")} ${time}`
+        : `每周一 ${time}`;
+      return { cron: `${s.minute} ${s.hour} * * ${dowExpr}`, triggerDesc: label };
+    }
+    case "monthly": {
+      const dom = s.dayOfMonth === 32 ? "L" : s.dayOfMonth;
+      const label = s.dayOfMonth === 32 ? `每月月末 ${time}` : `每月 ${s.dayOfMonth} 日 ${time}`;
+      return { cron: `${s.minute} ${s.hour} ${dom} * *`, triggerDesc: label };
+    }
+    case "custom":
+      return { cron: s.customCron.trim() || "0 9 * * *", triggerDesc: "自定义调度" };
+  }
+}
+
+function parseSchedule(cron: string, triggerDesc: string): ScheduleDraft {
+  const base: ScheduleDraft = {
+    frequency: "custom", hour: 9, minute: 0, weekdays: [1], dayOfMonth: 1, customCron: cron,
+  };
+  const parts = cron.trim().split(/\s+/);
+  if (parts.length !== 5) return base;
+  const [m, h, dom, mon, dow] = parts;
+  const num = (x: string) => (/^\d+$/.test(x) ? parseInt(x, 10) : NaN);
+  if (mon === "*" && dow === "*" && dom === "*" && !isNaN(num(h)) && !isNaN(num(m))) {
+    return { ...base, frequency: "daily", hour: num(h), minute: num(m) };
+  }
+  if (mon === "*" && dom === "*" && dow !== "*" && !isNaN(num(h)) && !isNaN(num(m))) {
+    const days = dow.split(",").map(num).filter((x) => !isNaN(x) && x >= 0 && x <= 6);
+    if (days.length) return { ...base, frequency: "weekly", hour: num(h), minute: num(m), weekdays: days };
+  }
+  if (mon === "*" && dow === "*" && dom !== "*" && !isNaN(num(h)) && !isNaN(num(m))) {
+    const d = dom === "L" ? 32 : num(dom);
+    if (!isNaN(d)) return { ...base, frequency: "monthly", hour: num(h), minute: num(m), dayOfMonth: d };
+  }
+  if (h === "*" && dom === "*" && mon === "*" && dow === "*" && !isNaN(num(m))) {
+    return { ...base, frequency: "hourly", minute: num(m), hour: 0 };
+  }
+  return base;
+}
+
 
 export interface ScheduledTask {
   id: string;
@@ -61,11 +129,25 @@ const initialTasks: ScheduledTask[] = [
   },
 ];
 
-const emptyDraft: Omit<ScheduledTask, "id" | "creator" | "createdAt" | "lastRunAt"> = {
+interface TaskDraft {
+  description: string;
+  enabled: boolean;
+  schedule: ScheduleDraft;
+}
+
+const emptySchedule: ScheduleDraft = {
+  frequency: "daily",
+  hour: 9,
+  minute: 0,
+  weekdays: [1],
+  dayOfMonth: 1,
+  customCron: "0 9 * * *",
+};
+
+const emptyDraft: TaskDraft = {
   description: "",
-  cron: "",
-  triggerDesc: "",
   enabled: true,
+  schedule: { ...emptySchedule },
 };
 
 export default function ScheduledTasksPanel() {
@@ -73,10 +155,10 @@ export default function ScheduledTasksPanel() {
   const [query, setQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<ScheduledTask | null>(null);
-  const [draft, setDraft] = useState({ ...emptyDraft });
+  const [draft, setDraft] = useState<TaskDraft>({ ...emptyDraft });
   const [pendingDelete, setPendingDelete] = useState<ScheduledTask | null>(null);
 
-  // 自然语言新建任务：创建者默认已开启，此处维护额外授权名单
+  // 对话创建任务权限：创建者默认已开启，此处维护额外授权名单
   const [nlPermOpen, setNlPermOpen] = useState(false);
   const [nlAllowlist, setNlAllowlist] = useState<{ id: string; name: string; org: string }[]>([
     { id: "10086", name: "张伟", org: "智能平台部" },
@@ -105,31 +187,54 @@ export default function ScheduledTasksPanel() {
     );
   }, [tasks, query]);
 
+  const preview = useMemo(() => buildSchedule(draft.schedule), [draft.schedule]);
+  const setSchedule = (patch: Partial<ScheduleDraft>) =>
+    setDraft((d) => ({ ...d, schedule: { ...d.schedule, ...patch } }));
+
   const openCreate = () => {
     setEditing(null);
-    setDraft({ ...emptyDraft });
+    setDraft({ ...emptyDraft, schedule: { ...emptySchedule } });
     setDialogOpen(true);
   };
   const openEdit = (t: ScheduledTask) => {
     setEditing(t);
-    setDraft({ description: t.description, cron: t.cron, triggerDesc: t.triggerDesc, enabled: t.enabled });
+    setDraft({
+      description: t.description,
+      enabled: t.enabled,
+      schedule: parseSchedule(t.cron, t.triggerDesc),
+    });
     setDialogOpen(true);
   };
 
   const save = () => {
-    if (!draft.description.trim() || !draft.cron.trim() || !draft.triggerDesc.trim()) {
-      toast({ title: "请完善任务描述、调度表达式与触发周期", variant: "destructive" });
+    if (!draft.description.trim()) {
+      toast({ title: "请填写任务描述", variant: "destructive" });
+      return;
+    }
+    const { cron, triggerDesc } = preview;
+    if (draft.schedule.frequency === "custom" && !draft.schedule.customCron.trim()) {
+      toast({ title: "请填写自定义调度表达式", variant: "destructive" });
+      return;
+    }
+    if (draft.schedule.frequency === "weekly" && draft.schedule.weekdays.length === 0) {
+      toast({ title: "请至少选择一个星期", variant: "destructive" });
       return;
     }
     if (editing) {
-      setTasks((prev) => prev.map((t) => (t.id === editing.id ? { ...t, ...draft } : t)));
+      setTasks((prev) => prev.map((t) =>
+        t.id === editing.id ? { ...t, description: draft.description, enabled: draft.enabled, cron, triggerDesc } : t,
+      ));
       toast({ title: "已保存" });
     } else {
       const t: ScheduledTask = {
         id: `t-${Date.now()}`,
         creator: "当前用户",
         createdAt: now(),
-        ...draft,
+        description: draft.description,
+        enabled: draft.enabled,
+        cron,
+        triggerDesc,
+
       };
       setTasks((prev) => [t, ...prev]);
       toast({ title: "已创建任务" });
@@ -258,26 +363,132 @@ export default function ScheduledTasksPanel() {
                 className="min-h-[72px] text-xs"
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs">调度表达式</Label>
-                <Input
-                  value={draft.cron}
-                  onChange={(e) => setDraft({ ...draft, cron: e.target.value })}
-                  placeholder="0 9 * * *"
-                  className="h-8 text-xs font-mono"
-                />
+            <div className="space-y-1.5">
+              <Label className="text-xs">触发周期</Label>
+              <div className="grid grid-cols-[120px_1fr] gap-2 items-start">
+                <Select
+                  value={draft.schedule.frequency}
+                  onValueChange={(v: Freq) => setSchedule({ frequency: v })}
+                >
+                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hourly" className="text-xs">每小时</SelectItem>
+                    <SelectItem value="daily" className="text-xs">每天</SelectItem>
+                    <SelectItem value="weekly" className="text-xs">每周</SelectItem>
+                    <SelectItem value="monthly" className="text-xs">每月</SelectItem>
+                    <SelectItem value="custom" className="text-xs">自定义 (Cron)</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {draft.schedule.frequency === "hourly" && (
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="text-muted-foreground">第</span>
+                    <Select
+                      value={String(draft.schedule.minute)}
+                      onValueChange={(v) => setSchedule({ minute: parseInt(v, 10) })}
+                    >
+                      <SelectTrigger className="h-8 text-xs w-20"><SelectValue /></SelectTrigger>
+                      <SelectContent className="max-h-64">
+                        {Array.from({ length: 60 }, (_, i) => (
+                          <SelectItem key={i} value={String(i)} className="text-xs">{pad(i)}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <span className="text-muted-foreground">分钟执行</span>
+                  </div>
+                )}
+
+                {(draft.schedule.frequency === "daily" ||
+                  draft.schedule.frequency === "weekly" ||
+                  draft.schedule.frequency === "monthly") && (
+                  <div className="space-y-2">
+                    {draft.schedule.frequency === "weekly" && (
+                      <div className="flex flex-wrap items-center gap-1">
+                        {WEEK_LABEL.map((label, i) => {
+                          const active = draft.schedule.weekdays.includes(i);
+                          return (
+                            <button
+                              key={i}
+                              type="button"
+                              onClick={() =>
+                                setSchedule({
+                                  weekdays: active
+                                    ? draft.schedule.weekdays.filter((x) => x !== i)
+                                    : [...draft.schedule.weekdays, i],
+                                })
+                              }
+                              className={`h-7 w-8 rounded border text-xs transition-colors ${
+                                active
+                                  ? "bg-primary text-primary-foreground border-primary"
+                                  : "border-border text-foreground/70 hover:border-primary/50"
+                              }`}
+                            >
+                              {label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {draft.schedule.frequency === "monthly" && (
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className="text-muted-foreground">每月</span>
+                        <Select
+                          value={String(draft.schedule.dayOfMonth)}
+                          onValueChange={(v) => setSchedule({ dayOfMonth: parseInt(v, 10) })}
+                        >
+                          <SelectTrigger className="h-8 text-xs w-24"><SelectValue /></SelectTrigger>
+                          <SelectContent className="max-h-64">
+                            {Array.from({ length: 31 }, (_, i) => (
+                              <SelectItem key={i + 1} value={String(i + 1)} className="text-xs">{i + 1} 日</SelectItem>
+                            ))}
+                            <SelectItem value="32" className="text-xs">月末</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="text-muted-foreground">时间</span>
+                      <Select
+                        value={String(draft.schedule.hour)}
+                        onValueChange={(v) => setSchedule({ hour: parseInt(v, 10) })}
+                      >
+                        <SelectTrigger className="h-8 text-xs w-20"><SelectValue /></SelectTrigger>
+                        <SelectContent className="max-h-64">
+                          {Array.from({ length: 24 }, (_, i) => (
+                            <SelectItem key={i} value={String(i)} className="text-xs">{pad(i)} 时</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Select
+                        value={String(draft.schedule.minute)}
+                        onValueChange={(v) => setSchedule({ minute: parseInt(v, 10) })}
+                      >
+                        <SelectTrigger className="h-8 text-xs w-20"><SelectValue /></SelectTrigger>
+                        <SelectContent className="max-h-64">
+                          {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((i) => (
+                            <SelectItem key={i} value={String(i)} className="text-xs">{pad(i)} 分</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
+
+                {draft.schedule.frequency === "custom" && (
+                  <Input
+                    value={draft.schedule.customCron}
+                    onChange={(e) => setSchedule({ customCron: e.target.value })}
+                    placeholder="0 9 * * *"
+                    className="h-8 text-xs font-mono"
+                  />
+                )}
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">触发周期</Label>
-                <Input
-                  value={draft.triggerDesc}
-                  onChange={(e) => setDraft({ ...draft, triggerDesc: e.target.value })}
-                  placeholder="每天 09:00"
-                  className="h-8 text-xs"
-                />
+              <div className="text-[11px] text-muted-foreground pt-1">
+                预览：{preview.triggerDesc}
+                <span className="font-mono ml-2">{preview.cron}</span>
               </div>
             </div>
+
             <div className="flex items-center justify-between pt-1">
               <div className="text-xs text-muted-foreground">创建后立即启用</div>
               <Switch size="sm" checked={draft.enabled} onCheckedChange={(v) => setDraft({ ...draft, enabled: v })} />
