@@ -82,7 +82,6 @@ function parseSchedule(cron: string, triggerDesc: string): ScheduleDraft {
   return base;
 }
 
-import { toast } from "@/hooks/use-toast";
 
 export interface ScheduledTask {
   id: string;
