@@ -105,6 +105,7 @@ export interface ScheduledTask {
   enabled: boolean;
   lastRunAt?: string;
   creator: string;
+  creatorId: string;
   createdAt: string;
 }
 
@@ -119,6 +120,7 @@ const initialTasks: ScheduledTask[] = [
     enabled: true,
     lastRunAt: "2026-07-17 09:00",
     creator: "张伟",
+    creatorId: "01111111",
     createdAt: "2026-06-01 10:12",
   },
   {
@@ -129,6 +131,7 @@ const initialTasks: ScheduledTask[] = [
     enabled: true,
     lastRunAt: "2026-07-11 18:00",
     creator: "李娜",
+    creatorId: "01222222",
     createdAt: "2026-05-20 15:30",
   },
   {
@@ -139,6 +142,7 @@ const initialTasks: ScheduledTask[] = [
     enabled: false,
     lastRunAt: "2026-07-01 10:00",
     creator: "王强",
+    creatorId: "01333333",
     createdAt: "2026-04-02 09:00",
   },
 ];
@@ -247,6 +251,7 @@ export default function ScheduledTasksPanel() {
       const t: ScheduledTask = {
         id: `t-${Date.now()}`,
         creator: "当前用户",
+        creatorId: "00000000",
         createdAt: now(),
         description: draft.description,
         enabled: draft.enabled,
@@ -307,15 +312,15 @@ export default function ScheduledTasksPanel() {
 
       {/* List */}
       <div className="text-xs">
-        <div className="h-9 px-2 flex items-center gap-4 text-[11px] text-muted-foreground border-b border-border">
-          <div className="flex-1 min-w-0">任务描述</div>
-          <div className="w-32 shrink-0">触发周期</div>
-          <div className="w-16 shrink-0">状态</div>
-          <div className="w-36 shrink-0">最近执行时间</div>
-          <div className="w-20 shrink-0">创建人</div>
-          <div className="w-36 shrink-0">创建时间</div>
-          <div className="w-56 shrink-0 text-right">操作</div>
-        </div>
+          <div className="h-9 px-2 flex items-center gap-4 text-[11px] text-muted-foreground border-b border-border">
+            <div className="flex-1 min-w-0">任务描述</div>
+            <div className="w-32 shrink-0">触发周期</div>
+            <div className="w-16 shrink-0">状态</div>
+            <div className="w-36 shrink-0">最近执行时间</div>
+            <div className="w-28 shrink-0">创建人</div>
+            <div className="w-36 shrink-0">创建时间</div>
+            <div className="w-56 shrink-0 text-right">操作</div>
+          </div>
         {filtered.length === 0 ? (
           <div className="py-16 text-center text-xs text-muted-foreground">
             暂无定时任务，点击右上角「新建任务」创建
@@ -347,7 +352,9 @@ export default function ScheduledTasksPanel() {
                   {t.enabled ? "开启" : "暂停"}
                 </div>
                 <div className="w-36 shrink-0 font-mono text-muted-foreground">{t.lastRunAt ?? "—"}</div>
-                <div className="w-20 shrink-0 text-foreground/80 truncate">{t.creator}</div>
+                <div className="w-28 shrink-0 text-foreground/80 truncate" title={`${t.creator}（${t.creatorId}）`}>
+                  {t.creator}（{t.creatorId}）
+                </div>
                 <div className="w-36 shrink-0 font-mono text-muted-foreground">{t.createdAt}</div>
                 <div className="w-56 shrink-0 flex items-center justify-end gap-3">
                   <button className="text-[11px] text-foreground/80 hover:text-primary hover:underline" onClick={() => setHistoryTask(t)}>
