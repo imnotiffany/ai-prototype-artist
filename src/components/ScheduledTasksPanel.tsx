@@ -716,5 +716,6 @@ export default function ScheduledTasksPanel() {
         </DialogContent>
       </Dialog>
     </div>
+    </TooltipProvider>
   );
 }
