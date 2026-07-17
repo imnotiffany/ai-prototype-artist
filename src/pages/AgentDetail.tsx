@@ -1529,6 +1529,11 @@ fengsheng:
           </div>
         </TabsContent>
 
+        {/* ───────── 定时任务 ───────── */}
+        <TabsContent value="schedules" className="mt-4">
+          <ScheduledTasksPanel />
+        </TabsContent>
+
         {/* ───────── 日志 ───────── */}
         <TabsContent value="logs" className="mt-4">
           <AgentLogsPanel />
