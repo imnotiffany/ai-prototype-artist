@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { Search, X, ChevronDown, CheckCircle2, XCircle, Loader2, ChevronRight } from "lucide-react";
+import { Search, X, ChevronDown, CheckCircle2, XCircle, Loader2, ChevronRight, ChevronLeft } from "lucide-react";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from "@/components/ui/sheet";
