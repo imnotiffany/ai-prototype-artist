@@ -261,7 +261,7 @@ export default function ScheduledTasksPanel() {
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">执行内容（可选）</Label>
+              <Label className="text-xs">任务描述（可选）</Label>
               <Textarea
                 value={draft.prompt}
                 onChange={(e) => setDraft({ ...draft, prompt: e.target.value })}
