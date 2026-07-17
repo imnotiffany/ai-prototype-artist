@@ -16,6 +16,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { toast } from "@/hooks/use-toast";
 
 type Freq = "hourly" | "daily" | "weekly" | "monthly" | "custom";
 interface ScheduleDraft {
