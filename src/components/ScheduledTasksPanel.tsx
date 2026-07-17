@@ -480,8 +480,14 @@ export default function ScheduledTasksPanel() {
                       <div className="grid grid-cols-2 text-xs">
                         <div className="border-r border-border">
                           <div
+                            tabIndex={-1}
                             className="max-h-56 overflow-y-auto py-1"
-                            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+                            style={{ scrollbarWidth: "none", msOverflowStyle: "none", overscrollBehavior: "contain" }}
+                            onWheel={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              e.currentTarget.scrollTop += e.deltaY;
+                            }}
                           >
                             {Array.from({ length: 24 }, (_, h) => {
                               const active = draft.schedule.hour === h;
@@ -502,8 +508,14 @@ export default function ScheduledTasksPanel() {
                         </div>
                         <div>
                           <div
+                            tabIndex={-1}
                             className="max-h-56 overflow-y-auto py-1"
-                            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+                            style={{ scrollbarWidth: "none", msOverflowStyle: "none", overscrollBehavior: "contain" }}
+                            onWheel={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              e.currentTarget.scrollTop += e.deltaY;
+                            }}
                           >
                             {Array.from({ length: 60 }, (_, m) => {
                               const active = draft.schedule.minute === m;
