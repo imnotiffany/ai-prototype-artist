@@ -153,7 +153,7 @@ export default function ScheduledTasksPanel() {
         <div className="text-xs text-muted-foreground whitespace-nowrap">
           共 <span className="text-foreground font-medium">{tasks.length}</span> 个任务
         </div>
-        <div class="flex-1" />
+        <div className="flex-1" />
         <Button size="sm" className="h-8 text-xs" onClick={openCreate}>
           新建任务
         </Button>
