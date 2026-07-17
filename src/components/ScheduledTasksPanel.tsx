@@ -251,6 +251,7 @@ export default function ScheduledTasksPanel() {
       const t: ScheduledTask = {
         id: `t-${Date.now()}`,
         creator: "当前用户",
+        creatorId: "00000000",
         createdAt: now(),
         description: draft.description,
         enabled: draft.enabled,
