@@ -27,6 +27,7 @@ import { Search, Box } from "lucide-react";
 import { isMcpConfigured, subscribeMcpStore } from "@/data/mcpCredentialStore";
 import { toast } from "@/hooks/use-toast";
 import { PublishAgentDialog } from "@/components/PublishAgentDialog";
+import { DeployProgressPanel } from "@/components/DeployProgressPanel";
 import { AvatarPicker } from "@/components/AvatarPicker";
 import type { FsAlertStatus } from "@/components/FengshengIncompleteDialog";
 import { FengshengHowToCard } from "@/components/FengshengHowToCard";
@@ -191,6 +192,7 @@ const AgentDetail = () => {
   const [codeFormat, setCodeFormat] = useState<"yaml" | "json">("yaml");
   const [savedSnapshot, setSavedSnapshot] = useState(initialSnapshot);
   const [justSaved, setJustSaved] = useState(false);
+  const [deployMode, setDeployMode] = useState<"save" | "publish" | null>(null);
 
   const isDirty = useMemo(() => JSON.stringify({
     name, description, model, systemPrompt, skills: selSkills, mcpBindings, fsAppKey, fsAppSecret, fsShareSession,
@@ -418,10 +420,7 @@ const AgentDetail = () => {
   /* ── Config actions ── */
   const handleSave = () => {
     setSavedSnapshot({ name, description, model, systemPrompt, skills: selSkills, mcpBindings, fsAppKey, fsAppSecret, fsShareSession });
-
-    setJustSaved(true);
-    window.setTimeout(() => setJustSaved(false), 2800);
-    
+    setDeployMode("save");
   };
 
   const handlePublishClick = () => {
@@ -542,6 +541,20 @@ const AgentDetail = () => {
         </div>
 
       </div>
+
+      {deployMode && (
+        <DeployProgressPanel
+          mode={deployMode}
+          onDone={() => {
+            const wasSave = deployMode === "save";
+            setDeployMode(null);
+            if (wasSave) {
+              setJustSaved(true);
+              window.setTimeout(() => setJustSaved(false), 2800);
+            }
+          }}
+        />
+      )}
 
       <Tabs defaultValue={initialTab}>
         <TabsList className="h-9 bg-transparent border-b border-border w-full justify-start rounded-none p-0 gap-1">
@@ -1839,6 +1852,7 @@ fengsheng:
               x.version === ver ? { ...x, status: scope } : x.status === scope ? { ...x, status: "none" } : x,
             ),
           );
+          setDeployMode("publish");
         }}
       />
 
