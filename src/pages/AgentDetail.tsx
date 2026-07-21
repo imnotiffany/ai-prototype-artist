@@ -191,6 +191,7 @@ const AgentDetail = () => {
   const [codeFormat, setCodeFormat] = useState<"yaml" | "json">("yaml");
   const [savedSnapshot, setSavedSnapshot] = useState(initialSnapshot);
   const [justSaved, setJustSaved] = useState(false);
+  const [deployMode, setDeployMode] = useState<"save" | "publish" | null>(null);
 
   const isDirty = useMemo(() => JSON.stringify({
     name, description, model, systemPrompt, skills: selSkills, mcpBindings, fsAppKey, fsAppSecret, fsShareSession,
@@ -418,10 +419,7 @@ const AgentDetail = () => {
   /* ── Config actions ── */
   const handleSave = () => {
     setSavedSnapshot({ name, description, model, systemPrompt, skills: selSkills, mcpBindings, fsAppKey, fsAppSecret, fsShareSession });
-
-    setJustSaved(true);
-    window.setTimeout(() => setJustSaved(false), 2800);
-    
+    setDeployMode("save");
   };
 
   const handlePublishClick = () => {
