@@ -15,7 +15,7 @@ interface Props {
 }
 
 export const DeployProgressPanel = ({ mode, onDone, onPublishClick, stepMs = 700 }: Props) => {
-  const steps = mode === "publish" ? STEPS_PUBLISH : STEPS_SAVE;
+  const steps = STEPS;
   const [current, setCurrent] = useState(0);
   const [phase, setPhase] = useState<"running" | "reminder">("running");
 
