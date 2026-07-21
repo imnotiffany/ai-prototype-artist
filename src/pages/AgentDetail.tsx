@@ -545,6 +545,7 @@ const AgentDetail = () => {
       {deployMode && (
         <DeployProgressPanel
           mode={deployMode}
+          onPublishClick={handlePublishClick}
           onDone={() => {
             const wasSave = deployMode === "save";
             setDeployMode(null);
@@ -555,6 +556,7 @@ const AgentDetail = () => {
           }}
         />
       )}
+
 
       <Tabs defaultValue={initialTab}>
         <TabsList className="h-9 bg-transparent border-b border-border w-full justify-start rounded-none p-0 gap-1">
