@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2, Check, Rocket, Save, X, ArrowRight, AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Check, Rocket, Save, X, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type DeployMode = "save" | "publish";
@@ -23,9 +22,8 @@ export const DeployProgressPanel = ({ mode, onDone, onPublishClick, stepMs = 700
     if (phase !== "running") return;
     if (current >= steps.length) {
       if (mode === "save") {
-        // stay as reminder until user acts
         setPhase("reminder");
-        const t = window.setTimeout(() => onDone(), 6000);
+        const t = window.setTimeout(() => onDone(), 8000);
         return () => window.clearTimeout(t);
       }
       const t = window.setTimeout(onDone, 600);
@@ -35,32 +33,35 @@ export const DeployProgressPanel = ({ mode, onDone, onPublishClick, stepMs = 700
     return () => window.clearTimeout(t);
   }, [current, steps.length, stepMs, onDone, mode, phase]);
 
-  // Post-save reminder
+  // ── Post-save reminder ─────────────────────────────────────────
   if (phase === "reminder") {
     return (
-      <div className="mb-3 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50/70 dark:border-amber-900/50 dark:bg-amber-950/20 px-3 py-2 animate-fade-in">
-        <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
-        <div className="flex-1 min-w-0 text-xs">
-          <span className="font-medium text-amber-900 dark:text-amber-200">已保存为草稿</span>
-          <span className="text-amber-700/80 dark:text-amber-300/80 ml-2">
-            当前变更仅对你可见，用户仍在使用上一发布版本 —— 点击「发布」后才会正式生效
+      <div className="mb-3 h-9 flex items-center gap-2.5 rounded-md border border-amber-200/70 bg-amber-50/60 dark:border-amber-900/40 dark:bg-amber-950/20 pl-3 pr-1.5 animate-fade-in">
+        <span className="relative flex h-1.5 w-1.5 shrink-0">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-500/60" />
+          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-amber-500" />
+        </span>
+        <span className="text-xs text-amber-900 dark:text-amber-200 truncate">
+          <span className="font-medium">已保存为草稿</span>
+          <span className="text-amber-700/80 dark:text-amber-300/80">
+            ，若需在智能体广场或丰声NEXT内生效，请点击右上角「发布」
           </span>
-        </div>
+        </span>
+        <div className="flex-1" />
         {onPublishClick && (
-          <Button
-            size="sm"
-            className="h-7 px-3 text-xs bg-amber-600 hover:bg-amber-700 text-white gap-1"
+          <button
             onClick={() => {
               onPublishClick();
               onDone();
             }}
+            className="h-6 inline-flex items-center gap-1 rounded px-2 text-xs font-medium text-amber-900 dark:text-amber-100 hover:bg-amber-100/80 dark:hover:bg-amber-900/40 transition-colors"
           >
             立即发布 <ArrowRight className="w-3 h-3" />
-          </Button>
+          </button>
         )}
         <button
           onClick={onDone}
-          className="w-6 h-6 flex items-center justify-center rounded hover:bg-amber-100 dark:hover:bg-amber-900/30 text-amber-700 dark:text-amber-300"
+          className="w-6 h-6 flex items-center justify-center rounded text-amber-700/70 dark:text-amber-300/70 hover:bg-amber-100/80 dark:hover:bg-amber-900/40 transition-colors"
           aria-label="关闭"
         >
           <X className="w-3.5 h-3.5" />
@@ -71,73 +72,78 @@ export const DeployProgressPanel = ({ mode, onDone, onPublishClick, stepMs = 700
 
   const isPublish = mode === "publish";
   const done = current >= steps.length;
-  const currentLabel = done ? steps[steps.length - 1] : steps[current];
+  const stepIdx = Math.min(current, steps.length - 1);
+  const currentLabel = done ? "完成" : steps[stepIdx];
+  const shown = done ? steps.length : current + 1;
 
-  // Running: slim single-line bar
+  // ── Running: slim single-line bar ──────────────────────────────
   return (
     <div
       className={cn(
-        "mb-3 flex items-center gap-3 rounded-lg border px-3 py-2 animate-fade-in",
+        "mb-3 h-9 flex items-center gap-3 rounded-md border pl-2.5 pr-3 animate-fade-in",
         isPublish
-          ? "border-primary/30 bg-primary/5"
+          ? "border-primary/25 bg-primary/[0.04]"
           : "border-border bg-muted/40",
       )}
     >
+      {/* Icon */}
       <div
         className={cn(
-          "w-6 h-6 rounded-md flex items-center justify-center shrink-0",
-          isPublish ? "bg-primary/15 text-primary" : "bg-foreground/10 text-foreground/70",
+          "w-5 h-5 rounded flex items-center justify-center shrink-0",
+          done
+            ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+            : isPublish
+              ? "bg-primary/15 text-primary"
+              : "bg-foreground/10 text-foreground/70",
         )}
       >
         {done ? (
-          <Check className="w-3.5 h-3.5" />
+          <Check className="w-3 h-3" strokeWidth={2.5} />
         ) : isPublish ? (
-          <Rocket className="w-3.5 h-3.5" />
+          <Rocket className="w-3 h-3" />
         ) : (
-          <Save className="w-3.5 h-3.5" />
+          <Save className="w-3 h-3" />
         )}
       </div>
 
-      <div className="flex items-center gap-2 text-xs min-w-0 flex-1">
+      {/* Label + step counter */}
+      <div className="flex items-baseline gap-1.5 text-xs min-w-0">
         <span className={cn("font-medium shrink-0", isPublish ? "text-primary" : "text-foreground")}>
-          {isPublish ? "正在发布新版本" : "正在保存草稿"}
+          {isPublish ? "发布中" : "保存中"}
         </span>
-        <span className="text-muted-foreground shrink-0">·</span>
-        <span className="text-muted-foreground truncate flex items-center gap-1.5">
-          {!done && <Loader2 className="w-3 h-3 animate-spin" />}
-          {currentLabel}
-          <span className="text-[10px] tabular-nums opacity-70">
-            ({Math.min(current + 1, steps.length)}/{steps.length})
-          </span>
+        <span className="text-muted-foreground truncate">{currentLabel}</span>
+        <span className="text-[10px] tabular-nums text-muted-foreground/70 shrink-0">
+          {shown}/{steps.length}
         </span>
       </div>
+
+      <div className="flex-1" />
 
       {/* Segmented progress */}
       <div className="flex items-center gap-1 shrink-0">
-        {steps.map((_, i) => (
-          <span
-            key={i}
-            className={cn(
-              "h-1 rounded-full transition-all",
-              i < current
-                ? isPublish
-                  ? "w-4 bg-primary"
-                  : "w-4 bg-foreground/60"
-                : i === current
+        {steps.map((_, i) => {
+          const filled = i < current || done;
+          const active = i === current && !done;
+          return (
+            <span
+              key={i}
+              className={cn(
+                "h-[3px] rounded-full transition-all duration-300",
+                active ? "w-5" : "w-3",
+                filled
                   ? isPublish
-                    ? "w-6 bg-primary/60 animate-pulse"
-                    : "w-6 bg-foreground/40 animate-pulse"
-                  : "w-4 bg-border",
-            )}
-          />
-        ))}
+                    ? "bg-primary"
+                    : "bg-foreground/60"
+                  : active
+                    ? isPublish
+                      ? "bg-primary/50 animate-pulse"
+                      : "bg-foreground/40 animate-pulse"
+                    : "bg-border",
+              )}
+            />
+          );
+        })}
       </div>
-
-      {isPublish && (
-        <span className="text-[10px] text-muted-foreground shrink-0 hidden md:inline">
-          预计 1-5 分钟
-        </span>
-      )}
     </div>
   );
 };
