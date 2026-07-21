@@ -5,8 +5,7 @@ import { cn } from "@/lib/utils";
 
 export type DeployMode = "save" | "publish";
 
-const STEPS_PUBLISH = ["创建任务", "部署环境", "等待就绪", "加载智能体", "发布完成"];
-const STEPS_SAVE = ["校验配置", "保存快照", "刷新缓存"];
+const STEPS = ["创建任务", "部署环境", "等待就绪", "加载智能体", "完成"];
 
 interface Props {
   mode: DeployMode;
