@@ -16,7 +16,7 @@ interface Props {
 export const DeployProgressPanel = ({ mode, onDone, onPublishClick, stepMs = 700 }: Props) => {
   const steps = STEPS;
   const [current, setCurrent] = useState(0);
-  const [phase, setPhase] = useState<"running" | "reminder">("running");
+  const [phase, setPhase] = useState<"running" | "reminder" | "success">("running");
 
   useEffect(() => {
     if (phase !== "running") return;
@@ -26,12 +26,44 @@ export const DeployProgressPanel = ({ mode, onDone, onPublishClick, stepMs = 700
         const t = window.setTimeout(() => onDone(), 8000);
         return () => window.clearTimeout(t);
       }
-      const t = window.setTimeout(onDone, 600);
-      return () => window.clearTimeout(t);
+      setPhase("success");
+      return;
     }
     const t = window.setTimeout(() => setCurrent((c) => c + 1), stepMs);
     return () => window.clearTimeout(t);
   }, [current, steps.length, stepMs, onDone, mode, phase]);
+
+  // ── Post-publish success ───────────────────────────────────────
+  if (phase === "success") {
+    return (
+      <div className="mb-3 h-9 flex items-center gap-3 rounded-md border border-emerald-200/70 bg-emerald-50/60 dark:border-emerald-900/40 dark:bg-emerald-950/20 pl-3 pr-1.5 animate-fade-in">
+        <div className="w-5 h-5 rounded flex items-center justify-center shrink-0 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+          <Check className="w-3 h-3" strokeWidth={2.5} />
+        </div>
+        <div className="flex items-baseline gap-1.5 text-xs min-w-0">
+          <span className="font-medium text-emerald-700 dark:text-emerald-300">发布成功</span>
+          <span className="text-emerald-600/80 dark:text-emerald-400/80 truncate">新版本已生效</span>
+        </div>
+        <div className="flex-1" />
+        {/* Segmented progress: all filled */}
+        <div className="flex items-center gap-1 shrink-0">
+          {steps.map((_, i) => (
+            <span
+              key={i}
+              className="h-[3px] w-3 rounded-full bg-emerald-500 transition-all duration-300"
+            />
+          ))}
+        </div>
+        <button
+          onClick={onDone}
+          className="w-6 h-6 flex items-center justify-center rounded text-emerald-700/70 dark:text-emerald-300/70 hover:bg-emerald-100/80 dark:hover:bg-emerald-900/40 transition-colors"
+          aria-label="关闭"
+        >
+          <X className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    );
+  }
 
   // ── Post-save reminder ─────────────────────────────────────────
   if (phase === "reminder") {
