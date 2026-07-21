@@ -1,114 +1,144 @@
 import { useEffect, useState } from "react";
-import { Loader2, Check } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Loader2, Check, Rocket, Save, X, ArrowRight, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export type DeployMode = "save" | "publish";
 
-interface Step {
-  title: string;
-  desc: string;
-}
-
-const STEPS_PUBLISH: Step[] = [
-  { title: "创建任务", desc: "准备发布版本" },
-  { title: "部署环境", desc: "启动运行资源" },
-  { title: "等待就绪", desc: "检查服务健康" },
-  { title: "加载智能体", desc: "同步最新配置" },
-  { title: "发布完成", desc: "已可正式使用" },
-];
-
-const STEPS_SAVE: Step[] = [
-  { title: "校验配置", desc: "检查必填字段" },
-  { title: "保存快照", desc: "写入草稿版本" },
-  { title: "同步凭证", desc: "更新 MCP / 环境变量" },
-  { title: "刷新缓存", desc: "重载运行时" },
-  { title: "保存完成", desc: "配置已生效" },
-];
+const STEPS_PUBLISH = ["创建任务", "部署环境", "等待就绪", "加载智能体", "发布完成"];
+const STEPS_SAVE = ["校验配置", "保存快照", "刷新缓存"];
 
 interface Props {
   mode: DeployMode;
   onDone: () => void;
-  /** 单步耗时（ms），默认 700 */
+  onPublishClick?: () => void;
   stepMs?: number;
 }
 
-export const DeployProgressPanel = ({ mode, onDone, stepMs = 700 }: Props) => {
+export const DeployProgressPanel = ({ mode, onDone, onPublishClick, stepMs = 700 }: Props) => {
   const steps = mode === "publish" ? STEPS_PUBLISH : STEPS_SAVE;
   const [current, setCurrent] = useState(0);
+  const [phase, setPhase] = useState<"running" | "reminder">("running");
 
   useEffect(() => {
+    if (phase !== "running") return;
     if (current >= steps.length) {
-      const t = window.setTimeout(onDone, 500);
+      if (mode === "save") {
+        // stay as reminder until user acts
+        setPhase("reminder");
+        const t = window.setTimeout(() => onDone(), 6000);
+        return () => window.clearTimeout(t);
+      }
+      const t = window.setTimeout(onDone, 600);
       return () => window.clearTimeout(t);
     }
     const t = window.setTimeout(() => setCurrent((c) => c + 1), stepMs);
     return () => window.clearTimeout(t);
-  }, [current, steps.length, stepMs, onDone]);
+  }, [current, steps.length, stepMs, onDone, mode, phase]);
 
-  const title = mode === "publish" ? "正在创建发布任务" : "正在保存配置";
-  const subtitle =
-    mode === "publish"
-      ? "发布通常需要 1-5 分钟，你可以停留在当前页等待。"
-      : "保存通常在数秒内完成，请稍候。";
+  // Post-save reminder
+  if (phase === "reminder") {
+    return (
+      <div className="mb-3 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50/70 dark:border-amber-900/50 dark:bg-amber-950/20 px-3 py-2 animate-fade-in">
+        <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+        <div className="flex-1 min-w-0 text-xs">
+          <span className="font-medium text-amber-900 dark:text-amber-200">已保存为草稿</span>
+          <span className="text-amber-700/80 dark:text-amber-300/80 ml-2">
+            当前变更仅对你可见，用户仍在使用上一发布版本 —— 点击「发布」后才会正式生效
+          </span>
+        </div>
+        {onPublishClick && (
+          <Button
+            size="sm"
+            className="h-7 px-3 text-xs bg-amber-600 hover:bg-amber-700 text-white gap-1"
+            onClick={() => {
+              onPublishClick();
+              onDone();
+            }}
+          >
+            立即发布 <ArrowRight className="w-3 h-3" />
+          </Button>
+        )}
+        <button
+          onClick={onDone}
+          className="w-6 h-6 flex items-center justify-center rounded hover:bg-amber-100 dark:hover:bg-amber-900/30 text-amber-700 dark:text-amber-300"
+          aria-label="关闭"
+        >
+          <X className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    );
+  }
 
+  const isPublish = mode === "publish";
+  const done = current >= steps.length;
+  const currentLabel = done ? steps[steps.length - 1] : steps[current];
+
+  // Running: slim single-line bar
   return (
-    <div className="mb-4 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background p-4 animate-fade-in">
-      <div className="flex items-start gap-3">
-        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-          <Loader2 className="w-4 h-4 text-primary animate-spin" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-            <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-normal">beta</Badge>
-            <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-normal border-primary/40 text-primary bg-primary/5">
-              {current >= steps.length ? "已完成" : "准备中"}
-            </Badge>
-          </div>
-          <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
-        </div>
+    <div
+      className={cn(
+        "mb-3 flex items-center gap-3 rounded-lg border px-3 py-2 animate-fade-in",
+        isPublish
+          ? "border-primary/30 bg-primary/5"
+          : "border-border bg-muted/40",
+      )}
+    >
+      <div
+        className={cn(
+          "w-6 h-6 rounded-md flex items-center justify-center shrink-0",
+          isPublish ? "bg-primary/15 text-primary" : "bg-foreground/10 text-foreground/70",
+        )}
+      >
+        {done ? (
+          <Check className="w-3.5 h-3.5" />
+        ) : isPublish ? (
+          <Rocket className="w-3.5 h-3.5" />
+        ) : (
+          <Save className="w-3.5 h-3.5" />
+        )}
       </div>
 
-      <div className="mt-4 grid grid-cols-5 gap-2">
-        {steps.map((s, i) => {
-          const done = i < current;
-          const active = i === current;
-          return (
-            <div
-              key={i}
-              className={cn(
-                "rounded-lg border px-3 py-2.5 transition-colors",
-                done && "border-emerald-300 bg-emerald-50/50 dark:bg-emerald-950/20",
-                active && "border-primary bg-primary/5",
-                !done && !active && "border-border bg-muted/30",
-              )}
-            >
-              <div className="flex items-center gap-1.5 mb-1">
-                <span
-                  className={cn(
-                    "w-4 h-4 rounded-full flex items-center justify-center text-[10px] shrink-0",
-                    done && "bg-emerald-500 text-white",
-                    active && "bg-primary/15 text-primary",
-                    !done && !active && "bg-muted text-muted-foreground",
-                  )}
-                >
-                  {done ? <Check className="w-2.5 h-2.5" /> : active ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : i + 1}
-                </span>
-                <span
-                  className={cn(
-                    "text-xs font-medium truncate",
-                    active ? "text-foreground" : done ? "text-emerald-700 dark:text-emerald-300" : "text-muted-foreground",
-                  )}
-                >
-                  {s.title}
-                </span>
-              </div>
-              <p className="text-[10px] text-muted-foreground pl-5.5 truncate">{s.desc}</p>
-            </div>
-          );
-        })}
+      <div className="flex items-center gap-2 text-xs min-w-0 flex-1">
+        <span className={cn("font-medium shrink-0", isPublish ? "text-primary" : "text-foreground")}>
+          {isPublish ? "正在发布新版本" : "正在保存草稿"}
+        </span>
+        <span className="text-muted-foreground shrink-0">·</span>
+        <span className="text-muted-foreground truncate flex items-center gap-1.5">
+          {!done && <Loader2 className="w-3 h-3 animate-spin" />}
+          {currentLabel}
+          <span className="text-[10px] tabular-nums opacity-70">
+            ({Math.min(current + 1, steps.length)}/{steps.length})
+          </span>
+        </span>
       </div>
+
+      {/* Segmented progress */}
+      <div className="flex items-center gap-1 shrink-0">
+        {steps.map((_, i) => (
+          <span
+            key={i}
+            className={cn(
+              "h-1 rounded-full transition-all",
+              i < current
+                ? isPublish
+                  ? "w-4 bg-primary"
+                  : "w-4 bg-foreground/60"
+                : i === current
+                  ? isPublish
+                    ? "w-6 bg-primary/60 animate-pulse"
+                    : "w-6 bg-foreground/40 animate-pulse"
+                  : "w-4 bg-border",
+            )}
+          />
+        ))}
+      </div>
+
+      {isPublish && (
+        <span className="text-[10px] text-muted-foreground shrink-0 hidden md:inline">
+          预计 1-5 分钟
+        </span>
+      )}
     </div>
   );
 };
