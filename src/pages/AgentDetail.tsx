@@ -542,6 +542,20 @@ const AgentDetail = () => {
 
       </div>
 
+      {deployMode && (
+        <DeployProgressPanel
+          mode={deployMode}
+          onDone={() => {
+            const wasSave = deployMode === "save";
+            setDeployMode(null);
+            if (wasSave) {
+              setJustSaved(true);
+              window.setTimeout(() => setJustSaved(false), 2800);
+            }
+          }}
+        />
+      )}
+
       <Tabs defaultValue={initialTab}>
         <TabsList className="h-9 bg-transparent border-b border-border w-full justify-start rounded-none p-0 gap-1">
           <TabsTrigger value="config" className="gap-1.5 text-xs h-9 px-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary"><Settings2 className="w-3.5 h-3.5" />配置</TabsTrigger>
