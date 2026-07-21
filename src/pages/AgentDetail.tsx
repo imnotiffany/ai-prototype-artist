@@ -1852,6 +1852,7 @@ fengsheng:
               x.version === ver ? { ...x, status: scope } : x.status === scope ? { ...x, status: "none" } : x,
             ),
           );
+          setDeployMode("publish");
         }}
       />
 
