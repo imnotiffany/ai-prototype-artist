@@ -191,7 +191,6 @@ const AgentDetail = () => {
   const [configView, setConfigView] = useState<"form" | "code">("form");
   const [codeFormat, setCodeFormat] = useState<"yaml" | "json">("yaml");
   const [savedSnapshot, setSavedSnapshot] = useState(initialSnapshot);
-  const [justSaved, setJustSaved] = useState(false);
   const [deployMode, setDeployMode] = useState<"save" | "publish" | null>(null);
 
   const isDirty = useMemo(() => JSON.stringify({
