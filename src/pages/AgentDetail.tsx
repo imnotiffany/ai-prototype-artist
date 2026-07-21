@@ -191,7 +191,6 @@ const AgentDetail = () => {
   const [configView, setConfigView] = useState<"form" | "code">("form");
   const [codeFormat, setCodeFormat] = useState<"yaml" | "json">("yaml");
   const [savedSnapshot, setSavedSnapshot] = useState(initialSnapshot);
-  const [justSaved, setJustSaved] = useState(false);
   const [deployMode, setDeployMode] = useState<"save" | "publish" | null>(null);
 
   const isDirty = useMemo(() => JSON.stringify({
@@ -519,12 +518,6 @@ const AgentDetail = () => {
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          {justSaved && !isDirty ? (
-            <div className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md border border-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 animate-fade-in">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              <span className="text-[11px] text-emerald-800 dark:text-emerald-200">已保存</span>
-            </div>
-          ) : null}
           <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={openEditInfo}>
             <Pencil className="w-3.5 h-3.5" />编辑基本信息
           </Button>
@@ -547,12 +540,7 @@ const AgentDetail = () => {
           mode={deployMode}
           onPublishClick={handlePublishClick}
           onDone={() => {
-            const wasSave = deployMode === "save";
             setDeployMode(null);
-            if (wasSave) {
-              setJustSaved(true);
-              window.setTimeout(() => setJustSaved(false), 2800);
-            }
           }}
         />
       )}
